@@ -1,0 +1,17 @@
+site_name: PlainLicense
+theme:
+  name: material
+
+nav:
+  - English:
+      - Home: en/index.md
+      - Licenses:
+          - PlainMIT: en/licenses/plainmit.md
+          - PlainGPLv2: en/licenses/plaingplv2.md
+          - PlainGPLv3: en/licenses/plaingplv3.md
+          - PlainLGPLv2: en/licenses/plainlgplv2.md
+          - PlainLGPLv3: en/licenses/plainlgplv3.md
+          - PlainApachev2: en/licenses/plainapachev2.md
+          - PlainBSDv2: en/licenses/plainbsdv2.md
+          - PlainAGPLv3: en/licenses/plainagplv3.md
+          - PlainMPLv2: en/licenses/plainmplv2.md

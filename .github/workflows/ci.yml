@@ -1,0 +1,61 @@
+name: CI/CD
+
+on:
+  push:
+    paths:
+      - 'docs/en/licenses/*'
+      - 'docs/en/versions/*'
+  pull_request:
+    paths:
+      - 'docs/en/licenses/*'
+      - 'docs/en/versions/*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install mkdocs mkdocs-material
+
+      - name: Build the site
+        run: mkdocs build
+
+      - name: Deploy to GitHub Pages
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./site
+
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Install linting tools
+        run: |
+          pip install markdownlint-cli
+          npm install -g markdown-link-check
+
+      - name: Run markdownlint
+        run: markdownlint docs/**/*.md
+
+      - name: Check links
+        run: markdown-link-check docs/**/*.md

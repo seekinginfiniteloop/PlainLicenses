@@ -1,0 +1,65 @@
+name: Release
+
+on:
+  push:
+    paths:
+      - 'docs/en/licenses/*'
+      - 'docs/en/versions/*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Set up Git user
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Bump version
+        id: bump_version
+        run: |
+          FILE_CHANGED=$(git diff --name-only HEAD~1 HEAD)
+          VERSION_FILE=""
+          for FILE in $FILE_CHANGED; do
+            if [[ $FILE == docs/en/licenses/* ]]; then
+              VERSION_FILE="${FILE/docs/en/licenses/docs/en/versions}"
+              VERSION_FILE="${VERSION_FILE/.md/_version.txt}"
+            elif [[ $FILE == docs/es/licenses/* ]]; then
+              VERSION_FILE="${FILE/docs/es/licenses/docs/es/versions}"
+              VERSION_FILE="${VERSION_FILE/.md/_version.txt}"
+            fi
+          done
+          if [ -n "$VERSION_FILE" ]; then
+            VERSION=$(cat $VERSION_FILE)
+            VERSION_PARTS=(${VERSION//./ })
+            PATCH=${VERSION_PARTS[2]}
+            PATCH=$((PATCH+1))
+            NEW_VERSION="${VERSION_PARTS[0]}.${VERSION_PARTS[1]}.$PATCH"
+            echo $NEW_VERSION > $VERSION_FILE
+            echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+            git add $VERSION_FILE
+            git commit -m "Bump version to $NEW_VERSION"
+          fi
+
+      - name: Create release
+        if: success()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          NEW_VERSION=$(echo $GITHUB_ENV | grep "NEW_VERSION" | cut -d '=' -f 2)
+          if [ -n "$NEW_VERSION" ]; then
+            git push origin main
+            gh release create $NEW_VERSION --notes "Version $NEW_VERSION released."
+          fi
