@@ -1,6 +1,8 @@
 # PlainLicense
 
-**PlainLicense** is an initiative to rewrite popular software licenses in plain, approachable language. Our goal is to make common licenses easy to understand for an average person with no legal background. We seek to recraft licenses in a way that is accessible, clear, and concise while maintaining the legal integrity and enforceability of the original licenses. We will make
+**PlainLicense** is an initiative to rewrite popular software licenses in plain, approachable language. Our goal is to make common licenses easy to understand for an average person with no legal background. We seek to recraft licenses in a way that is accessible, clear, and concise while maintaining the legal integrity and enforceability of the original licenses.
+
+## Excuse the mess; we're just getting started.
 
 ## Contributing
 

@@ -1,4 +1,4 @@
-PlainLGPL v2 License
+# Plain Language LGPL v2 License
 
 Permission to Use:
 You can use, copy, modify, and distribute this software for free, even for commercial purposes, as long as you follow these rules:
