@@ -91,7 +91,6 @@ extra_javascript:
 
 plugins:
   - offline
-  - typeset
   - search:
       separator: '[\s\-,:!=\[\]()"/]+|(?!\b)(?=[A-Z][a-z])|\.(?!\d)|&[lg]t;'
   - social:
