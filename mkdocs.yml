@@ -95,7 +95,7 @@ plugins:
       separator: '[\s\-,:!=\[\]()"/]+|(?!\b)(?=[A-Z][a-z])|\.(?!\d)|&[lg]t;'
   - social:
       cards_layout_options:
-        font_family: "Raleway, sans-serif"
+        font_family: "Raleway"
   - tags
   - git-revision-date-localized:
       enable_creation_date: true
