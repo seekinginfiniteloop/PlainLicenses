@@ -26,5 +26,4 @@ We provide the library "as is", without any warranty of any kind. We are not res
 
 ## Interpretation
 
-If you are legally interpreting this dedication and are unclear on any part, you should interpret it in a way that makes the library as free as possible. You may also consult the [Unlicense](https://unlicense.org/) website, which this dedication is wholly based on.
-
+If you are legally interpreting this dedication and are unclear on any part, you should interpret it in a way that makes the library as free as possible. You may also consult the official [Unlicense](https://unlicense.org/UNLICENSE), which this dedication is wholly based on.

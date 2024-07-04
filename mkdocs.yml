@@ -1,18 +1,123 @@
 site_name: PlainLicense
+site_url: https://plainlicense.org
+repo_url: https://github.com/seekinginfiniteloop/PlainLicense
+repo_name: PlainLicense
+edit_uri: edit/dev/docs/
 theme:
   name: material
+  font:
+    text: Noto Sans
+    code: Noto Sans Mono
+  features:
+    - content.action.edit
+    - content.code.copy
+    - content.code.select
+    - content.code.annotate
+    - content.footnotes.tooltips
+    - navigation.instant
+    - navigation.instant.prefetch
+    - navigation.instant.progress
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.path
+    - navigation.top
+    - navigation.footer
+    - toc.follow
+    - toc.integrate
+    - search.suggest
+    - search.highlight
+    - search.share
+  language: en
+  icon:
+    repo: fontawesome/brands/github
+    edit: material/pencil
+    view: material/eye
 
-nav:
-  - English:
-      - Home: en/index.md
-      - Licenses:
-        - en/licenses/en_PlainAGPLv3.md
-        - en/licenses/en_PlainApachev2.md
-        - en/licenses/en_PlainBSDv2.md
-        - en/licenses/en_PlainGPLv2.md
-        - en/licenses/en_PlainGPLv3.md
-        - en/licenses/en_PlainLGPLv2.md
-        - en/licenses/en_PlainLGPLv3.md
-        - en/licenses/en_PlainMITvNone.md
-        - en/licenses/en_PlainMPLv2.md
-        - en/licenses/en_PlainUnlicense.md
+  palette:
+    # Palette toggle for automatic mode
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to system preference
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - footnotes
+  - def_list
+  - tables
+  - md_in_html
+  - pymdownx.snippets:
+      auto_append:
+        - includes/en/abbreviations.md
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.betterem
+  - pymdownx.critic
+  - pymdownx.caret
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.tilde
+  - pymdownx.tabbed:
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
+
+extra_javascript:
+  - https://unpkg.com/tablesort@5.3.0/dist/tablesort.min.js
+  - javascripts/tablesort.js
+
+plugins:
+  - offline
+  - typeset
+  - search:
+      separator: '[\s\-,:!=\[\]()"/]+|(?!\b)(?=[A-Z][a-z])|\.(?!\d)|&[lg]t;'
+  - social:
+      cards_layout_options:
+        font_family: 'Raleway, sans-serif'
+  - tags
+  - git-revision-date-localized:
+      enable_creation_date: true
+      fallback_to_build_date: true
+      type: date
+  - git-authors
+
+extra:
+  analytics:
+    feedback:
+      title: Was this page helpful?
+      ratings:
+        - icon: material/emoticon-happy-outline
+          name: This page was helpful
+          data: 1
+          note: >-
+            Thanks for your feedback!
+        - icon: material/emoticon-sad-outline
+          name: This page could be improved
+          data: 0
+          note: >-
+            Thanks for your feedback! Help us improve this page by
+            filing an issue:
+            https://github.com/seekinginfiniteloop/PlainLicense/issues/new/?title=[Feedback]+{title}+-+{url}

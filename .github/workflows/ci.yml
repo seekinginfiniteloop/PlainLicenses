@@ -1,5 +1,7 @@
 name: CI/CD
 
+
+
 on:
   push:
     paths:
@@ -7,37 +9,12 @@ on:
       - 'docs/**/versions/*'
     branches:
       - dev
-  pull_request:
-    paths:
-      - 'docs/**/licenses/*'
-      - 'docs/**/versions/*'
-    branches:
-      - dev
+
+
+permissions:
+  contents: write
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Install dependencies
-        run: |
-          pip install mkdocs mkdocs-material
-
-      - name: Deploy docs
-        uses: mhausenblas/mkdocs-deploy-gh-pages@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CUSTOM_DOMAIN: plainlicense.org
-          EXTRA_PACKAGES: build-base
-          # REQUIREMENTS: folder/requirements.txt
 
   lint:
     runs-on: ubuntu-latest
@@ -45,17 +22,30 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Check Markdown links
-        uses: byrnereese/github-action-mkdocs-link-check@v1
-        with:
-          use-verbose-mode: 'yes'
-          folder-path: 'docs/'
-          file-path: './README.md, ./UNLICENSE.md, ./CONTRIBUTING.md'
-
       - name:  Lint markdown
         uses: DavidAnson/markdownlint-cli2-action@v16
         with:
           fix: true
           globs: '**/*.md'
-    
+
+
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure Git Credentials
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+      - run: echo "cache_id=$(date --utc '+%V')" >> $GITHUB_ENV
+      - uses: actions/cache@v4
+        with:
+          key: mkdocs-material-${{ env.cache_id }}
+          path: .cache
+          restore-keys: |
+            mkdocs-material-
+      - run: pip install mkdocs-material
+      - run: mkdocs gh-deploy --force
