@@ -18,14 +18,13 @@
 
 ## Fallback License
 
-If your laws do not allow or recognize dedications to the public domain, **we grant you a worldwide, royalty-free, non-exclusive, perpetual, and irrevocable license** to use, copy, modify, and distribute this software for any purpose, without any restrictions.[^1] 'Royalty-free' means you do not have to pay us any fees for using the library. 'Non-exclusive' means we can also use the library and give it to others. 'Perpetual' means the lasts forever. 'Irrevocable' means no one can take the license away from you.
+If your laws do not allow or recognize dedications to the public domain, **we grant you a worldwide, royalty-free, non-exclusive, perpetual, and irrevocable license** to use, copy, modify, and distribute this software for any purpose, without any restrictions. 'Royalty-free' means you do not have to pay us any fees for using the library. 'Non-exclusive' means we can also use the library and give it to others. 'Perpetual' means the lasts forever. 'Irrevocable' means no one can take the license away from you.
 
 ## No Liability and No Warranty
 
-We provide the library "as is", without any warranty of any kind. The authors are not responsible for any damages or issues that arise from using the library. We are not responsible (i.e. "liable") for any damages or issues that tha. You use the library at your own risk.
+We provide the library "as is", without any warranty of any kind. We are not responsible (i.e. "liable") for any damages or issues from your use of the library. You use the library at your own risk.
 
 ## Interpretation
 
 If you are legally interpreting this dedication and are unclear on any part, you should interpret it in a way that makes the library as free as possible. You may also consult the [Unlicense](https://unlicense.org/) website, which this dedication is wholly based on.
 
-[^1]
