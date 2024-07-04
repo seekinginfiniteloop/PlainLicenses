@@ -3,29 +3,6 @@ site_url: https://plainlicense.org
 repo_url: https://github.com/seekinginfiniteloop/PlainLicense
 repo_name: PlainLicense
 edit_uri: edit/dev/docs/en/
-plugins:
-  - i18n:
-    docs_structure: folder
-    reconfigure_material: true
-    reconfigure_search: true
-    languages:
-      - locale: en
-        default: true
-        name: English
-        build: true
-        site_name: PlainLicense (en)
-  - offline
-  - search:
-      separator: '[\s\-,:!=\[\]()"/]+|(?!\b)(?=[A-Z][a-z])|\.(?!\d)|&[lg]t;'
-  - social:
-      cards_layout_options:
-        font_family: "Raleway"
-  - tags
-  - git-revision-date-localized:
-      enable_creation_date: true
-      fallback_to_build_date: true
-      type: date
-  - git-authors
 theme:
   name: material
   font:
@@ -77,6 +54,29 @@ theme:
       toggle:
         icon: material/weather-sunny
         name: Switch to system preference
+plugins:
+  - i18n:
+    docs_structure: folder
+    reconfigure_material: true
+    reconfigure_search: true
+    languages:
+      - locale: en
+        default: true
+        name: English
+        build: true
+        site_name: PlainLicense (en)
+  - offline
+  - search:
+      separator: '[\s\-,:!=\[\]()"/]+|(?!\b)(?=[A-Z][a-z])|\.(?!\d)|&[lg]t;'
+  - social:
+      cards_layout_options:
+        font_family: "Raleway"
+  - tags
+  - git-revision-date-localized:
+      enable_creation_date: true
+      fallback_to_build_date: true
+      type: date
+  - git-authors
 markdown_extensions:
   - abbr
   - admonition
