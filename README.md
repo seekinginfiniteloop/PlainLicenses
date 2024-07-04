@@ -2,10 +2,6 @@
 
 **PlainLicense** is an initiative to rewrite popular software licenses in plain, approachable language. Our goal is to make common licenses easy to understand for an average person with no legal background. We seek to recraft licenses in a way that is accessible, clear, and concise while maintaining the legal integrity and enforceability of the original licenses. We will make
 
-## Available Licenses
-
-<--! TODO: Programmatically generate the list of available licenses from the docs/en/licenses directory -->
-
 ## Contributing
 
 If you are a human, or if you can sound like a human, you can help make licenses more accessible for everyone! Check out the [Contributing Guidelines](./CONTRIBUTING.md) to get started.
