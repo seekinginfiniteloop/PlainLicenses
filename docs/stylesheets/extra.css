@@ -1,0 +1,12 @@
+/* Plain License Stylesheet */
+:root {
+    --md-primary-fg-color: #1AB5E6;
+    --md-primary-fg-color--light: #EbC246;
+    --md-primary-fg-color--dark: #a1f0bc;
+}
+
+h1,
+h2,
+h3 {
+    font-family: 'Montserrat', sans-serif;
+}

@@ -2,7 +2,7 @@ site_name: PlainLicense
 site_url: https://plainlicense.org
 repo_url: https://github.com/seekinginfiniteloop/PlainLicense
 repo_name: PlainLicense
-edit_uri: edit/dev/docs/
+edit_uri: edit/dev/docs/en/
 theme:
   name: material
   font:

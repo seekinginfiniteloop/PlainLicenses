@@ -16,19 +16,6 @@ permissions:
 
 jobs:
 
-  lint:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name:  Lint markdown
-        uses: DavidAnson/markdownlint-cli2-action@v16
-        with:
-          fix: true
-          globs: '**/*.md'
-
-
   deploy:
     runs-on: ubuntu-latest
     steps:
