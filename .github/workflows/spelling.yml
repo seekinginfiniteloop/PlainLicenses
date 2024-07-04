@@ -12,9 +12,6 @@ jobs:
     - name: Check spelling of english files and make changes
       uses: crate-ci/typos@master
       with:
-        files: ./docs/en/**/*.md
-               ./README.md
-               ./CONTRIBUTING.md
-               ./UNLICENSE.md
+        files: "./docs/en/**/*.md, ./*.md, ./*.yml, ./docs/*.yml"
         config: ./_typos.toml
         write_changes: true
