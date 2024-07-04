@@ -102,6 +102,16 @@ plugins:
       fallback_to_build_date: true
       type: date
   - git-authors
+  - i18n:
+      docs_structure: folder
+      languages:
+        - locale: en
+          default: true
+          name: English
+          build: true
+        - locale: fr
+          name: Français
+          build: true
 
 extra:
   analytics:
