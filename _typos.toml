@@ -1,5 +1,5 @@
 [default]
-locale = en-us
+locale = "en-us"
 check-file = true
 ignore-hidden = true
 
