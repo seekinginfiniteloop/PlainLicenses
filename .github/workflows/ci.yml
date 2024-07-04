@@ -3,12 +3,16 @@ name: CI/CD
 on:
   push:
     paths:
-      - 'docs/en/licenses/*'
-      - 'docs/en/versions/*'
+      - 'docs/**/licenses/*'
+      - 'docs/**/versions/*'
+    branches:
+      - dev
   pull_request:
     paths:
-      - 'docs/en/licenses/*'
-      - 'docs/en/versions/*'
+      - 'docs/**/licenses/*'
+      - 'docs/**/versions/*'
+    branches:
+      - dev
 
 jobs:
   build:
@@ -16,10 +20,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
@@ -27,35 +31,31 @@ jobs:
         run: |
           pip install mkdocs mkdocs-material
 
-      - name: Build the site
-        run: mkdocs build
-
-      - name: Deploy to GitHub Pages
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./site
+      - name: Deploy docs
+        uses: mhausenblas/mkdocs-deploy-gh-pages@dev
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CUSTOM_DOMAIN: plainlicense.org
+          EXTRA_PACKAGES: build-base
+          # REQUIREMENTS: folder/requirements.txt
 
   lint:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v2
+      - name: Check Markdown links
+        uses: byrnereese/github-action-mkdocs-link-check@v1
         with:
-          python-version: '3.x'
+          use-verbose-mode: 'yes'
+          folder-path: 'docs/'
+          file-path: './README.md, ./UNLICENSE.md, ./CONTRIBUTING.md'
 
-      - name: Install linting tools
-        run: |
-          pip install markdownlint-cli
-          npm install -g markdown-link-check
-
-      - name: Run markdownlint
-        run: markdownlint docs/**/*.md
-
-      - name: Check links
-        run: markdown-link-check docs/**/*.md
+      - name:  Lint markdown
+        uses: DavidAnson/markdownlint-cli2-action@v16
+        with:
+          fix: true
+          globs: '**/*.md'
+    
