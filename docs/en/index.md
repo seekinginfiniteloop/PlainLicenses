@@ -2,7 +2,7 @@
 
 **PlainLicense** is an initiative to rewrite popular software licenses in plain, approachable language for better understanding and accessibility. Each license in this collection retains the original legal intent but is expressed in clear and simple terms.
 
-# EXCUSE THE MESS - We are just getting started!
+## EXCUSE THE MESS - We are just getting started!
 
 ## Contributing
 

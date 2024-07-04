@@ -14,9 +14,9 @@ theme:
     - content.code.select
     - content.code.annotate
     - content.footnotes.tooltips
-    - navigation.instant
-    - navigation.instant.prefetch
-    - navigation.instant.progress
+  # - navigation.instant
+  # - navigation.instant.prefetch
+  # - navigation.instant.progress
     - navigation.tracking
     - navigation.tabs
     - navigation.path
@@ -95,7 +95,7 @@ plugins:
       separator: '[\s\-,:!=\[\]()"/]+|(?!\b)(?=[A-Z][a-z])|\.(?!\d)|&[lg]t;'
   - social:
       cards_layout_options:
-        font_family: 'Raleway, sans-serif'
+        font_family: "Raleway, sans-serif"
   - tags
   - git-revision-date-localized:
       enable_creation_date: true
@@ -104,14 +104,14 @@ plugins:
   - git-authors
   - i18n:
       docs_structure: folder
+      reconfigure_material: true
+      reconfigure_search: true
       languages:
         - locale: en
           default: true
           name: English
           build: true
-        - locale: fr
-          name: Français
-          build: true
+          site_name: PlainLicense (en)
 
 extra:
   analytics:
