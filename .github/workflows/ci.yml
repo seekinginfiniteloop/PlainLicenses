@@ -1,15 +1,14 @@
-name: CI/CD
+name: Deploy to GitHub Pages
 
 on:
   push:
     paths:
       - 'docs/**/licenses/*'
       - 'docs/**/versions/*'
-      - './mkdocs.yml'
-      - './.github/workflows/ci.yml'
+      - 'mkdocs.yml'
+      - '.github/workflows/ci.yml'
     branches:
       - dev
-
 
 permissions:
   contents: write
