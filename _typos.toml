@@ -1,0 +1,5 @@
+[default]
+locale = en-us
+check-file = true
+ignore-hidden = true
+
