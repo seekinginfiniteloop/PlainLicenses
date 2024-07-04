@@ -4,7 +4,7 @@
 
 ## Available Licenses
 
-<! TODO: Programmatically generate the list of available licenses from the docs/en/licenses directory >
+<--! TODO: Programmatically generate the list of available licenses from the docs/en/licenses directory -->
 
 ## Contributing
 
