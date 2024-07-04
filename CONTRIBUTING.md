@@ -1,6 +1,7 @@
 # Contributing to PlainLicense
 
-We welcome contributions from the community to help make PlainLicense better and more comprehensive. Here's how you can get involved:
+We welcome contributions from the community to help make PlainLicense better and more comprehensive.
+Here's how you can get involved:
 
 ## How to Contribute
 
