@@ -13,5 +13,5 @@ jobs:
       uses: crate-ci/typos@master
       with:
         files: "./docs/en/**/*.md"
-        config: ./_typos.toml
+        config: "./_typos.toml"
         write_changes: true
