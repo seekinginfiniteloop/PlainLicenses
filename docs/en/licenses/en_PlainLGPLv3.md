@@ -1,4 +1,8 @@
 # PlainLGPL v3 License
+
+## THIS IS A PLACEHOLDER; THE LICENSE TEXT IS NOT FINAL
+
+
 Permission to Use:
 You can use, copy, modify, and distribute this software for free, even for commercial purposes, as long as you follow these rules:
 

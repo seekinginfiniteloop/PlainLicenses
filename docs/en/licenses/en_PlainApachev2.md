@@ -1,5 +1,7 @@
 # Plain Apache License v2
 
+## THIS IS A PLACEHOLDER; THE LICENSE TEXT IS NOT FINAL
+
 Permission to Use:
 You can use, copy, modify, and distribute this software for free, even for commercial purposes, as long as you follow these rules:
 
@@ -23,4 +25,3 @@ The software is provided "as is", without any warranty of any kind. The authors 
 
 Patents:
 This license does not grant you any rights to the patents of the authors or contributors. If you bring a patent claim against anyone for using the software, your rights under this license end automatically.
-
