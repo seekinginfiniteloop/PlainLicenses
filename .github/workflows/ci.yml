@@ -5,6 +5,8 @@ on:
     paths:
       - 'docs/**/licenses/*'
       - 'docs/**/versions/*'
+      - './mkdocs.yml'
+      - './.github/workflows/ci.yml'
     branches:
       - dev
 
