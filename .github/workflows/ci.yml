@@ -32,7 +32,7 @@ jobs:
           pip install mkdocs mkdocs-material
 
       - name: Deploy docs
-        uses: mhausenblas/mkdocs-deploy-gh-pages@dev
+        uses: mhausenblas/mkdocs-deploy-gh-pages@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CUSTOM_DOMAIN: plainlicense.org
