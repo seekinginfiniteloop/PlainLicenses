@@ -56,21 +56,21 @@ theme:
         name: Switch to system preference
 plugins:
   - i18n:
-    docs_structure: folder
-    reconfigure_material: true
-    reconfigure_search: true
-    languages:
-      - locale: en
-        default: true
-        name: English
-        build: true
-        site_name: PlainLicense (en)
+      docs_structure: folder
+      reconfigure_material: true
+      reconfigure_search: true
+      languages:
+        - locale: en
+          default: true
+          name: English
+          build: true
+          site_name: PlainLicense (en)
   - offline
   - search:
       separator: '[\s\-,:!=\[\]()"/]+|(?!\b)(?=[A-Z][a-z])|\.(?!\d)|&[lg]t;'
   - social:
       cards_layout_options:
-        font_family: "Raleway"
+        font_family: Raleway
   - tags
   - git-revision-date-localized:
       enable_creation_date: true
@@ -102,6 +102,7 @@ markdown_extensions:
   - pymdownx.critic
   - pymdownx.caret
   - pymdownx.keys
+  - pymdownx.smartsymbols
   - pymdownx.mark
   - pymdownx.tilde
   - pymdownx.tabbed:
