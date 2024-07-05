@@ -5,7 +5,7 @@ repo_name: PlainLicense
 edit_uri: edit/dev/docs/default-monochrome.svg
 theme:
   name: material
-  logo: assets.logo/
+  logo: assets/logo/vector/default-monochrome.svg
   font:
     text: Noto Sans
     code: Noto Sans Mono
@@ -15,9 +15,9 @@ theme:
     - content.code.select
     - content.code.annotate
     - content.footnotes.tooltips
-  # - navigation.instant
-  # - navigation.instant.prefetch
-  # - navigation.instant.progress
+    # - navigation.instant
+    # - navigation.instant.prefetch
+    # - navigation.instant.progress
     - navigation.tracking
     - navigation.tabs
     - navigation.path
@@ -65,7 +65,6 @@ plugins:
           default: true
           name: English
           build: true
-          site_name: PlainLicense (en)
   - offline
   - search:
       separator: '[\s\-,:!=\[\]()"/]+|(?!\b)(?=[A-Z][a-z])|\.(?!\d)|&[lg]t;'
@@ -74,7 +73,7 @@ plugins:
         font_family: Raleway
         background_color: "#1AB5E6"
         color: "#FFFFFF"
-# - tags
+  # - tags
   - git-revision-date-localized:
       enable_creation_date: true
       fallback_to_build_date: true
