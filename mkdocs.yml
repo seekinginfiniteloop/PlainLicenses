@@ -2,9 +2,10 @@ site_name: PlainLicense
 site_url: https://plainlicense.org
 repo_url: https://github.com/seekinginfiniteloop/PlainLicense
 repo_name: PlainLicense
-edit_uri: edit/dev/docs/
+edit_uri: edit/dev/docs/default-monochrome.svg
 theme:
   name: material
+  logo: assets.logo/
   font:
     text: Noto Sans
     code: Noto Sans Mono
@@ -71,7 +72,9 @@ plugins:
   - social:
       cards_layout_options:
         font_family: Raleway
-  - tags
+        background_color: "#1AB5E6"
+        color: "#FFFFFF"
+# - tags
   - git-revision-date-localized:
       enable_creation_date: true
       fallback_to_build_date: true

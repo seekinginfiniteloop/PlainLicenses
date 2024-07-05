@@ -1,0 +1,15 @@
+font name: SpaceText-Bold
+font link: https://github.com/floriankarsten/space-text
+font author: Florian Karsten
+font author site: http://floriankarsten.com/
+
+
+icon designer: Ralf Schmitzer
+icon designer link: /ralfschmitzer
+        
+
+fontColor: {"hex":"#EBC246"}
+bgColor: {"hex":"#1AB5E6"}
+iconColor: {"hex":"#EBC246"}
+
+      
