@@ -40,13 +40,6 @@ theme:
     view: material/eye
 
   palette:
-    # Palette toggle for light mode
-    - media: "(prefers-color-scheme: light)"
-      scheme: default
-      primary: custom
-      toggle:
-        icon: material/weather-night
-        name: Switch to dark mode
 
     # Palette toggle for dark mode
     - media: "(prefers-color-scheme: dark)"
@@ -54,7 +47,14 @@ theme:
       scheme: slate
       toggle:
         icon: material/weather-sunny
-        name: Switch to system preference
+        name: Switch to light mode
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
 
 plugins:
   - blog
