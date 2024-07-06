@@ -73,6 +73,7 @@ plugins:
       fallback_to_build_date: true
       type: date
   - git-authors
+
 markdown_extensions:
   - abbr
   - admonition
@@ -98,7 +99,7 @@ markdown_extensions:
   - pymdownx.smartsymbols
   - pymdownx.snippets:
       auto_append:
-        - includes/abbreviations.md
+        - /../includes/abbreviations.md
   - pymdownx.superfences
   - pymdownx.tilde
   - pymdownx.tabbed:
