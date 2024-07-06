@@ -109,7 +109,7 @@ markdown_extensions:
           percent_encode: true
   - tables
   - toc:
-      toc-depth: 3
+      toc_depth: 3
       permalink_title: An anchor link you can use to share this section
       permalink: true
       slugify: !!python/object/apply:pymdownx.slugs.slugify
