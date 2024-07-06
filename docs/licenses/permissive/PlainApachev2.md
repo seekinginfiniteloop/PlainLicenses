@@ -1,6 +1,8 @@
-# Plain Apache License v2
+---
+draft: true
+---
 
-## THIS IS A PLACEHOLDER; THE LICENSE TEXT IS NOT FINAL
+# Plain Apache License v2
 
 Permission to Use:
 You can use, copy, modify, and distribute this software for free, even for commercial purposes, as long as you follow these rules:

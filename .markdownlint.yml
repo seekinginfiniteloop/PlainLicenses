@@ -2,7 +2,7 @@ default: false
 line-length: false
 
 # MD001/heading-increment : Heading levels should only increment by one level at a time : https://github.com/DavidAnson/markdownlint/blob/v0.33.0/doc/md001.md
-MD001: true
+MD001: false
 
 # MD003/heading-style : Heading style : https://github.com/DavidAnson/markdownlint/blob/v0.33.0/doc/md003.md
 MD003:
@@ -57,7 +57,7 @@ MD024:
   siblings_only: true
 
 # MD025/single-title/single-h1 : Multiple top-level headings in the same document : https://github.com/DavidAnson/markdownlint/blob/v0.33.0/doc/md025.md
-MD025: true
+MD025: false
 
 # MD026/no-trailing-punctuation : Trailing punctuation in heading : https://github.com/DavidAnson/markdownlint/blob/v0.33.0/doc/md026.md
 MD026: true

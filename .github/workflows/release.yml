@@ -3,8 +3,8 @@ name: Release Versioning
 on:
   push:
     paths:
-      - 'docs/en/licenses/*'
-      - 'docs/en/versions/*'
+      - "docs/licenses/*"
+      - "docs/versions/*"
 
 jobs:
   release:
@@ -17,7 +17,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: "22"
 
       - name: Install dependencies
         run: npm install
@@ -33,11 +33,8 @@ jobs:
           FILE_CHANGED=$(git diff --name-only HEAD~1 HEAD)
           VERSION_FILE=""
           for FILE in $FILE_CHANGED; do
-            if [[ $FILE == docs/en/licenses/* ]]; then
-              VERSION_FILE="${FILE/docs/en/licenses/docs/en/versions}"
-              VERSION_FILE="${VERSION_FILE/.md/_version.txt}"
-            elif [[ $FILE == docs/es/licenses/* ]]; then
-              VERSION_FILE="${FILE/docs/es/licenses/docs/es/versions}"
+            if [[ $FILE == docs/licenses/* ]]; then
+              VERSION_FILE="${FILE/docs/licenses/}"
               VERSION_FILE="${VERSION_FILE/.md/_version.txt}"
             fi
           done

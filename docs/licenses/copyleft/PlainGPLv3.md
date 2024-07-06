@@ -1,6 +1,7 @@
+---
+draft: true
+---
 PlainGPL v3 License
-
-## THIS IS A PLACEHOLDER; THE LICENSE TEXT IS NOT FINAL
 
 
 Permission to Use:

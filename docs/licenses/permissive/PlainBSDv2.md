@@ -1,7 +1,8 @@
+---
+draft: true
+---
+
 # Plain Language BSD License v2
-
-## THIS IS A PLACEHOLDER; THE LICENSE TEXT IS NOT FINAL
-
 
 ## Permission to Use
 

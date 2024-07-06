@@ -1,6 +1,7 @@
-# PlainAGPL License
-
-## THIS IS A PLACEHOLDER; THE LICENSE TEXT IS NOT FINAL
+---
+draft: true
+---
+# PlainGPL v2 License
 
 Permission to Use:
 You can use, copy, modify, and distribute this software for free, even for commercial purposes, as long as you follow these rules:
@@ -16,9 +17,6 @@ You can use, copy, modify, and distribute this software for free, even for comme
 
     Same License:
     Any software you distribute that includes this software must also be licensed under this license.
-
-    Network Use:
-    If you run this software as part of a network service, you must make the source code available to all users of the service.
 
 No Warranties:
 The software is provided "as is", without any warranty of any kind. The authors are not responsible for any damages or issues that arise from using the software.
