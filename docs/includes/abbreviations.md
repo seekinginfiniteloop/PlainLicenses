@@ -1,4 +1,4 @@
-*[royalty-free]: 'royalty-free' means you do not have to pay us any fees for using the library.
-*[non-exclusive]: 'Non-exclusive' means we can also use the library and give it to others.
-*[perpetual]: 'Perpetual' means the lasts forever.
-*[irrevocable]: 'Irrevocable' means no one can take the license away from you.
+*[royalty-free]: 'royalty-free' means you never have to pay to use the library.
+*[non-exclusive]: 'Non-exclusive' means everyone else can also use the library.
+*[perpetual]: 'Perpetual' means you can use it forever.
+*[irrevocable]: 'Irrevocable' means no one can take the license away from you. It's yours forever.
