@@ -1,35 +1,35 @@
 ---
 title: The Plain Unlicense
 spdx-id: Unlicense
-hidden: false
 tags:
     - public domain
-    - all permissions
-    - no conditions
-    - no liability
-    - no warranty
+    - no credit
+    - share freely
+    - change freely
     - open source
 
-description: The Unlicense is not a license. Instead, it dedicates your work to the public domain. Some places don't accept public domain dedications, so the Unlicense also provides a backup plan: a completely unrestricted license with no conditions. With the Unlicense, people can use your work however they want without any restrictions and without providing any acknowledging you.
+description: The Unlicense is not a license. It *dedicates* your work to the public domain. Some places don't accept public domain dedications, so the Unlicense also provides a backup plan: a completely unrestricted license with no conditions. With the Unlicense, people can use your work however they want without any restrictions and without giving you any credit.
 
-how: Create a markdown file named `UNLICENSE.md` in the root (main) directory of your source code and copy the Plain Unlicense text into the markdown file.
+disclaimer: Volunteers who care about promoting freedom of understanding write Plain licenses. We carefully craft each Plain license to be simple, easy to understand and defensible. We hope each Plain license clearly communicates its terms. We also believe most judges, like most people, will easily understand the intent or terms of a well-crafted Plain license. However, **we are not lawyers; we do not offer legal advice.** If you need legal advice, talk to a lawyer.
+
+how: Create a markdown file named `UNLICENSE.md` in the root directory (that's the main directory) of your source code and copy the Plain Unlicense text into the markdown file.
 
 category: public-domain
 
 permissions:
   - private-use
   - commercial-use
-  - modifications
-  - distribution
+  - modify
+  - distribute
 
 conditions: []
 
-limitations:
-  - liability
-  - warranty
-
+promises:
+  - no-liability
+  - no-warranty
 ---
-# The Plain Unlicense
+<!-- about_pl: Plain License produces plain language versions of popular copyright licenses (and dedications). We aim to make it easier for people to understand and use licenses. We are not lawyers, and this is not legal advice. If you need legal advice, please consult a lawyer.-->
+# The Plain Unlicense (1) { .annotate }
 
 ### We Dedicate This Software to the Public Domain
 
@@ -50,8 +50,12 @@ Some governments do not recognize public domain dedications. For such cases, we 
 
 ### We do not Provide Any Warranty and We Accept no Liability[^1]
 
-We provide the library "as is." We provide no warranties of any kind, and we are not responsible for any damages or issues from your use of the library. You use the library at your own risk.
+We provide the library as is and provide no warranties of any kind, and we are not responsible for any damages or issues from your use of the library. You use the library at your own risk.
 
 ### For Legal Interpretation
 
-If you are legally interpreting this dedication and are unclear on any part, you should interpret it in a way that makes the library as free as possible. If any issue remains unclear, you should use the official [Unlicense](https://unlicense.org/UNLICENSE) to clarify our dedication.
+If you are legally interpreting this dedication and are unclear on any part, you should interpret it in a way that makes the library as free as possible. If any issue remains unclear, you should use the official [Unlicense][unlicense-link] to clarify our dedication.
+
+[unlicense-link]: https://unlicense.org/UNLICENSE
+1:
+  :thinking_face:  [Unlicense](https://unlicense.org/UNLICENSE).
