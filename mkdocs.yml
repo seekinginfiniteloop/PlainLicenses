@@ -120,31 +120,12 @@ markdown_extensions:
 extra_javascript:
   - https://unpkg.com/tablesort@5.3.0/dist/tablesort.min.js
   - javascripts/tablesort.js
-# - javascripts/feedback.js
 
 extra:
   alternate:
     - name: English
       link: /
       lang: en
-  analytics:
-    property: custom
-    provider: tinyanalytics
-#    feedback:
-#      title: Was this page helpful?
-#      ratings:
-#        - icon: material/emoticon-happy-outline
-#          name: This page was helpful
-#          data: 1
-#          note: >-
-#            Thanks for your feedback!
-#        - icon: material/emoticon-sad-outline
-#          name: This page could be improved
-#          data: 0
-#          note: >-
-#            Thanks for your feedback! Help us improve this page by
-#            filing an issue:
-#            https://github.com/seekinginfiniteloop/PlainLicense/issues/new/?title=[Feedback]+{title}+-+{url}
-# TODO: Add feedback form; need custom logic since tinyanalytics doesn't support it
+
 not_in_nav: |
   /overrides/*
