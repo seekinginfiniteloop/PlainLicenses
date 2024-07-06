@@ -7,14 +7,14 @@ draft: true
 Permission to Use:
 You can use, copy, modify, and distribute this software for free, even for commercial purposes, as long as you follow these rules:
 
-    Provide a Copy of the License:
-    You must include a copy of this license in any distribution of the software.
+Provide a Copy of the License:
+You must include a copy of this license in any distribution of the software.
 
-    State Changes:
-    If you modify the software, you must include a prominent notice stating that you have changed the files.
+State Changes:
+If you modify the software, you must include a prominent notice stating that you have changed the files.
 
-    Include Notices:
-    If the software includes a "NOTICE" file, you must include that file in any distribution.
+Include Notices:
+If the software includes a "NOTICE" file, you must include that file in any distribution.
 
 Contribution:
 Any contributions you make to this software are licensed under the same terms as this license.

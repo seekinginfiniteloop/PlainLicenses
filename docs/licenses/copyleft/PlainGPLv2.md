@@ -6,7 +6,7 @@ draft: true
 Permission to Use:
 You can use, copy, modify, and distribute this software for free, even for commercial purposes, as long as you follow these rules:
 
-    Include the License:
+Include the License:
     You must include a copy of this license in any distribution of the software.
 
     State Changes:

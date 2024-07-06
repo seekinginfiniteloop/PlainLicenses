@@ -48,7 +48,7 @@ limitations:
 
 Some governments do not recognize public domain dedications. For such cases, we give you a license to use the library worldwide. You never have to pay us to use the library. The library is yours to use forever and cannot be taken away. Others can also use the library under the same terms.
 
-### We do not Provide Any Warranty and We Accept no Liability
+### We do not Provide Any Warranty and We Accept no Liability[^1]
 
 We provide the library "as is." We provide no warranties of any kind, and we are not responsible for any damages or issues from your use of the library. You use the library at your own risk.
 
