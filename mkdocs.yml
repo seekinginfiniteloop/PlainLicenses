@@ -8,7 +8,7 @@ site_description: At Plain License, we simplify legal writing to remove the conf
 theme:
   name: material
   logo: images/logo/vector/icon_only.svg
-  favicon: images/logo/vector/favico_bg.svg
+  favicon: images/logo/vector/monochrome_icon.svg
   font:
     text: Noto Sans
     code: Noto Sans Mono
@@ -108,9 +108,7 @@ markdown_extensions:
   - pymdownx.magiclink
   - pymdownx.mark
   - pymdownx.smartsymbols
-  - pymdownx.snippets:
-      auto_append:
-        - /../includes/abbreviations.md
+  - pymdownx.snippets
   - pymdownx.saneheaders
   - pymdownx.superfences
   - pymdownx.tilde

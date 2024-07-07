@@ -28,7 +28,8 @@ promises:
   - no-liability
   - no-warranty
 ---
-=== "reader"
+
+/// tab | reader
 
 # The Plain Unlicense (1) { .annotate }
 
@@ -49,7 +50,7 @@ promises:
 
 Some governments do not recognize public domain dedications. For such cases, we give you a license to use the library worldwide. You never have to pay us to use the library. The library is yours to use forever and cannot be taken away. Others can also use the library under the same terms.
 
-### We do not Provide Any Warranty and We Accept no Liability[^1]
+### We do not Provide Any Warranty and We Accept no Liability (1) { .annotate }
 
 We provide the library as is and provide no warranties of any kind, and we are not responsible for any damages or issues from your use of the library. You use the library at your own risk.
 
@@ -58,10 +59,12 @@ We provide the library as is and provide no warranties of any kind, and we are n
 If you are legally interpreting this dedication and are unclear on any part, you should interpret it in a way that makes the library as free as possible. If any issue remains unclear, you should use the official [Unlicense][unlicense-link] to clarify our dedication.
 
 [unlicense-link]: https://unlicense.org/UNLICENSE
-1:
-  :thinking_face:  [Unlicense](https://unlicense.org/UNLICENSE).
 
-=== "markdown"
+1. [Unlicense](https://unlicense.org/UNLICENSE).
+
+///
+
+/// tab | markdown
 
 ```markdown
 # The Plain Unlicense
@@ -83,12 +86,13 @@ If you are legally interpreting this dedication and are unclear on any part, you
 
 Some governments do not recognize public domain dedications. For such cases, we give you a license to use the library worldwide. You never have to pay us to use the library. The library is yours to use forever and cannot be taken away. Others can also use the library under the same terms.
 
-### We do not Provide Any Warranty and We Accept no Liability[^1]
+### We do not Provide Any Warranty and We Accept no Liability
 
 We provide the library as is and provide no warranties of any kind, and we are not responsible for any damages or issues from your use of the library. You use the library at your own risk.
 
 ### For Legal Interpretation
 
 If you are legally interpreting this dedication and are unclear on any part, we ask you interpret in a way that makes the library as free as possible. If any issue remains unclear, you should use the official [Unlicense][unlicense-link] to clarify our dedication.
-
 ```
+
+///
