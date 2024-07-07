@@ -78,12 +78,13 @@ markdown_extensions:
   - abbr
   - attr_list
   - footnotes
+  - meta
   - md_in_html
   - pymdownx.blocks.admonition
   - pymdownx.blocks.definition
   - pymdownx.blocks.details
   - pymdownx.blocks.html
-  - pymdownx.blocks.tabs:
+  - pymdownx.blocks.tab:
       alternate_style: true
       slugify: !!python/object/apply:pymdownx.slugs.slugify
         kwds:
@@ -113,6 +114,7 @@ markdown_extensions:
   - pymdownx.saneheaders
   - pymdownx.superfences
   - pymdownx.tilde
+  - sane_lists
   - tables
   - toc:
       toc_depth: 3

@@ -47,9 +47,9 @@ jobs:
             mkdocs-material-
       - name: Install dependencies
         run: |
+          export PYTHONPATH=$PYTHONPATH:custom_extensions
           pip install --upgrade pip
-          pip install --upgrade markdown pymdown-extensions mkdocs-material[imaging] mkdocs-static-i18n[material] mkdocs-git-revision-date-localized-plugin mkdocs-git-authors-plugin mkdocs-rss-plugin mkdocs[i18n] pygments
-          python -c "import pymdownx; print(f'PyMdown Extensions version: {pymdownx.__version__}; \n blocks: {dir(pymdownx.blocks)}')"
+          pip install markdown pymdown-extensions mkdocs-material[imaging] mkdocs-static-i18n[material] mkdocs-git-revision-date-localized-plugin mkdocs-git-authors-plugin mkdocs-rss-plugin mkdocs[i18n] pygments
       - name: Build and deploy
         id: deployment
         run: mkdocs gh-deploy --force
