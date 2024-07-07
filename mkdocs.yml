@@ -76,11 +76,20 @@ plugins:
 
 markdown_extensions:
   - abbr
-  - admonition
   - attr_list
-  - def_list
   - footnotes
   - md_in_html
+  - pymdownx.blocks.admonition
+  - pymdownx.blocks.definition
+  - pymdownx.blocks.details
+  - pymdownx.blocks.html
+  - pymdownx.blocks.tabs:
+      alternate_style: true
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
+          percent_encode: true
+          combine_header_slug: true
   - pymdownx.emoji:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
@@ -102,12 +111,6 @@ markdown_extensions:
         - /../includes/abbreviations.md
   - pymdownx.superfences
   - pymdownx.tilde
-  - pymdownx.tabbed:
-      alternate_style: true
-      slugify: !!python/object/apply:pymdownx.slugs.slugify
-        kwds:
-          case: lower
-          percent_encode: true
   - tables
   - toc:
       toc_depth: 3
