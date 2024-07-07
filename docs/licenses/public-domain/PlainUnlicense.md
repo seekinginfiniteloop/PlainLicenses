@@ -1,10 +1,10 @@
 title: The Plain Unlicense
 spdx-id: Unlicense
-tags: public domain
-      no credit
-      share freely
-      change freely
-      open source
+tags: "public domain"
+      "no credit"
+      "share freely"
+      "change freely"
+      "open source"
 description: The Unlicense is not a license. It *dedicates* your work to the public domain. Some places don't accept public domain dedications, so the Unlicense also provides a backup plan: a completely unrestricted license with no conditions. With the Unlicense, people can use your work however they want without any restrictions and without giving you any credit.
 disclaimer: We are volunteers who care about promoting freedom of understanding. We carefully craft each Plain license to be simple, easy to understand and defensible. We hope each Plain license clearly communicates its terms. We also believe most judges, like most people, will easily understand the intent of a well-crafted Plain license. However, **we are not lawyers; we do not offer legal advice.** If you need legal advice, talk to a lawyer.
 how: Create a markdown file named `UNLICENSE.md` in the root directory (that's the main directory) of your source code and copy the Plain Unlicense text into the markdown file.
