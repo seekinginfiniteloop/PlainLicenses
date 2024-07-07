@@ -13,12 +13,12 @@ nav:
   - Plain Licenses:
       - licenses/index.md
       - Copyleft Licenses:
-          - copyleft/index.md
+          - licenses/copyleft/index.md
       - Permissive Licenses:
-          - permissive/index.md
+          - licenses/permissive/index.md
       - Public Domain:
-          - public-domain/index.md
-          - Plain Unlicense: public-domain/PlainUnlicense.md
+          - licenses/public-domain/index.md
+          - Plain Unlicense: licenses/public-domain/PlainUnlicense.md
   - Help Us:
       - helping/index.md
       - Coding: helping/code.md
