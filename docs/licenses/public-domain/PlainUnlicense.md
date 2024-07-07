@@ -40,9 +40,9 @@ You can use it freely for any purpose and in any way you want. We give up all of
 
 ### We Give You an Unrestricted License
 
-Some governments do not recognize public domain dedications. For such cases, we give you a license to use the library worldwide. You never have to pay us to use the library. The library is yours to use forever and cannot be taken away. Others can also use the library under the same terms.
+Some governments do not recognize public domain dedications. For such cases, we give you a license to use the library worldwide. You never have to pay to use the library. The library is yours to use forever and cannot be taken away. Others can also use the library under the same terms.
 
-### We do not Provide Any Warranty and We Accept no Liability (1) { .annotate }
+### We Provide No Warranty and We Accept No Liability
 
 We provide the library as is and provide no warranties of any kind, and we are not responsible for any damages or issues from your use of the library. You use the library at your own risk.
 
@@ -74,7 +74,7 @@ If you are legally interpreting this dedication and are unclear on any part, you
 
 ### We Give You an Unrestricted License
 
-Some governments do not recognize public domain dedications. For such cases, we give you a license to use the library worldwide. You never have to pay us to use the library. The library is yours to use forever and cannot be taken away. Others can also use the library under the same terms.
+Some governments do not recognize public domain dedications. For such cases, we give you a license to use the library worldwide. You never have to pay to use the library. The library is yours to use forever and cannot be taken away. Others can also use the library under the same terms.
 
 ### We do not Provide Any Warranty and We Accept no Liability
 
