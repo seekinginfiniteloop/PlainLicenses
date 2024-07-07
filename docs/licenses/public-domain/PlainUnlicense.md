@@ -22,7 +22,7 @@ promises:
 
 /// tab | reader
 
-# The Plain Unlicense (1) { .annotate }
+# The Plain Unlicense
 
 ### We Dedicate This Software to the Public Domain
 
@@ -48,11 +48,9 @@ We provide the library as is and provide no warranties of any kind, and we are n
 
 ### For Legal Interpretation
 
-If you are legally interpreting this dedication and are unclear on any part, you should interpret it in a way that makes the library as free as possible. If any issue remains unclear, you should use the official [Unlicense][unlicense-link] to clarify our dedication.
+If you are legally interpreting this dedication and are unclear on any part, you should interpret the library in a way that makes it as free as possible. If any issue remains unclear, you should use the official [Unlicense][unlicense-link] to clarify our dedication.
 
 [unlicense-link]: https://unlicense.org/UNLICENSE
-
-1. [Unlicense](https://unlicense.org/UNLICENSE).
 
 ///
 
@@ -84,7 +82,7 @@ We provide the library as is and provide no warranties of any kind, and we are n
 
 ### For Legal Interpretation
 
-If you are legally interpreting this dedication and are unclear on any part, we ask you interpret in a way that makes the library as free as possible. If any issue remains unclear, you should use the official [Unlicense][unlicense-link] to clarify our dedication.
+If you are legally interpreting this dedication and are unclear on any part, we ask you interpret the library in a way that makes the it as free as possible. If any issue remains unclear, you should use the official [Unlicense](https://unlicense.org/UNLICENSE) to clarify our dedication.
 ```
 
 ///
