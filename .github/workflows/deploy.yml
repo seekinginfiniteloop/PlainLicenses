@@ -5,8 +5,8 @@ on:
     branches:
       - dev
     paths:
-      - "docs/**/licenses/*"
-      - "docs/**/versions/*"
+      - "docs/licenses/*"
+      - "docs/versions/*"
       - "mkdocs.yml"
       - ".github/workflows/deploy.yml"
   workflow_dispatch:
@@ -46,7 +46,9 @@ jobs:
           restore-keys: |
             mkdocs-material-
       - name: Install dependencies
-        run: pip install mkdocs-material mkdocs-static-i18n[material] mkdocs-git-revision-date-localized-plugin mkdocs-git-authors-plugin mkdocs-material[imaging] pygments mkdocs-rss-plugin mkdocs[i18n] pymdown-extensions
+        run: |
+          pip install --upgrade pip
+          pip install --upgrade markdown pymdown-extensions mkdocs-material[imaging] mkdocs-static-i18n[material] mkdocs-git-revision-date-localized-plugin mkdocs-git-authors-plugin mkdocs-rss-plugin mkdocs[i18n] pygments
       - name: Build and deploy
         id: deployment
         run: mkdocs gh-deploy --force
