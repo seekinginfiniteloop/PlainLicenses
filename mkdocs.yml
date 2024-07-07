@@ -5,8 +5,31 @@ repo_name: PlainLicense
 edit_uri: edit/dev/docs/
 copyright: Plain License and its creators dedicate all original content to the public domain. **No rights reserved.**
 site_description: At Plain License, we simplify legal writing to remove the confusion of "legalese" that blocks innovation and creativity. Our mission is to provide clear, easy-to-understand license terms. We offer plain versions of popular licenses like the MIT License, the Apache License, and the GPL. We also create new, simple licenses that anyone can use.
+nav:
+  - Home: index.md
+  - Our Mission:
+      - our-mission/index.md
+      - FAQ: our-mission/faq.md
+  - Plain Licenses:
+      - licenses/index.md
+      - Copyleft Licenses:
+          - copyleft/index.md
+      - Permissive Licenses:
+          - permissive/index.md
+      - Public Domain:
+          - public-domain/index.md
+          - Plain Unlicense: public-domain/PlainUnlicense.md
+  - Help Us:
+      - helping/index.md
+      - Coding: helping/code.md
+      - Donate: helping/donate.md
+      - Simple Crafting: helping/crafting.md
+      - Legal Review: helping/legal.md
+      - Translate: helping/translate.md
+  - Blog: blog/index.md
 theme:
   name: material
+  custom_dir: overrides
   logo: images/logo/vector/icon_only.svg
   favicon: images/logo/vector/monochrome_icon.svg
   font:
@@ -95,8 +118,10 @@ markdown_extensions:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - pymdownx.highlight:
+      default_lang: markdown
+      guess_lang: true
       line_spans: __span
-      pygments_lang_class: true
+      use_pygments: true
   - pymdownx.betterem
   - pymdownx.critic
   - pymdownx.caret

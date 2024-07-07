@@ -1,21 +1,24 @@
+---
 title: The Plain Unlicense
 spdx-id: Unlicense
-tags: "public domain"
-      "no credit"
-      "share freely"
-      "change freely"
-      "open source"
-description: The Unlicense is not a license. It *dedicates* your work to the public domain. Some places don't accept public domain dedications, so the Unlicense also provides a backup plan: a completely unrestricted license with no conditions. With the Unlicense, people can use your work however they want without any restrictions and without giving you any credit.
-disclaimer: We are volunteers who care about promoting freedom of understanding. We carefully craft each Plain license to be simple, easy to understand and defensible. We hope each Plain license clearly communicates its terms. We also believe most judges, like most people, will easily understand the intent of a well-crafted Plain license. However, **we are not lawyers; we do not offer legal advice.** If you need legal advice, talk to a lawyer.
+tags:
+  - public domain
+  - share freely
+  - change freely
+  - open source
+description: PlainLicense's plain take on the Unlicense, a public domain dedication for making software completely free. We simplify licenses so real people can understand them.
 how: Create a markdown file named `UNLICENSE.md` in the root directory (that's the main directory) of your source code and copy the Plain Unlicense text into the markdown file.
 category: public-domain
-permissions: private-use
-             commercial-use
-             modify
-             distribute
+permissions:
+  - private-use
+  - commercial-use
+  - modify
+  - distribute
 conditions:  none
-promises: no-liability
-          no-warranty
+promises:
+  - no-liability
+  - no-warranty
+---
 
 /// tab | reader
 
@@ -23,7 +26,8 @@ promises: no-liability
 
 ### We Dedicate This Software to the Public Domain
 
-**We dedicate this software and all accompanying documents ("the library") to the public domain.** You can use it freely for any purpose and in any way you want. We give up all of our rights and interest in the library forever, making it public domain.
+**We dedicate this software and all accompanying documents ("the library") to the public domain.**
+You can use it freely for any purpose and in any way you want. We give up all of our rights and interest in the library forever, making it public domain.
 
 **You may**:
 
