@@ -2,34 +2,21 @@
 
 **PlainLicense** is an initiative to rewrite popular software licenses in plain, approachable language. Our goal is to make common licenses easy to understand for an average person with no legal background. We seek to recraft licenses in a way that is accessible, clear, and concise while maintaining the legal integrity and enforceability of the original licenses.
 
-## Excuse the mess; we're just getting started.
+## TODO Before Launch
 
-## Contributing
+1) [ ] Create a template for new licenses
+2) [ ] Work out design kinks
+3) [ ] Permissive color spectrum and value-assignment
+4) [ ] Create a template for new license categories
+5) [ ] Create a template/process for adding languages (docs and licenses)
+6) [ ] Create a hook for auto-generating different license formats (e.g. HTML, PDF, etc.)
+7) [ ] Work out semver automation on a per-license basis
+8) [ ] Base-line license content
+9) [ ] How-to and contributing guides
+10) [ ] Finalize logos/branding
+11) [ ] FAQ
+12) [ ] Maybe a blog post or two to launch with
 
-If you are a human, or if you can sound like a human, you can help make licenses more accessible for everyone! Check out the [Contributing Guidelines](./CONTRIBUTING.md) to get started.
-
-### **Extra help wanted!**
-
-**Attorneys** If you are an attorney, and ideally one familiar with licensing law, we need your help to ensure we keep licenses enforceable while we work to make them easier to understand.
-
-**Translators** If you are fluent in multiple languages, we need your help to translate these licenses into as many languages as possible. Translations should seek to maintain the meaning and intent of the original license while making it accessible to an average person in the language.
-
-### Versioning
-
-We use [Semantic Versioning](https://semver.org/) to manage the versions for each license. Each license is independently versioned, and each license's version is stored in its corresponding `versions` directory. Different language translations are versioned independently. For example, the English version of the PlainMIT License is versioned separately from the Spanish version.
-
-* Because we mirror the original license, we will have separate versions for each *version* of a license. For example, we may have 1.0.0 of the PlainGPLv3 and 0.5.0 of the PlainGPLv2. We will use this 'v#' notation to indicate the version of the original license we are mirroring.
-
-**Major versions (X.0.0)**: We will only increment major versions when legal experts have authoritatively reviewed a license and we are confident in its accuracy. We will only make subsequent major revisions if we learn of a potential enforceability issue and need to make a breaking change.
-
-**Minor versions (0.X.0)**: We will increment minor versions for substantial reviews, restructuring, presentation changes, or significant rewrites. We will also increment minor versions for minor legal clarifications or updates.
-
-**Patch versions (0.0.X)**: We will increment patch versions for minor changes, such as typo fixes, grammar corrections, or minor clarifications and changes in word choice.
-
-
-### CI/CD
-
-We use GitHub Actions for continuous integration and deployment, including spellcheck and typo detection. Accepted pull requests will automatically bump the patch version of the relevant license.
 
 ## **Use at your own risk!**
 

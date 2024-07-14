@@ -3,14 +3,14 @@ site_url: https://plainlicense.org
 repo_url: https://github.com/seekinginfiniteloop/PlainLicense
 repo_name: PlainLicense
 edit_uri: edit/dev/docs/
-copyright: Plain License and its creators dedicate all original content to the public domain. **No rights reserved.**
-site_description: At Plain License, we simplify legal writing to remove the confusion of "legalese" that blocks innovation and creativity. Our mission is to provide clear, easy-to-understand license terms. We offer plain versions of popular licenses like the MIT License, the Apache License, and the GPL. We also create new, simple licenses that anyone can use.
+copyright: Plain License and its creators dedicate all original content to the public domain. No rights reserved.
+site_description: At Plain License, we simplify legal writing to remove the confusion of "legalese" that prevents innovation and creativity. Our mission is to provide clear, easy-to-understand license terms. We offer plain versions of popular licenses like the MIT License, the Apache License, and the GPL. We also create new, simple licenses that anyone can use. Our goal is to make licensing accessible to everyone, regardless of their background, experience, or education.
 nav:
   - Home: index.md
   - Our Mission:
       - our-mission/index.md
       - FAQ: our-mission/faq.md
-  - Plain Licenses:
+  - Licenses:
       - licenses/index.md
       - Copyleft Licenses:
           - licenses/copyleft/index.md
@@ -18,7 +18,7 @@ nav:
           - licenses/permissive/index.md
       - Public Domain:
           - licenses/public-domain/index.md
-          - Plain Unlicense: licenses/public-domain/PlainUnlicense.md
+          - Plain Unlicense: licenses/public-domain/unlicense.md
   - Help Us:
       - helping/index.md
       - Coding: helping/code.md
@@ -30,8 +30,8 @@ nav:
 theme:
   name: material
   custom_dir: docs/overrides
-  logo: images/logo/vector/icon_only.svg
-  favicon: images/logo/vector/monochrome_icon.svg
+  logo: images/named_logo.svg
+  favicon: images/favicon.png
   font:
     text: Noto Sans
     code: Noto Sans Mono
@@ -61,24 +61,28 @@ theme:
     repo: fontawesome/brands/github
     edit: material/pencil
     view: material/eye
-
   palette:
-
-    # Palette toggle for dark mode
+      # Palette toggle for system automatic mode
+    - media: "(prefers-color-scheme)"
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
     - media: "(prefers-color-scheme: dark)"
       primary: custom
+      accent: custom
       scheme: slate
       toggle:
         icon: material/weather-sunny
         name: Switch to light mode
-    # Palette toggle for light mode
     - media: "(prefers-color-scheme: light)"
-      scheme: default
       primary: custom
+      accent: custom
+      scheme: default
       toggle:
-        icon: material/weather-night
-        name: Switch to dark mode
-
+        icon: material/brightness-auto
+        name: Switch to system preference
 plugins:
   - blog
   - offline
@@ -87,7 +91,6 @@ plugins:
   - social:
       cards_layout_options:
         font_family: Raleway
-        background_color: "#1AB5E6"
         color: "#FFFFFF"
   - tags
   - privacy
@@ -96,16 +99,14 @@ plugins:
       fallback_to_build_date: true
       type: date
   - git-authors
-
 markdown_extensions:
   - abbr
+  - admonition
   - attr_list
   - footnotes
   - markdown.extensions.meta
   - md_in_html
-  - pymdownx.blocks.admonition
   - pymdownx.blocks.definition
-  - pymdownx.blocks.details
   - pymdownx.blocks.html
   - pymdownx.blocks.tab:
       alternate_style: true
@@ -123,6 +124,7 @@ markdown_extensions:
       line_spans: __span
       use_pygments: true
   - pymdownx.betterem
+  - pymdownx.details
   - pymdownx.critic
   - pymdownx.caret
   - pymdownx.inlinehilite
@@ -130,8 +132,8 @@ markdown_extensions:
       separator: +
       strict: false
       camel_case: false
-  - pymdownx.magiclink
   - pymdownx.mark
+  - pymdownx.magiclink
   - pymdownx.smartsymbols
   - pymdownx.snippets
   - pymdownx.saneheaders
@@ -147,11 +149,11 @@ markdown_extensions:
         kwds:
           case: "lower"
           percent_encode: true
-
 extra_javascript:
   - https://unpkg.com/tablesort@5.3.0/dist/tablesort.min.js
   - javascripts/tablesort.js
-
+extra_css:
+  - stylesheets/extra.css
 extra:
   alternate:
     - name: English
