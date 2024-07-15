@@ -3,9 +3,11 @@ title: The Plain Unlicense
 spdx-id: Unlicense
 tags:
   - public domain
-  - share freely
-  - change freely
+  - free to share
+  - free to change
   - open source
+hide:
+  - toc
 description: PlainLicense's plain take on the Unlicense, a public domain dedication for making software completely free. We simplify licenses so real people can understand them.
 how: Create a markdown file named `UNLICENSE.md` in the root directory (that's the main directory) of your source code and copy the Plain Unlicense text into the markdown file.
 category: public-domain
@@ -26,8 +28,8 @@ promises:
 
 ### We Dedicate This Software to the Public Domain
 
-**We dedicate this software and all accompanying documents ("the library") to the public domain.**
-You can use it freely for any purpose and in any way you want. We give up all of our rights and interest in the library forever, making it public domain.
+**The author(s) ("we") dedicate this software and all accompanying documents ("the library") to the public domain.**
+You can use it freely for any purpose and in any way you want. We give away all rights and interest in the library to the public domain forever.
 
 **You may**:
 
@@ -40,11 +42,11 @@ You can use it freely for any purpose and in any way you want. We give up all of
 
 ### We Give You an Unrestricted License
 
-Some governments do not recognize public domain dedications. For such cases, we give you a license to use the library worldwide. You never have to pay to use the library. The library is yours to use forever and cannot be taken away. Others can also use the library under the same terms.
+Some governments do not recognize public domain dedications. For such cases, we give you a license to use the library worldwide. You and everyone else can use the library forever and never need to pay to use it. No one can take this license from you.
 
-### We Provide No Warranty and We Accept No Liability
+### We Provide No Warranty and Accept No Liability
 
-We provide the library as is and provide no warranties of any kind, and we are not responsible for any damages or issues from your use of the library. You use the library at your own risk.
+We provide the library "as is" and provide no warranties of any kind. You use the library at your own risk. We are not responsible for any damages or issues from your use of the library.
 
 ### For Legal Interpretation
 
@@ -57,11 +59,13 @@ If you are legally interpreting this dedication and are unclear on any part, you
 /// tab | markdown
 
 ```markdown
+
 # The Plain Unlicense
 
 ### We Dedicate This Software to the Public Domain
 
-**We dedicate this software and all accompanying documents ("the library") to the public domain.** You can use it freely for any purpose and in any way you want. We give up all of our rights and interest in the library forever, making it public domain.
+**The author(s) ("we") dedicate this software and all accompanying documents ("the library") to the public domain.**
+You can use it freely for any purpose and in any way you want. We give away all rights and interest in the library to the public domain forever.
 
 **You may**:
 
@@ -74,15 +78,55 @@ If you are legally interpreting this dedication and are unclear on any part, you
 
 ### We Give You an Unrestricted License
 
-Some governments do not recognize public domain dedications. For such cases, we give you a license to use the library worldwide. You never have to pay to use the library. The library is yours to use forever and cannot be taken away. Others can also use the library under the same terms.
+Some governments do not recognize public domain dedications. For such cases, we give you a license to use the library worldwide. You and everyone else can use the library forever and never need to pay to use it. No one can take this license from you.
 
-### We do not Provide Any Warranty and We Accept no Liability
+### We Provide No Warranty and Accept No Liability
 
-We provide the library as is and provide no warranties of any kind, and we are not responsible for any damages or issues from your use of the library. You use the library at your own risk.
+We provide the library "as is" and provide no warranties of any kind. You use the library at your own risk. We are not responsible for any damages or issues from your use of the library.
 
 ### For Legal Interpretation
 
-If you are legally interpreting this dedication and are unclear on any part, we ask you interpret the library in a way that makes the it as free as possible. If any issue remains unclear, you should use the official [Unlicense](https://unlicense.org/UNLICENSE) to clarify our dedication.
+If you are legally interpreting this dedication and are unclear on any part, you should interpret the library in a way that makes it as free as possible. If any issue remains unclear, you should use the official [Unlicense][unlicense-link] to clarify our dedication.
+
+[unlicense](https://unlicense.org/UNLICENSE)
 ```
 
+///
+
+/// tab | original
+
+# The Unlicense
+
+This is free and unencumbered software released into the public domain.
+
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
+
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+
+For more information, please refer to <http://unlicense.org/>
+
+///
+
+/// admonition | **Warning**: Not Legal Advice
+    type: warning
+We are not lawyers. This is not legal advice. You use this license at your own risk. If you need legal advice, talk to a lawyer.
+
+We are normal people who want to make licenses accessible for everyone. We hope that our plain language helps you and anyone else (including lawyers) understand this license. If you see a mistake or have a suggestion, please let us know.
 ///

@@ -2,22 +2,27 @@
 
 **PlainLicense** is an initiative to rewrite popular software licenses in plain, approachable language. Our goal is to make common licenses easy to understand for an average person with no legal background. We seek to recraft licenses in a way that is accessible, clear, and concise while maintaining the legal integrity and enforceability of the original licenses.
 
-## TODO Before Launch
+## Planned Initial Features for Launch (left to do)
 
-1) [ ] Create a template for new licenses
-2) [ ] Work out design kinks
-3) [ ] Permissive color spectrum and value-assignment
-4) [ ] Create a template for new license categories
-5) [ ] Create a template/process for adding languages (docs and licenses)
-6) [ ] Create a hook for auto-generating different license formats (e.g. HTML, PDF, etc.)
-7) [ ] Work out semver automation on a per-license basis
-8) [ ] Base-line license content
-9) [ ] How-to and contributing guides
-10) [ ] Finalize logos/branding
-11) [ ] FAQ
-12) [ ] Maybe a blog post or two to launch with
+1. [ ] 6-ish plain language licenses
+2. [ ] Basic intro and about pages
+3. [ ] Start of a faq
 
+## Planned Features for Future Releases
+
+1. [ ] More licenses
+2. [ ] Sleeker UI
+3. [ ] More detailed faq
+4. [ ] whiz-bang hero landing page
+5. [ ] Contributing guide for editing/writing or legal input
+6. [ ] Contributing guide for adding new languages
+7. [ ] Develop a standard graphic for simple license comparison
+8. [ ] Templatize new licenses
+9. [ ] Automate license generation with a hook to simplify editing (so we're not editing multiple files for one license)
+10. [ ] Implement per-license semver automation
+11. [ ] Implement a license comparison tool
+12. [ ] Eventually, generate your own license; modular approach with pydantic-like validation
 
 ## **Use at your own risk!**
 
-PlainLicense are provided as-is. Consult with an attorney before using any license for a project (and let us know what they say!). The creator, [https://www.github.com/seekinginfiniteloop/](@seekinginfiniteloop) is not an attorney. He's just a human who wants to make licenses more accessible for everyone.
+Plain License licenses are provided as-is. Consult with an attorney before using any license for a project (and let us know what they say!). The creator, [https://www.github.com/seekinginfiniteloop/](@seekinginfiniteloop) is not an attorney. He's just a human who wants to make licenses more accessible for everyone.

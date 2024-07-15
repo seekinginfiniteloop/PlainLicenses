@@ -1,4 +1,4 @@
-site_name: PlainLicense
+site_name: Plain License
 site_url: https://plainlicense.org
 repo_url: https://github.com/seekinginfiniteloop/PlainLicense
 repo_name: PlainLicense
@@ -30,7 +30,7 @@ nav:
 theme:
   name: material
   custom_dir: docs/overrides
-  logo: images/named_logo.svg
+  logo: images/named_logo.png
   favicon: images/favicon.png
   font:
     text: Noto Sans
@@ -62,7 +62,7 @@ theme:
     edit: material/pencil
     view: material/eye
   palette:
-      # Palette toggle for system automatic mode
+    # Palette toggle for system automatic mode
     - media: "(prefers-color-scheme)"
       primary: custom
       accent: custom
@@ -84,14 +84,32 @@ theme:
         icon: material/brightness-auto
         name: Switch to system preference
 plugins:
-  - blog
+  - blog:
+      blog_dir: blog
+      blog_toc: true
+      post_url_format: "{slug}"
+      post_excerpt_max_categories: 3
+      categories_allowed:
+        - plain writing
+        - announcements
+        - updates
+        - community
+        - how-to
+      draft_if_future_date: true
   - offline
+  - rss:
+      match_path: "blog/posts/.*"
+      date_from_meta:
+        as_creation: date.created
+        as_update: date.updated
   - search:
       separator: '[\s\-,:!=\[\]()"/]+|(?!\b)(?=[A-Z][a-z])|\.(?!\d)|&[lg]t;'
   - social:
       cards_layout_options:
         font_family: Raleway
         color: "#FFFFFF"
+        background_color: "#0d19a3"
+        image: images/logo_only_color_transp.png
   - tags
   - privacy
   - git-revision-date-localized:
@@ -101,12 +119,13 @@ plugins:
   - git-authors
 markdown_extensions:
   - abbr
-  - admonition
   - attr_list
   - footnotes
   - markdown.extensions.meta
   - md_in_html
+  - pymdownx.blocks.admonition
   - pymdownx.blocks.definition
+  - pymdownx.blocks.details
   - pymdownx.blocks.html
   - pymdownx.blocks.tab:
       alternate_style: true
@@ -124,7 +143,6 @@ markdown_extensions:
       line_spans: __span
       use_pygments: true
   - pymdownx.betterem
-  - pymdownx.details
   - pymdownx.critic
   - pymdownx.caret
   - pymdownx.inlinehilite
@@ -162,3 +180,7 @@ extra:
 
 not_in_nav: |
   /overrides/*
+  index*
+
+hooks:
+  - hooks/socialmedia.py
