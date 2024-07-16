@@ -54,7 +54,7 @@ If you are legally interpreting this dedication, you should interpret it in a wa
 
 ///
 
-/// tab | complicated original
+/// tab | original 'legalese'
 
 # The Unlicense
 
@@ -83,11 +83,4 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 
-///
-
-/// details | **Warning**: Not Legal Advice
-    type: warning
-We are not lawyers. This is not legal advice. You use this license at your own risk. If you need legal advice, talk to a lawyer.
-
-We are normal people who want to make licenses accessible for everyone. We hope that our plain language helps you and anyone else (including lawyers) understand this license. If you see a mistake or have a suggestion, please let us know.
 ///
