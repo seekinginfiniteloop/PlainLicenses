@@ -18,7 +18,7 @@
 6. [ ] Contributing guide for adding new languages
 7. [ ] Develop a standard graphic for simple license comparison
 8. [ ] Templatize new licenses
-9. [ ] Automate license generation with a hook to simplify editing (so we're not editing multiple files for one license)
+9. [X] Automate license generation with a hook to simplify editing (so we're not editing multiple files for one license) [turns out this was really simple]
 10. [ ] Implement per-license semver automation
 11. [ ] Implement a license comparison tool
 12. [ ] Eventually, generate your own license; modular approach with pydantic-like validation

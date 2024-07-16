@@ -184,3 +184,4 @@ not_in_nav: |
 
 hooks:
   - hooks/socialmedia.py
+  - hooks/addmarkdowntab.py

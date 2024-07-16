@@ -14,6 +14,6 @@ You should **use a public domain dedication if you**:
 
 ## Available Plain Language Public Domain Dedications
 
-### [The Plain Unlicense](/licenses/public-domain/unlicense)
+### [The Plain Unlicense](unlicense.md)
 
 The Plain Unlicense is currently our only public domain dedication. It is a simple, clear dedication that gives away all rights to a work. All Plain License content uses the Plain Unlicense.
