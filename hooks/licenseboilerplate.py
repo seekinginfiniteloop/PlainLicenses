@@ -7,18 +7,17 @@ from typing import Any
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Changing this will change the warning message inserted at the bottom of all licenses
-
-warning_msg = """/// details | **Warning**: This is not legal advice
-    type: warning
-We are not lawyers. This is not legal advice. You use this license at your own risk. If you need legal advice, talk to a lawyer.
-
-We are normal people who want to make licenses accessible for everyone. We hope that our plain language helps you and anyone else (including lawyers) understand this license. If you see a mistake or have a suggestion, please [submit an issue].
-///\n\n"""
-
 pattern = re.compile(r"/{3}\s*tab\s*\|\s*reader\s*(.*?)\s*/{3}", re.MULTILINE | re.DOTALL)
 legal_pattern = re.compile(r"/{3}\s*tab\s*\|\s*original\s[']legalese[']\s*(.*?)\s*/{3}", re.MULTILINE | re.DOTALL)
 include = re.compile(r"licenses/.+/.*")
+
+def get_warning_msg(url: str) -> str:
+    return f"""/// details | **Warning**: This is not legal advice
+    type: warning
+We are not lawyers. This is not legal advice. You use this license at your own risk. If you need legal advice, talk to a lawyer.
+
+We are normal people who want to make licenses accessible for everyone. We hope that our plain language helps you and anyone else (including lawyers) understand this license. If you see a mistake or have a suggestion, please [submit an issue](https://github.com/seekinginfiniteloop/PlainLicense/issues/new/choose) or [edit it yourself](https://github.com/seekinginfiniteloop/PlainLicense/edit/dev/docs/{url}).
+///\n\n"""
 
 def wrap_text(text: str, width: int = 100) -> str:
     """
@@ -100,13 +99,14 @@ def insert_tabs(markdown: str, match: re.Match[str]) -> str:
 
     return markdown[:end] + "\n\n" + new_tabs + markdown[end:]
 
-def insert_warning(markdown: str, match: re.Match[str]) -> str:
+def insert_warning(markdown: str, match: re.Match[str], warning_msg: str) -> str:
     """
     Inserts a warning message into Markdown text after the tabbed content.
 
     Args:
         markdown (str): The original Markdown text.
         match (re.Match[str]): The regular expression match object.
+        warning_msg (str): The warning message to be inserted.
 
     Returns:
         str: The Markdown text with the warning message inserted.
@@ -137,7 +137,8 @@ def on_page_markdown(markdown: str, **kwargs: dict[str, Any]) -> str:
         logger.debug("No matches found in the markdown.")
 
     if match := legal_pattern.search(markdown):
-        markdown = insert_warning(markdown, match)
+        warning = get_warning_msg(kwargs['page'].url)
+        markdown = insert_warning(markdown, match, warning)
 
     logger.debug("Finished processing markdown.")
     return markdown

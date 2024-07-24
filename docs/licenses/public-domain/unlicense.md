@@ -5,21 +5,13 @@ tags:
   - public domain
   - free to share
   - free to change
+  - free to relicense
   - open source
 hide:
   - toc
 description: The Plain Unlicense -- the Unlicense, but now in plain language for everyone to understand. Real terms for real people.
 how: Create a markdown file named `UNLICENSE.md` in the root directory (that's the main directory) of your source code and copy the Plain Unlicense text into the markdown file.
 category: public-domain
-permissions:
-  - private-use
-  - commercial-use
-  - modify
-  - distribute
-conditions:  none
-promises:
-  - no-liability
-  - no-warranty
 ---
 
 /// tab | reader
@@ -42,7 +34,7 @@ You can use it freely for any purpose and in any way you want. We give away all 
 
 ### We Give You an Unrestricted License
 
-Some governments do not recognize public domain dedications. For such cases, we give you a license to use the library worldwide. You and everyone else can use the library forever and never need to pay to use it. No one can take this license from you.
+Some courts do not recognize public domain dedications. For such cases, we give you a license to use the library worldwide. You and everyone else can use the library forever and never need to pay to use it. No one can take this license from you.
 
 ### We Provide No Warranty and Accept No Liability
 

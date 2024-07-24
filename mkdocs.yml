@@ -58,7 +58,7 @@ theme:
     - toc.follow
   language: en
   icon:
-    repo: fontawesome/brands/github
+    repo: simple/github
     edit: material/pencil
     view: material/eye
   palette:
@@ -120,9 +120,9 @@ plugins:
 markdown_extensions:
   - abbr
   - attr_list
+  - md_in_html
   - footnotes
   - markdown.extensions.meta
-  - md_in_html
   - pymdownx.blocks.admonition
   - pymdownx.blocks.definition
   - pymdownx.blocks.details
@@ -184,4 +184,4 @@ not_in_nav: |
 
 hooks:
   - hooks/socialmedia.py
-  - hooks/addmarkdowntab.py
+  - hooks/licenseboilerplate.py
