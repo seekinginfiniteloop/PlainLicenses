@@ -8,7 +8,8 @@ Some countries don't allow you to give up all rights to a work, so our dedicatio
 
 ## When to Use a Public Domain Dedication
 
-You should **use a public domain dedication if you**:
+You should **use a public domain dedication if**...
+**You**:
 
 1. **Want to give the most freedom.** A public domain dedication gives everyone the most freedom to use your work how they want.
 2. **Don't want anything.** If you don't want any credit or payment for your work, a public domain dedication is the way to go.
@@ -22,4 +23,3 @@ The Plain Unlicense is currently our only public domain dedication. It is a simp
 { .annotate }
 
 1. Some licenses we recraft are not in the public domain and require attribution, so we cannot release these under the Plain Unlicense.
-base

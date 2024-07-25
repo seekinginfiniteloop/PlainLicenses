@@ -9,7 +9,8 @@ nav:
   - Home: index.md
   - Our Mission:
       - our-mission/index.md
-      - FAQ: our-mission/faq.md
+  - FAQ:
+      - faq/index.md
   - Licenses:
       - licenses/index.md
       - Copyleft Licenses:
@@ -19,6 +20,10 @@ nav:
       - Public Domain:
           - licenses/public-domain/index.md
           - Plain Unlicense: licenses/public-domain/unlicense.md
+      - Restrictive Licenses:
+          - licenses/restrictive/index.md
+      - Proprietary Licenses:
+          - licenses/proprietary/index.md
   - Help Us:
       - helping/index.md
       - Coding: helping/code.md
