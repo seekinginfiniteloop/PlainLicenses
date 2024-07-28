@@ -10,7 +10,7 @@ tags:
 hide:
   - toc
 description: The Plain Unlicense -- the Unlicense, but now in plain language for everyone to understand. Real terms for real people.
-how: Create a markdown file named `UNLICENSE.md` in the root directory (that's the main directory) of your source code and copy the Plain Unlicense text into the markdown file.
+how: For software, create a markdown file named `UNLICENSE.md` in the root directory (that's the main directory) of your source code and copy the Plain Unlicense text into the markdown file. For other works, include the Plain Unlicense text with your work, or link to it in a way that makes it clear the Plain Unlicense applies to your work.
 category: public-domain
 ---
 
@@ -18,31 +18,31 @@ category: public-domain
 
 # The Plain Unlicense
 
-### We Dedicate This Software to the Public Domain
+### We Dedicate This Work to the Public Domain
 
-**We, the author(s), dedicate this software and all accompanying documents ("the library") to the public domain.**
-You can use it freely for any purpose and in any way you want. We give away all rights and interest in the library to the public domain forever.
+**We, the creator(s), dedicate this work and all associated original materials ("the work") to the public domain.**
+You can use it freely for any purpose and in any way you want. We give away all rights and interest in the work to the public domain forever.
 
-**You may**:
+### What You Can Do with the Work
 
-- Use the library for anything you want, in whole or in part.
-- Copy, change, publish, distribute, or sell the library.
-- Use the library for any purpose without restrictions.
-- License any work you create with the library however you want.
+- Use the work for anything you want, in whole or in part.
+- Copy, change, publish, distribute, or sell the work.
+- Use the work for any purpose without restrictions.
+- License any work you create with the work however you want.
 
-**You do not need to do anything to use the library.** You do not need to ask for permission, give credit, or pay us. You can use the library without any restrictions.
+**You do not need to do anything to use the work.** You do not need to ask for permission, give credit, or pay us. You can use the work without any restrictions.
 
 ### We Give You an Unrestricted License
 
-Some courts do not recognize public domain dedications. For such cases, we give you a license to use the library worldwide. You and everyone else can use the library forever and never need to pay to use it. No one can take this license from you.
+Some courts do not recognize public domain dedications. For such cases, we give you a license to use and change the work worldwide. You and everyone else can use the work forever and never need to pay to use it. No one can take this license from you.
 
 ### We Provide No Warranty and Accept No Liability
 
-We provide the library "as is" and provide no warranties of any kind. You use the library at your own risk. We are not responsible for any damages or issues from your use of the library.
+We provide the work "as is" and provide no warranties. You use the work at your own risk. We are not responsible for any damages or issues from your use of the work.
 
 ### For Legal Interpretation
 
-If you are legally interpreting this dedication, you should interpret it in a way that makes the library as free as possible. If any issue remains unclear, you should use the official [Unlicense](https://unlicense.org/UNLICENSE) to clarify our dedication.
+If you are legally interpreting this dedication, you should interpret it in a way that makes the work as free as possible. If any issue remains unclear, you should use the official [Unlicense](https://unlicense.org/UNLICENSE) to clarify our dedication.
 
 ///
 

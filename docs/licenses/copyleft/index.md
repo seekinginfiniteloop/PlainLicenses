@@ -1,7 +1,31 @@
-# Coming soon
+---
+title: Plain License Copyleft Licenses
+description: Plain License copyleft licenses are for anyone passionate about keeping their work open source. We provide simple, clear licenses that allows you to do almost anything with a work.
+---
 
-## ... but when?
+# Plain Copyleft Licenses
 
-Our priority right now is to get the core functionality of the platform up and running. We are also prioritizing permissive licenses over restrictive ones because they are in more common use. We will be adding more restrictive licenses in the future, but we don't have a timeline for that yet.
+## What is a Copyleft License?
 
-If you want to contribute to the project, you can help us by adding more restrictive licenses to the platform. We would love to have your help!
+Copyleft licenses are designed to keep open source works open source. **They allow you to do most things with a work, but you have to make your changes available to others.** Copyleft licenses are a great way to share a work while ensuring that it stays open source.
+
+## When to Use a Copyleft License
+
+You should **use a copyleft license if**...
+**You**:
+
+1. **Want to keep your work open source.** Copyleft licenses ensure that your work stays open source, even if others make changes to it.
+2. **Want to encourage others to share their changes.** Copyleft licenses require that anyone who makes changes to your work must share those changes with others.
+3. **Treats everyone fairly.** Copyleft licenses ensure that everyone who uses your work has the same rights and responsibilities.
+
+## Our Copyleft Licenses
+
+/// admonition | Our copyleft licenses
+    type: warning
+
+-   Our copyleft licenses are designed to be simple and easy to understand. We try to capture the intent of the original licenses while making them easier to read, but they are not official versions of the original licenses. Because copyleft licenses can be incompatible with each other, we can't garauntee that our licenses are compatible with the original licenses or that people will recognize them as compatible. If you have questions about how to use our licenses, we recommend you talk to a lawyer. If you choose to use one of our licenses, you use it at your own risk. GNU, the Free Software Foundation, and the Mozilla Foundation have not endorsed our licenses. We are not affiliated with them in any way. We are just people who care about plain language and open source licensing.
+
+-   If your work is for a specific community, you may want to use the original license instead of our version. Our licenses are designed to be general purpose, and may not be suitable for all projects. You could also consider letting that community know about our licenses, so they can decide if they want to accept them.
+///
+
+We created our own copyleft licenses that we hope match the intent of the GPL, AGPL, and MPL.

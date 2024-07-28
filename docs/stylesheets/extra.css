@@ -3,11 +3,12 @@
     --zaffre: rgb(13, 25, 163);
     --emerald: rgb(21, 219, 149);
     --dutch-white: rgb(244, 228, 193);
-    --ecru: rgb(228, 197, 128);
+    --ecru: rgb(228, 197, 129);
     --air-superiority-blue: rgb(108, 166, 193);
 
     /* shades (light to dark) */
-    --alice-blue: rgb(212, 229, 237); /* zaffre */
+    --alice-blue: rgb(212, 229, 237);
+    /* zaffre */
     --columbia-blue: rgb(197, 220, 231);
     --vista-blue: rgb(161, 168, 247);
     --blue-blue: rgb(18, 36, 226);
@@ -16,24 +17,30 @@
     --penn-blue: rgb(5, 9, 56);
     --russian-violet: rgb(22, 19, 63);
 
-    --aquamarine: rgb(106, 241, 194); /* emerald */
+    --aquamarine: rgb(106, 241, 194);
+    /* emerald */
     --shamrock-green: rgb(40, 150, 90);
     --castleton-green: rgb(9, 93, 64);
     --dark-emerald: rgb(5, 56, 38);
     --midnight-green: rgb(2, 58, 60);
 
 
-    --peach-yellow: rgb(234, 208, 154); /* dutch-white */
+    --peach-yellow: rgb(234, 208, 154);
+    /* dutch-white */
 
-    --cafe-noir: rgb(50, 38, 11); /* ecru */
+    --cafe-noir: rgb(50, 38, 11);
+    /* ecru */
     --smoky-black: rgb(33, 26, 7);
 
     /* darks*/
     --oxford-blue: rgb(0, 0, 34);
-    --rich-black: rgb(2, 3, 19); /* darkest zaffre */
-    --night: rgb(6, 12, 14); /* darkest air-superiority-blue */
+    --rich-black: rgb(2, 3, 19);
+    /* darkest zaffre */
+    --night: rgb(6, 12, 14);
+    /* darkest air-superiority-blue */
     --licorice: rgb(33, 2, 3);
-    --gunmetal: rgb(18, 34, 43); /* second darkest air-superiority-blue */
+    --gunmetal: rgb(18, 34, 43);
+    /* second darkest air-superiority-blue */
     --jet: rgb(42, 43, 42);
     --ebony: rgb(75, 80, 67);
     --charcoal: rgb(30, 59, 72);
@@ -98,29 +105,116 @@
 [data-md-color-scheme="slate"] {
     --md-hue: 235.2;
     --md-typeset-a-color: var(--ecru);
+    --md-default-fg-color--light: hsla(var(--md-hue), 15%, 90%, 0.75);
+}
 
-.md-button {
+[data-md-color-scheme="slate"] .md-typeset .md-button {
     color: var(--emerald);
 }
 
+[data-md-color-scheme="slate"] .md-typeset .md-button:hover {
+    color: var(--emerald);
+    background-color: var(--zaffre);
+}
+
+.md-typeset dl p {
+    font-size: 1em;
+    line-height: 1.6em;
+    font-family: Noto Sans, sans-serif;
 }
 
 .md-typeset h1+h2+h3+h4+h5+h6 {
     font-family: Montserrat, Raleway, Poppins, Lato, Noto Sans, Helvetica, Arial, sans-serif;
+    font-size: .85em;
 }
 
-a.md-header__button.md-logo img{
+.md-typeset {
+    font-size: .8rem
+}
+
+.md-typeset p {
+    font-size: 1.1em;
+    line-height: 1.3em;
+}
+
+.md-typeset .md-typeset__table {
+    vertical-align: center;
+    margin-inline-start: 5%;
+    margin-inline-end: 5%;
+    text-align: center;
+}
+
+.md-typeset .md-typeset__table, .md-typeset .md-typeset__table table {
+    text-align: center;
+    --columns: 2;
+}
+
+.md_typeset .md-typeset__table table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+.md-typeset .md-typeset__table th {
+    font-size: 1.4em;
+    font-weight: 600;
+    padding: 1em;
+    text-align: center;
+}
+
+.md-typeset .md-typeset__table td {
+    font-size: 1.2em;
+    padding: 1em;
+    text-align: left;
+}
+
+.admonition.question.rght {
+    display: inline;
+    float: right;
+}
+
+[data-md-color-scheme="default"] {
+
+    .md-typeset h1,
+    .md-typeset h2,
+    .md-typeset h3,
+    .md-typeset h4,
+    .md-typeset h5,
+    .md-typeset h6 {
+        color: hsla(var(--md-hue), 100%, 23%, 1);
+    }
+}
+
+a.md-header__button.md-logo img {
     height: 4rem;
     width: auto;
 }
 
+.md-tabs {
+    height: 6em;
+    text-align: center;
+    display: flex;
+}
+
 .md-tabs__link {
-    font-size: 2em;
+    align-items: stretch;
+    font-size: 2.2em;
     font-weight: 500;
+    margin: .4em 1em;
+
 }
 
 .md-tabs__link:hover {
     color: var(--emerald);
+}
+
+.md-ellipsis {
+    font-size: 1.2em;
+}
+
+.md-nav__title {
+    font-size: 1.2em;
+    font-weight: 500;
+    margin: .5em 0;
 }
 
 :root,
@@ -134,7 +228,6 @@ a.md-header__button.md-logo img{
     --md-default-bg-color--light: rgba(var(--white-adj), .5);
     --md-default-bg-color--lighter: rgba(var(--white-adj), .33);
     --md-default-bg-color--lightest: rgba(var(--white-adj), .07);
-
 
     --md-typeset-color: var(--night);
     --md-typeset-a-color: var(--zaffre);
@@ -162,5 +255,7 @@ a.md-header__button.md-logo img{
     --md-shadow-z2: 0 0.2rem 0.5rem #0000001a, 0 0 0.05rem #00000040;
     --md-shadow-z3: 0 0.2rem 0.5rem #0003, 0 0 0.05rem #00000059;
 
-#md-copyright-make { color: var(--md-footer-fg-color--light)}
+    #md-copyright-make {
+        color: var(--md-footer-fg-color--light)
+    }
 }

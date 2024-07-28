@@ -2,7 +2,7 @@
 title: The Plain {{LICENSE}}
 spdx-id: {{SPDX identifier for the original license, if applicable}}
 tags: # one of:
-  - # types: public domain, permissive, copyleft, restrictive, proprietary
+  - # types: public domain, permissive, copyleft, source-available, proprietary
   - # types: open source, open core, shared source, closed source
   - # types: free to share, restricted sharing, no sharing
   - # types: free to change, must share changes on network, must share changes, must share changes on request, limited changes, no changes
@@ -13,7 +13,7 @@ hide:
   - toc
 description: The Plain {{LICENSE}} -- the {{LICENSE}}, but now in plain language for everyone to understand. Real terms for real people.
 how: {{Description of how to apply the license to your project.}}
-category: # one of: public-domain, permissive, copyleft, restrictive, proprietary
+category: # one of: public-domain, permissive, copyleft, source-available, proprietary
 
 ---
 

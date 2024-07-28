@@ -1,7 +1,34 @@
-# Coming soon
+---
+title: Plain License Permissive Licenses
+description: Plain License permissive licenses give you the most freedom to use a work. We provide simple, clear licenses that allows you to do almost anything with a work.
+---
 
-## ... but when?
+# Plain Permissive Licenses
 
-Our priority right now is to get the core functionality of the platform up and running. We are also prioritizing permissive licenses over restrictive ones because they are in more common use. We will be adding more restrictive licenses in the future, but we don't have a timeline for that yet.
+## What is a Permissive License?
 
-If you want to contribute to the project, you can help us by adding more restrictive licenses to the platform. We would love to have your help!
+Permissive licenses are the most popular licenses for open source software. **They allow you to do almost anything with the work, but you have to give credit to the original creator.** Permissive licenses are the most flexible way to share a work while still getting credit for it.
+
+## When to Use a Permissive License
+
+You should **use a permissive license if**...
+**You**:
+
+1. **Want people to use your work.** Permissive licenses let people use your work in almost any way they want.
+2. **Want credit for your work.** People have to give you credit for your work when they use it.
+3. **Don't care if people make money from your work.** Permissive licenses let people use your work for any purpose, including making money from it.
+
+## Our Permissive Licenses
+
+### [The Plain MIT License](MIT.md)
+
+The MIT license is one of the most popular permissive licenses. It is a simple, clear license that allows you to do almost anything with a work as long as you give credit to the original creator.
+
+### [The Plain Apache (v2) License](Apachev2.md)
+
+The Apache license is another popular permissive license. It is a simple, clear license that allows you to do almost anything with a work as long as you give credit to the original creator. The Apache license is similar to the MIT license, but it has a few extra protections for the original creator:
+
+- **Patent Grant:** The Apache license includes a patent grant that protects the original creator from patent lawsuits.
+- **Contribution Provision:** It includes a contribution provision that clarifies that contributions to the work are covered by the license.
+- **Trademark Provision:** It clarifies that the original creator's trademarks are not covered by the license.
+- **Notice Requirement:** It requires that anyone using the work must include a copy of the license, a notice, and a list of changes made to the work.

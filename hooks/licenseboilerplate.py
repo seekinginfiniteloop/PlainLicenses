@@ -17,6 +17,8 @@ def get_warning_msg(url: str) -> str:
 We are not lawyers. This is not legal advice. You use this license at your own risk. If you need legal advice, talk to a lawyer.
 
 We are normal people who want to make licenses accessible for everyone. We hope that our plain language helps you and anyone else (including lawyers) understand this license. If you see a mistake or have a suggestion, please [submit an issue](https://github.com/seekinginfiniteloop/PlainLicense/issues/new/choose) or [edit it yourself](https://github.com/seekinginfiniteloop/PlainLicense/edit/dev/docs/{url}).
+
+We are not affiliated with the original license authors in any way. Our plain language versions are not official and are not endorsed by the original authors. They may also include slightly different terms, additional information, or have some details removed. If you want to use the license, you should refer to the original license text to make sure you understand all the details.
 ///\n\n"""
 
 def wrap_text(text: str, width: int = 100) -> str:
@@ -62,6 +64,8 @@ def markdown_to_plain(text: str) -> str:
     text = re.sub(r'#+ |(\*\*|\*|`)(.*?)\1', r'\2', text)  # Remove headers, bold, italic, inline code
     text = re.sub(r'\[(.*?)\]\((.*?)\)', r'\1 (\2)', text)  # Handle links
     text = re.sub(r'!\[(.*?)\]\((.*?)\)', r'\1 (\2)', text)  # Handle images
+    re.sub(r"/// details \| (.*?)\n(.*?)\n///", r"\1: \2", text)  # Handle details
+    re.sub(r"/// admonition \| (.*?)\n(.*?)\n///", r"\1: \2", text)  # Handle admonitions
     return text
 
 def insert_tabs(markdown: str, match: re.Match[str]) -> str:
