@@ -15,22 +15,25 @@ nav:
       - licenses/index.md
       - Copyleft Licenses:
           - licenses/copyleft/index.md
+          - MPL 2.0: licenses/copyleft/MPLv2.md
       - Permissive Licenses:
           - licenses/permissive/index.md
+          - MIT: licenses/permissive/MIT.md
       - Public Domain:
           - licenses/public-domain/index.md
           - Unlicense: licenses/public-domain/unlicense.md
       - Source-Available Licenses:
           - licenses/source-available/index.md
+          - Elastic License 2.0: licenses/source-available/ELv2.md
       - Proprietary Licenses:
           - licenses/proprietary/index.md
   - Help Us:
       - helping/index.md
-      - Coding: helping/code.md
-      - Donate: helping/donate.md
-      - Simple Crafting: helping/crafting.md
-      - Legal Review: helping/legal.md
-      - Translate: helping/translate.md
+    # - Coding: helping/code.md
+    # - Donate: helping/donate.md
+    # - Crafting: helping/crafting.md
+    # - Legal Feedback: helping/legal.md
+    # - Translate: helping/translate.md
   - Blog: blog/index.md
 theme:
   name: material

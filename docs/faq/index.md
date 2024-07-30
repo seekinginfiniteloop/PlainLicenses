@@ -7,7 +7,26 @@ description: Plain License frequently asked questions.
 
 ## Why do your licenses look different from the originals?  :material-chat-question-outline:
 
-***We recraft licenses*** to make them easier to understand. We strive to capture the *intent* of the original license, and want to make the *legal meaning* as clear as we can. We prioritize accuracy and clarity. We will add graphics, tables, lists, or other formatting to make the license clearer. We may add or remove parts to improve clarity. We also add an interpretation section, which is our way of making it clear to everyone that the license is a plain language version of the original.
+***We recraft licenses*** to make them easier to understand. We strive to capture the *intent* of the original license, and want to make the *legal meaning* as clear as we can. We prioritize accuracy and clarity. [We make changes to make the license as clear as possible](#is-anything-else-different-about-your-licenses--material-chat-question-outline).
+
+## Is anything else different about your licenses?  :material-chat-question-outline:
+
+**Yes**. We make a few kinds of changes with all our licenses:
+
+-   **Style**. We make consistent style changes to our licenses for clarity and consistency. We use the following conventions:
+
+    | Our Words | Legal Words |
+    |-----------|-------------|
+    | you        | licensee, recipient |
+    | creator, we   | licensor, provider, author, developer, contributor |
+    | the work  | licensed work, software, creation, covered work, library, materials |
+
+    If a license talks about "contributors" as well as 'licensors' (or similar), we use 'contributors' to refer to the people who contribute to the work and "creator" to refer to the person who licenses the work.
+
+-   **Coverage**. We strive to generalize the license to cover all types of works, not just software, which is why we use "the work" instead of "the software" in our licenses. We know that even if you're using a license mostly for software, it will probably cover other types of works too, like documentation or graphics. We can't cover every possible use case, but we try to make our licenses as flexible as possible.
+-   **Formatting**. We use formatting to make the license easier to read. We use headings, lists, tables, bold, italics and other formatting to make the license clearer. We also reorganize the license and may add a summary of the license terms at the beginning of the license to make it easier to understand.
+-   **Interpretation Statement**. We add an interpretation section to our licenses to clarify that the license is based on the original license and to tell anyone looking at it legally they can refer to the original license if they are unclear about the legal meaning of the plain language version.
+-   **Compatibility Statement**. For copyleft licenses, we clarify that our version of the license is compatible with the original license and you can use the original license with the work if you want. We can't guarantee that our license will work with the original license, but we try to make them as compatible as possible.
 
 ## Can I use one of your licenses for my project?  :material-chat-question-outline:
 
@@ -48,3 +67,11 @@ We think our licenses stand out because they're clear and easy to read. We hope 
 **We version our licenses separately from the original licenses.** We do this to make it clear when we've made changes to the license. We want to be transparent about what we've changed, so we version our licenses separately. We also version the name of the license to make it clear it is based on a specific version of the original license. For example, our version of the Apache License 2.0 is called "Plain Apache License (v2)" to make it clear that it is based on the Apache License 2.0. We always use this `(v2)` format to indicate the version of the original license we are using.
 
 Not all of our licenses currently have an independent version. We are working on adding and automating this feature.
+
+## How does your versioning work?  :material-chat-question-outline:
+
+We use something close to [semantic versioning](https://semver.org/), but we don't follow it exactly. We version our licenses [separately from the original licenses](#your-licenses-sometimes-have-a-version-number-and-also-sometimes-have-a-version-in-the-name-eg-plain-apache-license-v2-whats-up-with-that-material-chat-question-outline), and we use the following format: `<major>.<minor>.<patch>`.
+
+- **Major**: We increment to version 1.0 when we are confident the license is accurate and clear, and believe it is legally sound (as far as we can tell). Other major versions will be only if we identify and correct a significant error in the license that could affect its legal meaning or enforcement.
+- **Minor**: We increment minor versions when we make significant changes to the license, such as adding or removing terms, or changing the structure of the license. We also increment the minor version when we make substantial changes to the style or formatting of the license.
+- **Patch**: We increment the patch version when we make minor changes to the license, such as fixing typos, formatting errors, or other minor issues that don't affect the structure or meaning of the license.

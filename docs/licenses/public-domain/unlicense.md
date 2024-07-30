@@ -1,6 +1,8 @@
 ---
 title: The Plain Unlicense
-spdx-id: Unlicense
+spdx_id: Unlicense
+original_license_url: https://unlicense.org/
+license_name: The Unlicense
 tags:
   - public domain
   - free to share
@@ -40,12 +42,7 @@ Some courts do not recognize public domain dedications. For such cases, we give 
 
 We provide the work "as is" and provide no warranties. You use the work at your own risk. We are not responsible for any damages or issues from your use of the work.
 
-### For Legal Interpretation
-
-If you are legally interpreting this dedication, you should interpret it in a way that makes the work as free as possible. If any issue remains unclear, you should use the official [Unlicense](https://unlicense.org/UNLICENSE) to clarify our dedication.
-
 ///
-
 /// tab | original 'legalese'
 
 # The Unlicense
@@ -73,6 +70,6 @@ OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-For more information, please refer to <http://unlicense.org/>
+For more information, please refer to <https://unlicense.org/>
 
 ///

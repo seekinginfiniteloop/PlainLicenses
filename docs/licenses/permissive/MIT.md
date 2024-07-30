@@ -1,7 +1,16 @@
 ---
 title: The Plain MIT License
-spdx-id: MIT
-tags: permissive, open source,free to share, free to change, free to relicense, must attribute, commercial use allowed
+spdx_id: MIT
+original_license_url: https://mit-license.org/
+license_name: MIT License
+tags:
+  - permissive
+  - open source
+  - free to share
+  - free to change
+  - free to relicense
+  - must attribute
+  - commercial use allowed
 hide:
   - toc
 description: The Plain MIT License -- the MIT License, but now in plain language for everyone to understand. Real terms for real people.
@@ -13,22 +22,23 @@ category: permissive
 
 # Plain MIT License
 
-## Use this work freely
+Copyright © 2024 [copyright holders]
 
-**You can use, copy, change, and share this work and all associated materials for free. You can also sell or sublicense it under a different license.** You must meet the conditions in the license.
+## You are Free to Use, Change, and Share This Work
+
+**You can use, copy, change, and share this work and all associated materials for free. You can also sell or license it under different terms.**
 
 ## Conditions
 
-### You Must Include This License and Notice
+### You Must Give Credit
 
-You must include this license if you share this work or use it in your own projects. You must also include this notice in all copies or substantial portions of the work.
+Any copy or version of this work you share with others must include this license and notice.
 
-### Our Provide Our Work As-Is and We Are Not Liable
+### We Provide Our Work As-Is and We Are Not Liable
 
-The copyright holders ("we") provide this work as-is and we offer no warranty. We are not responsible for any damages or claims created from your use of this work.
+We, the copyright holders, provide this work as-is and offer no warranty. We are not responsible for any damages or claims created from your use of this work.
 
 ///
-
 /// tab | original 'legalese'
 
 # The MIT License (MIT)

@@ -11,7 +11,7 @@ include = re.compile(r"blog/[1-9].*|licenses/.+/.*")
 def on_page_markdown(markdown: str, **kwargs) -> str:
     page: Page = kwargs['page']
     config = kwargs['config']
-    if not include.match(page.url):
+    if not include.match(page.url) or 'index' in page.url:
         return markdown
 
     page_url = config.site_url+page.url

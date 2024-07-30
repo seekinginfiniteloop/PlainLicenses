@@ -1,7 +1,16 @@
 ---
 title: The Plain Elastic License (v2)
-spdx-id: Elastic-2.0
-tags: source-available, shared source, free to change, free to share, no relicense, no competing services, must attribute
+spdx_id: Elastic-2.0
+original_license_url: https://www.elastic.co/licensing/elastic-license
+license_name: Elastic License (v2)
+tags:
+  - source-available
+  - shared source
+  - free to change
+  - free to share
+  - no relicense
+  - no competing services
+  - must attribute
 hide:
   - toc
 description: The Plain Elastic License (v2) -- the Elastic License, but now in plainer language for everyone to understand. Real terms for real people.
@@ -13,9 +22,12 @@ category: source-available
 /// details | About this License and Kudos to Elastic
     type: note
 
-We'd like to commend the folks at Elastic for creating a license that's already clear. We've just made it even clearer. We appreciate your efforts to make your license terms understandable and accessible to more people.
+**We commend the folks at Elastic** for creating a license that's already clear. We've just made it clearer. You  worked hard to make your license terms accessible, and we appreciate it. Thanks for leading by example.
 
-While the Elastic License (v2) has not been commonly used by other projects, our research found its terms were somewhat unique. We've created this Plain Elastic License (v2) to help more people understand and use it. We would also point out that the Redis Source Available License (v2) is nearly identical in terms to the Elastic License (v2), but it isn't as well known or plainly written.
+While the Elastic License (v2) has not been commonly used by other projects, our research found its terms were somewhat unique, standing between use-limited copyleft style licenses like the Server Side Public License and delayed open source licenses like the Functional Source License. Instead, the Elastic License more closely resembles a permissive license with restrictions on competition. We've created this Plain Elastic License (v2) to help more people understand and use it.
+
+We identified other nearly identical licenses, including the Redis Source Available License (v2). They weren't as well known or plainly written.
+
 ///
 
 /// tab | reader
@@ -35,16 +47,11 @@ You agree to these terms if you use the work.
 
 ### What You Can Do
 
-The creator gives you permission to:
-
-- **Use** the work
-- **Copy** the work
-- **Share** the work
-- **Change** the work
+The creator gives you permission to: **use**, **copy**, **share**, and **change** the work.
 
 ### What You Can't Do
 
-You can't:
+**You can't**:
 
 - Offer the work or any of its substantial features as a service to others
 - If the work includes a license key or other kind of license control, you can't remove or disable it
@@ -68,7 +75,7 @@ Your rights under this license last until you break these terms. If you fix the 
 
 ### No Warranty, No Liability
 
-The work is provided "as is" with no warranties. The creator is not liable for any damages or problems from your use of the work.
+The creator provides the work "as is" with no warranties, and accepts no liability for any damages or problems from your use of the work.
 
 ### Definitions
 
@@ -79,15 +86,7 @@ The work is provided "as is" with no warranties. The creator is not liable for a
 | your company | The organization you work for and its related organizations |
 | the work | The material provided under this license |
 
-  /// admonition | If You are Legally Interpreting This License...
-      type: note
-
-  - If any part of this license is unenforceable, the rest of the license will still apply. If any part of this license is unclear, you should use the official [Elastic License (v2)](https://www.elastic.co/licensing/elastic-license) to clarify, except for the Legal Actions section ('Governing Law' in the original license). If the Legal Actions section is not enforceable, you should use the original license to clarify.
-
-  ///
-
 ///
-
 /// tab | original 'legalese'
 
 # Elastic License 2.0
