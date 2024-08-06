@@ -1,13 +1,7 @@
-# PlainLicense
-
-**PlainLicense** is an initiative to rewrite popular software licenses in plain, approachable language for better understanding and accessibility. Each license in this collection retains the original legal intent but is expressed in clear and simple terms.
-
-## EXCUSE THE MESS - We are just getting started!
-
-## Contributing
-
-We welcome contributions from the community, especially from legal professionals who can help ensure these licenses maintain their legal enforceability while being easier to understand.
-
-## Disclaimer
-
-These licenses are provided as-is. Please consult with a legal professional before using them in your projects.
+---
+template: home.html
+title: Plain License Home
+description: Plain License is on a mission to provide simple, clear licenses that you and your users can understand. We want to remove the complexity from licensing so people can create without worrying about legal issues.
+hide:
+    - toc
+---

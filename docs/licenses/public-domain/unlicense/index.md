@@ -1,36 +1,61 @@
 ---
-title: The Plain Unlicense
+title: Plain Unlicense
 spdx_id: Unlicense
-original_license_url: https://unlicense.org/
-license_name: The Unlicense
+description: The Plain Unlicense -- the Unlicense, but now in plain language for everyone to understand. Real terms for real people.
+original_name: Unlicense
+original_url: https://unlicense.org/
+original_version: n/a
+category: public-domain
+plain_name: Plain Unlicense
+plain_url: /licenses/public-domain/unlicense/
+plain_version: 0.1.0
+license_description: The Unlicense is a public domain dedication that allows you to do whatever you want with the code. You can use, modify, distribute, and sell the code without any restrictions. You don't need to give credit to the original author or include a license notice, and you can relicense the code under any other license.
+how: Create an UNLICENSE or UNLICENSE.md file in the base of your project. If your project is on Github or another platform that uses markdown, copy the markdown version using the copy icon. Otherwise, use the plaintext version.
 tags:
   - public domain
   - free to share
   - free to change
   - free to relicense
   - open source
+
+permissions:
+  - private-use
+  - commercial-use
+  - modifications
+  - distribution
+
+conditions: []
+
+limitations:
+  - liability
+  - warranty
+
+tags:
+  - can-share
+  - can-change
+  - commercial-OK
 hide:
   - toc
-description: The Plain Unlicense -- the Unlicense, but now in plain language for everyone to understand. Real terms for real people.
-how: For software, create a markdown file named `UNLICENSE.md` in the root directory (that's the main directory) of your source code and copy the Plain Unlicense text into the markdown file. For other works, include the Plain Unlicense text with your work, or link to it in a way that makes it clear the Plain Unlicense applies to your work.
-category: public-domain
 ---
 
-/// tab | reader
+//// tab | reader
 
-# The Plain Unlicense
+# Plain Unlicense
+
+Original Version: n/a
+Plain Version: 0.1.0
 
 ### We Dedicate This Work to the Public Domain
 
-**We, the creator(s), dedicate this work and all associated original materials ("the work") to the public domain.**
+**We, the author(s), dedicate this work ("the work") to the public domain.**
 You can use it freely for any purpose and in any way you want. We give away all rights and interest in the work to the public domain forever.
 
 ### What You Can Do with the Work
 
-- Use the work for anything you want, in whole or in part.
-- Copy, change, publish, distribute, or sell the work.
+- **Use the work for anything** you want, in whole or in part.
+- **Copy, change, publish, distribute, or sell** the work.
 - Use the work for any purpose without restrictions.
-- License any work you create with the work however you want.
+- **License any work you create with the work however you want.**
 
 **You do not need to do anything to use the work.** You do not need to ask for permission, give credit, or pay us. You can use the work without any restrictions.
 
@@ -40,12 +65,13 @@ Some courts do not recognize public domain dedications. For such cases, we give 
 
 ### We Provide No Warranty and Accept No Liability
 
-We provide the work "as is" and provide no warranties. You use the work at your own risk. We are not responsible for any damages or issues from your use of the work.
+**We provide the work "as is" and offer no warranties.** We are not responsible for any damages or issues from your use of the work.
 
-///
-/// tab | original 'legalese'
+////
 
-# The Unlicense
+//// tab | official version
+
+# Unlicense (Public Domain)
 
 This is free and unencumbered software released into the public domain.
 
@@ -70,6 +96,6 @@ OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-For more information, please refer to <https://unlicense.org/>
+For more information, please refer to &lt;<http://unlicense.org/>&gt;
 
-///
+////

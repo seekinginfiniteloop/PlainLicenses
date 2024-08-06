@@ -4,30 +4,30 @@ repo_url: https://github.com/seekinginfiniteloop/PlainLicense
 repo_name: PlainLicense
 edit_uri: edit/dev/docs/
 copyright: Plain License and its creators dedicate all original content to the public domain. No rights reserved.
-site_description: At Plain License, we simplify legal writing to remove the confusion of 'legalese' that prevents innovation and creativity. Our mission is to provide clear, easy-to-understand license terms. We offer plain versions of popular licenses like the MIT License, the Apache License, and the GPL. We also create new, simple licenses that anyone can use. Our goal is to make licensing accessible to everyone, regardless of their background, experience, or education.
+site_description: Plain License simplifies legal writing to remove the confusion of 'legalese' that prevents innovation and creativity. Our mission is to provide clear, easy-to-understand license terms. We offer plain versions of popular licenses like the MIT License, the Mozilla Public License 2.0, and the Unlicense. We also create new, simple licenses that anyone can use. Our goal is to make licensing accessible to everyone, regardless of their background, experience, or education.
 nav:
-  - Home: index.md
-  - Our Mission:
-      - our-mission/index.md
-  - FAQ:
+  - home: index.md
+  - who we are:
+      - who-we-are/index.md
+  - faq:
       - faq/index.md
-  - Our Licenses:
+  - plain licenses:
       - licenses/index.md
-      - Copyleft Licenses:
-          - licenses/copyleft/index.md
-          - MPL 2.0: licenses/copyleft/MPLv2.md
-      - Permissive Licenses:
-          - licenses/permissive/index.md
-          - MIT: licenses/permissive/MIT.md
-      - Public Domain:
+      - public domain:
           - licenses/public-domain/index.md
-          - Unlicense: licenses/public-domain/unlicense.md
-      - Source-Available Licenses:
+          - Unlicense: licenses/public-domain/unlicense/index.md
+      - permissive licenses:
+          - licenses/permissive/index.md
+          - MIT: licenses/permissive/mit/index.md
+      - copyleft licenses:
+          - licenses/copyleft/index.md
+          - MPL: licenses/copyleft/mpl-2.0/index.md
+      - source-available licenses:
           - licenses/source-available/index.md
-          - Elastic License 2.0: licenses/source-available/ELv2.md
-      - Proprietary Licenses:
+          - Elastic License: licenses/source-available/elastic-2.0/index.md
+      - proprietary licenses:
           - licenses/proprietary/index.md
-  - Help Us:
+  - help us:
       - helping/index.md
     # - Coding: helping/code.md
     # - Donate: helping/donate.md
@@ -128,6 +128,7 @@ plugins:
 markdown_extensions:
   - abbr
   - attr_list
+  - def_list
   - md_in_html
   - footnotes
   - markdown.extensions.meta
@@ -164,7 +165,9 @@ markdown_extensions:
   - pymdownx.mark
   - pymdownx.magiclink
   - pymdownx.smartsymbols
-  - pymdownx.snippets
+  - pymdownx.snippets:
+      auto_append:
+        - includes/abbreviations.md
   - pymdownx.saneheaders
   - pymdownx.superfences
   - pymdownx.tilde
@@ -183,16 +186,14 @@ extra_javascript:
   - javascripts/tablesort.js
 extra_css:
   - stylesheets/extra.css
-extra:
-  alternate:
-    - name: English
-      link: /
-      lang: en
-
+watch:
+  - includes
 not_in_nav: |
   /overrides/*
   index*
 
 hooks:
   - hooks/socialmedia.py
-  - hooks/licenseboilerplate.py
+  - hooks/add_license_boilerplate.py
+  - hooks/add_script.py
+  - hooks/insert_year.py

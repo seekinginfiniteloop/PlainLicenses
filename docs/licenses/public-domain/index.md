@@ -22,9 +22,11 @@ You should **use a public domain dedication if**...
 
 ## Our Public Domain Dedications
 
-### [The Plain Unlicense](unlicense.md)
+### [Plain Unlicense][unlicense]
 
 The Plain Unlicense is currently our only public domain dedication. It is a simple, clear dedication that gives away all your rights to a work. **All Plain License content uses the Plain Unlicense unless otherwise noted.** (1)
 { .annotate }
 
-1. Some licenses we recraft aren't in the public domain and require you give credit to the creator, so we cannot release these under the Plain Unlicense.
+1. Some licenses we recraft aren't in the public domain and require you give credit to the author, so we cannot release these under the Plain Unlicense.
+
+[unlicense]: unlicense/index.md "Plain Unlicense"
