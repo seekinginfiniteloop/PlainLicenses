@@ -60,7 +60,7 @@ If you have code blocks in these sections, use 'plaintext' as the type -->
 # Plain {{LICENSE}}
 
 Original Version: n/a
-Plain Version: 0.1.0
+Plain Version: 0.0.0
 
 {{license_description}}
 

@@ -3,7 +3,7 @@ title: Plain License's Mission
 description: Plain License's mission is to provide simple, clear licenses that you and your users can understand. We want to remove the complexity from licensing so you can focus on what you do best. We want to enable innovation and creativity by making it easy for your users to understand what they can and can't do with your work.
 ---
 
-# We Make Licenses Easy to Understand
+# We Spread Understanding
 
 **Plain License's mission is to provide simple, clear licenses that you and your users can understand.** We want to remove the complexity from licensing so you can focus on what you do best. We want to enable innovation and creativity by making it easy for your users to understand what they can and can't do with your work.
 
@@ -13,14 +13,14 @@ description: Plain License's mission is to provide simple, clear licenses that y
 
 **We think this "understanding gap" is a big problem.** When you aren't sure you understand a license's terms, you'll probably be hesitant to use the work the license covers. Multiply that uncertainty by the number of people who might use your work, and you can see how this problem can slow down innovation and creativity. Legal documents don't have to be hard to understand. We think making them easier to understand can help everyone.
 
-We aren't the first people to try to fix this problem. Many others have made improvements to help people understand licenses. For example, [Creative Commons][cc] does a great job [using graphics and icons][cc-licenses] to help people understand their licenses, but the [licenses themselves are still complex and difficult to understand][cc-by-nc-4.0] (1). Because their licenses are still hard to understand, you have to trust them that the license says what they say it does. The details can also get lost when simplifying a license to an icon or two. Others have made commendable efforts to write shorter licenses, make them more readable, provide summaries, or use plainer language. We think these are all important contributions, but **we believe we can do better**.
+We aren't the first people to try to fix this problem. Many others have made improvements to help people understand licenses. For example, [Creative Commons][cc] does a great job [using graphics and icons][cc-licenses] to help people understand their licenses, but the [licenses themselves are still complex and difficult to understand][cc-by-nc-4.0] (1). Others have made commendable efforts to write shorter licenses, make them more readable, provide summaries, or use plainer language. We think these are all important contributions, but **we believe we can do better**.
 { .annotate }
 
 1. The CC BY-NC 4.0 license has an average readability grade level of 15. This means you need a college education to *maybe* understand it. The average American reads at an 8th-grade level, which is the level we wrote this page at. We want to make licenses that are easy to understand for everyone, not just people with a college education.
 
 ## What we are doing
 
-**We recraft popular licenses of all kinds to make them simpler and clearer.** We take the most popular licenses and rewrite them in plain language. We also remove any unnecessary legal jargon and simplify the structure of the license. This makes it easier for you and your users to understand what the license says.
+**We recraft popular licenses of all kinds to make them simpler and clearer.** We take the most popular licenses and rewrite them in plain language. We also remove any unnecessary legal jargon and simplify the structure of the license. This makes it easier for you and your users to understand what the license says. Our adaptations are complimentary to the original licenses, because they also make it clear that the original license still applies.
 
 ## What we plan to do
 
@@ -28,6 +28,7 @@ We aren't the first people to try to fix this problem. Many others have made imp
 2. **Provide tools to help you choose the right license.** We want to make it easy for you to choose the right license for your work. We will provide tools that help you understand the differences between licenses and choose the one that best fits your needs.
 3. **Educate people about licensing.** We want to help people understand licensing better. We will provide resources that explain the basics of licensing and help people understand how to use licenses for their work.
 4. **Spread the word about plain writing.** We've seen the benefits of plain writing in other areas, and we believe it can help with licensing too. We want to spread the word about plain writing and encourage others to write licenses that are simple and clear.
+5. **Drive innovation on licensing.** We have some big ideas for how to make licensing simpler, clearer, and tailored to different needs. We want to drive innovation in licensing and help people use licenses to share their work in new and exciting ways.
 
 [cc]: https://creativecommons.org "Creative Commons"
 [cc-licenses]: https://creativecommons.org/share-your-work/cclicenses/ "Creative Commons Licenses"

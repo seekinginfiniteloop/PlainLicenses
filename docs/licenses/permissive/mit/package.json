@@ -1,0 +1,12 @@
+{
+  "name": "plain-license-mit",
+  "version": "0.0.0-development",
+  "private": true,
+  "description": "Plain language version of the MIT License",
+  "scripts": {
+    "release": "semantic-release -e ../../../.releaserc.json"
+  },
+  "devDependencies": {
+    "semantic-release": "^24.0.0"
+  }
+}

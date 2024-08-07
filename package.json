@@ -1,0 +1,27 @@
+{
+  "name": "plain-license",
+  "version": "0.0.0-development",
+  "description": "Plain language versions of popular licenses",
+  "main": "index.js",
+  "scripts": {
+    "release": "semantic-release",
+    "generate-changelog": "node generate-changelog.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/seekinginfiniteloop/PlainLicense.git"
+  },
+  "keywords": [
+    "license",
+    "plain language",
+    "legal"
+  ],
+  "author": "Adam Poulemanos",
+  "license": "Plain Unlicense",
+  "dependencies": {},
+  "devDependencies": {
+    "@semantic-release/exec": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "semantic-release": "^24.0.0"
+  }
+}

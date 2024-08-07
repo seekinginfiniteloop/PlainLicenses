@@ -8,7 +8,7 @@ original_version: 2.0
 category: source-available
 plain_name: Plain Elastic License
 plain_url: /licenses/source-available/elastic-2.0/
-plain_version: 0.1.0
+plain_version: 0.0.0
 license_description: The Elastic License 2.0 is a source-available license that allows you to use, copy, distribute, and modify the work. However, you can't offer the work as a service to others. You must keep all copyright notices in the software. The license includes a patent grant, but you lose your rights if you claim the software infringes a patent.
 how: Create a LICENSE or LICENSE.md file in the base of your project. If your project is on Github or another platform that uses markdown, copy the markdown version using the copy icon. Otherwise, use the plaintext version.
 note: n/a
@@ -104,7 +104,7 @@ We identified other licenses with very similar terms to the Elastic License 2.0,
 # Plain Elastic License
 
 Original Version: 2.0
-Plain Version: 0.1.0
+Plain Version: 0.0.0
 
 ### Summary of What You Can Do with This Work
 

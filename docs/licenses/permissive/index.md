@@ -24,7 +24,7 @@ You should **use a permissive license if**...
 
 The MIT license is one of the most popular permissive licenses. It is a simple, clear license that allows you to do almost anything with a work as long as you give credit to the original author.
 <!--
-### [Plain Apache (v2) License](Apachev2.md)
+### [Plain Apache License][apache]
 
 The Apache license is another popular permissive license. It is a simple, clear license that allows you to do almost anything with a work as long as you give credit to the original author. The Apache license is similar to the MIT license, but it has a few extra protections for the original author:
 

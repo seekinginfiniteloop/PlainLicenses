@@ -7,8 +7,8 @@ original_url: https://www.mozilla.org/en-US/MPL/2.0/
 original_version: 2.0
 category: copyleft
 plain_name: Plain MPL
-plain_url: /licenses/copyleft/MPL-2.0/
-plain_version: 0.1.0
+plain_url: /licenses/copyleft/mpl-2.0/
+plain_version: 0.0.0
 license_description: The MPL is a weak copyleft license. It requires you to share your source code when you distribute your software, but only if the files are under the MPL. You can combine MPL software with software under other licenses and distribute the combined work under different terms. The MPL also includes a patent grant from contributors. The license is compatible with the GPL and LGPL, allowing you to relicense your MPL software under those licenses.
 how: Create a LICENSE or LICENSE.md file in the base of your project. If your project is on Github or another platform that uses markdown, copy the markdown version using the copy icon. Otherwise, use the plaintext version. Add Appendix A to the top of each file in your project.
 
@@ -43,7 +43,7 @@ hide:
 # Plain MPL (v2)
 
 Original Version: 2.0
-Plain Version: 0.1.0
+Plain Version: 0.0.0
 
 ## We Give You a License to Use, Change, and Share This Work
 
@@ -113,10 +113,10 @@ If your license ends, all end-user licenses you granted before the end of your l
 
 [Plain License](https://plainlicense.org) maintains this license, which is based on the Mozilla Public License 2.0. You can use any version of this license published by Plain License to distribute the work. If Plain License publishes a new version, you may also distribute the work under the terms of that version.
 
-**This license is a plain language translation of the Mozilla Public License 2.0. You should consider the Plain MPL (v2) to have the same terms as the Mozilla Public License 2.0.** You can also distribute the work under the terms of the [Mozilla Public License 2.0][official] or any later version published by the [Mozilla Foundation][moz].(1) Plain License does not claim that the Mozilla Foundation or anyone else endorses this license or agrees to its compatibility with the Mozilla Public License 2.0.
+**This license is a plain language translation of the Mozilla Public License 2.0. You should consider the Plain MPL to have the same terms as the Mozilla Public License 2.0.** You can also distribute the work under the terms of the [Mozilla Public License 2.0][official] or any later version published by the [Mozilla Foundation][moz].(1) Plain License does not claim that the Mozilla Foundation or anyone else endorses this license or agrees to its compatibility with the Mozilla Public License 2.0.
 { .annotate }
 
-1. **Don't relicense an existing work to Plain MPL (v2) if it is already licensed under the Mozilla Public License 2.0**, unless the [Mozilla Foundation][moz] clarifies that the Plain MPL is compatible with the Mozilla Public License 2.0.
+1. **Don't relicense an existing work to Plain MPL if it is already licensed under the Mozilla Public License 2.0**, unless the [Mozilla Foundation][moz] clarifies that the Plain MPL is compatible with the Mozilla Public License 2.0.
 
 ### You Must Clearly Describe Any Limitations on Your Compliance with this License
 
@@ -139,15 +139,15 @@ If you want to take legal action related to this license, you must use the court
 
 ### How to Provide Notices
 
-If you distribute the work in a way that is not compatible with other licenses, you must include a notice that the work is incompatible (see [Notice B][notice-b]). You must also include a notice that the work is licensed under the Plain MPL (v2) (see [Notice A][notice-a]). **As much as possible, include these notices in the individual parts of the work.** If that's not possible, include them in a LICENSE file.
+If you distribute the work in a way that is not compatible with other licenses, you must include a notice that the work is incompatible (see [Notice B][notice-b]). You must also include a notice that the work is licensed under the Plain MPL (see [Notice A][notice-a]). **As much as possible, include these notices in the individual parts of the work.** If that's not possible, include them in a LICENSE file.
 
 #### Notice A - License Notice
 
-`This work is licensed under the Plain MPL (v2). If you didn't get a copy of the license with this work, you can find it at <https://plainlicense.org/licenses/copyleft/MPLv2.html>.`
+`This work is licensed under the Plain MPL. If you didn't get a copy of the license with this work, you can find it at <https://plainlicense.org/licenses/copyleft/mpl-2.0/>.`
 
 #### Notice B - Incompatible License Notice
 
-`This work is not compatible with other licenses. It is licensed under the Plain MPL (v2) and cannot be distributed in any form under other licenses, except the Mozilla Public License 2.0.`
+`This work is not compatible with other licenses. It is licensed under the Plain MPL and cannot be distributed in any form under other licenses, except the Mozilla Public License 2.0.`
 
 ## Definitions
 

@@ -197,3 +197,4 @@ hooks:
   - hooks/add_license_boilerplate.py
   - hooks/add_script.py
   - hooks/insert_year.py
+  - hooks/update_changelogs.py

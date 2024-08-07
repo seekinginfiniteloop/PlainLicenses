@@ -8,7 +8,7 @@ original_version: n/a
 category: permissive
 plain_name: Plain MIT License
 plain_url: /licenses/permissive/mit/
-plain_version: 0.1.0
+plain_version: 0.0.0
 license_description: The MIT License is a permissive license that allows you to do whatever you want with the code as long as you include the original copyright and license notice in any copy of the software/source.
 how: Create a LICENSE or LICENSE.md file in the base of your project. If your project is on Github or another platform that uses markdown, copy the markdown version using the copy icon. Otherwise, use the plaintext version.
 note: The MIT License is one of the most popular permissive licenses. It is a simple, clear license that allows you to do almost anything with a work as long as you give credit to the original author.
@@ -39,7 +39,7 @@ hide:
 # Plain MIT License
 
 Original Version: n/a
-Plain Version: 0.1.0
+Plain Version: 0.0.0
 
 Copyright © {{year}} [copyright holders]
 

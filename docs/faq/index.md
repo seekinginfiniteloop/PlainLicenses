@@ -25,7 +25,7 @@ hide:
 
     If a license talks about "contributors" as well as 'licensors' (or similar), we use 'contributors' to refer to the people who contribute to the work and "author" to refer to the person who licenses the work. Often, these are the same people but the responsibilities are different.
 
--   **Coverage**. We try to generalize the license to cover all types of works, not just software, which is why we use "the work" instead of "the software" in our licenses. We know that even if you're using a license mostly for software, it will probably cover other types of works too, like documentation or graphics. We can't cover every possible use, but we try to make our licenses flexible.
+-   **Coverage**. We try to generalize the license to cover all types of works, not just software, which is why we use "the work" instead of "the software" in our licenses. We know that even if you're using a license mostly for software, it will probably cover other types of works too, like documentation or graphics. We can't cover every possible use, but we try to make our licenses flexible. Even when an original license uses "software," it can usually be applied to other types of works too, but we make that explicit in our licenses.
 -   **Formatting**. We use formatting to make the license easier to read. We use headings, lists, tables, bold, italics and other formatting to make the license clearer. We also reorganize the license and may add a summary of the license terms at the beginning of the license to make it easier to understand.
 -   **Interpretation Statement**. We add an interpretation section to our licenses to clarify that the license is based on the original license and to tell anyone looking at it for legal reasons they can refer to the original license if they are unclear about the legal meaning of the plain language version.
 -   **Compatibility Statement**. For copyleft licenses, we clarify that our version of the license is compatible with the original license and you can use the original license with the work if you want. We can't guarantee that our license will work with the original license, but we try to make them as compatible as possible.
@@ -70,19 +70,17 @@ Take it from us, **it's hard to write clearly.** Taking complex ideas and making
 
 We think our licenses stand out because they're clear and easy to read. We hope that by making licenses easier to understand, we can help people make better decisions about how to license their work. We can't fix the problem of too many licenses. We can only offer our licenses as an alternative. Maybe one day we'll see a world where all licenses are written in plain language.
 
-## Your licenses sometimes have a version number, and also sometimes have a version in the name (e.g. 'Plain Apache License (v2)). What's up with that? :material-chat-question-outline:
+## Your licenses have an 'original version' and a 'plain version number. What's up with that? :material-chat-question-outline:
 
-**We version our licenses separately from the original licenses.** We do this to make it clear when we've made changes to the license. We want to be transparent about what we've changed, so we version our licenses separately. We also version the name of the license to make it clear it is based on a specific version of the original license. For example, our version of the Apache License 2.0 is called "Plain Apache License (v2)" to make it clear that it is based on the Apache License 2.0. We always use this `(v2)` format to indicate the version of the original license we are using.
-
-Not all of our licenses currently have an independent version. We are working on adding and automating this feature.
+**We version our licenses separately from the original licenses.** We do this to make it clear when we've made changes to the license. We want to be transparent about what we've changed, so we version our licenses separately. We provide the original license version to tell you what version ours is based on, for example, the Apache 2.0 license has an original version of `2.0`.  We version our licenses with a major, minor, and patch version number, for example, `1.0.0`. You can see the version of the original license and the version of our license in the license text immediately below the title.
 
 ## How does your versioning work?  :material-chat-question-outline:
 
 We use something close to [semantic versioning][semantic versioning], but we don't follow it exactly. We version our licenses [separately from the original licenses][how we version], and we use the following format: `<major>.<minor>.<patch>`.
 
-- **Major**: We increment to version 1.0 when we are confident the license is accurate and clear, and believe it is legally sound (as far as we can tell). Other major versions will be only if we identify and correct a significant error in the license that could affect its legal meaning or enforcement.
+- **Major**: We increment to version 1.0 when we are confident the license is accurate and clear, and accurately reflects the legal intent of the original license. We will only increment to other major versions if we find a significant error in the license that requires a major change.
 - **Minor**: We increment minor versions when we make significant changes to the license, such as adding or removing terms, or changing the structure of the license. We also increment the minor version when we make substantial changes to the style or formatting of the license.
-- **Patch**: We increment the patch version when we make minor changes to the license, such as fixing typos, formatting errors, or other minor issues that don't affect the structure or meaning of the license.
+- **Patch**: We increment the patch version when we make minor changes to the license, such as fixing typos or formatting mistakes, changing a word to a simpler synonym, or other minor issues that don't affect the structure or meaning of the license.
 
 [center for plain language]: https://centerforplainlanguage.org/ "Center for Plain Language"
 [five-step guide]: https://centerforplainlanguage.org/learning-training/five-steps-plain-language/ "Center for Plain Language five-step guide"
