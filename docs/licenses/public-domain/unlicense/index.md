@@ -11,12 +11,6 @@ plain_url: /licenses/public-domain/unlicense/
 plain_version: 0.0.0
 license_description: The Unlicense is a public domain dedication that allows you to do whatever you want with the code. You can use, modify, distribute, and sell the code without any restrictions. You don't need to give credit to the original author or include a license notice, and you can relicense the code under any other license.
 how: Create an UNLICENSE or UNLICENSE.md file in the base of your project. If your project is on Github or another platform that uses markdown, copy the markdown version using the copy icon. Otherwise, use the plaintext version.
-tags:
-  - public domain
-  - free to share
-  - free to change
-  - free to relicense
-  - open source
 
 permissions:
   - private-use
@@ -42,8 +36,9 @@ hide:
 
 # Plain Unlicense
 
-Original Version: n/a
 Plain Version: 0.0.0
+
+Original Version: n/a
 
 ### We Dedicate This Work to the Public Domain
 

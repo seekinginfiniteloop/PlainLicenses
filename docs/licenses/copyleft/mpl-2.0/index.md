@@ -40,10 +40,11 @@ hide:
 
 //// tab | reader
 
-# Plain MPL (v2)
+# Plain MPL
+
+Plain Version: 0.0.0
 
 Original Version: 2.0
-Plain Version: 0.0.0
 
 ## We Give You a License to Use, Change, and Share This Work
 
@@ -139,7 +140,7 @@ If you want to take legal action related to this license, you must use the court
 
 ### How to Provide Notices
 
-If you distribute the work in a way that is not compatible with other licenses, you must include a notice that the work is incompatible (see [Notice B][notice-b]). You must also include a notice that the work is licensed under the Plain MPL (see [Notice A][notice-a]). **As much as possible, include these notices in the individual parts of the work.** If that's not possible, include them in a LICENSE file.
+If you distribute the work in a way that is not compatible with other licenses, you must include a notice that the work is incompatible (see [Notice B][#notice-b---incompatible-license-notice]). You must also include a notice that the work is licensed under the Plain MPL (see [Notice A][#notice-a---license-notice]). **As much as possible, include these notices in the individual parts of the work.** If that's not possible, include them in a LICENSE file.
 
 #### Notice A - License Notice
 
@@ -524,7 +525,5 @@ You may add additional accurate notices of copyright ownership.
 
 ////
 
-[notice-a]: #notice-a---license-notice "Notice A - License Notice"
-[notice-b]: #notice-b---incompatible-license-notice "Notice B - Incompatible License Notice"
 [moz]: https://foundation.mozilla.org/ "Mozilla Foundation"
 [official]: https://www.mozilla.org/en-US/MPL/2.0/ "Mozilla Public License 2.0"

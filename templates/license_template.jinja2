@@ -1,0 +1,163 @@
+---
+title: {{ title }}
+description: {{ description }}
+spdx_id: {{ spdx_id }}
+original_name: {{ original_name }}
+original_url: {{ original_url }}
+original_organization: {{ original_organization }}
+original_version: {{ original_version }}
+category: {{ category }}
+plain_name: {{ plain_name }}
+plain_url: {{ plain_url }}
+plain_version: {{ plain_version }}
+license_description: {{ license_description }}
+how: {{ how }}
+note: {{ note }}
+
+{% set tag_mapping = {
+    'distribution': 'can-share',
+    'commercial-use': 'commercial-OK',
+    'modifications': 'can-change',
+    'disclose-source': 'share-source',
+    'revokable': 'can-revoke',
+    'document-changes': 'describe-changes',
+    'include-copyright': 'give-credit',
+    'same-license': 'share-alike',
+    'same-license--file': 'share-alike',
+    'same-license--library': 'share-alike'
+} %}
+
+permissions:
+  {% for permission in permissions %}
+  - {{ permission }}
+  {% endfor %}
+
+conditions:
+  {% for condition in conditions %}
+  - {{ condition }}
+  {% endfor %}
+
+limitations:
+  {% for limitation in limitations %}
+  - {{ limitation }}
+  {% endfor %}
+
+tags:
+{% for tag in generated_tags | unique | sort %}
+ - {{ tag }}
+{% endfor %}
+hide:
+  {% for item in hide %}
+  - {{ item }}
+  {% endfor %}
+---
+
+{{ intro }}
+
+//// tab | reader
+
+{{ reader_license_header }}
+
+{{ reader_license_text }}
+
+/// details | {{ interpretation_title }}
+    type: note
+
+{{  interpretation_text }}
+
+///
+
+/// details | {{ not_official_title }}
+    type: note
+
+{{ not_official_text }}
+
+///
+
+/// details | {{ legal_advice_title }}
+    type: warning
+
+{{ legal_advice_text }}
+
+///
+
+////
+
+//// tab | markdown
+
+```markdown
+
+{{ markdown_license_header }}
+
+{{ markdown_license_text }}
+
+#### {{  interpretation_title }}
+
+{{  interpretation_text }}
+
+```
+
+/// details | {{ not_official_title }}
+    type: note
+
+{{ not_official_text }}
+
+///
+
+/// details | {{ legal_advice_title }}
+    type: warning
+
+{{ legal_advice_text }}
+
+///
+
+////
+
+//// tab | plaintext
+
+```plaintext
+
+{{ plaintext_license_header }}
+
+{{ plaintext_license_text }}
+
+NOTE: {{  interpretation_title }}
+
+{{  interpretation_text }}
+
+```
+
+/// details | {{ not_official_title }}
+    type: note
+
+{{ not_official_text }}
+
+///
+
+/// details | {{ legal_advice_title }}
+    type: warning
+
+{{ legal_advice_text }}
+
+///
+
+////
+
+//// tab | changelog
+
+{{ changelog }}
+
+//// tab | official {{ original_name }}
+
+{{ official_license_text }}
+
+{% if not link_in_original %}
+\n\n
+{{ official_link }}
+{% endif %}
+
+////
+
+{% for link in reference_links %}
+[{{ link.reference_tag }}]: {{ link.link_url }} "{{ link.link_title }}"
+{% endfor %}

@@ -1,66 +1,57 @@
-# Contributing to PlainLicense
-
-We welcome contributions from the community to help make PlainLicense better and more comprehensive.
-Here's how you can get involved:
-
 # Contributing to Plain License
 
 ## Commit Message Format
 
-Please format your commit messages as follows:
+We use a structured commit message format to automatically generate changelogs and determine version increments. Please format your commit messages as follows:
 
 `<type>(<scope>): <description>`
 
 Where `<type>` is one of the following:
 
-### License Changes:
+### Types for Version Increments
 
-#### Major Changes (1.0.0):
+| Type | Minor | Patch | For **Licenses** | For **Everything Else** | Description |
+| ---+ | ---+ | ---+ | ---+ | ---+ | ---+ |
+| `subs` | ✓ | | ✓ | | Substantive changes to licenses |
+| `admin` | | ✓ | ✓ | | Administrative changes to licenses |
+| `feat` | ✓ | | | ✓ | New features |
+| `script` | ✓ | | | ✓ | *Additions* to project scripts |
+| `fix` | | ✓ | | ✓ | Bug fixes |
+| `content` | | ✓ | | ✓ | Site content changes |
 
-- `legal`: Changes affecting legal enforceability
-- `equivalence`: Changes impacting equivalence to the original license
 
-#### Minor Changes (0.0.0):
+### Types that Don't Affect Version Increments
 
-- `rephrase`: Substantial rephrasing of license text
-- `restructure`: Reorganizing sections of the license
-- `add`: Adding new components or clauses
-- `remove`: Removing components or clauses
+| Type | For **Everything Else** | Description |
+| ---+ | ---+ | ---+ |
+| `blog` | ✓ | Blog post updates |
+| `ci` | ✓ | Changes to CI configuration files and to scripts |
+| `refactor` | ✓ | Code refactoring without feature changes |
+| `config` | ✓ | Configuration changes |
+| `build` | ✓ | Changes that affect the build system |
+| `chore` | ✓ | Routine tasks and maintenance |
 
-#### Patch Changes (0.0.1):
+### Using Types
 
-- `typo`: Fixing typos
-- `grammar`: Minor grammatical changes
-- `format`: Changes in formatting or presentation
-- `clarify`: Small changes to improve clarity without changing meaning
+The `<scope>` for licenses should be the SPDX identifier (e.g., MIT, Apache-2.0) of the license you modified. For other changes, use the area of the project affected (use any of: `site`, `build`, `hooks`, `config`, `ci`).
 
-### Non-License Changes:
-
-- `content`: Changes to site content (non-license)
-- `ci`: Changes to CI/CD pipeline
-- `script`: Changes to hook scripts or other project scripts
-- `docs`: Changes to project documentation
-- `config`: Changes to configuration files
-- `style`: Changes that do not affect the meaning (white-space, formatting, etc.)
-- `refactor`: Code change that neither fixes a bug nor adds a feature
-- `perf`: A code change that improves performance
-- `test`: Adding missing tests or correcting existing tests
-- `build`: Changes that affect the build system or external dependencies
-- `chore`: Other changes that don't modify src or test files
-
-The `<scope>` should be:
-
-- For license changes: the name of the license being modified, we use the SPDX name (e.g., MIT, GPL-3.0)
-- For non-license changes: a brief identifier of the affected component (e.g., homepage, ci-workflow, pre-commit)
 
 Examples:
 
-- `legal(MIT): Update liability clause due to recent court decision`
-- `content(homepage): Update project description`
-- `ci(release): Add semantic-release to the workflow`
-- `script(pre-commit): Add changelog generation to pre-commit hook`
+- `subs(MIT): Clarify liability clause`
+- `feat(docs): Add interactive license chooser`
+- `fix(Apache-2.0): Correct typo in patent grant`
+- `blog(weekly): Add new post about license compatibility`
+- `ci(github-actions): Update Node.js version`
+- `script(build): Optimize asset compilation`
 
-For commits affecting multiple components, use multiple commit messages:
+For commits affecting multiple licenses, use multiple commit messages.
 
-- `rephrase(MIT): Clarify termination clause`
-- `content(faq): Add question about license compatibility`
+## Pull Request Process
+
+1. Ensure your code adheres to the project's coding standards.
+2. Update the README.md or documentation with details of changes, if applicable.
+3. Increase the version numbers in any examples files and the README.md to the new version that this Pull Request would represent. The versioning scheme we use is [SemVer](http://semver.org/).
+4. Your Pull Request will be merged once it has been approved by two other developers.
+
+Thank you for your contributions!

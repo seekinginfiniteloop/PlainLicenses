@@ -1,25 +1,14 @@
 import collections
-import re
 import logging
+import re
 import textwrap
 from typing import Any
-from weakref import ref
 
 from mkdocs.plugins import event_priority
 
-# Set up logging
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
-handler = logging.StreamHandler()
-handler.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-handler.setFormatter(formatter)
-logger.addHandler(handler)
+from _logconfig import get_logger
 
-file_handler = logging.FileHandler(f"{__name__}.log")
-file_handler.setLevel(logging.DEBUG)
-file_handler.setFormatter(formatter)
-logger.addHandler(file_handler)
+logger = get_logger(__name__, logging.DEBUG, logging.INFO, logging.DEBUG)
 
 
 reader_pattern = re.compile(
@@ -28,27 +17,33 @@ reader_pattern = re.compile(
 )
 embedded_pattern = re.compile(r"(P<blockstart>/{3}(?!/))\s*?\w+\s*?\|.*?(p<internalblock>/{3}\s*?\w+?\s*?\|\s*?\w*?.*?/{3})(<endblock>/{3}(?!\s*?\w+?|/))", re.MULTILINE | re.DOTALL)
 
-include = re.compile(r"licenses/.+/.*")
+include = re.compile(
+    r"^licenses/(copyleft|proprietary|public-domain|permissive|source-available)/.+?/index\..*$"
+)
 
 def set_metadata_dict(kwargs: dict[str, Any]) -> dict[str, Any]:
-    global metadata_dict
-    metadata_dict = dict(kwargs['page'].meta.items())
-    metadata_dict['page_url'] = kwargs['page'].url
-    return metadata_dict
+    """Sets the metadata dictionary for the current page."""
+    metadata = dict(kwargs['page'].meta.items())
+    metadata['page_url'] = kwargs['page'].url
+    metadata['license_type'] = "dedication" if metadata['category'] == "public-domain" else "license"
+    return metadata
 
 
-def get_unofficial_license_msg(license_name: str, original_license_url: str):
+def get_unofficial_license_msg() -> str:
+    license_name = metadata['original_name']
+    original_url = metadata['original_url']
     return f"""/// details | **This is not the official {license_name}**
     type: note
 
  Plain License is not affiliated with the original {license_name} authors or their organization. **Our plain language versions are not official** and are not endorsed by the original authors. Our licenses may also include different terms or additional information. We try to capture the *legal meaning* of the original license, but we can't guarantee our license provides the same legal protections.
 
-If you want to use the Plain {license_name}, you should refer to the original license text to make sure you understand how it might be different. You can find the official {license_name} [here]({original_license_url}).
+If you want to use the Plain {license_name}, you should refer to the original license text to make sure you understand how it might be different. You can find the official {license_name} [here]({original_url}).
 
 ///\n\n
 """
 
-def get_not_legal_advice_message(url: str) -> str:
+def get_not_legal_advice_message() -> str:
+    url = metadata['page_url']
     return f"""\n/// details | **Warning**: This is not legal advice
     type: warning
 
@@ -58,7 +53,8 @@ We are normal people who want to make licenses accessible for everyone. We hope 
 
 ///\n\n"""
 
-def get_interpretation_msg(url: str, license_type: str, license_name: str, blocks: bool = True) -> str:
+def get_interpretation_msg(blocks: bool = True) -> str:
+    url, license_type, license_name = metadata['page_url'], metadata['license_type'], metadata['original_name']
     if blocks:
         return f"""/// details | **If you are legally interpreting this {license_type}...**\n    type: note\n\nIf any part of this {license_type} is not enforceable, the rest of the {license_type} will still apply. This {license_type} is a plain language adaptation of the {license_name}. If any part of this {license_type} is unclear, you should use the official [{license_name}]({url}) to clarify our intent.\n\n///\n"""
     return f"""\n---\n#### If you are legally interpreting this {license_type}\n\n> If any part of this {license_type} is not enforceable, the rest of the {license_type} will still apply. If any part of this license is unclear, you should use the official\n> [{license_name}]({url}) to clarify our intent.\n---\n"""
@@ -85,6 +81,16 @@ def update_text_with_citations(text: str, search_space: str, citations: list[re.
     return text, local_cites
 
 def handle_annotations(text: str) -> str:
+    """
+    Handles annotations in the text.
+
+    Args:
+        text (str): The text to be processed.
+
+    Returns:
+        str: The text with annotations removed.
+    """
+
     annotation_marker = re.compile(r"\{\s{0,2}\.annotate\s{0,2}\}")
     notations = annotation_marker.finditer(text)
     if not notations:
@@ -137,7 +143,6 @@ def wrap_text(text: str, plaintext: bool = False, width: int = 100) -> str:
             wrapped_lines.append(f"{textwrap.fill(line[2:], width=width-2)}")
         else:
             wrapped_lines.append(textwrap.fill(line, width=width))
-
     return '\n'.join(wrapped_lines)
 
 def get_definitions(text: str) -> tuple[list[tuple[str, str]], int, int] | None:
@@ -240,26 +245,24 @@ def on_page_markdown(markdown: str, **kwargs: dict[str, Any]) -> str:
     Returns:
         str: The processed Markdown text with inserted tabbed content and warning messages.
     """
-    metadata_dict = set_metadata_dict(kwargs)
-    if not include.match(kwargs['page'].url) or 'index' in kwargs['page'].url:
-        logger.debug("URL does not match include pattern. Skipping.")
+
+    if not include.match(kwargs['page'].url):
+        logger.debug(f"URL: {kwargs['page'].url} does not match include pattern. Skipping.")
         return markdown
-    template_url, license_name, license_url = kwargs['page'].url, kwargs['page'].meta['license_name'], kwargs['page'].meta['original_license_url']
-    license_type = "dedication" if kwargs['page'].meta['category'] == "public-domain" else "license"
-    logger.debug(f"template url: {template_url}, license name: {license_name}, license url: {license_url}")
-    interpretation_msg_blk = get_interpretation_msg(license_url, license_type, license_name)
-    interpretation_msg_md = get_interpretation_msg(license_url, license_type, license_name, blocks=False)
-    unofficial_license_msg = get_unofficial_license_msg(license_name, license_url)
-    not_legal_advice_msg = get_not_legal_advice_message(template_url)
+    metadata = set_metadata_dict(kwargs)
+    globals()['metadata'] = metadata
+    interpretation_msg_blk = get_interpretation_msg()
+    interpretation_msg_md = get_interpretation_msg(blocks=False)
+    unofficial_license_msg = get_unofficial_license_msg()
+    not_legal_advice_msg = get_not_legal_advice_message()
 
     if reader_pattern.search(markdown):
         pre_reader_idx = markdown.index("////")
         pre_reader = markdown[:pre_reader_idx]
         end_reader_idx = markdown.index("////", pre_reader_idx + 4)
-        logger.debug(f"Preparing to process markdown for {kwargs['page'].url}.")
+        logger.debug(f"Preparing to process markdown for {metadata['page_url']}.")
         reader_content = markdown[pre_reader_idx:end_reader_idx].replace("////", "").strip()
         reg_md = reader_content.replace("tab | reader", "").strip() + "\n\n" + interpretation_msg_md
-        #logger.debug(f"\nreplaced tab\n..beginning to process annotations")
         reg_md = handle_annotations(reg_md)
         plaintext = reg_md
         if definitions := get_definitions(reg_md):
@@ -268,14 +271,13 @@ def on_page_markdown(markdown: str, **kwargs: dict[str, Any]) -> str:
             plain_definitions = []
             for term, definition in definitions:
                 term, definition = term.strip(), definition.strip()
-                definition_dict[template_url].append((term, definition))
                 new_definitions.append(f"{term}\n: {definition}")
                 plain_definitions.append(f"{term}: {definition}")
             reg_md_defs = reg_md[:start] + "\n\n".join(new_definitions) + "\n\n" + reg_md[end:]
             plaintext = reg_md[:start] + "\n\n".join(plain_definitions) + "\n\n" + reg_md[end:]
             reg_md = reg_md_defs
         #logger.debug(f"\nregular markdown:\n{reg_md}")
-        logger.debug(f"\nfinished processing annotations\n..beginning to wrap text")
+        logger.debug("\nfinished processing annotations\n..beginning to wrap text")
         legal_md = markdown[(end_reader_idx + 4):] + "\n" + unofficial_license_msg + not_legal_advice_msg
         #logger.debug(f"Legal markdown: {legal_md}")
         enhanced_md = reader_content + "\n\n" + interpretation_msg_blk
@@ -289,7 +291,7 @@ def on_page_markdown(markdown: str, **kwargs: dict[str, Any]) -> str:
         #logger.debug(f"Fully assembled markdown: {markdown}")
 
     else:
-        logger.debug(f"No matches found in the markdown for {kwargs['page'].url}.")
+        logger.debug(f"No matches found in the markdown for {metadata['page_url']}.")
 
     logger.debug("Finished processing markdown.")
     return markdown

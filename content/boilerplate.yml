@@ -1,0 +1,49 @@
+# This file contains the boilerplate text that we include with every license.
+# We use it to provide a consistent message across all licenses.
+title: "{{ plain_name }}" # e.g. Plain Apache -- don't include version number
+description: "The {{ plain_name }} -- the {{ original_name }}, but now in plain language for everyone to understand. Real terms for real people."
+plain_version: "{{ plain_version }}"
+plain_url: "/licenses/{{ category|lower }}/{{ spdx_id|lower }}/"
+github_base_url: https://github.com/seekinginfiniteloop/PlainLicense
+year: "{{ year }}"
+
+hide: # list of mkdocs components to hide
+  - toc
+
+official_link: '[{{ original_name }}]({{ original_url }} "Official {{ original_name }}")'
+
+reader_license_header: |
+  # {{ plain_name }}
+
+  Original Version: {{ original_version }} | Plain Version: {{ plain_version }}
+
+markdown_license_header: |
+  # {{ plain_name }}
+
+  Original Version: {{ original_version }} | Plain Version: {{ plain_version }}
+
+plaintext_license_header: |
+  {{ plain_name }}
+
+  Original Version: {{ original_version }} | Plain Version: {{ plain_version }}
+
+intro: |
+
+interpretation_title: "**If you are legally interpreting this {{ license_type }}**"
+
+interpretation_text: |
+  If any part of this {{ license_type }} is not enforceable, the rest of the {{ license_type }} still applies. This {{ license_type }} is a plain language adaptation of the {{ original_name }} to improve readability and accessibility. If any part of this {{ license_type }} is unclear, you should use the official [{{ original_name }}]({{ original_url }}) to clarify our intent.
+
+not_official_title: "**Warning:** This is not the official {{ original_name }}"
+
+not_official_text: |
+  Plain License is not affiliated with the original {{ original_name }} authors or {{ original_organization }}. **Our plain language versions are not official** and are not endorsed by the original authors. Our licenses may also include different terms or additional information. We try to capture the *legal meaning* of the original license, but we can't guarantee our license provides the same legal protections.
+
+  If you want to use the {{ plain_name }}, you should refer to the original license text to make sure you understand how it might be different. You can find the official {{ original_name }} [here]({ original_url }).
+
+legal_advice_title: "**WARNING:** This is Not Legal Advice"
+
+legal_advice_text: |
+  We are not lawyers. This is not legal advice. You use this license at your own risk. If you need legal advice, talk to a lawyer.
+
+  We are normal people who want to make licenses accessible for everyone. We hope that our plain language helps you and anyone else (including lawyers) understand this license. If you see a mistake or have a suggestion, please [submit an issue]({{ github_base_url }}/issues/new/choose) or [edit it yourself]({{ github_base_url }}/edit/main/docs/{{ original_url }}).

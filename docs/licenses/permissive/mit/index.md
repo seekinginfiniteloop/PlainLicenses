@@ -38,10 +38,9 @@ hide:
 
 # Plain MIT License
 
-Original Version: n/a
-Plain Version: 0.0.0
+Original Version: n/a | Plain Version: 0.0.0
 
-Copyright © {{year}} [copyright holders]
+Copyright © {{ year }} [copyright holders]
 
 ## You are Free to Use, Change, and Share This Work
 

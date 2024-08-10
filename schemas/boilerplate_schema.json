@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Boilerplate Schema",
+  "type": "object",
+  "properties": {
+    "title": { "type": "string" },
+    "description": { "type": "string" },
+    "plain_version": { "type": "string" },
+    "plain_url": { "type": "string", "format": "uri" },
+    "license_type": { "type": "string" },
+    "github_base_url": { "type": "string", "format": "uri" },
+    "year": { "type": "string" },
+    "hide": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "official_link": { "type": "string" },
+    "reader_license_header": { "type": "string" },
+    "markdown_license_header": { "type": "string" },
+    "plaintext_license_header": { "type": "string" },
+    "intro": { "type": "string" },
+    "interpretation_title": { "type": "string" },
+    "interpretation_text": { "type": "string" },
+    "not_official_title": { "type": "string" },
+    "not_official_text": { "type": "string" },
+    "legal_advice_title": { "type": "string" },
+    "legal_advice_text": { "type": "string" }
+  },
+  "required": [
+    "title",
+    "description",
+    "plain_version",
+    "plain_url",
+    "license_type",
+    "github_base_url",
+    "year",
+    "hide",
+    "official_link",
+    "reader_license_header",
+    "markdown_license_header",
+    "plaintext_license_header",
+    "intro",
+    "interpretation_title",
+    "interpretation_text",
+    "not_official_title",
+    "not_official_text",
+    "legal_advice_title",
+    "legal_advice_text"
+  ]
+}

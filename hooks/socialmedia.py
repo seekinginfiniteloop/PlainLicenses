@@ -1,5 +1,6 @@
 from textwrap import dedent
 import urllib.parse
+import logging
 import re
 
 from mkdocs.plugins import event_priority
@@ -7,7 +8,7 @@ from mkdocs.structure.pages import Page
 
 x_intent = "https://twitter.com/intent/tweet"
 fb_sharer = "https://www.facebook.com/sharer/sharer.php"
-include = re.compile(r"blog/[1-9].*|licenses/.+/.*")
+include = re.compile(r"blog/[1-9].*|licenses/.+/index.md|licenses/.+/index.md")
 
 @event_priority(-100)
 def on_page_markdown(markdown: str, **kwargs) -> str:
@@ -18,7 +19,7 @@ def on_page_markdown(markdown: str, **kwargs) -> str:
 
     page_url = config.site_url+page.url
     page_title = urllib.parse.quote(page.title+'\n')
-
+    logging.info("Adding social media buttons to %s", page.url)
     return markdown + dedent(f"""
     [Share on :simple-x:]({x_intent}?text={page_title}&url={page_url}){{ .md-button }}
     [Share on :simple-facebook:]({fb_sharer}?u={page_url}){{ .md-button }}

@@ -15,82 +15,86 @@ function getLastTag() {
 
 function getCommitsSince(tag) {
   const command = tag
-    ? `git log ${tag}..HEAD --format="%h|%B"`
-    : `git log --format="%h|%B"`;
+    ? `git log ${tag}..HEAD --format="%h|%s|%b"`
+    : `git log --format="%h|%s|%b"`;
   return execSync(command).toString().trim().split("\n\n").filter(Boolean);
 }
 
 function parseCommit(commitString) {
-  const [hash, ...messageLines] = commitString.split("|");
-  return messageLines
-    .map((line) => {
-      const match = line.match(/^(\w+)\(([^)]+)\):\s*(.+)$/);
-      if (match) {
-        const [, type, scope, description] = match;
-        return { hash, type, scope, description };
-      }
-      return null;
-    })
-    .filter(Boolean);
+  const [hash, subject, body] = commitString.split("|");
+  const match = subject.match(/^(\w+)(?:\(([^)]+)\))?: (.+)$/);
+  if (match) {
+    const [, type, scope, description] = match;
+    return { hash, type, scope, description, body };
+  }
+  return null;
 }
 
 function categorizeChange(type) {
-  if (["legal", "equivalence"].includes(type)) {
-    return "major";
-  }
-  if (["rephrase", "restructure", "add", "remove"].includes(type)) {
+  if (["subs", "feat", "script"].includes(type)) {
     return "minor";
   }
-  if (["typo", "grammar", "format", "clarify"].includes(type)) {
+  if (["admin", "fix", "content"].includes(type)) {
     return "patch";
   }
-  return "non-license";
+  return "other";
 }
 
 function generateChangelog() {
   const lastTag = getLastTag();
-  let projectChangelog = "# Project Changelog\n\n";
+  let projectChangelog = "# Changelog\n\n";
   const licenseChangelogs = {};
-  let nonLicenseChangelog = "## Non-License Changes\n\n";
 
   const commits = getCommitsSince(lastTag);
 
+  const changelogSections = {
+    minor: "## Minor Changes\n\n",
+    patch: "## Patch Changes\n\n",
+    other: "## Other Changes\n\n",
+  };
+
   commits.forEach((commit) => {
-    const parsedCommits = parseCommit(commit);
-    parsedCommits.forEach(({ hash, type, scope, description }) => {
+    const parsedCommit = parseCommit(commit);
+    if (parsedCommit) {
+      const { hash, type, scope, description, body } = parsedCommit;
       const changeCategory = categorizeChange(type);
-      const changeEntry = `- ${type}(${scope}): ${description} (${hash})\n`;
+      const changeEntry = `- ${type}${
+        scope ? `(${scope})` : ""
+      }: ${description} (${hash})\n`;
 
-      if (changeCategory === "non-license") {
-        nonLicenseChangelog += changeEntry;
-      } else {
-        // Add to project changelog
-        if (!projectChangelog.includes(`## ${scope}\n`)) {
-          projectChangelog += `## ${scope}\n\n`;
-        }
-        projectChangelog += changeEntry;
+      changelogSections[changeCategory] += changeEntry;
 
-        // Add to license changelog
+      if (scope && scope.includes("-")) {
+        // Assuming scope includes license name
         if (!licenseChangelogs[scope]) {
-          licenseChangelogs[scope] = `# ${scope} Changelog\n\n`;
-        }
-        if (!licenseChangelogs[scope].includes(`## ${changeCategory}\n`)) {
-          licenseChangelogs[scope] += `## ${changeCategory}\n\n`;
+          licenseChangelogs[scope] = "# Changelog\n\n";
         }
         licenseChangelogs[scope] += changeEntry;
       }
-    });
+
+      if (body.includes("BREAKING CHANGE:")) {
+        const breakingChange = body.split("BREAKING CHANGE:")[1].trim();
+        changelogSections.minor =
+          `## Breaking Changes\n\n- ${breakingChange}\n\n` +
+          changelogSections.minor;
+      }
+    }
   });
 
-  // Add non-license changes to project changelog
-  projectChangelog += nonLicenseChangelog;
+  Object.values(changelogSections).forEach((section) => {
+    if (section.split("\n").length > 2) {
+      // Only add non-empty sections
+      projectChangelog += section + "\n";
+    }
+  });
 
   // Write project changelog
   fs.writeFileSync(projectChangelogPath, projectChangelog);
 
   // Write individual license changelogs
   Object.entries(licenseChangelogs).forEach(([license, changelog]) => {
-    const licenseDir = path.join(licensesDir, license.split("-")[0], license);
+    const [category, name] = license.split("-");
+    const licenseDir = path.join(licensesDir, category, name);
     const licenseChangelogPath = path.join(licenseDir, "CHANGELOG.md");
     fs.writeFileSync(licenseChangelogPath, changelog);
   });

@@ -191,10 +191,9 @@ watch:
 not_in_nav: |
   /overrides/*
   index*
-
 hooks:
   - hooks/socialmedia.py
-  - hooks/add_license_boilerplate.py
+  - hooks/build_licenses.py
   - hooks/add_script.py
   - hooks/insert_year.py
   - hooks/update_changelogs.py

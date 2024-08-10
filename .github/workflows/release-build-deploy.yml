@@ -17,12 +17,19 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 'lts/*'
+          node-version: "lts/*"
       - name: Install dependencies
         run: |
           npm ci
           if [ $? -ne 0 ]; then
             echo "Failed to install dependencies"
+            exit 1
+          fi
+      - name: Install commitlint
+        run: |
+          npm install -g @commitlint/{cli,config-conventional}
+          if [ $? -ne 0 ]; then
+            echo "Failed to install commitlint"
             exit 1
           fi
       - name: Generate changelog
