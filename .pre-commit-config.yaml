@@ -1,0 +1,19 @@
+repos:
+  - repo: https://github.com/DavidAnson/markdownlint-cli2
+    rev: v0.13.0
+    hooks:
+      - id: markdownlint-cli2
+        args: [--config, .markdownlint.yml, --fix]
+        stages: [post-commit]
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+        stages: [post-commit]
+        args: [--markdown-linebreak-ext=md]
+      - id: end-of-file-fixer
+        stages: [post-commit]
+      - id: check-yaml
+        stages: [post-commit]
+      - id: check-added-large-files
+        stages: [post-commit]

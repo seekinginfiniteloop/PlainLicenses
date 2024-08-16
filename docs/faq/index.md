@@ -20,10 +20,10 @@ hide:
     | Our Words | 'Legalese' |
     |-----------|-------------|
     | you        | licensee, recipient |
-    | we, author   | licensor, provider, owner, author, developer, contributor |
+    | we, authors | licensor, provider, owner, author, developer, contributor |
     | the work  | licensed work, software, creation, covered work, library, materials |
 
-    If a license talks about "contributors" as well as 'licensors' (or similar), we use 'contributors' to refer to the people who contribute to the work and "author" to refer to the person who licenses the work. Often, these are the same people but the responsibilities are different.
+    If a license talks about "contributors" as well as 'licensors' (or similar), we use 'contributors' when we talk about the people who contribute to the work and "authors" to talk about the people who license the work. Authors and contributors are often the same people, but the license may treat them differently.
 
 -   **Coverage**. We try to generalize the license to cover all types of works, not just software, which is why we use "the work" instead of "the software" in our licenses. We know that even if you're using a license mostly for software, it will probably cover other types of works too, like documentation or graphics. We can't cover every possible use, but we try to make our licenses flexible. Even when an original license uses "software," it can usually be applied to other types of works too, but we make that explicit in our licenses.
 -   **Formatting**. We use formatting to make the license easier to read. We use headings, lists, tables, bold, italics and other formatting to make the license clearer. We also reorganize the license and may add a summary of the license terms at the beginning of the license to make it easier to understand.
@@ -58,7 +58,7 @@ The [Center for Plain Language][center for plain language] offers resources to h
 
 Many countries also have laws promoting plain language. In the United States, the Plain Writing Act of 2010 requires federal agencies to write "clear Government communication that the public can understand and use." We think that's a good idea for everyone, not just the government. [Plainlanguage.gov][plainlanguage.gov] is a great resource for plain writing.
 
-## I can read well, why should I care about plain language?  :material-chat-question-outline:
+## I understand legal writing, why should I care about plain language?  :material-chat-question-outline:
 
 **Plain language is for everyone.** We have spent our lives reading and writing complex writing, and our schools often reward us for it. But that doesn't mean it's the best way to communicate. Plain language prioritizes understanding first, which is really the point of writing, isn't it? That's important for everyone, not just people who struggle with reading.
 
@@ -66,17 +66,22 @@ Take it from us, **it's hard to write clearly.** Taking complex ideas and making
 
 ## Aren't there enough licenses already? Isn't this just adding to the confusion?  :material-chat-question-outline:
 
-**There are a lot of licenses out there, and that can be confusing.** We think that's a problem, especially when the licenses are hard to understand. For example, GNU's GPL (v3) requires [a very long faq][gpl-faq] just to explain how to use the license.
+**There are a lot of licenses out there, and that can be confusing.** We think that's a problem, especially when the licenses are hard to understand. For example, the Free Software Foundation's GPL 3 requires [a very long faq][gpl-faq] just to explain how to use the license. (1)
+{ .annotate }
 
-We think our licenses stand out because they're clear and easy to read. We hope that by making licenses easier to understand, we can help people make better decisions about how to license their work. We can't fix the problem of too many licenses. We can only offer our licenses as an alternative. Maybe one day we'll see a world where all licenses are written in plain language.
+1. The GPL 3 is a great license, but it's very hard to understand. We applaud the FSF for their work providing clear answers to questions about the license. We think that's a great step in the right direction.
 
-## Your licenses have an 'original version' and a 'plain version number. What's up with that? :material-chat-question-outline:
+We think our licenses stand out because they're clear and easy to read. We hope that by making licenses easier to understand, we can help people make better decisions about how to license their work. We can't fix the problem of too many licenses. We can only offer our licenses to compliment and clarify the licenses people use. Maybe one day we'll see a world where all licenses are written in plain language.
+
+## What's the difference between the version numbers for 'original version' and 'plain version' in your licenses? :material-chat-question-outline:
 
 **We version our licenses separately from the original licenses.** We do this to make it clear when we've made changes to the license. We want to be transparent about what we've changed, so we version our licenses separately. We provide the original license version to tell you what version ours is based on, for example, the Apache 2.0 license has an original version of `2.0`.  We version our licenses with a major, minor, and patch version number, for example, `1.0.0`. You can see the version of the original license and the version of our license in the license text immediately below the title.
 
+On every license page, we provide a link to the changelog for that license. The changelog tells you what we've changed in each version of the license. The link is in the tabs above the license text.
+
 ## How does your versioning work?  :material-chat-question-outline:
 
-We use something close to [semantic versioning][semantic versioning], but we don't follow it exactly. We version our licenses [separately from the original licenses][how we version], and we use the following format: `<major>.<minor>.<patch>`.
+We use something similar to [semantic versioning][semantic versioning], but we don't follow it exactly. Like our licenses, we adapted semantic versioning to make it clear for use with licenses. We version our licenses [separately from the original licenses][separate versioning], and we use the following format: `<major>.<minor>.<patch>`.
 
 - **Major**: We increment to version 1.0 when we are confident the license is accurate and clear, and accurately reflects the legal intent of the original license. We will only increment to other major versions if we find a significant error in the license that requires a major change.
 - **Minor**: We increment minor versions when we make significant changes to the license, such as adding or removing terms, or changing the structure of the license. We also increment the minor version when we make substantial changes to the style or formatting of the license.
@@ -90,5 +95,6 @@ We use something close to [semantic versioning][semantic versioning], but we don
 [plain language standard]: https://www.iso.org/standard/71632.html "ISO standard for plain language"
 [plainlanguage.gov]: https://www.plainlanguage.gov/ "Plainlanguage.gov"
 [semantic versioning]: https://semver.org/ "Semantic Versioning"
+[separate versioning]: #what's-the-difference-between-the-version-numbers-for-original-version-and-plain-version-in-your-licenses "the difference between 'original' and 'plain' version numbers"nal version' and 'plain version' in your licenses?"
 [how we version]: #how-does-your-versioning-work "how we version our licenses"
 [what we change]: #is-anything-else-different-about-your-licenses "how we change the licenses"

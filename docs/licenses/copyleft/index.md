@@ -1,4 +1,5 @@
 ---
+template: license.html
 title: Plain License Copyleft Licenses
 description: Plain License copyleft licenses are for anyone passionate about keeping their work open source. We provide simple, clear licenses that allows you to do almost anything with a work.
 ---
@@ -33,5 +34,5 @@ We designed our copyleft licenses to be simple and easy to understand. We try to
 
 ///
 
-[mpl]: ../mpl-2.0/index.md "Plain MPL License"
+[mpl]: mpl-2.0/index.md "Plain MPL License"
 [source-available]: ../source-available/index.md "Plain License Source-Available Licenses"

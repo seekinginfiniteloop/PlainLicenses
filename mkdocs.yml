@@ -7,11 +7,11 @@ copyright: Plain License and its creators dedicate all original content to the p
 site_description: Plain License simplifies legal writing to remove the confusion of 'legalese' that prevents innovation and creativity. Our mission is to provide clear, easy-to-understand license terms. We offer plain versions of popular licenses like the MIT License, the Mozilla Public License 2.0, and the Unlicense. We also create new, simple licenses that anyone can use. Our goal is to make licensing accessible to everyone, regardless of their background, experience, or education.
 nav:
   - home: index.md
-  - who we are:
-      - who-we-are/index.md
+  - about:
+      - about/index.md
   - faq:
       - faq/index.md
-  - plain licenses:
+  - our licenses:
       - licenses/index.md
       - public domain:
           - licenses/public-domain/index.md
@@ -34,7 +34,7 @@ nav:
     # - Crafting: helping/crafting.md
     # - Legal Feedback: helping/legal.md
     # - Translate: helping/translate.md
-  - Blog: blog/index.md
+  - blog: blog/index.md
 theme:
   name: material
   custom_dir: overrides
@@ -92,6 +92,8 @@ theme:
         icon: material/brightness-auto
         name: Switch to system preference
 plugins:
+  - plugins.content_assembly
+  - plugins.markdown_filter
   - blog:
       blog_dir: blog
       blog_toc: true
@@ -163,7 +165,15 @@ markdown_extensions:
       strict: false
       camel_case: false
   - pymdownx.mark
-  - pymdownx.magiclink
+  - pymdownx.magiclink:
+      hide_protocol: true
+      repo_url_shortener: true
+      social_url_shortener: true
+      repo_url_shorthand:
+      social_url_shorthand: true
+      provider: github
+      user: seekinginfiniteloop
+      repo: PlainLicense
   - pymdownx.smartsymbols
   - pymdownx.snippets:
       auto_append:
@@ -191,9 +201,30 @@ watch:
 not_in_nav: |
   /overrides/*
   index*
+  CHANGELOG*
 hooks:
   - hooks/socialmedia.py
   - hooks/build_licenses.py
-  - hooks/add_script.py
-  - hooks/insert_year.py
   - hooks/update_changelogs.py
+extra:
+  analytics:
+    provider: tinyanalytics
+  boilerplate:
+    # boilerplate for licenses; you don't need to change this
+    # placeholders are replaced when rendering the license from the license frontmatter
+    description: >
+      Plain License: {{ page.plain_name }}. Terms for everyone. The {{ page.original_name }}, but now in plain language for everyone to understand.
+    plain_url: >
+      /licenses/{{ page.category.lower()|trim }}/{{ page.spdx_id.lower()|trim }}/
+    github_base_url: >
+      https://github.com/seekinginfiniteloop/PlainLicense
+    hide: # list of mkdocs components to hide in licenses
+      - toc
+    official_link: >
+      [{{ page.original_name|trim }}]({{ page.original_url|trim }} "Official {{ page.original_name|trim }}")
+    interpretation_title: >
+      **Legally Interpreting the {{ page.plain_name }}**
+    interpretation_text: |
+      The {{ page.plain_name }} is a plain language adaptation of the {{ page.original_name }}. The {{ page.plain_name }} seeks to make the {{ page.original_name }} more accessible and understandable. It also aims to exactly represent the legal intent of the {{ page.original_name }}. **If you feel the {{ page.plain_name }}'s terms are legally unclear, use the official [{{ page.original_name }}]({{ page.original_url }}) to clarify the terms.**
+
+      If a court finds that any part of this {{ page.license_type }} cannot be enforced, the rest of the {{ page.license_type }} will still apply.

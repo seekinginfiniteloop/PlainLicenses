@@ -36,6 +36,11 @@ dist/
 .DS_Store
 *.swp
 
+
+node_modules/
+**/node_modules/
+**/**/node_modules/
+**/**/**/node_modules/
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt

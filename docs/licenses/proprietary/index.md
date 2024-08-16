@@ -1,4 +1,5 @@
 ---
+template: license.html
 title: Coming Soon -- Plain License Proprietary Licenses
 description: Plain License proprietary licenses are for anyone who wants to keep their work closed source. We provide simple, clear licenses that allow you to share a work with others while keeping it private. Coming soon!
 ---

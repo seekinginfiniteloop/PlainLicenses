@@ -3,81 +3,57 @@ title: Plain Licenses
 description: Our plain licenses are easy to understand and use. We divide our licenses into public domain (dedications), permissive, copyleft, source-available, and proprietary.
 ---
 
-# Plain Licenses
+# Our Licenses
 
-Welcome to our plain license hub! We divide our licenses into public domain (dedications), permissive, copyleft, source-available, and proprietary.
+<div class="grid cards" markdown>
 
-| Open Source                                                                  | Non-Free[^1]                                                          |
-| :--------------------------------------------------------------------------- | :-------------------------------------------------------------------- |
-| [public domain][public-domain]{ .md-button }                        | [source-available][source-available]{ .md-button }           |
-| [permissive][permissive]{ .md-button }                              | [proprietary][proprietary]{ .md-button }                     |
-| [copyleft][copyleft]{ .md-button }                                  |                                                                       |
+-   :nounproject-public-domain:{ .lg .middle } __public domain dedications__
 
-[^1]: Some people call these licenses "closed source," but we don't think that's a accurate. The source code is openly available, and you can use it in many cases, but your use comes with restrictions. For example, licenses with restrictions against using a work commercially fall into this category because they don't meet the Open Source Initiative's definition of "open source."
+    ---
 
-/// define
+    The opposite of licenses. When you __dedicate__ your work to the public domain, you give up all rights to it forever. Anyone can do anything with the work. *You can't dedicate your work to the public domain everywhere*, so most public domain dedications come with a backup permissive license.
 
-### [:nounproject-public-domain: public domain dedications][public-domain]
+    __[:octicons-arrow-right-24: make your work public][public-domain]__
 
--   The opposite of licenses. When you dedicate your work to the public domain, you give up all rights to it forever. This means anyone can do anything with the work. However, not all places let you dedicate to the public domain, so we provide a backup permissive license in our public domain dedications. (1)
-{ .annotate }
+-   :nounproject-copyright:{ .lg .middle } __permissive licenses__
 
-    1. It's not just us. Most public domain dedications come with a backup license.
+    ---
 
-///
+    Permissive licenses allow you to do almost anything with the work, but you have to give credit to the original author.(1) They are the most popular licenses for open source software.
+    { .annotate }
 
-/// define
+    1. Some permissive licenses don't make you give credit. They act more like public domain dedications.
 
-### [:nounproject-copyright: permissive licenses][permissive]
+    __[:octicons-arrow-right-24: free your work][permissive]__
 
-- Permissive licenses allow you to do almost anything with the work, but you have to give credit to the original author. They are the most popular licenses for open source software.
+-   :nounproject-copyleft:{ .lg .middle } __copyleft licenses__
 
-///
-//// define
+    ---
 
-### [:nounproject-copyleft: copyleft licenses][copyleft]
+    Copyleft licenses are both open source and restrictive. They allow you to do almost anything with the work, but you have to share any changes you make. __Copyleft licenses are a great way to share your work while always keeping it open source__.
 
-- Copyleft licenses are both open source and restrictive. They allow you to do almost anything with the work, but you have to share any changes you make to the work. **Copyleft licenses are a great way to share a work while ensuring that it stays open source.**. There are two main types of copyleft licenses: weak and strong.
+    __[:octicons-arrow-right-24: keep your work open][copyleft]__
 
-/// define
+-   :nounproject-no-commercial:{ .lg .middle } __source-available licenses__
 
-- **Weak copyleft** licenses only require you to share the changes you make to the original work. They don't require you to share the rest of your work. The Mozilla Public License 2.0 is a weak copyleft license.
+    ---
 
-///
+    Source-available licenses cover a wide range of permissions. The Free Software Foundation and Open Source Initiative don't consider source-available licenses open source because they restrict what you can do with the work. Most often they prevent people from using the work to create a competing product or service. They are different from proprietary licenses because they allow you to see the source code, but they are not as open as open source licenses.
 
-/// define
+    __[:octicons-arrow-right-24: keep out competition][source-available]__
 
--   **Strong copyleft** licenses require you to share the entire work, including any changes you make to the original work. Because of this, strong copyleft licenses are sometimes called "viral" licenses because they can "infect" works that use components from a copyleft protected work, requiring you to license the new work under the same terms. The GNU General Public License (GPL) 3.0 is a strong copyleft license. If you use strong copyleft code in your work, even if is part of a much larger work, you must license the entire work under the same terms as the original work.(1)
-{ .annotate }
+-   :nounproject-proprietary:{ .lg .middle } __proprietary licenses__
 
-    1. You can distribute strong copyleft licensed works alongside other works under different licenses, but you can't combine them in any way. For example, you can use a GPL licensed library in a larger work that is licensed differently, as long as you don't change the library or combine it with the larger work.
+    ---
 
-///
+    We call any license that doesn't let you see or change the source code a proprietary license.
+    They are the most restrictive licenses.
 
-/// admonition | Do I need to license my new work under the same terms as the original work?
-    type: question
-**Probably. Copyleft licenses usually require you to license your new work under the same terms as the original work.** This means you have to share your work with the same permissions as the original work. If you don't want to do that, you should use a permissive license instead.
+    __:octicons-arrow-right-24: coming soon__ (1)
+    { .annotate }
 
-With all licenses, you usually have to apply the same terms to follow-on works, but many permissive licenses can be relicensed under similar terms. Copyleft licenses usually require you to license your work under the same terms as the original work. The Mozilla Public License (MPL) 2.0 allows for larger works to be licensed under different terms, as long as the parts covered by the MPL keep the same terms as the MPL.
-
-///
-
-////
-
-/// define
-
-### [:nounproject-no-commercial: source-available licenses][source-available]
-
-- Source-available licenses can cover a wide range of permissions. They are not considered open source because they restrict what you can do with the work. They are sometimes called "shared source" licenses. Some source available licenses are free to use, but others require payment or have other restrictions. They are different from proprietary licenses because they allow you to see the source code, but they are not as open as open source licenses.
-
-///
-/// define
-
-### [:nounproject-proprietary: proprietary licenses][proprietary]
-
-- Proprietary licenses fully restrict what you can do with the work, keeping all rights with the original author. They are the most common licenses for commercial software and are sometimes called "closed source" licenses. We distinguish fully proprietary licenses from source-available licenses because source-available licenses allow you to see the source code, but proprietary licenses do not.
-
-///
+    1.  We prioritize permissive licenses over restrictive ones because they are in more common use. We will be adding more restrictive licenses in the future, but we don't have a timeline.
+ zxc
 
 [copyleft]: copyleft/index.md "Plain License Copyleft Licenses"
 [permissive]: permissive/index.md "Plain License Permissive Licenses"
