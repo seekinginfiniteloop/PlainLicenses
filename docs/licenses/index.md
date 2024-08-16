@@ -57,6 +57,5 @@ description: Our plain licenses are easy to understand and use. We divide our li
 
 [copyleft]: copyleft/index.md "Plain License Copyleft Licenses"
 [permissive]: permissive/index.md "Plain License Permissive Licenses"
-[proprietary]: proprietary/index.md "Plain License Proprietary Licenses"
 [public-domain]: public-domain/index.md "Plain License Public Domain Dedications"
 [source-available]: source-available/index.md "Plain License Source-Available Licenses"
