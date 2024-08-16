@@ -60,7 +60,7 @@ MD024:
 MD025: false
 
 # MD026/no-trailing-punctuation : Trailing punctuation in heading : https://github.com/DavidAnson/markdownlint/blob/v0.33.0/doc/md026.md
-MD026: true
+MD026: false
 
 # MD027/no-multiple-space-blockquote : Multiple spaces after blockquote symbol : https://github.com/DavidAnson/markdownlint/blob/v0.33.0/doc/md027.md
 MD027: true
