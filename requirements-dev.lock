@@ -132,6 +132,7 @@ pexpect==4.9.0
 pillow==10.4.0
     # via cairosvg
     # via mkdocs-material
+pillow-avif-plugin==1.4.6
 platformdirs==4.2.2
     # via mkdocs-get-deps
     # via virtualenv
