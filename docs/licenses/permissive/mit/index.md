@@ -11,13 +11,16 @@ original_url: >
 original_organization: >
   Massachusetts Institute of Technology
 original_version: null
+also_known_as: >
+  Expat License, X11 License, MIT X11 License
+no_official: true
 category: >
   permissive
 license_description: >
   The MIT License is a permissive license that allows you to do whatever you want with the code as long as you include the original copyright and license notice in any copy of the software/source.
 how: >
   Create a LICENSE or LICENSE.md file in the base of your project. If your project is on Github or another platform that uses markdown, copy the markdown version using the copy icon. Otherwise, use the plaintext version.
-note: >
+note: |
   The MIT License is one of the most popular permissive licenses. It is a simple, clear license that allows you to do almost anything with a work as long as you give credit to the original author.
 permissions:
   - commercial-use
@@ -29,9 +32,14 @@ conditions:
 limitations:
   - liability
   - warranty
+tags:
+  - commercial-OK
+  - can-change
+  - can-share
+  - give-credit
 intro: null
 reader_license_text: |
-  Copyright © {{ year }} [copyright holders]
+  Copyright (c) {{ year }} `[copyright holders]`
 
   <h2 class="license-first-header">You are Free to Use, Change, and Share This Work</h2>
 
@@ -48,7 +56,7 @@ reader_license_text: |
 official_license_text: |
   # The MIT License (MIT)
 
-  Copyright © {{ year }} `<copyright holders>`
+  Copyright (c) {{ year }} `<copyright holders>`
 
   Permission is hereby granted, free of charge, to any person
   obtaining a copy of this software and associated documentation
@@ -74,3 +82,5 @@ link_in_original: false
 
 reference_links: null
 ---
+
+*[official]: There's not an "official" MIT license, but we call the version most people use the "official" version. The Free Software Foundation calls it the "Expat License."

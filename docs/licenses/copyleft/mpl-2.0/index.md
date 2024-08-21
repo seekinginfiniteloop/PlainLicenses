@@ -1,4 +1,5 @@
 ---
+template: license.html
 plain_name: >
     Plain MPL
 spdx_id: >
@@ -9,8 +10,9 @@ original_url: >
     https://www.mozilla.org/en-US/MPL/2.0/
 original_organization: >
     Mozilla Foundation
-original_version: >
-    2.0
+original_version: "2.0"
+also_known_as: null
+no_official: false
 category: >
     copyleft
 license_description: >
@@ -33,6 +35,14 @@ limitations:
     - liability
     - trademark-use
     - warranty
+tags:
+    - can-share
+    - commercial-OK
+    - can-change
+    - share-source
+    - give-credit
+    - share-alike (relaxed)
+
 intro: null
 reader_license_text: |
     <h2 class="license-first-header">We Give You a License to Use, Change, and Share This Work</h2>
@@ -106,14 +116,14 @@ reader_license_text: |
     **This license is a plain language translation of the Mozilla Public License 2.0. You should consider the Plain MPL to have the same terms as the Mozilla Public License 2.0.** You can also distribute the work under the terms of the [Mozilla Public License 2.0](https://www.mozilla.org/en-US/MPL/2.0/) or any later version published by the [Mozilla Foundation](https://foundation.mozilla.org/).(1) Plain License does not claim that the Mozilla Foundation or anyone else endorses this license or agrees to its compatibility with the Mozilla Public License 2.0.
     { .annotate }
 
-    1. **Don't relicense an existing work to Plain MPL if the existing work is already licensed under the Mozilla Public License 2.0**, unless the [Mozilla Foundation](https://foundation.mozilla.org/) clarifies that the Plain MPL is compatible with the Mozilla Public License 2.0.
+    4. **Don't relicense an existing work to Plain MPL if the existing work is already licensed under the Mozilla Public License 2.0**, unless the [Mozilla Foundation](https://foundation.mozilla.org/) clarifies that the Plain MPL is compatible with the Mozilla Public License 2.0.
 
     ## You Must Clearly Describe Any Limitations on Your Compliance with this License
 
     If you can't comply with any of this license's terms because of laws or regulations, you must:
 
-    1. **Comply with the terms to the extent possible**
-    2. **Describe the limitations and the affected part of the work in a text file or similar notice included with all distributions of the work**
+    5. **Comply with the terms to the extent possible**
+    6. **Describe the limitations and the affected part of the work in a text file or similar notice included with all distributions of the work**
 
     You must describe your limitations in plain language, and you must use enough detail to describe your limitations for an average person to understand them.
 

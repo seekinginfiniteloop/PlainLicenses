@@ -12,10 +12,11 @@ original_version: >
   2.0
 original_organization: >
   Elastic
+also_known_as: null
 category: >
   source-available
 license_description: >
-  The Elastic License 2.0 is a source-available license that allows you to use, copy, distribute, and modify the work. However, you can't offer the work as a service to others. You must keep all copyright notices in the software. The license includes a patent grant, but you lose your rights if you claim the software infringes a patent.
+  The Elastic License 2.0 is a source-available license that allows you to use, copy, distribute, and modify the work. However, you can't offer the work as a service to others. You must keep all copyright notices in the software. The license includes a patent grant, but you lose your patent rights if you claim the software infringes a patent.
 how: >
   Create a LICENSE or LICENSE.md file in the base of your project. If your project is on Github or another platform that uses markdown, copy the markdown version using the copy icon. Otherwise, use the plaintext version.
 note: null
@@ -31,18 +32,23 @@ limitations:
   - liability
   - trademark-use
   - warranty
+tags:
+  - can-change
+  - can-share
+  - give-credit
+  - share-alike (relaxed)
 intro: |
-  /// details |  <span id="detail-title-highlight">{{ original_organization }}:</span> Thanks for providing clear terms! <span id="detail-title-highlight">You rock!</span> :heart:
+  /// details |  <span id="detail-title-highlight">Elastic:</span> Thanks for providing clear terms! <span id="detail-title-highlight">You rock!</span> :heart:
       type: note
 
-  **We commend the folks at [{{ original_organization }}](https://www.elastic.co/)** for creating a license that's already clear. We've just made it clearer. You  worked hard to make your license terms accessible, and we appreciate it. **Thanks for leading by example.**
+  **We commend the folks at [Elastic](https://www.elastic.co/)** for creating a license that's already clear. We've just made it clearer. You  worked hard to make your license terms accessible, and we appreciate it. **Thanks for leading by example.**
 
   We know not many projects use the Elastic License (besides elasticsearch), but our research found the Elastic License's terms filled a niche. **The Elastic License offers unique terms among common source-available licenses, commonly used source-available licenses mostly fall in two groups**:
 
   1. *Copyleft-style* licenses like the Server Side Public License (SSPL) that require competitors to open source their entire stack (not just the changes they made to the original work).
   2. *Delayed permissive* licenses like the Functional Source License (FSL), which forbid competitors from offering the work as a service for a 2-4 year period (2 years for FSL). After that period, the work becomes permissively licensed (e.g., MIT, Apache 2.0). For everyone else, the work is permissively licensed from the start.
 
-  The Elastic License falls between those two approaches. It resembles a permissive license, but with restrictions on competition. Non-competitors can use the work permissively, but competitors can never use it. **We created this Plain Elastic License to help more people understand and use it because we think it's a good option for many projects.**
+  The Elastic License falls between those two approaches. It resembles a permissive license, but with restrictions on competition. Non-competitors can use the work permissively, but competitors can never use it. **We created this Plain Elastic License to help more people understand and use it because we think it's a good option for some projects. It lets you share without compromising protection from competitors.**
 
   We identified other licenses with very similar terms to the Elastic License 2.0, including the Redis Source Available License 2.0. They weren't as well known or plainly written.
 

@@ -4,7 +4,7 @@
 *[EL]: Elastic License
 *[FSL]: Functional Source License (by Sentry)
 *[GPL]: (GNU) General Public License
-*[MPL]: Mozilla Public License; but here **we only call our version `MPL`**
+*[MPL]: Mozilla Public License; but here we only call our version MPL
 *[Original Version]: version number of the original license that we adapted
 *[Plain Version]: the version number for our adaptation
 *[or similar]: providers, owners authors, developers, contributors

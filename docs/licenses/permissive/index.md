@@ -34,4 +34,4 @@ The Apache license is another popular permissive license. It is a simple, clear 
 - **Notice Requirement:** It requires that anyone using the work must include a copy of the license, a notice, and a list of changes made to the work.
 -->
 
-[MIT]: /mit/index.md "Plain MIT License"
+[MIT]: mit/index.md "Plain MIT License"

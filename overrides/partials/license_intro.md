@@ -1,3 +1,3 @@
-{%- if page.meta.intro -%}
-{{ page.meta.intro|trim }}
+{%- if intro -%}
+{{ intro|trim }}
 {% endif %}

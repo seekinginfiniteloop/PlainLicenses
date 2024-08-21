@@ -13,4 +13,4 @@ We prioritize getting the core functionality of the platform up and running righ
 
 If you want to contribute to the project, **you can help us by adding more restrictive licenses to the platform. We would love to have your help!** We're still working on our contribution guidelines, but your can reach out to us, or start with our [template][template].
 
-[template]: ../../../license_template.md "Plain License License Template"
+[template]: {{ page.meta.edit_uri/LICENSE_TEMPLATE.md }} "Plain License License Template"

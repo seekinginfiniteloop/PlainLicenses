@@ -1,0 +1,114 @@
+/* Styling for definitions in license tabbed blocks */
+
+.md-typeset .tabbed-block dl dt code.highlight {
+    font-size: 1em !important;
+    font-weight: 500 !important;
+}
+
+[data-md-color-scheme="slate"] .md-typeset .tabbed-block dl dt code.highlight {
+    color: var(--ecru) !important;
+}
+
+[data-md-color-scheme="default"] .md-typeset .tabbed-block dl dt code.highlight {
+    color: var(--zaffre) !important;
+}
+
+/* Special highlighting to make words stand out in an admonition title */
+[data-md-color-scheme="default"] #detail-title-highlight {
+    color: var(--blue-blue);
+    font-weight: 700;
+}
+
+[data-md-color-scheme="slate"] #detail-title-highlight {
+    color: var(--emerald);
+    font-weight: 700;
+}
+
+/* Styling for the license divider in the license reader view */
+[data-md-color-scheme="default"] p.license-divider {
+    padding-top: 3.125em;
+    border-bottom: .188em dotted var(--ecru);
+}
+
+[data-md-color-scheme="slate"] p.license-divider {
+    padding-top: 3.125em;
+    border-bottom: .188em dotted var(--air-superiority-blue);
+}
+
+/* Styling blocks for the license header in the license reader view */
+[data-md-color-scheme="slate"] h1.license-title {
+    color: var(--ecru);
+}
+
+[data-md-color-scheme="default"] h1.license-title {
+    color: var(--blue-blue);
+    border-bottom: .1em solid var(--ecru);
+}
+
+.md-typeset .tabbed-block h2.license-first-header {
+    margin: 0 0 0.5em 0;
+    padding: 0;
+    text-align: left;
+}
+
+.license-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: .313em .938em 0px 0px;
+
+    padding: 0;
+}
+
+.license-title {
+    margin: 0;
+    text-align: left;
+    justify-self: left;
+    line-height: 0;
+}
+
+.version-info {
+    text-align: center;
+    margin: 1.875em .313em .313em .938em;
+    padding: .65em;
+    border-radius: .313em;
+    font-size: .85em;
+    align-self: flex-start;
+    justify-self: normal;
+}
+.version-info {
+    background-color: var(--air-superiority-blue);
+    color: white;
+
+}
+
+.version-info p {
+    margin: 0;
+    font-weight: 500;
+}
+.version-info p.original_version {
+    font-weight: 400;
+    }
+
+.version-info p.plain_version {
+    font-weight: 800;
+}
+
+/* Styling for the license tabbed labels in the license reader view */
+.md-typeset .tabbed-labels>label>[href]:first-child { /* the tab bar */
+    margin-bottom: 0.5em;
+}
+.md-typeset .tabbed-labels--linked>label>a{ /* tab font */
+    font-size: 1.3em;
+}
+
+.md-typeset .tabbed-labels>label>[href]:first-child:hover { /* link hover in tabs */
+    color: var(--ecru);
+}
+
+.md-typeset .tabbed-labels::before
+{
+    /* underline for active tab */
+    border-bottom: .125em solid var(--ecru);
+    margin-bottom: 0.3em;
+}

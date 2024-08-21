@@ -1,17 +1,18 @@
-//// tab | plaintext
+//// tab | markdown
 
-```plaintext
+```markdown
 
-{{ plain_name|trim }}
+# {{ plain_name|trim }}
 
 {% if original_version -%}
 Original Version: {{ original_version|trim }} | Plain Version: {{ plain_version|trim }}
 {% else -%}
 Plain Version: {{ plain_version|trim }}
 {% endif %}
-{{ plaintext_license_text|trim|wordwrap(width=80, break_long_words=False) }}
 
-NOTE: {{ interpretation_title|trim }}
+{{ markdown_license_text|trim|wordwrap(width=80, break_long_words=False) }}
+
+### {{ interpretation_title|trim }}
 
 {{  interpretation_text|trim|wordwrap(width=80, break_long_words=False) }}
 

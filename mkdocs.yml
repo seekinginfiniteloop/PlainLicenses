@@ -3,8 +3,15 @@ site_url: https://plainlicense.org
 repo_url: https://github.com/seekinginfiniteloop/PlainLicense
 repo_name: PlainLicense
 edit_uri: edit/dev/docs/
-copyright: Plain License and its creators dedicate all original content to the public domain. No rights reserved.
-site_description: Plain License simplifies legal writing to remove the confusion of 'legalese' that prevents innovation and creativity. Our mission is to provide clear, easy-to-understand license terms. We offer plain versions of popular licenses like the MIT License, the Mozilla Public License 2.0, and the Unlicense. We also create new, simple licenses that anyone can use. Our goal is to make licensing accessible to everyone, regardless of their background, experience, or education.
+copyright: Plain License's authors dedicate all original content to the public domain. No rights reserved.
+hooks:
+  - overrides/hooks/socialmedia.py
+  - overrides/hooks/update_changelogs.py
+  - overrides/hooks/content_assembly.py
+site_description: |
+  Plain License: Terms for Everyone.
+
+  Licenses are difficult to read and understand. That prevents innovation and creativity. Our mission is to provide clear, easy-to-understand license terms. We offer plain versions of popular licenses like the MIT License, the Mozilla Public License 2.0, and the Unlicense. We will make licensing accessible to everyone, regardless of their background, experience, or education.
 nav:
   - home: index.md
   - about:
@@ -38,8 +45,8 @@ nav:
 theme:
   name: material
   custom_dir: overrides
-  logo: images/named_logo.png
-  favicon: images/favicon.png
+  logo: assets/images/named_logo.png
+  favicon: assets/images/favicon.png
   font:
     text: Noto Sans
     code: Noto Sans Mono
@@ -57,14 +64,13 @@ theme:
     - navigation.path
     - navigation.sections
     - navigation.tabs
-    - navigation.tabs.sticky
+    #- navigation.tabs.sticky
     - navigation.top
     - navigation.tracking
     - search.highlight
     - search.share
     - search.suggest
     - toc.follow
-  language: en
   icon:
     repo: simple/github
     edit: material/pencil
@@ -92,8 +98,6 @@ theme:
         icon: material/brightness-auto
         name: Switch to system preference
 plugins:
-  - plugins.content_assembly
-  - plugins.markdown_filter
   - blog:
       blog_dir: blog
       blog_toc: true
@@ -119,7 +123,7 @@ plugins:
         font_family: Raleway
         color: "#FFFFFF"
         background_color: "#0d19a3"
-        image: images/logo_only_color_transp.png
+        image: assets/images/logo_only_color_transp.png
   - tags
   - privacy
   - git-revision-date-localized:
@@ -140,7 +144,10 @@ markdown_extensions:
   - pymdownx.blocks.html
   - pymdownx.blocks.tab:
       alternate_style: true
-      slugify: !!python/object/apply:pymdownx.slugs.slugify {kwds: {case: lower, percent_encode: true, combine_header_slug: true}}
+      slugify:
+        !!python/object/apply:pymdownx.slugs.slugify {
+          kwds: { case: lower, percent_encode: true, combine_header_slug: true },
+        }
   - pymdownx.emoji:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
@@ -175,7 +182,11 @@ markdown_extensions:
       auto_append:
         - includes/abbreviations.md
   - pymdownx.saneheaders
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.tilde
   - sane_lists
   - tables
@@ -183,22 +194,25 @@ markdown_extensions:
       toc_depth: 3
       permalink_title: An anchor link you can use to share this section
       permalink: true
-      slugify: !!python/object/apply:pymdownx.slugs.slugify {kwds: {case: lower, percent_encode: true}}
+      slugify:
+        !!python/object/apply:pymdownx.slugs.slugify {
+          kwds: { case: lower, percent_encode: true },
+        }
 extra_javascript:
   - https://unpkg.com/tablesort@5.3.0/dist/tablesort.min.js
-  - javascripts/tablesort.js
+  - assets/images/javascripts/counter.js
+  #- assets/javascripts/feedback.js
+  - assets/images/javascripts/tablesort.js
 extra_css:
-  - stylesheets/extra.css
+  - assets/stylesheets/colors.css
+  - assets/stylesheets/extra.css
+  - assets/stylesheets/license.css
+  #- assets/stylesheets/landing.css
 watch:
   - includes
 not_in_nav: |
-  /overrides/*
   index*
   CHANGELOG*
-hooks:
-  - hooks/socialmedia.py
-  - hooks/build_licenses.py
-  - hooks/update_changelogs.py
 extra:
   analytics:
     provider: tinyanalytics
@@ -206,18 +220,21 @@ extra:
     # boilerplate for licenses; you don't need to change this
     # placeholders are replaced when rendering the license from the license frontmatter
     description: >
-      Plain License: {{ page.plain_name }}. Terms for everyone. The {{ page.original_name }}, but now in plain language for everyone to understand.
+      Plain License: {{ plain_name|trim }}. Terms for everyone. The {{ original_name|trim }}, but now in plain language for everyone to understand.
     plain_url: >
-      /licenses/{{ page.category.lower()|trim }}/{{ page.spdx_id.lower()|trim }}/
+      /licenses/{{ category.lower()|trim }}/{{ spdx_id.lower()|trim }}/
     github_base_url: >
       https://github.com/seekinginfiniteloop/PlainLicense
+    github_issues_link: >
+      [submit an issue](https://github.com/seekinginfiniteloop/PlainLicense/issues/new/choose "Submit an issue on GitHub")
+    github_edit_link: >
+      [edit yourself](https://github.com/seekinginfiniteloop/PlainLicense/edit/main/docs/licenses/{{ category.lower()|trim }}/{{ spdx_id.lower()|trim }}/index.md "Edit this license on GitHub")
     hide: # list of mkdocs components to hide in licenses
-      - toc
     official_link: >
-      [{{ page.original_name|trim }}]({{ page.original_url|trim }} "Official {{ page.original_name|trim }}")
+      [{{ original_name|trim }}]({{ original_url|trim }} "Official {{ original_name|trim }}")
     interpretation_title: >
-      **Legally Interpreting the {{ page.plain_name }}**
+      **Legally Interpreting the {{ plain_name|trim }}**
     interpretation_text: |
-      The {{ page.plain_name }} is a plain language adaptation of the {{ page.original_name }}. The {{ page.plain_name }} seeks to make the {{ page.original_name }} more accessible and understandable. It also aims to exactly represent the legal intent of the {{ page.original_name }}. **If you feel the {{ page.plain_name }}'s terms are legally unclear, use the official [{{ page.original_name }}]({{ page.original_url }}) to clarify the terms.**
+      The {{ plain_name|trim }} is a plain language adaptation of the {{ original_name|trim }}. We made the {{ plain_name|trim }} to make the {{ original_name|trim }} more accessible and understandable. We tried to match the {{ original_name|trim }}'s legal intent exactly. **If you feel the {{ plain_name|trim }}'s terms are legally unclear, use the official {{ official_link|trim }} to clarify the terms.**
 
-      If a court finds that any part of this {{ page.license_type }} cannot be enforced, the rest of the {{ page.license_type }} will still apply.
+      If a court finds that any part of this {{ license_type|trim }} cannot be enforced, the rest of the {{ license_type|trim }} will still apply.

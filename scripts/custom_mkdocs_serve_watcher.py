@@ -1,7 +1,5 @@
 import time
 import subprocess
-import os
-import signal
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from pathlib import Path
@@ -62,7 +60,7 @@ def watch_directories(paths, excluded_patterns) -> None:
     observer.join()
 
 if __name__ == "__main__":
-    watch_paths = ["docs", "includes", "templates", "mkdocs.yml", "content"]
+    watch_paths = ["docs", "includes", "mkdocs.yml", "overrides"]
 
     excluded_patterns = ["docs/licenses/**/**/index.md", "**/node_modules/**", "**/.git/**", "**/.venv"]
 

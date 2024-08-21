@@ -17,11 +17,11 @@ hide:
 
 -   **Style**. We make consistent style changes to our licenses for clarity and consistency. We use the following conventions:
 
-    | Our Words | 'Legalese' |
-    |-----------|-------------|
-    | you        | licensee, recipient |
-    | we, authors | licensor, provider, owner, author, developer, contributor |
-    | the work  | licensed work, software, creation, covered work, library, materials |
+     Our Words | 'Legalese'
+    -----------|-------------
+     you        | licensee, recipient
+     we, authors | licensor, provider, owner, author, developer, contributor
+     the work  | licensed work, software, creation, covered work, library, materials
 
     If a license talks about "contributors" as well as 'licensors' (or similar), we use 'contributors' when we talk about the people who contribute to the work and "authors" to talk about the people who license the work. Authors and contributors are often the same people, but the license may treat them differently.
 
@@ -95,6 +95,6 @@ We use something similar to [semantic versioning][semantic versioning], but we d
 [plain language standard]: https://www.iso.org/standard/71632.html "ISO standard for plain language"
 [plainlanguage.gov]: https://www.plainlanguage.gov/ "Plainlanguage.gov"
 [semantic versioning]: https://semver.org/ "Semantic Versioning"
-[separate versioning]: #what's-the-difference-between-the-version-numbers-for-original-version-and-plain-version-in-your-licenses "the difference between 'original' and 'plain' version numbers"nal version' and 'plain version' in your licenses?"
+[separate versioning]: #whats-the-difference-between-the-version-numbers-for-original-version-and-plain-version-in-your-licenses "the difference between 'original' and 'plain' version numbers"
 [how we version]: #how-does-your-versioning-work "how we version our licenses"
 [what we change]: #is-anything-else-different-about-your-licenses "how we change the licenses"

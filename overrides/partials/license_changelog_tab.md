@@ -1,12 +1,10 @@
-
 //// tab | changelog
 
-{% if page.changelog -%}
-{{ page.changelog|trim }}
+{% if changelog -%}
+{{ changelog|trim }}
 {% else -%}
 
-## such empty, much void
+## such empty, much void :nounproject-doge:
 
-{% endraw %}
 {% endif %}
 ////

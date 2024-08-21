@@ -1,4 +1,5 @@
 ---
+template: license.html
 plain_name: >
   Plain Unlicense
 spdx_id: >
@@ -9,6 +10,8 @@ original_url: https://unlicense.org/
 original_organization: >
   unlicense.org
 original_version: null
+also_known_as: null
+no_official: false
 category: >
   public-domain
 license_description: >
@@ -26,19 +29,23 @@ conditions: []
 limitations:
   - liability
   - warranty
+tags:
+  - commercial-OK
+  - can-change
+  - can-share
 intro: null
 reader_license_text: |
   <h2 class="license-first-header">We Dedicate This Work to the Public Domain</h2>
 
-  **We, the authors, dedicate this work ("the work") to the public domain.**
+  **The authors ("we") dedicate this work ("the work") to the public domain.**
   You can use it freely for any purpose and in any way you want. We give away all rights and interest in the work to the public domain forever.
 
-  ## What You Can Do with the Work
+  ## You Can Do Anything You Want with the Work
 
   - **Use the work for anything** you want, in whole or in part.
   - **Copy, change, publish, distribute, or sell** the work.
   - Use the work for any purpose without restrictions.
-  - **License any work you create with the work however you want.**
+  - **License anything you create with the work however you want.**
 
   **You do not need to do anything to use the work.** You do not need to ask for permission, give credit, or pay us. You can use the work without any restrictions.
 
@@ -76,7 +83,7 @@ official_license_text: |
   ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
   OTHER DEALINGS IN THE SOFTWARE.
 
-  For more information, please refer to <https://unlicense.org>;
+  For more information, please refer to <https://unlicense.org>.
 
 link_in_original: true
 reference_links: null
