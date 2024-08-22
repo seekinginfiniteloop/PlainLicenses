@@ -1,4 +1,5 @@
-//// tab | plaintext
+//// tab | plaintext :material-text:
+    attrs: { data-icon: "plaintext_link"}
 
 ```plaintext
 

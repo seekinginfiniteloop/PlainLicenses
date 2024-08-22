@@ -90,6 +90,9 @@ limitations: # AS APPLICABLE:
   - patent-use
   - trademark-use
   - warranty
+tags: # tags appended based on permissions, conditions, limitations
+  - placeholder
+
 # introductory text before the license tab interface, this is appended to the standard
 # intro text -- optional. If you don't have anything to add, set to `null`
 intro: |

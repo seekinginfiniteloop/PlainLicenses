@@ -94,12 +94,13 @@
     font-weight: 800;
 }
 
+
 /* Styling for the license tabbed labels in the license reader view */
 .md-typeset .tabbed-labels>label>[href]:first-child { /* the tab bar */
     margin-bottom: 0.5em;
 }
 .md-typeset .tabbed-labels--linked>label>a{ /* tab font */
-    font-size: 1.3em;
+    font-size: 1.1em;
 }
 
 .md-typeset .tabbed-labels>label>[href]:first-child:hover { /* link hover in tabs */
@@ -111,4 +112,74 @@
     /* underline for active tab */
     border-bottom: .125em solid var(--ecru);
     margin-bottom: 0.3em;
+}
+
+/* styling for quicklinks on right sidebar for licenses */
+.md-nav.md-nav--secondary .quick_links {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: flex-start;
+    align-self: flex-start;
+    width: 100%;
+    min-height: 3em;
+    margin: 1em .2em;
+    padding: .01em;
+}
+.md-nav.md-nav--secondary .quick_links .quicklink_group {
+    min-width: 10%;
+    max-width: 20%;
+    margin: .01em;
+    padding: .01em;
+}
+
+.md-nav.md-nav--secondary .quick_links .quicklink_group::before {
+    border-bottom: .125em solid var(--ecru);
+}
+
+/* Set initial color */
+[data-md-color-scheme="default"] div.md-sidebar.md-sidebar--secondary div.md-sidebar__scrollwrap div.md-sidebar__inner nav.md-nav.md-nav--secondary div.quick_links a.quicklink_group span.tab_quick_link svg path {
+    fill: var(--zaffre);
+}
+
+[data-md-color-scheme="slate"] div.md-sidebar.md-sidebar--secondary div.md-sidebar__scrollwrap div.md-sidebar__inner nav.md-nav.md-nav--secondary div.quick_links a.quicklink_group span.tab_quick_link svg path {
+    fill: var(--md-default-fg-color--light);
+}
+
+
+/* Change color on hover */
+div.md-sidebar.md-sidebar--secondary div.md-sidebar__scrollwrap div.md-sidebar__inner nav.md-nav.md-nav--secondary div.quick_links a.quicklink_group:hover span.tab_quick_link svg path {
+    cursor: pointer;
+    fill: var(--emerald);
+    width: 100%;
+}
+
+html.js-focus-visible.js body div.md-container main.md-main div.md-main__inner.md-grid div.md-content article.md-content__inner.md-typeset div.tabbed-set.tabbed-alternate div.tabbed-labels.tabbed-labels--linked label a span.twemoji {
+    margin-left: 0.3em;
+}
+
+/* Change color on active */
+div.md-sidebar.md-sidebar--secondary div.md-sidebar__scrollwrap div.md-sidebar__inner nav.md-nav.md-nav--secondary div.quick_links a.quicklink_group:active span.tab_quick_link svg path {
+    fill: var(--ecru);
+}
+
+#quicklink-text {
+    font-size: .85em;
+    color: var(--cadet-grey);
+    text-align: center;
+    font-weight: 500;
+    margin: 0 0 0 0;
+    display: hidden;
+}
+
+nav.md-license-tags {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: flex-start;
+    align-self: flex-start;
+    width: 100%;
+    min-height: 3em;
+    margin: 1em .2em;
+    padding: .01em;
 }

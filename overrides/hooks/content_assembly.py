@@ -16,11 +16,12 @@ from mkdocs.structure.pages import Page
 # add sticky sidebar
 
 TAG_MAP = {
-    "distribution": "can-share",
-    "commercial-use": "commercial-OK",
+    "distribution": "can-share", # allowances
+    "commercial-use": "sell",
     "modifications": "can-change",
-    "disclose-source": "share-source",
     "revokable": "can-revoke",
+    "relicense": "relicense",
+    "disclose-source": "share-source", # requirements
     "document-changes": "describe-changes",
     "include-copyright": "give-credit",
     "same-license": "share-alike (strict)",
@@ -39,8 +40,6 @@ header_pattern: Pattern[str] = re.compile(
 placeholders = re.compile(r"\{\{\s(.*?)\s\}\}")
 
 logger = None
-
-tags_plugin = None
 
 
 def start_logging(level: int = logging.INFO) -> logging.Logger:
@@ -78,6 +77,7 @@ def clean_content(content: dict[str, Any]) -> dict[str, Any]:
             content[key] = [item.strip() for item in value]
     return content
 
+
 @event_priority(100)
 def on_page_markdown(
     markdown_content: str, page: Page, config: MkDocsConfig, files: list[File]
@@ -106,11 +106,8 @@ def on_page_markdown(
     env = Environment(loader=FileSystemLoader("overrides"))
     main_template = env.get_template("license_main.md")
     rendered_content = main_template.render(context)
-    return (
-        f"{markdown_content}\n{rendered_content}"
-        if markdown_content
-        else rendered_content
-    )
+    return f"{markdown_content}\n{rendered_content}"
+
 
 def on_post_page(output, page, config):
     if re.match(
@@ -132,7 +129,7 @@ class LicenseContent:
     def __init__(self, page: Page) -> None:
         self.page = page
         self.meta = page.meta
-        #self.tags = self.meta.get("tags") or self.get_tags(self.meta)
+        # self.tags = self.meta.get("tags") or self.get_tags(self.meta)
         self.year = str(datetime.now().year)
         self.license_type = (
             "dedication" if "public" in self.meta["category"] else "license"
@@ -237,7 +234,7 @@ class LicenseContent:
     @property
     def attributes(self) -> dict[str, Any | int | str]:
         return {
-            #"tags": self.tags,
+            # "tags": self.tags,
             "year": self.year,
             "markdown_license_text": self.markdown_license_text,
             "plaintext_license_text": self.plaintext_license_text,

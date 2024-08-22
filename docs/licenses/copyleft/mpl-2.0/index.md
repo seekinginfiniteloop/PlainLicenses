@@ -37,7 +37,7 @@ limitations:
     - warranty
 tags:
     - can-share
-    - commercial-OK
+    - sell
     - can-change
     - share-source
     - give-credit

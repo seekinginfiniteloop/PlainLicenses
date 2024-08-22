@@ -30,9 +30,11 @@ limitations:
   - liability
   - warranty
 tags:
-  - commercial-OK
+  - sell
   - can-change
   - can-share
+  - relicense
+
 intro: null
 reader_license_text: |
   <h2 class="license-first-header">We Dedicate This Work to the Public Domain</h2>
@@ -40,7 +42,7 @@ reader_license_text: |
   **The authors ("we") dedicate this work ("the work") to the public domain.**
   You can use it freely for any purpose and in any way you want. We give away all rights and interest in the work to the public domain forever.
 
-  ## You Can Do Anything You Want with the Work
+  ## You Can Do Anything with the Work
 
   - **Use the work for anything** you want, in whole or in part.
   - **Copy, change, publish, distribute, or sell** the work.

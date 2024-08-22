@@ -1,0 +1,13 @@
+{% raw %}
+<script>
+document.querySelectorAll('.tabbed-labels a').forEach(tab => {
+        tab.addEventListener('mouseover', function () {
+            const iconId = this.getAttribute('data-icon');
+            const icon = document.getElementById(iconId);
+            if (icon) {
+                icon.querySelector('svg path').style.fill = 'var(--emerald)';
+            }
+        });
+    });
+</script>
+{% endraw %}

@@ -8,10 +8,11 @@ hooks:
   - overrides/hooks/socialmedia.py
   - overrides/hooks/update_changelogs.py
   - overrides/hooks/content_assembly.py
+  - overrides/hooks/md_filter.py
 site_description: |
   Plain License: Terms for Everyone.
 
-  Licenses are difficult to read and understand. That prevents innovation and creativity. Our mission is to provide clear, easy-to-understand license terms. We offer plain versions of popular licenses like the MIT License, the Mozilla Public License 2.0, and the Unlicense. We will make licensing accessible to everyone, regardless of their background, experience, or education.
+  Licenses are difficult to read and understand. Complicated terms prevent innovation and creativity. Our mission is to provide clear, easy-to-understand license terms. We offer plain versions of popular licenses like the MIT License, the Mozilla Public License 2.0, and the Unlicense. We will make licensing accessible to everyone, regardless of their background, experience, or education.
 nav:
   - home: index.md
   - about:
@@ -34,14 +35,14 @@ nav:
           - Elastic License: licenses/source-available/elastic-2.0/index.md
       - proprietary licenses:
           - licenses/proprietary/index.md
-  - help us:
+  - help:
       - helping/index.md
     # - Coding: helping/code.md
     # - Donate: helping/donate.md
     # - Crafting: helping/crafting.md
     # - Legal Feedback: helping/legal.md
     # - Translate: helping/translate.md
-  - blog: blog/index.md
+  #- blog: blog/index.md
 theme:
   name: material
   custom_dir: overrides
@@ -75,6 +76,19 @@ theme:
     repo: simple/github
     edit: material/pencil
     view: material/eye
+    tag:
+      canshare: octicons/share-24
+      cansell: fontawesome/solid/money-bill-1
+      canchange: material/file-edit
+      canrevoke: nounproject/revoke
+      required: nounproject/required
+      allowed: nounproject/allowed
+      relicense: nounproject/relicense
+      copyleft: nounproject/copyleft
+      givecredit: nounproject/copyright
+      describechanges: octicons/file-diff-24
+      sharesource: octicons/book-24
+
   palette:
     # Palette toggle for system automatic mode
     - media: "(prefers-color-scheme)"
@@ -210,12 +224,25 @@ extra_css:
   #- assets/stylesheets/landing.css
 watch:
   - includes
+  - overrides
+  - mkdocs.yml
 not_in_nav: |
   index*
   CHANGELOG*
 extra:
   analytics:
     provider: tinyanalytics
+  tags:
+    can-share: canshare
+    sell: cansell
+    can-change: canchange
+    can-revoke: canrevoke
+    relicense: relicense
+    share-alike (strict): copyleft
+    share-alike (relaxed): copyleft
+    give-credit: givecredit
+    describe-changes: describechanges
+    share-source: sharesource
   boilerplate:
     # boilerplate for licenses; you don't need to change this
     # placeholders are replaced when rendering the license from the license frontmatter
@@ -235,6 +262,6 @@ extra:
     interpretation_title: >
       **Legally Interpreting the {{ plain_name|trim }}**
     interpretation_text: |
-      The {{ plain_name|trim }} is a plain language adaptation of the {{ original_name|trim }}. We made the {{ plain_name|trim }} to make the {{ original_name|trim }} more accessible and understandable. We tried to match the {{ original_name|trim }}'s legal intent exactly. **If you feel the {{ plain_name|trim }}'s terms are legally unclear, use the official {{ official_link|trim }} to clarify the terms.**
+      The {{ plain_name|trim }} is a plain language adaptation of the {{ original_name|trim }}. We made the {{ plain_name|trim }} to make the {{ original_name|trim }} more accessible and understandable. We tried to match the {{ original_name|trim }}'s legal intent exactly. **If you think the {{ plain_name|trim }}'s terms are legally unclear, use the official {{ official_link|trim }} to clarify the terms.**
 
       If a court finds that any part of this {{ license_type|trim }} cannot be enforced, the rest of the {{ license_type|trim }} will still apply.

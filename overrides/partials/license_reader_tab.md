@@ -1,4 +1,5 @@
-//// tab | reader
+//// tab | reader :material-book-open-outline:
+    attrs: { data-icon: "reader_link"}
 
 <div class="license-header">
 <h1 class="license-title">{{ plain_name|trim }}</h1>

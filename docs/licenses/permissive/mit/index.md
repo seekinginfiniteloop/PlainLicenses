@@ -33,10 +33,12 @@ limitations:
   - liability
   - warranty
 tags:
-  - commercial-OK
+  - sell
   - can-change
   - can-share
   - give-credit
+  - relicense
+
 intro: null
 reader_license_text: |
   Copyright (c) {{ year }} `[copyright holders]`

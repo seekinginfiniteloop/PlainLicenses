@@ -1,10 +1,53 @@
-<nav class="md-nav md-nav--secondary" aria-label="{{ plain_name }}">
+<nav class="md-nav md-nav--secondary" aria-label="{{ title }}">
 
-    <label class="md-nav__title" for="__toc">
+    <label class="md-nav__title">
         <span class="md-nav__icon md-icon"></span>
-        {{ plain_name }}
+        {{ title }}
     </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
 
-        {% endif %}
+    <div class="quick_links" title="license views" data-md-scrollfix>
+            <a href="#reader" class="quicklink_group" aria-label="jump to {{ page.meta.plain_name }} reader view" title="{{ page.meta.plain_name }} reader view">
+                <span class="tab_quick_link">
+                    <svg xmlns="http://www.w3.org/2000/svg" id="icon-reader" viewBox="0 0 24 24">
+                        <path
+                            d="M12 21.5c-1.35-.85-3.8-1.5-5.5-1.5-1.65 0-3.35.3-4.75 1.05-.1.05-.15.05-.25.05-.25 0-.5-.25-.5-.5V6c.6-.45 1.25-.75 2-1 1.11-.35 2.33-.5 3.5-.5 1.95 0 4.05.4 5.5 1.5 1.45-1.1 3.55-1.5 5.5-1.5 1.17 0 2.39.15 3.5.5.75.25 1.4.55 2 1v14.6c0 .25-.25.5-.5.5-.1 0-.15 0-.25-.05-1.4-.75-3.1-1.05-4.75-1.05-1.7 0-4.15.65-5.5 1.5m-1-14c-1.36-.6-3.16-1-4.5-1-1.2 0-2.4.15-3.5.5v11.5c1.1-.35 2.3-.5 3.5-.5 1.34 0 3.14.4 4.5 1V7.5M13 19c1.36-.6 3.16-1 4.5-1 1.2 0 2.4.15 3.5.5V7c-1.1-.35-2.3-.5-3.5-.5-1.34 0-3.14.4-4.5 1V19m1-2.65c.96-.35 2.12-.52 3.5-.52 1.04 0 1.88.08 2.5.24v-1.5a13.884 13.884 0 0 0-6 .19v1.59m0-2.66c.96-.35 2.12-.53 3.5-.53 1.04 0 1.88.08 2.5.24v-1.5c-.87-.16-1.71-.23-2.5-.23-1.28 0-2.45.15-3.5.45v1.57M14 11c.96-.33 2.12-.5 3.5-.5.91 0 1.76.09 2.5.28V9.23c-.87-.15-1.71-.23-2.5-.23-1.32 0-2.5.15-3.5.46V11Z" />
+                    </svg>
+                </span>
+            </a>
+            <a href="#markdown" class="quicklink_group" aria-label="jump to {{ page.meta.plain_name }} markdown code view"
+                title="{{ page.meta.plain_name }} markdown view">
+                <span class="tab_quick_link">
+                <svg xmlns="http://www.w3.org/2000/svg" id="icon-markdown" viewBox="0 0 24 24">
+                    <path
+                        d="M22.289 4.5A1.71 1.71 0 0 1 24 6.226v11.557c0 .946-.766 1.726-1.726 1.726H1.726A1.74 1.74 0 0 1 0 17.768V6.226C0 5.28.78 4.5 1.726 4.5Zm-8.781 12.007V7.501h-3.002l-2.251 3.002-2.252-3.002H3.002v9.006h3.001v-4.503l2.252 2.882 2.251-2.882v4.503Zm4.489.75 3.767-5.253h-2.251V7.501h-3.002v4.503h-2.252Z" />
+                </svg>
+                </span>
+            </a>
+            <a href="#plaintext" class="quicklink_group" aria-label="jump to {{ page.meta.plain_name }} plaintext"
+                title="{{ page.meta.plain_name }}plaintext view">
+                <span class="tab_quick_link">
+                    <svg xmlns="http://www.w3.org/2000/svg" id="icon-plaintext" viewBox="0 0 24 24">
+                        <path d="M21 6v2H3V6h18M3 18h9v-2H3v2m0-5h18v-2H3v2Z" />
+                    </svg>
+                </span>
+            </a>
+            <a href="#changelog" class="quicklink_group" aria-label="jump to license changelog" title="changelog for {{ page.meta.plain_name }}">
+                <span class="tab_quick_link">
+                    <svg xmlns="http://www.w3.org/2000/svg" id="icon-changelog"  viewBox="0 0 24 24">
+                        <path
+                            d="M13.5 8H12v5l4.28 2.54.72-1.21-3.5-2.08V8M13 3a9 9 0 0 0-9 9H1l3.96 4.03L9 12H6a7 7 0 0 1 7-7 7 7 0 0 1 7 7 7 7 0 0 1-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.896 8.896 0 0 0 13 21a9 9 0 0 0 9-9 9 9 0 0 0-9-9" />
+                    </svg>
+                </span>
+            </a>
+            <a href="#official" class="quicklink_group" aria-label="jump to official {{ page.meta.original_name }}" title="official {{ page.meta.original_name }}">
+                <span class="tab_quick_link">
+                    <svg xmlns="http://www.w3.org/2000/svg"  id="icon-official" viewBox="0 0 24 24">
+                        <path
+                            d="M9 10a3.04 3.04 0 0 1 3-3 3.04 3.04 0 0 1 3 3 3.04 3.04 0 0 1-3 3 3.04 3.04 0 0 1-3-3m3 9 4 1v-3.08A7.54 7.54 0 0 1 12 18a7.54 7.54 0 0 1-4-1.08V20m4-16a5.78 5.78 0 0 0-4.24 1.74A5.78 5.78 0 0 0 6 10a5.78 5.78 0 0 0 1.76 4.23A5.78 5.78 0 0 0 12 16a5.78 5.78 0 0 0 4.24-1.77A5.78 5.78 0 0 0 18 10a5.78 5.78 0 0 0-1.76-4.26A5.78 5.78 0 0 0 12 4m8 6a8.04 8.04 0 0 1-.57 2.8A7.84 7.84 0 0 1 18 15.28V23l-6-2-6 2v-7.72A7.9 7.9 0 0 1 4 10a7.68 7.68 0 0 1 2.33-5.64A7.73 7.73 0 0 1 12 2a7.73 7.73 0 0 1 5.67 2.36A7.68 7.68 0 0 1 20 10Z" />
+                    </svg>
+                </span>
+            </a>
+    </div>
+    {% include "partials/license_tags.html" %}
+
 </nav>

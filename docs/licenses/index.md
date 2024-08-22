@@ -52,8 +52,9 @@ description: Our plain licenses are easy to understand and use. We divide our li
     __:octicons-arrow-right-24: coming soon__ (1)
     { .annotate }
 
-    1.  We prioritize permissive licenses over restrictive ones because they are in more common use. We will be adding more restrictive licenses in the future, but we don't have a timeline.
- zxc
+    1. We want to build our collection of permissive licenses before we tackle proprietary licenses. Permissive licenses are much more popular, and we don't know of any standardized proprietary licenses. We will probably have to create our own.
+
+</div>
 
 [copyleft]: copyleft/index.md "Plain License Copyleft Licenses"
 [permissive]: permissive/index.md "Plain License Permissive Licenses"

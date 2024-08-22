@@ -1,4 +1,5 @@
-//// tab | markdown
+//// tab | markdown :octicons-markdown-24:
+    attrs: { data-icon: "markdown_link" }
 
 ```markdown
 

@@ -37,6 +37,7 @@ tags:
   - can-share
   - give-credit
   - share-alike (relaxed)
+
 intro: |
   /// details |  <span id="detail-title-highlight">Elastic:</span> Thanks for providing clear terms! <span id="detail-title-highlight">You rock!</span> :heart:
       type: note
