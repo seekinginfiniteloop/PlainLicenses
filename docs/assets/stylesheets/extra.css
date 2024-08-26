@@ -1,3 +1,5 @@
+
+
 [data-md-color-scheme="slate"] {
     --md-hue: 235.2;
     --md-typeset-a-color: var(--ecru);
@@ -85,7 +87,6 @@ body {
 }
 
 .md-typeset .md-typeset__table {
-    vertical-align: center;
     margin-inline-start: 5%;
     margin-inline-end: 5%;
     text-align: center;
@@ -147,7 +148,7 @@ a.md-header__button.md-logo img {
 
 }
 
-html.js-focus-visible.js body div.md-container nav.md-tabs div.md-grid ul.md-tabs__list li.md-tabs__item a.md-tabs__link:hover {
+li.md-tabs__item a.md-tabs__link:hover {
     color: var(--emerald);
 }
 
@@ -200,40 +201,9 @@ a.md-nav__link--active:nth-child(3)>span:nth-child(1) {
     border-bottom: .1em solid var(--ecru);
     font-size: 1.2em;
 }
-/*
-li.md-nav__item.md-nav__item--active.md-nav__item--section.md-nav__item--nested div.md-nav__link.md-nav__container a.md-nav__link span.md-ellipsis {
-    margin-left: 0.5em;
-    border-bottom: .05em dotted var(--ecru);
-    color: var()
-}
 
-
-/*
-html.js-focus-visible.js body div.md-container main.md-main div.md-main__inner.md-grid div.md-sidebar.md-sidebar--primary div.md-sidebar__scrollwrap div.md-sidebar__inner nav.md-nav.md-nav--primary.md-nav--lifted  {
-    color: var(--emerald);
-    border-bottom: .125em solid var(--emerald);
-}
-/*
-[data-md-color-scheme="default"] a.md-nav__link--active:nth-child(0) {
-    border-bottom: .125em solid var(--ecru);
-}
-
-[data-md-color-scheme="slate"] a.md-nav__link:nth-child(0) {
-    color: var(--ecru);
-    border-bottom: .125em solid var(--emerald);
-}
-
-[data-md-color-scheme="default"] a.md-nav__link:active {
-    color: var(--blue-blue);
-    border-bottom: .125em solid var(--ecru);
-}
-
-[data-md-color-scheme="slate"] a.md-nav__link:active {
-    color: var(--ecru);
-    border-bottom: .125em solid var(--emerald);
-}
 /* the second level of nav */
-html.js-focus-visible.js body div.md-container main.md-main div.md-main__inner.md-grid div.md-sidebar.md-sidebar--primary div.md-sidebar__scrollwrap div.md-sidebar__inner nav.md-nav.md-nav--primary.md-nav--lifted ul.md-nav__list li.md-nav__item.md-nav__item--active.md-nav__item--section.md-nav__item--nested nav.md-nav ul.md-nav__list li.md-nav__item.md-nav__item--section.md-nav__item--nested nav.md-nav ul.md-nav__list li.md-nav__item a.md-nav__link span.md-ellipsis {
+li.md-nav__item.md-nav__item--active.md-nav__item--section.md-nav__item--nested nav.md-nav ul.md-nav__list li.md-nav__item.md-nav__item--section.md-nav__item--nested nav.md-nav ul.md-nav__list li.md-nav__item a.md-nav__link span.md-ellipsis {
     margin-top: 0.01em;
     margin-left: .5em;
 }

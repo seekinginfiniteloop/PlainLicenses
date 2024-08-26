@@ -35,6 +35,8 @@ defusedxml==0.7.1
     # via cairosvg
 filelock==3.15.4
     # via cachecontrol
+funcy==2.0
+    # via plainlicense
 ghp-import==2.1.0
     # via mkdocs
 gitdb==4.0.11

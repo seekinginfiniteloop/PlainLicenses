@@ -1,9 +1,68 @@
 
+.mdx-hero {
 
-.md-typeset {
-    color: var(--md-typeset-color)
 }
 
+.mdx-hero h1 {
+    color: currentcolor;
+    font-weight: 700;
+    margin-bottom: 1rem
+}
+
+@media screen and (max-width:29.984375em) {
+    .mdx-hero h1 {
+        font-size: 1.4rem
+    }
+}
+
+.mdx-hero__content {
+    padding-bottom: 6rem
+}
+
+@media screen and (min-width:60em) {
+    .mdx-hero {
+        align-items: stretch;
+        display: flex
+    }
+
+    .mdx-hero__content {
+        margin-top: 3.5rem;
+        max-width: 19rem;
+        padding-bottom: 14vw
+    }
+
+    .mdx-hero__image {
+        order: 1;
+        transform: translateX(4rem);
+        width: 38rem
+    }
+}
+
+@media screen and (min-width:76.25em) {
+    .mdx-hero__image {
+        transform: translateX(8rem)
+    }
+}
+
+.mdx-hero .md-button {
+    color: var(--md-primary-bg-color);
+    margin-right: .5rem;
+    margin-top: .5rem
+}
+
+.mdx-hero .md-button:focus,
+.mdx-hero .md-button:hover {
+    background-color: var(--md-accent-fg-color);
+    border-color: var(--md-accent-fg-color);
+    color: var(--md-accent-bg-color)
+}
+
+.mdx-hero .md-button--primary {
+    background-color: var(--md-primary-bg-color);
+    border-color: var(--md-primary-bg-color);
+    color: #894da8
+}
+/* general settings for landing page; these are all below the teaser */
 .md-typeset h2 {
     font-weight: 700;
     margin-top: .175em
@@ -45,6 +104,8 @@
     opacity: 0
 }
 
+/* settings for the teaser */
+
 a#hero_teaser_main_button.md-button {
     background: var(--emerald);
     border-width: 0;
@@ -52,7 +113,6 @@ a#hero_teaser_main_button.md-button {
     margin-right: .5rem;
     margin-top: .5rem;
 }
-
 a#hero_teaser_main_button.md_button:hover {
     background-color: var(--zaffre);
     color: var(--emerald);
@@ -62,6 +122,11 @@ a#hero_teaser_main_button.md-button:active {
     background-color: var(--zaffre);
     color: var(--emerald);
 }
+
+.md-typeset .md-button--secondary {
+    background-color: initial
+}
+
 a#learn_more_button.md-button--secondary {
     border-width: 0;
     color: var(--emerald);
@@ -73,7 +138,10 @@ a#learn_more_button.md-button--secondary {
 
 .md-header:not(.md-header--shadow) {
     background-color: var(--zaffre);
+    ;
+    background: linear-gradient(to bottom, rgba(var(--zaffre-adj), 1), 80%, rgba(var(--zaffre-adj), 0.5));
     transition: background-color 125ms, transform 125ms cubic-bezier(.1, .7, .1, 1), box-shadow 0ms
+
 }
 
 .md-header--shadow {
@@ -105,7 +173,7 @@ a#learn_more_button.md-button--secondary {
 .mdx-parallax__group:first-child {
     background-color: initial;
     contain: strict;
-    height: 140vh
+    height: 120vh
 }
 
 .safari .mdx-parallax__group:first-child {
@@ -163,11 +231,13 @@ a#learn_more_button.md-button--secondary {
     pointer-events: none;
     position: absolute;
     top: 0;
+    left: 0;
     transform: translateZ(calc(var(--md-parallax-perspective)*var(--md-parallax-depth)*-1)) scale(calc(var(--md-parallax-depth) + 1));
     transform-origin: var(--layer-origin-x) var(--layer-origin-y);
     width: 100vw;
-    z-index: 10
+    z-index: -1;
 }
+
 .mdx-parallax__layer.active {
     opacity: 1;
     z-index: 1;
@@ -192,14 +262,74 @@ a#learn_more_button.md-button--secondary {
     object-position: var(--md-image-position, 50%);
     position: absolute;
     width: 100%;
-    z-index: -1
+    z-index: 7
 }
 
 .mdx-parallax__blend {
-    background-image: linear-gradient(to bottom, #0000, var(--md-default-bg-color));
+    background-color: var(--md-default-bg-color);
     bottom: 0;
     height: min(100vh, 100vw);
-    top: auto
+    top: auto;
+    z-index: 0
+}
+
+
+.mdx-hero {
+    display: block;
+    height: inherit
+}
+
+.js .mdx-hero[hidden]>* {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: transform 0ms .1s, opacity .1s
+}
+
+.mdx-hero__scrollwrap {
+    height: 100vh;
+    margin-bottom: -100vh;
+    position: sticky;
+    top: 0;
+    z-index: 3
+}
+
+.md-grid {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 61rem
+}
+
+.mdx-hero__scrollwrap .md-grid {
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.mdx-hero__inner {
+    bottom: 0;
+    display: block;
+    position: absolute;
+    transition: transform .4s cubic-bezier(.1, .7, .1, 1), opacity .25s;
+    width: 100%;
+    z-index: 6;
+}
+
+
+
+
+
+
+@media screen and (max-width:44.984375em) {
+    .mdx-hero__inner {
+        bottom: 6rem
+    }
+}
+.mdx-hero__teaser {
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    color: var(--md-primary-bg-color);
+    margin: 0 .8rem;
+    max-width: 24rem
 }
 
 .mdx-content__column:last-child {
@@ -214,7 +344,8 @@ a#learn_more_button.md-button--secondary {
     .mdx-content__inner {
         display: flex;
         flex-wrap: nowrap;
-        gap: 6.4rem
+        gap: 4rem;
+        bottom: 0;
     }
 
     .mdx-content__column {
@@ -322,161 +453,202 @@ a#learn_more_button.md-button--secondary {
     }
 }
 
-.mdx-hero {
-    display: block;
-    height: inherit;
-}
-
-.js .mdx-hero[hidden]>* {
-    opacity: 0;
-    transform: translateY(16px);
-    transition: transform 0ms .1s, opacity .1s
-}
-
-.mdx-hero__scrollwrap {
-    height: 100vh;
-    margin-bottom: -100vh;
-    position: sticky;
-    top: 0;
-    z-index: 9
-}
-
-.mdx-hero__inner {
-    bottom: 3.2rem;
-    display: block;
-    position: absolute;
-    transition: transform .4s cubic-bezier(.1, .7, .1, 1), opacity .25s;
-    width: 100%
-}
-
-@media screen and (max-width:44.984375em) {
-    .mdx-hero__inner {
-        bottom: 6.4rem
-    }
-}
-h1#CTA_header {
-    font-family: Raleway, Montserrat, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    text-shadow: .01em .01em 0 var(--ecru);
-    font-weight: 500;
-    font-stretch: expanded;
-    margin-bottom: .4rem;
-    z-index: 10;
-}
-
-p#CTA_paragraph {
-    font-family: Raleway, Montserrat, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    margin-top: 1.6rem;
-    margin-bottom: 1.6rem;
-    max-width: 100%;
-    width: 100%;
-    z-index: 10;
-}
-svg#yoshimi_question {
-    width: 1rem;
-    height: 1rem;
-    overflow: hidden;
-    cursor: pointer;
-    z-index: 20;
-    fill: #ccc;
-    opacity: 0.8;
-}
-
-svg#yoshimi_question:hover {
-    opacity: 1;
-    fill: var(--emerald);
-}
-
-#yoshimi_question:focus,
-#yoshimi_question:active,
-svg#yoshimi_question:focus,
-svg#yoshimi_question:active {
-    opacity: 1;
-    fill: var(--ecru);
-}
-
-/* .about_hero {
-    display: block;
-    margin: 0 auto;
-    bottom: 30% !important;
-    right: 40% !important;
-    position: absolute;
-    width: 35%;
-    z-index: 10;
-    min-height: 5em;
-}
-
-.about_hero p#about_yoshimi {
-    right: 50%;
-    object-position: top center;
-    overflow-y: scroll;
-    min-height: 5em;
-    max-height: 10em;
-    width: 100%;
-    object-fit: cover;
-    font-size: 0.8rem;
-    font-weight: 400;
-    line-height: 1.3;
-    margin: 0.1em;
-    text-align: left;
-    padding: 0.5em;
-    background-color: var(--gunmetal);
-    color: var(--alice-blue);
-    opacity: 0;
-    display: none;
-    transition: opacity 0.5s, z-index 0s 0.5s;
-    z-index: -1;
-}*/
-
-
-.mdx-hero__teaser {
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-    color: var(--md-primary-bg-color);
-    margin: 0 .8rem;
-    max-width: 24rem
-}
-
-.mdx-hero__teaser h1 {
-    color: inherit;
-    font-weight: 700;
-    margin-bottom: 0
-}
-
-.mdx-hero__teaser :not(.md-button) {
-    text-shadow: 0 0 .2rem #211d2dcc
-}
-
 .mdx-hero .mdx-hero__attribution {
+    background-color: var(--md-default-bg-color--light);
+    border-radius: .1rem;
     bottom: -2.4rem;
+    color: var(--md-default-fg-color);
     font-size: .5rem;
     padding: .1rem .4rem;
     position: absolute;
     right: .8rem;
     transition: color 125ms, background-color 125ms
 }
-/*
+
 .mdx-hero .mdx-hero__attribution:focus,
 .mdx-hero .mdx-hero__attribution:hover {
     background-color: var(--md-accent-fg-color);
     color: var(--md-accent-bg-color)
 }
- */
+
 .mdx-hero__more {
     bottom: -2.4rem;
     display: block;
     left: 50%;
     margin-left: -.6rem;
-    pointer-events: none;
     position: absolute;
     text-align: center
 }
 
 .mdx-hero__more svg {
-    fill: #fff;
-    height: 1.2rem;
-    width: 1.2rem
+    fill: white;
+    height: 1.5rem;
+    width: 1.5rem;
+    cursor: pointer;
+}
+.mdx-spotlight {
+    margin: 2em 0
 }
 
+
+.mdx-spotlight__feature {
+    display: flex;
+    flex: 1 0 48%;
+    flex-flow: row nowrap;
+    gap: 3.2rem;
+    margin: 0 0 3.2rem
+}
+
+@media screen and (max-width:59.984375em) {
+    .mdx-spotlight__feature {
+        flex-direction: column;
+        gap: 0
+    }
+}
+
+@media screen and (min-width:60em) {
+    .mdx-spotlight__feature:nth-child(odd) {
+        flex-direction: row-reverse
+    }
+}
+
+.mdx-spotlight__feature:last-child {
+    margin-bottom: 1em
+}
+
+.mdx-spotlight__feature>a {
+    display: block;
+    flex-shrink: 0;
+    transition: transform .5s cubic-bezier(.075, .85, .175, 1)
+}
+
+@media screen and (max-width:59.984375em) {
+    .mdx-spotlight__feature>a {
+        margin-left: auto;
+        margin-right: auto
+    }
+}
+
+.mdx-spotlight__feature>a:hover {
+    transform: scale(1.025)
+}
+
+.mdx-spotlight__feature a>img {
+    border-radius: .2rem;
+    box-shadow: var(--md-shadow-z2);
+    display: block;
+    height: auto;
+    max-width: 100%;
+    width: 25rem
+}
+
+.mdx-spotlight__feature a>img,
+.mdx-spotlight__feature figcaption {
+    transition: transform .75s cubic-bezier(.075, .85, .175, 1) 125ms, opacity .75s 125ms
+}
+
+.mdx-spotlight__feature figcaption {
+    margin-top: .8rem
+}
+
+.js .mdx-spotlight__feature[hidden]>a>img {
+    opacity: 0;
+    transform: translateY(1.6rem)
+}
+
+.js .mdx-spotlight__feature[hidden]>figcaption {
+    opacity: 0;
+    transform: translateX(1.6rem)
+}
+
+.js .mdx-spotlight__feature[hidden]:nth-child(2n)>figcaption {
+    transform: translateX(-1.6rem)
+}
+
+.mdx-trust {
+    display: block;
+    max-width: 40rem;
+    transition: transform .75s cubic-bezier(.075, .85, .175, 1) 125ms, opacity .75s 125ms
+}
+
+.js .mdx-trust[hidden] {
+    opacity: 0;
+    transform: translateY(1.6rem)
+}
+
+.mdx-users {
+    display: flex;
+    gap: 3.2rem;
+    margin: 2.4rem 0
+}
+
+@media screen and (max-width:59.984375em) {
+    .mdx-users {
+        flex-direction: column
+    }
+}
+
+.mdx-users__testimonial {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 1.2rem;
+    margin: 0;
+    text-align: center
+}
+
+.mdx-users__testimonial:first-child {
+    transition-delay: .2s
+}
+
+.mdx-users__testimonial:nth-child(2) {
+    transition-delay: 275ms
+}
+
+.mdx-users__testimonial:nth-child(3) {
+    transition-delay: .35s
+}
+
+.mdx-users__testimonial img {
+    border-radius: 5rem;
+    height: auto;
+    margin-left: auto;
+    margin-right: auto;
+    width: 10rem
+}
+
+.mdx-users__testimonial figcaption,
+.mdx-users__testimonial img {
+    transition: transform .75s cubic-bezier(.075, .85, .175, 1), opacity .75s;
+    transition-delay: inherit
+}
+
+.mdx-users__testimonial figcaption {
+    display: block
+}
+
+.mdx-users__testimonial hr {
+    margin-left: auto;
+    margin-right: auto;
+    width: 5rem
+}
+
+.mdx-users__testimonial cite {
+    display: block;
+    -webkit-hyphens: auto;
+    hyphens: auto;
+    text-align: justify
+}
+
+.js .mdx-users__testimonial[hidden] img {
+    opacity: 0;
+    transform: scale(.75)
+}
+
+.js .mdx-users__testimonial[hidden] figcaption {
+    opacity: 0;
+    transform: translateY(1.6rem)
+}
 
 @media screen and (min-width:60em) {
     .md-sidebar--secondary {

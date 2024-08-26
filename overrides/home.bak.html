@@ -1,0 +1,232 @@
+<!--
+  Copyright (c) 2016-2024 Martin Donath <martin.donath@squidfunk.com>
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to
+  deal in the Software without restriction, including without limitation the
+  rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+  sell copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+  IN THE SOFTWARE.
+-->
+
+{% extends "main.html" %}
+{% block extrahead %}
+<link rel="stylesheet" href="assets/stylesheets/landing.css">
+{% endblock %}
+
+<!-- Render hero under tabs -->
+
+{% block tabs %}
+<link rel="stylesheet" href="assets/stylesheets/landing.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link
+    href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap"
+    rel="stylesheet">
+<!-- Additional styles for landing page -->
+<!-- Hero Section and Parallax Effect -->
+<div class="mdx-parallax" data-mdx-component="parallax">
+    <section class="mdx-parallax__group" data-md-color-scheme="slate">
+        <picture class="mdx-parallax__layer"
+            style="--md-parallax-depth: 1.1;--md-image-position: 35%; --layer-origin-x: 40vw; --layer-origin-y: 70vh">
+            <source type="image/webp" data-image="abstract"
+                data-srcset="assets/images/hero/abstract/abstract_1280.webp 1280w, assets/images/hero/abstract/abstract_1920.webp 1920w, assets/images/hero/abstract/abstract_2560.webp 2560w, assets/images/hero/abstract/abstract_3840.webp 3840w">
+            <img data-image="abstract"
+                data-srcset="assets/images/hero/abstract/abstract_1280.webp 1280w, assets/images/hero/abstract/abstract_1920.webp 1920w, assets/images/hero/abstract/abstract_2560.webp 2560w, assets/images/hero/abstract/abstract_3840.webp 3840w"
+                data-src="assets/images/hero/abstract/abstract_1280.webp" alt=""
+                class="mdx-parallax__image"  draggable="false">
+        </picture>
+        <picture class="mdx-parallax__layer"
+            style="--md-parallax-depth: .6;--md-image-position: 35%; --layer-origin-x: 50vw; --layer-origin-y: 70vh">
+            <source type="image/webp" data-image="anime"
+                data-srcset="assets/images/hero/anime/anime_1280.webp 1280w, assets/images/hero/anime/anime_1920.webp 1920w, assets/images/hero/anime/anime_2560.webp 2560w, assets/images/hero/anime/anime_3840.webp 3840w">
+            <img data-srcset="assets/images/hero/anime/anime_1280.webp 1280w, assets/images/hero/anime/anime_1920.webp 1920w, assets/images/hero/anime/anime_2560.webp 2560w, assets/images/hero/anime/anime_3840.webp 3840w"
+                data-src="assets/images/hero/anime/anime_1280.webp" alt=""
+                class="mdx-parallax__image"  draggable="false">
+        </picture>
+        <picture class="mdx-parallax__layer"
+            style="--md-parallax-depth: 1;--md-image-position: 50%; --layer-origin-x: 50vw; --layer-origin-y: 70vh">
+            <source type="image/webp" data-image="artbrut"
+                data-srcset="assets/images/hero/artbrut/artbrut_1280.webp 1280w, assets/images/hero/artbrut/artbrut_1920.webp 1920w, assets/images/hero/artbrut/artbrut_2560.webp 2560w, assets/images/hero/artbrut/artbrut_3840.webp 3840w">
+            <img data-srcset="assets/images/hero/artbrut/artbrut_1280.webp 1280w, assets/images/hero/artbrut/artbrut_1920.webp 1920w, assets/images/hero/artbrut/artbrut_2560.webp 2560w, assets/images/hero/artbrut/artbrut_3840.webp 3840w"
+                data-src="assets/images/hero/artbrut/artbrut_1280.webp" alt=""
+                class="mdx-parallax__image"  draggable="false">
+        </picture>
+        <picture class="mdx-parallax__layer"
+            style="--md-parallax-depth: .1;--md-image-position: 57%; --layer-origin-x: 50vw; --layer-origin-y: 100vh">
+            <source type="image/webp" data-image="comic"
+                data-srcset="assets/images/hero/comic/comic_1280.webp 1280w, assets/images/hero/comic/comic_1920.webp 1920w, assets/images/hero/comic/comic_2560.webp 2560w, assets/images/hero/comic/comic_3840.webp 3840w">
+            <img data-srcset="assets/images/hero/comic/comic_1280.webp 1280w, assets/images/hero/comic/comic_1920.webp 1920w, assets/images/hero/comic/comic_2560.webp 2560w, assets/images/hero/comic/comic_3840.webp 3840w"
+                data-src="assets/images/hero/comic/comic_1280.webp" alt=""
+                class="mdx-parallax__image"  draggable="false">
+        </picture>
+        <picture class="mdx-parallax__layer"
+            style="--md-parallax-depth: .6;--md-image-position: 30%; --layer-origin-x: 50vw; --layer-origin-y: 150vh">
+            <source type="image/webp" data-image="fanciful"
+                data-srcset="assets/images/hero/fanciful/fanciful_1280.webp 1280w, assets/images/hero/fanciful/fanciful_1920.webp 1920w, assets/images/hero/fanciful/fanciful_2560.webp 2560w, assets/images/hero/fanciful/fanciful_3840.webp 3840w">
+            <img data-srcset="assets/images/hero/fanciful/fanciful_1280.webp 1280w, assets/images/hero/fanciful/fanciful_1920.webp 1920w, assets/images/hero/fanciful/fanciful_2560.webp 2560w, assets/images/hero/fanciful/fanciful_3840.webp 3840w"
+                data-src="assets/images/hero/fanciful/fanciful_1280.webp" alt=""
+                class="mdx-parallax__image"  draggable="false">
+        </picture>
+        <picture class="mdx-parallax__layer"
+            style="--md-parallax-depth: 1;--md-image-position: 30%; --layer-origin-x: 40vw; --layer-origin-y: 120vh">
+            <source type="image/webp" data-image="fantasy"
+                data-srcset="assets/images/hero/fantasy/fantasy_1280.webp 1280w, assets/images/hero/fantasy/fantasy_1920.webp 1920w, assets/images/hero/fantasy/fantasy_2560.webp 2560w, assets/images/hero/fantasy/fantasy_3840.webp 3840w"  draggable="false">
+            <img data-srcset="assets/images/hero/fantasy/fantasy_1280.webp 1280w, assets/images/hero/fantasy/fantasy_1920.webp 1920w, assets/images/hero/fantasy/fantasy_2560.webp 2560w, assets/images/hero/fantasy/fantasy_3840.webp 3840w"
+                data-src="assets/images/hero/fantasy/fantasy_1280.webp" alt=""
+                class="mdx-parallax__image"  draggable="false">
+        </picture>
+        <picture class="mdx-parallax__layer"
+            style="--md-parallax-depth: 1;--md-image-position: 35%; --layer-origin-x: 50vw; --layer-origin-y: 140vh">
+            <source type="image/webp" data-image="farcical"
+                data-srcset="assets/images/hero/farcical/farcical_1280.webp 1280w, assets/images/hero/farcical/farcical_1920.webp 1920w, assets/images/hero/farcical/farcical_2560.webp 2560w, assets/images/hero/farcical/farcical_3840.webp 3840w">
+            <img data-srcset="assets/images/hero/farcical/farcical_1280.webp 1280w, assets/images/hero/farcical/farcical_1920.webp 1920w, assets/images/hero/farcical/farcical_2560.webp 2560w, assets/images/hero/farcical/farcical_3840.webp 3840w"
+                data-src="assets/images/hero/farcical/farcical_1280.webp" alt=""
+                class="mdx-parallax__image"  draggable="false">
+        </picture>
+        <picture class="mdx-parallax__layer"
+            style="--md-parallax-depth: 1;--md-image-position: 50%; --layer-origin-x: 50vw; --layer-origin-y: 50vh">
+            <source type="image/webp" data-image="fauvist"
+                data-srcset="assets/images/hero/farcical/farcical_1280.webp 1280w, assets/images/hero/farcical/farcical_1920.webp 1920w, assets/images/hero/farcical/farcical_2560.webp 2560w, assets/images/hero/farcical/farcical_3840.webp 3840w">
+            <img data-srcset="assets/images/hero/farcical/farcical_1280.webp 1280w, assets/images/hero/farcical/farcical_1920.webp 1920w, assets/images/hero/farcical/farcical_2560.webp 2560w, assets/images/hero/farcical/farcical_3840.webp 3840w"
+                data-src="assets/images/hero/farcical/farcical_1280.webp" alt=""
+                class="mdx-parallax__image"  draggable="false">
+        </picture>
+        <picture class="mdx-parallax__layer"
+            style="--md-parallax-depth: 1;--md-image-position: 60%; --layer-origin-x: 50vw; --layer-origin-y: 60vh">
+            <source type="image/webp" data-image="minimal"
+                data-srcset="assets/images/hero/fauvist/fauvist_1280.webp 1280w, assets/images/hero/fauvist/fauvist_1920.webp 1920w, assets/images/hero/fauvist/fauvist_2560.webp 2560w, assets/images/hero/fauvist/fauvist_3840.webp 3840w">
+            <img data-srcset="assets/images/hero/fauvist/fauvist_1280.webp 1280w, assets/images/hero/fauvist/fauvist_1920.webp 1920w, assets/images/hero/fauvist/fauvist_2560.webp 2560w, assets/images/hero/fauvist/fauvist_3840.webp 3840w"
+                data-src="assets/images/hero/fauvist/fauvist_1280.webp" alt=""
+                class="mdx-parallax__image"  draggable="false">
+        </picture>
+        <picture class="mdx-parallax__layer"
+            style="--md-parallax-depth: .1;--md-image-position: 30%; --layer-origin-x: 50vw; --layer-origin-y: 170vh">
+            <source type="image/webp" data-image="minimal"
+                data-srcset="assets/images/hero/minimal/minimal_1280.webp 1280w, assets/images/hero/minimal/minimal_1920.webp 1920w, assets/images/hero/minimal/minimal_2560.webp 2560w, assets/images/hero/minimal/minimal_3840.webp 3840w">
+            <img data-srcset="assets/images/hero/minimal/minimal_1280.webp 1280w, assets/images/hero/minimal/minimal_1920.webp 1920w, assets/images/hero/minimal/minimal_2560.webp 2560w, assets/images/hero/minimal/minimal_3840.webp 3840w"
+                data-src="assets/images/hero/minimal/minimal_1280.webp" alt=""
+                class="mdx-parallax__image"  draggable="false">
+        </picture>
+        <picture class="mdx-parallax__layer"
+            style="--md-parallax-depth: 1;--md-image-position: 50%; --layer-origin-x: 50vw; --layer-origin-y: 80vh">
+            <source type="image/webp" data-image="mystical"
+                data-srcset="assets/images/hero/mystical/mystical_1280.webp 1280w, assets/images/hero/mystical/mystical_1920.webp 1920w, assets/images/hero/mystical/mystical_2560.webp 2560w, assets/images/hero/mystical/mystical_3840.webp 3840w">
+            <img data-srcset="assets/images/hero/mystical/mystical_1280.webp 1280w, assets/images/hero/mystical/mystical_1920.webp 1920w, assets/images/hero/mystical/mystical_2560.webp 2560w, assets/images/hero/mystical/mystical_3840.webp 3840w"
+                data-src="assets/images/hero/mystical/mystical_1280.webp" alt=""
+                class="mdx-parallax__image"  draggable="false">
+        </picture>
+        <picture class="mdx-parallax__layer"
+            style="--md-parallax-depth: 1;--md-image-position: 60%; --layer-origin-x: 50vw; --layer-origin-y: 90vh">
+            <source type="image/webp" data-image="surreal"
+                data-srcset="assets/images/hero/surreal/surreal_1280.webp 1280w, assets/images/hero/surreal/surreal_1920.webp 1920w, assets/images/hero/surreal/surreal_2560.webp 2560w, assets/images/hero/surreal/surreal_3840.webp 3840w">
+            <img data-srcset="assets/images/hero/surreal/surreal_1280.webp 1280w, assets/images/hero/surreal/surreal_1920.webp 1920w, assets/images/hero/surreal/surreal_2560.webp 2560w, assets/images/hero/surreal/surreal_3840.webp 3840w"
+                data-src="assets/images/hero/surreal/surreal_1280.webp" alt=""
+                class="mdx-parallax__image" draggable="false">
+        </picture>
+
+        <div class="mdx-parallax__layer mdx-parallax__blend"></div>
+        <div class="mdx-hero" data-md-component="hero">
+            <div class="about_hero">
+                <p id="about_yoshimi">
+                    <strong>Who is the hero in these images?</strong>
+                    <br /><br />Her name is Yoshimi; she defeated <a
+                        href="https://en.wikipedia.org/wiki/Yoshimi_Battles_the_Pink_Robots,_Pt._1"
+                        title="Wikipedia: Yoshimi Battles the Pink Robots, part 1"
+                        aria-label="Wiki link for song Yoshimi Battles the Pink Robots">the
+                        pink robots</a>
+                    and offered help us fight confusing licenses. She travels through time, space,
+                    and the
+                    multiverse to help
+                    defeat the evil forces of Legalese, led by the lawyer battle robots of the
+                    pan-universal law
+                    firm, Confusion
+                    Limited Liability Partners.<br /><br />She fights them off armed only with her
+                    trusty battle
+                    pencil, "plain language."
+                    Yoshimi is a hero for the ages. We can't win this fight without people like her,
+                    and we
+                    can't win it without you.
+                    Join us in the fight against confusing licenses!
+                </p>
+                <svg id="yoshimi_question" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                    title="who is our hero?"
+                    aria-label="click to learn more about the hero in our landing page images">
+                    <path
+                        d="M10.97 8.265a1.45 1.45 0 0 0-.487.57.75.75 0 0 1-1.341-.67c.2-.402.513-.826.997-1.148C10.627 6.69 11.244 6.5 12 6.5c.658 0 1.369.195 1.934.619a2.45 2.45 0 0 1 1.004 2.006c0 1.033-.513 1.72-1.027 2.215-.19.183-.399.358-.579.508l-.147.123a4.329 4.329 0 0 0-.435.409v1.37a.75.75 0 1 1-1.5 0v-1.473c0-.237.067-.504.247-.736.22-.28.486-.517.718-.714l.183-.153.001-.001c.172-.143.324-.27.47-.412.368-.355.569-.676.569-1.136a.953.953 0 0 0-.404-.806C12.766 8.118 12.384 8 12 8c-.494 0-.814.121-1.03.265ZM13 17a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" />
+                    <path
+                        d="M12 1c6.075 0 11 4.925 11 11s-4.925 11-11 11S1 18.075 1 12 5.925 1 12 1ZM2.5 12a9.5 9.5 0 0 0 9.5 9.5 9.5 9.5 0 0 0 9.5-9.5A9.5 9.5 0 0 0 12 2.5 9.5 9.5 0 0 0 2.5 12Z" />
+                </svg>
+            </div>
+            <div class="mdx-hero__scrollwrap md-grid">
+
+                <div class="mdx-hero__inner">
+
+                    <div class="mdx-hero__teaser md-typeset">
+
+                        <h1 id="CTA_header">Join the Fight!</h1>
+                        <p id="CTA_paragraph">Defeat confusing licenses!</p>
+                        <a href="licenses/" class="md-button" id="hero_teaser_main_button"
+                            title="power up your license with plain language">fight back</a>
+                        <a href="#learn-more" class="md-button md-button--secondary"
+                            id="learn_more_button" title="about us">learn more</a>
+                    </div>
+                    <div class="mdx-hero__more">
+                        <a href="#learn-more"><svg xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24">
+                                <path
+                                    d="M11 6v8l-3.5-3.5-1.42 1.42L12 17.84l5.92-5.92-1.42-1.42L13 14V6h-2m1 16A10 10 0 0 1 2 12 10 10 0 0 1 12 2a10 10 0 0 1 10 10 10 10 0 0 1-10 10Z" />
+                            </svg></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+<section class="mdx-parallax__group" data-md-color-scheme="slate" data-md-color-primary="indigo">
+    <div class="md-content md-grid" data-md-component="content">
+        <div class="md-content__inner">
+            <header class="md-typeset" hidden>
+                <a id="learn-more"></a>
+                <h1 id="learn_more-h1">break the chains of complexity</h1>
+            </header>
+            <div class="mdx-expect">
+                <ul class="mdx-expect__list">
+                    <li class="mdx-expect__item md-typeset" hidden>
+                        <!-- Repeat this structure for each expectation item -->
+                        <div class="mdx-expect__icon">
+                            <!-- Icon SVG -->
+                        </div>
+                        <div class="mdx-expect__description">
+                            <h2>defeat confusion!</h2>
+                            <p>Get license terms anyone can understand</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+<!-- Content -->
+{% block content %}{% endblock %}
+
+<!-- Application footer -->
+{% block footer %}{% endblock %}
+{% block scripts %}
+{{ super() }}
+<script src="assets/javascripts/hero_shuffle.js"></script>
+<script src="assets/javascripts/hero_actions.js"></script>
+{% endblock %}

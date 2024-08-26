@@ -17,9 +17,9 @@ no_official: true
 category: >
   permissive
 license_description: >
-  The MIT License is a permissive license that allows you to do whatever you want with the code as long as you include the original copyright and license notice in any copy of the software/source.
+  The MIT License is a permissive license that allows you to do whatever you want with the work <strong>as long as you include the original copyright and license notice</strong> in any copy of the software/source.
 how: >
-  Create a LICENSE or LICENSE.md file in the base of your project. If your project is on Github or another platform that uses markdown, copy the markdown version using the copy icon. Otherwise, use the plaintext version.
+  Create a LICENSE or LICENSE.md file in the base of your project. If your project is on Github or another platform that uses markdown, copy the <a class="how_link" href=#markdown>markdown version</a> using the copy icon. Otherwise, use the <a class="how_link" href="#plaintext">plaintext version</a>.
 note: |
   The MIT License is one of the most popular permissive licenses. It is a simple, clear license that allows you to do almost anything with a work as long as you give credit to the original author.
 permissions:
@@ -33,7 +33,7 @@ limitations:
   - liability
   - warranty
 tags:
-  - sell
+  - can-sell
   - can-change
   - can-share
   - give-credit

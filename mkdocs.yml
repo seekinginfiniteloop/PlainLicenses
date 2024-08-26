@@ -46,7 +46,7 @@ nav:
 theme:
   name: material
   custom_dir: overrides
-  logo: assets/images/named_logo.png
+  logo: assets/images/named_logo_color_transp.svg
   favicon: assets/images/favicon.png
   font:
     text: Noto Sans
@@ -138,7 +138,10 @@ plugins:
         color: "#FFFFFF"
         background_color: "#0d19a3"
         image: assets/images/logo_only_color_transp.png
-  - tags
+  - tags:
+      tags: true
+      enabled: true
+      tags_file: tags.md
   - privacy
   - git-revision-date-localized:
       enable_creation_date: true
@@ -214,14 +217,13 @@ markdown_extensions:
         }
 extra_javascript:
   - https://unpkg.com/tablesort@5.3.0/dist/tablesort.min.js
-  - assets/images/javascripts/counter.js
+  - assets/javascripts/counter.js
   #- assets/javascripts/feedback.js
-  - assets/images/javascripts/tablesort.js
+  - assets/javascripts/tablesort.js
 extra_css:
   - assets/stylesheets/colors.css
   - assets/stylesheets/extra.css
   - assets/stylesheets/license.css
-  #- assets/stylesheets/landing.css
 watch:
   - includes
   - overrides
@@ -229,12 +231,11 @@ watch:
 not_in_nav: |
   index*
   CHANGELOG*
+  tags
 extra:
-  analytics:
-    provider: tinyanalytics
   tags:
     can-share: canshare
-    sell: cansell
+    can-sell: cansell
     can-change: canchange
     can-revoke: canrevoke
     relicense: relicense
@@ -264,4 +265,25 @@ extra:
     interpretation_text: |
       The {{ plain_name|trim }} is a plain language adaptation of the {{ original_name|trim }}. We made the {{ plain_name|trim }} to make the {{ original_name|trim }} more accessible and understandable. We tried to match the {{ original_name|trim }}'s legal intent exactly. **If you think the {{ plain_name|trim }}'s terms are legally unclear, use the official {{ official_link|trim }} to clarify the terms.**
 
-      If a court finds that any part of this {{ license_type|trim }} cannot be enforced, the rest of the {{ license_type|trim }} will still apply.
+      If a court finds that any part of this {{ license_type }} cannot be enforced, the rest of the {{ license_type }} will still apply.
+    tag_text:
+      can-share: >
+        <strong>Share Freely</strong>: You can share or distribute any work that uses this {{ license_type }} freely.
+      can-sell: >
+        Use Commercially: You can sell any work that uses this {{ license_type }}, and you don't have to pay anyone anything or share your work.
+      can-change: >
+        Adapt freely: You can change or modify any work that uses this {{ license_type }} however you want.
+      can-revoke: >
+        Taksies-backsies: You can revoke this licence from any work that uses it (if the work is yours) at any time.
+      relicense: >
+        Relicense: You can change the {{ license_type }} to a different {{ license_type }} if you want. You may need to follow certain rules, like giving credit to the original author.
+      share-alike (strict): >
+        Share-Alike (strict): If you change or modify any work that uses this license, you must share your changes under the same license.
+      share-alike (relaxed): >
+        Share-Alike (relaxed): If you change or modify any work that uses this license, you must share your changes under the same license or a similar one.
+      give-credit: >
+        Give Credit: You must give credit to the original author of any work that uses this license, usually by including their name and the original license in your work.
+      describe-changes: >
+        Describe Changes: You must describe any changes you make to any work that uses this license.
+      share-source: >
+        Share Your Work: You must share the source code of any work that uses this license.

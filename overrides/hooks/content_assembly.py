@@ -17,7 +17,7 @@ from mkdocs.structure.pages import Page
 
 TAG_MAP = {
     "distribution": "can-share", # allowances
-    "commercial-use": "sell",
+    "commercial-use": "can-sell",
     "modifications": "can-change",
     "revokable": "can-revoke",
     "relicense": "relicense",
