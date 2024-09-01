@@ -51,6 +51,7 @@ a#hero_teaser_main_button.md-button {
     color: var(--zaffre);
     margin-right: .5rem;
     margin-top: .5rem;
+    cursor: pointer;
 }
 
 a#hero_teaser_main_button.md_button:hover {
@@ -371,15 +372,7 @@ p#CTA_paragraph {
     width: 100%;
     z-index: 10;
 }
-svg#yoshimi_question {
-    width: 1rem;
-    height: 1rem;
-    overflow: hidden;
-    cursor: pointer;
-    z-index: 20;
-    fill: #ccc;
-    opacity: 0.8;
-}
+
 
 svg#yoshimi_question:hover {
     opacity: 1;

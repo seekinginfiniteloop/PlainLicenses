@@ -8,11 +8,13 @@
 
 [data-md-color-scheme="slate"] .md-typeset .md-button {
     color: var(--emerald);
+    transition: all ease-out 0.2s;
 }
 
 [data-md-color-scheme="slate"] .md-typeset .md-button:hover {
     color: var(--emerald);
     background-color: var(--zaffre);
+    transition: all ease-out 0.2s;
 }
 
 .md-typeset dl p {
@@ -145,7 +147,7 @@ a.md-header__button.md-logo img {
     font-size: 1.7em;
     font-weight: 500;
     margin: .3em 1em;
-
+    transition: all ease-out 0.2s;
 }
 
 li.md-tabs__item a.md-tabs__link:hover {
