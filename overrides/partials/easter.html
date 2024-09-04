@@ -1,17 +1,19 @@
-<div id="easter-egg-overlay">
-    <p class="info-box" id="egg-box">
-        <strong>Who is the hero in these images?</strong>
-        <br /><br />Her name is Yoshimi; she defeated <a
+  <div id="hero-dialog-position">
+  <dialog class="info-box" id="egg-box">
+        <form method="dialog">
+        <h1>Who is that hero?</h1>
+        <p><span style="color:var(--atomic-tangerine)">That's Yoshimi</span>; she defeated <a
             href="https://en.wikipedia.org/wiki/Yoshimi_Battles_the_Pink_Robots,_Pt._1"
             title="Wikipedia: Yoshimi Battles the Pink Robots, part 1"
-            aria-label="Wiki link for song Yoshimi Battles the Pink Robots">the
+            aria-label="Wiki link for song Yoshimi Battles the Pink Robots" id="yoshimi-link">the
             pink robots</a>
-        and offered help us fight confusing licenses. She travels through time, space,
-        and the multiverse to help defeat the evil forces of Legalese, led by the lawyer battle
-        robots of the pan-universal law firm, Confusion Limited Liability Partners.<br /><br />She
+        and offered to join the fight against confusing licenses.</p><p>She travels through time, space,
+        and the multiverse to help defeat the evil forces of Legalese, led by the attorney battle-robots of the pan-universal law firm, <strong>Confusion Limited Liability Partners.</strong></p><p>She
         fights them off armed only with her trusty battle
         pencil, "plain language." Yoshimi is a hero for the ages. We can't win this fight without
         people like her, and we can't win it without you.
-        Join us in the fight against confusing licenses!
-    </p>
+        Join us in the fight against confusing licenses!</p>
+        <div style="display:flex;flex-direction:row;align-self:center;align-items:center;justify-content:center"><button id="egg-box-close" class="md-button"><strong>Thanks Yoshimi!</strong></button>
+        </div></form>
+    </dialog>
 </div>

@@ -330,7 +330,8 @@ nav.md-nav.md-nav--secondary div.quick_links a.quicklink_group:active span.tab_q
 .section-content p {
     padding: 1em;
     margin: 0;
-    background-color: var(--ecru);
+    background-color: var(--cool-gray);
+    color: var(--night);
     border-radius: 2em;
 }
 
@@ -341,4 +342,10 @@ nav.md-nav.md-nav--secondary div.quick_links a.quicklink_group:active span.tab_q
 
 .section-content p a:hover {
     color: var(--emerald);
+}
+
+
+[data-md-color-scheme="slate"] #license-sidebar-inner .md-tag[href]::before {
+    background: var(--md-default-fg-color--light);
+
 }

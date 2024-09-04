@@ -42,7 +42,7 @@ nav:
     # - Crafting: helping/crafting.md
     # - Legal Feedback: helping/legal.md
     # - Translate: helping/translate.md
-  #- blog: blog/index.md
+  - blog: blog/index.md
 theme:
   name: material
   custom_dir: overrides

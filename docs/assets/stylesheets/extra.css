@@ -1,5 +1,3 @@
-
-
 [data-md-color-scheme="slate"] {
     --md-hue: 235.2;
     --md-typeset-a-color: var(--ecru);
@@ -192,6 +190,7 @@ li.md-nav__item.md-nav__item--active.md-nav__item--section.md-nav__item--nested 
 a.md-nav__link:nth-child(3)>span:nth-child(1) {
     color: var(--md-default-fg-color);
 }
+
 a.md-nav__link--active:nth-child(3)>span:nth-child(1)::before {
     content: "↳ ";
     margin-left: 0em;
@@ -212,4 +211,10 @@ li.md-nav__item.md-nav__item--active.md-nav__item--section.md-nav__item--nested 
 
 .md-typeset .admonition {
     font-size: .8em;
+}
+
+@media screen and (max-width: 76.2344em) {
+    .md-tabs {
+        display: none;
+    }
 }
