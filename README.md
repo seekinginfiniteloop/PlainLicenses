@@ -1,6 +1,6 @@
 # Plain License
 
-**visit us at [plainlicense.org](plainlicense.org) for all the details!**
+## **Visit us at [plainlicense.org](plainlicense.org) for all the details!**
 
 **Plain License** is an initiative to rewrite popular software and creative licenses in plain, approachable language. Our goal is to make common licenses easy to understand for an average person with no legal background. We seek to recraft licenses in a way that is accessible, clear, and concise while maintaining the legal integrity and enforceability of the original licenses.
 
@@ -27,4 +27,4 @@
 
 ## **Use at your own risk!**
 
-Plain License licenses are provided as-is. Consult with an attorney before using any license for a project (and let us know what they say!). The author, [https://www.github.com/seekinginfiniteloop/](@seekinginfiniteloop) is not an attorney. He's just a human who wants to make licenses more accessible for everyone.
+Plain License licenses are provided as-is. Consult with an attorney before using any license for a project (and let us know what they say!). [The author, @seekinginfiniteloop](https://www.github.com/seekinginfiniteloop/),  is not an attorney. He's just a human who wants to make licenses more accessible for everyone.
