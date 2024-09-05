@@ -1,7 +1,7 @@
 from pathlib import Path
+from mkdocs
 
 ICENSE_PATH = Path("UNLICENSE")
-
 
 def on_page_markdown(markdown, page, config, files):
     if "Unlicense" in page.title:
