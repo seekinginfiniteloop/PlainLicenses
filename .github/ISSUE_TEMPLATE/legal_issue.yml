@@ -1,0 +1,99 @@
+name: Legal Flaw Report
+description: Let us know about a legal flaw you've found.
+title: "[LegalFlaw]: "
+labels: ["bug", "triage"]
+assignees:
+  - seekinginfiniteloop
+body:
+  - type: checkboxes
+    id: declaration
+    attributes:
+      label: Declaration
+      options:
+        - label: I confirm that I read and understood the Plain License [legal contribution guidelines](https://plainlicense.org/helping/legal.html).
+          required: true
+        - label: My contribution is for informational purposes only and is not legal advice.
+          required: true
+        - label: I am not creating or participating in an attorney-client relationship with Plain License, its contributors, or its users through my contribution.
+          required: true
+        - label: My contribution is based on general principles and may not apply to all situations or jurisdictions.
+          required: true
+        - label: Readers should talk to an attorney for legal advice that considers their specific situation.
+          required: true
+        - label: My contribution does not break any confidentiality agreements or legal obligations I have.
+          required: true
+        - label: I considered and don't know of any conflicts of interest that would prevent me from making this contribution.
+          required: true
+  - type: input
+    id: contact
+    attributes:
+      label: Contact Details
+      description: How can we get in touch with you if we need more info?
+      placeholder: ex. email@example.com
+    validations:
+      required: false
+  - type: dropdown
+    id: credentials
+    attributes:
+      label: Credentials
+      description: Which of the following best describes your legal credentials or knowledge?
+      options:
+        - I'm a lawyer
+        - I'm a law student
+        - I'm a legal researcher
+        - I'm a legal enthusiast
+        - I'm an informed person
+      default: 1
+    validations:
+      required: true
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: How severe is the legal flaw you've found?
+      options:
+        - Critical
+        - Major
+        - Minor
+        - Trivial
+      default: 2
+    validations:
+      required: true
+  - type: textarea
+    id: flawdescription
+    attributes:
+      label: Legal Flaw Description
+      description: Describe the legal flaw you've found as clearly and concisely as you can.
+      placeholder: Fill me out!
+    validations:
+      required: true
+  - type: textarea
+    id: implications
+    attributes:
+      label: Implications
+      description: Describe the possible implications of the legal flaw you've found.
+      placeholder: Fill me out!
+    validations:
+      required: true
+  - type: textarea
+    id: suggestedfix
+    attributes:
+      label: Suggested Fix
+      description: Describe how you think the legal flaw you've found could be fixed.
+      placeholder: Fill me out!
+    validations:
+      required: true
+  - type: textarea
+    id: references
+    attributes:
+      label: References
+      description: List any references you used to find the legal flaw you've found.
+    validations:
+      required: false
+  - type: textarea
+    id: additionalcontext
+    attributes:
+      label: Additional Context
+      description: Is there anything else you think we should know?
+    validations:
+      required: false

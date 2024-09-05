@@ -68,16 +68,7 @@ We understand that formal legal advice is governed by specific ethical rules and
 
 ### Disclaimers
 
-When making contributions, please include a disclaimer that clearly states:
-
-1. Your contribution does not constitute legal advice.
-2. You are not forming an attorney-client relationship with Plain License or its users.
-3. Your comments are based on general principles and may not apply to specific situations or jurisdictions.
-
-Example disclaimer:
-```plaintext
-DISCLAIMER: This contribution is for informational purposes only and does not constitute legal advice. No attorney-client relationship is formed through this contribution. The information provided may not apply to all situations or jurisdictions. Readers should consult with a licensed attorney for advice on their specific circumstances.
-```
+When making contributions, please include a disclaimer. Our templates for [Issues][plissues] and [Discussions][discussions] include a standard disclaimer that you can use. This disclaimer clarifies the nature of your contributions and helps manage expectations.
 
 ### Confidentiality
 
@@ -94,6 +85,3 @@ Thank you for your understanding and commitment to these principles as we work t
 [discussions]: https://github.com/seekinginfiniteloop/PlainLicense/discussions/categories/attorney-talk "Attorney Talk Discussions"
 [plissues]: https://github.com/seekinginfiniteloop/PlainLicense/issues/new/choose "Create a new issue"
 
-
-[discussions]: https://github.com/seekinginfiniteloop/PlainLicense/discussions/categories/attorney-talk "Attorney Talk Discussions"
-[plissues]:
