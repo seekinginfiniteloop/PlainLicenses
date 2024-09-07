@@ -1,0 +1,84 @@
+name: Feature Request
+description: Suggest a new feature or improvement.
+title: "[Enhancement]: "
+labels: ["enhancement"]
+body:
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      description: What type of feature are you requesting?
+      options:
+        - new license or license feature/enhancement
+        - new translation
+        - website feature/enhancement or design change
+        - CI/CD feature/enhancement
+        - documentation feature/enhancement
+        - other
+      default: 1
+    validations:
+      required: true
+  - type: input
+    id: feature
+    attributes:
+      label: Feature
+      description: What feature would you like to see added or improved?
+      placeholder: e.g. I would like to see unicorns on the homepage.
+    validations:
+      required: true
+  - type: input
+    id: usecase
+    attributes:
+      label: Use Case
+      description: How would you use this feature?
+      placeholder: e.g. I would use them to brighten my day.
+    validations:
+      required: true
+  - type: input
+    id: benefit
+    attributes:
+      label: Benefit
+      description: What benefits would this feature provide?
+      placeholder: e.g. Unicorns make everything better.
+    validations:
+      required: true
+  - type: input
+    id: alternatives
+    attributes:
+      label: Alternatives
+      description: Are there any alternative solutions or workarounds?
+      placeholder: e.g. You could use normal ponies.
+    validations:
+      required: false
+  - type: input
+    id: impact
+    attributes:
+      label: Impact
+      description: How would this feature impact the project or community?
+      placeholder: e.g. It would make everyone smile.
+    validations:
+      required: false
+  - type: input
+    id: resources
+    attributes:
+      label: Resources
+      description: Are there any resources or references to support this feature request?
+      placeholder: e.g. A study on the psychological benefits of unicorns.
+    validations:
+      required: false
+  - type: input
+    id: contact
+    attributes:
+      label: Contact Details
+      description: How can we get in touch with you if we need more info?
+      placeholder: e.g. Email me at unicornlover@onehornornohorn.com
+    validations:
+      required: false
+  - type: textarea
+    id: additionalinfo
+    attributes:
+      label: Additional Information
+      description: Is there anything else you'd like to add?
+      placeholder: Please provide any additional information that may be helpful, and discuss any suggestions you have for implementation.
+    validations:
+      required: false

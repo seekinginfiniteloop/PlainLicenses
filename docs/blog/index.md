@@ -1,5 +1,5 @@
 ---
-title: The Plain License Blog
-
+title: blog
+description: "The Plain License blog"
 ---
 # Blog

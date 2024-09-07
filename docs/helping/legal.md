@@ -12,11 +12,10 @@ We highly value the expertise of legal professionals in ensuring the quality and
 
 If you believe you've identified a potential legal flaw in any of our licenses:
 
-1.  Go to our [GitHub Issues page](https://github.com/yourusername/plain-license/issues).
+1.  Submit a new [legal flaw issue][legalissue].
 2.  Click on "New Issue".
 3.  Use the title format: "Legal Concern: [License Name] - Brief Description"
 4.  In the body, provide:
-
    - A clear explanation of the potential flaw
    - The potential implications of this flaw
    - Any suggested corrections or improvements
@@ -42,7 +41,7 @@ We welcome legal professionals to critically examine our licenses. If you see po
 1. Review the license carefully.
 2. Consider edge cases and potential misinterpretations.
 3. Analyze how the license might interact with different jurisdictions' laws.
-4. Share your findings through either the [Issues][plissues] (for clear flaws) or [Discussions][discussions] (for general concerns or suggestions) as outlined above.
+4. Share your findings through either the [Issues][legalissue] (for clear flaws) or [Discussions][discussions] (for general concerns or suggestions) as outlined above.
 
 Your efforts to "rip apart" our licenses contribute significantly to their robustness and reliability.
 
@@ -50,38 +49,37 @@ Your efforts to "rip apart" our licenses contribute significantly to their robus
 
 Plain License is seeking to become a chartered 501(c)(3) non-profit organization. We're looking for legal professionals with experience in this area to contribute their expertise.
 
-If you have experience with chartering 501(c)(3) organizations and are interested in helping, please visit our [Helping Plain License page](/helping-plain-license) for more details on how you can contribute to this crucial step in our organization's development.
+If you have experience with chartering 501(c)(3) organizations and are interested in helping, please visit our [Helping Plain License page][helping] for more details on how you can contribute to this crucial step in our organization's development.
 
 ## Professional Conduct and Nature of Contributions
 
 ### Not Legal Advice
 
-It's important to understand that any contributions, opinions, or suggestions you provide to Plain License are not legal advice or create an attorney-client relationship. Your contributions are voluntary, informational, and for the benefit of the open-source community.
+Any contributions, opinions, or suggestions you provide to Plain License are not legal advice and don't create an attorney-client relationship. Your contributions are voluntary, informational, and for the benefit of the creative community.
 
 ### Ethical Considerations
 
-We understand that formal legal advice is governed by specific ethical rules and professional responsibilities. By contributing to Plain License:
+We understand that legal advice has specific ethical rules and professional responsibilities. By contributing to Plain License:
 
-1. You acknowledge that your contributions are not formal legal advice.
+1. You acknowledge that your contributions are *not* legal advice.
 2. You are not entering into an attorney-client relationship with Plain License or its users.
-3. Your contributions are voluntary and for the benefit of the open-source and innovation community at large.
+3. Your contributions are voluntary and for the benefit of the creative community.
+4. You are not providing confidential information or creating conflicts of interest. Your contributions should be general knowledge among attorneys or publicly available information.
 
 ### Disclaimers
 
-When making contributions, please include a disclaimer. Our templates for [Issues][plissues] and [Discussions][discussions] include a standard disclaimer that you can use. This disclaimer clarifies the nature of your contributions and helps manage expectations.
+When making contributions, please include a disclaimer. Our templates for [Issues][legalissue] and [Discussions][discussions] include a standard disclaimer that you can use.
 
-### Confidentiality
+### Thank You
 
-Please ensure that your contributions do not breach any confidentiality obligations you may have to current or former clients. Only share information that is publicly available or general knowledge within the legal field.
+We appreciate your expertise and willingness to contribute to Plain License. You help us maintain a valuable resource for the community while respecting the ethical obligations of the legal profession when you follow these guidelines.
 
-### Conflicts of Interest
+Let's work together to improve Plain License.
 
-Before contributing, consider whether your participation might create any conflicts of interest with your current clients or employer. If in doubt, it's best to err on the side of caution and abstain from contributing on that particular topic.
+## Other Writing Contributions
 
-We deeply appreciate your expertise and willingness to contribute to Plain License. By adhering to these guidelines, you help us maintain a valuable resource for the community while respecting the ethical obligations of the legal profession.
-
-Thank you for your understanding and commitment to these principles as we work together to improve Plain License.
+If your contributions are more focused on writing or editing, please see our [Crafting Licenses][crafting] guide for more information on how you can help. We are always looking for clear, concise, and legally accurate language in our licenses.
 
 [discussions]: https://github.com/seekinginfiniteloop/PlainLicense/discussions/categories/attorney-talk "Attorney Talk Discussions"
-[plissues]: https://github.com/seekinginfiniteloop/PlainLicense/issues/new/choose "Create a new issue"
-
+[legalissue]: https://github.com/seekinginfiniteloop/PlainLicense/issues/new?assignees=seekinginfiniteloop&labels=bug%2Ctriage&projects=&template=legal_issue.yml&title=%5BLegalFlaw%5D%3A+ "Create a new issue"
+[helping]: index.md "Helping Plain License"

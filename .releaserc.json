@@ -16,8 +16,9 @@
           { "type": "script", "release": "minor" },
           { "type": "refactor", "release": null },
           { "type": "config", "release": null },
-          { "type": "chore", "release": null }
-          { "type": "build", "release": null}
+          { "type": "chore", "release": null },
+          { "type": "build", "release": null},
+          { "type": "bot", "release": null }
         ],
         "parserOpts": {
           "noteKeywords": ["BREAKING CHANGE", "BREAKING CHANGES", "BREAKING"]

@@ -1,0 +1,29 @@
+name: Plain Language Emergency!
+description: Report a plain language emergency. If you think we can simplify something, let us know. We *love* making things easier to understand.
+title: "[PlainLanguage]: "
+labels: ["plain language", "triage"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe the plain language emergency you're experiencing.
+      placeholder: I saw your license, and I think it could be simpler. Here's how...
+    validations:
+      required: true
+  - type: input
+    id: link
+    attributes:
+      label: Link
+      description: Where did you see the plain language emergency?
+      placeholder: e.g. https://plainlicense.org/licenses/awesome-license
+    validations:
+      required: false
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggestion
+      description: How would you fix the plain language emergency?
+      placeholder: e.g. I would change "utilize" to "use" because it's simpler (...utilize shouldn't exist).
+    validations:
+      required: false

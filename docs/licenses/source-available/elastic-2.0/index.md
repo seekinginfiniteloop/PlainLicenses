@@ -172,6 +172,9 @@ official_license_text: |
 
   **trademark** means trademarks, service marks, and similar rights.
 
+original_gunning_fog: 16.96
+plain_gunning_fog: 12.22
+
 link_in_original: false
 
 reference_links: null

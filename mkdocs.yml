@@ -2,17 +2,18 @@ site_name: Plain License
 site_url: https://plainlicense.org
 repo_url: https://github.com/seekinginfiniteloop/PlainLicense
 repo_name: PlainLicense
-edit_uri: edit/dev/docs/
+edit_uri: edit/main/docs/
 copyright: Plain License's authors dedicate all original content to the public domain. No rights reserved.
 hooks:
   - overrides/hooks/socialmedia.py
   - overrides/hooks/update_changelogs.py
   - overrides/hooks/content_assembly.py
   - overrides/hooks/md_filter.py
+  - overrides/hooks/set_pil.py
 site_description: |
   Plain License: Terms for Everyone.
 
-  Licenses are difficult to read and understand. Complicated terms prevent innovation and creativity. Our mission is to provide clear, easy-to-understand license terms. We offer plain versions of popular licenses like the MIT License, the Mozilla Public License 2.0, and the Unlicense. We will make licensing accessible to everyone, regardless of their background, experience, or education.
+  Licenses are difficult to read and understand. Complicated terms prevent innovation and creativity. We make them understandable for everyone.
 nav:
   - home: index.md
   - about:
@@ -37,11 +38,12 @@ nav:
           - licenses/proprietary/index.md
   - help:
       - helping/index.md
-    # - Coding: helping/code.md
-    # - Donate: helping/donate.md
-    # - Crafting: helping/crafting.md
-    # - Legal Feedback: helping/legal.md
-    # - Translate: helping/translate.md
+      - craft: helping/crafting.md
+      - write: helping/write.md
+      - legal: helping/legal.md
+      - translate: helping/translate.md
+      - code: helping/code.md
+      - donate: helping/donate.md
   - blog: blog/index.md
 theme:
   name: material
@@ -75,7 +77,7 @@ theme:
     repo: simple/github
     edit: material/pencil
     view: material/eye
-    tag:
+    tag: # These are the icons for the tags in the license frontmatter. They map to the tag name in the license frontmatter.
       canshare: octicons/share-24
       cansell: fontawesome/solid/money-bill-1
       canchange: material/file-edit
@@ -89,7 +91,7 @@ theme:
       sharesource: octicons/book-24
 
   palette:
-    # Palette toggle for system automatic mode
+    # Palette toggle for system automatic mode; chooses the color scheme based on the user's system preference, but allows the user to override it.
     - media: "(prefers-color-scheme)"
       primary: custom
       accent: custom
@@ -116,7 +118,7 @@ plugins:
       blog_toc: true
       post_url_format: "{slug}"
       post_excerpt_max_categories: 3
-      categories_allowed:
+      categories_allowed: # all blog entries must have at least one of these categories, and cannot have any other categories
         - plain writing
         - announcements
         - updates
@@ -132,6 +134,7 @@ plugins:
         as_update: date.updated
   - search:
       separator: '[\s\-,:!=\[\]()"/]+|(?!\b)(?=[A-Z][a-z])|\.(?!\d)|&[lg]t;'
+  #- shame_counter
   - social:
       cards_layout_options:
         font_family: Raleway
@@ -194,6 +197,8 @@ markdown_extensions:
       provider: github
       user: seekinginfiniteloop
       repo: PlainLicense
+  - pymdownx.progressbar:
+      progress_increment: 20
   - pymdownx.smartsymbols
   - pymdownx.snippets:
       auto_append:
@@ -204,6 +209,8 @@ markdown_extensions:
         - name: mermaid
           class: mermaid
           format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.striphtml:
+      strip_comments: true
   - pymdownx.tilde
   - sane_lists
   - tables
@@ -233,7 +240,7 @@ not_in_nav: |
   CHANGELOG*
   tags
 extra:
-  tags:
+  tags: # maps the tags in the license front matter to the names above in theme.icon.tag. This allows us to replace the tag with an icon in the license template.
     can-share: canshare
     can-sell: cansell
     can-change: canchange
@@ -257,7 +264,7 @@ extra:
       [submit an issue](https://github.com/seekinginfiniteloop/PlainLicense/issues/new/choose "Submit an issue on GitHub")
     github_edit_link: >
       [edit yourself](https://github.com/seekinginfiniteloop/PlainLicense/edit/main/docs/licenses/{{ category.lower()|trim }}/{{ spdx_id.lower()|trim }}/index.md "Edit this license on GitHub")
-    hide: # list of mkdocs components to hide in licenses
+    hide: # list of mkdocs components to hide in licenses; the table of contents is already hidden in the license template.
     official_link: >
       [{{ original_name|trim }}]({{ original_url|trim }} "Official {{ original_name|trim }}")
     interpretation_title: >
@@ -266,15 +273,15 @@ extra:
       The {{ plain_name|trim }} is a plain language adaptation of the {{ original_name|trim }}. We made the {{ plain_name|trim }} to make the {{ original_name|trim }} more accessible and understandable. We tried to match the {{ original_name|trim }}'s legal intent exactly. **If you think the {{ plain_name|trim }}'s terms are legally unclear, use the official {{ official_link|trim }} to clarify the terms.**
 
       If a court finds that any part of this {{ license_type }} cannot be enforced, the rest of the {{ license_type }} will still apply.
-    tag_text:
+    tag_text: # These values map to each of the tags in the license frontmatter, and are used for tooltips.
       can-share: >
         <strong>Share Freely</strong>: You can share or distribute any work that uses this {{ license_type }} freely.
       can-sell: >
         Use Commercially: You can sell any work that uses this {{ license_type }}, and you don't have to pay anyone anything or share your work.
       can-change: >
-        Adapt freely: You can change or modify any work that uses this {{ license_type }} however you want.
+        Change freely: You can change any work that uses this {{ license_type }} however you want.
       can-revoke: >
-        Taksies-backsies: You can revoke this licence from any work that uses it (if the work is yours) at any time.
+        Taksies-backsies: You can revoke this license from any work that uses it at any time (if you hold the copyright).
       relicense: >
         Relicense: You can change the {{ license_type }} to a different {{ license_type }} if you want. You may need to follow certain rules, like giving credit to the original author.
       share-alike (strict): >
@@ -287,3 +294,153 @@ extra:
         Describe Changes: You must describe any changes you make to any work that uses this license.
       share-source: >
         Share Your Work: You must share the source code of any work that uses this license.
+  extensions: # These are the extensions we use in our documentation for making the most of markdown for plain language. They map the extension name in markdown_extensions to a human-readable name, a URL to the extension's documentation, and a description of what the extension does.
+    abbr:
+      name: abbreviations and acronyms
+      url: https://squidfunk.github.io/mkdocs-material/reference/tooltips/#adding-abbreviations
+      description: Add abbreviations and acronyms with tooltips. You can do this sitewide by adding to (/includes/abbreviations.md) or on a per-page basis.
+    betterem:
+      name: better emphasis
+      url: https://facelessuser.github.io/pymdown-extensions/extensions/betterem/
+      description: Adds support for smarter emphasis in markdown, including nested emphasis and better handling of underscores.
+    blocks.admonition:
+      name: admonitions (blocks API)
+      url: https://facelessuser.github.io/pymdown-extensions/extensions/blocks/plugins/admonition/
+      description: Add callout boxes. Use this to highlight important information or warnings.
+    blocks.details:
+      name: collapsible details (blocks API)
+      url: https://facelessuser.github.io/pymdown-extensions/extensions/blocks/plugins/details/
+      description: Add collapsible detail blocks. By default, they start collapsed.
+    critic:
+      name: critic markup
+      url: https://facelessuser.github.io/pymdown-extensions/extensions/critic/
+      description: Add [critic markup](http://criticmarkup.com/). Use this to suggest changes or make comments.
+    def_list:
+      name: definition lists
+      url: https://squidfunk.github.io/mkdocs-material/reference/lists/?h=def+list
+      description: Add definition lists. Use this to define terms or concepts.
+    emoji:
+      name: emoji and icons
+      url: https://squidfunk.github.io/mkdocs-material/reference/icons-emojis/
+      description: Add emoji and icons. Use this to add visual interest or to convey meaning.
+    footnotes:
+      name: footnotes
+      url: https://squidfunk.github.io/mkdocs-material/reference/footnotes/
+      description: Add footnotes to provide additional information or context. Use this to avoid cluttering.
+    mark:
+      name: mark text (highlight)
+      url: https://facelessuser.github.io/pymdown-extensions/extensions/mark/
+      description: Add the ability to highlight text. Use this to draw attention to important information.
+    smartsymbols:
+      name: smart symbols
+      url: https://facelessuser.github.io/pymdown-extensions/extensions/smartsymbols/
+      description: |
+        Easily add special characters and symbols without needing to remember the code. One we use a lot here: `(c)` for copyright &copy.
+    tables:
+      name: tables
+      url: https://squidfunk.github.io/mkdocs-material/reference/data-tables/
+      description: Add sortable tables.
+    tilde:
+      name: tilde strikethrough
+      url: https://facelessuser.github.io/pymdown-extensions/extensions/tilde/
+      description: Use strikethrough text with tildes. Use this to show deleted text or to indicate changes.
+  shame_words: # These are 'shame words' for calculating the wall of shame. We use this list to determine how many 'shame words' are in the original license. The values are plain language alternatives to the more complex terms.
+  # TODO: Change implementation to use the stem or lexxer of the word as the key, and the plain language alternative as the value so we don't have to list every form of the word.
+    absence: lack
+    additional: more
+    alter: change
+    ancillary: supporting
+    apparatus: tool
+    applicable: related
+    arising from: caused by
+    arising: caused by
+    combination: mix
+    compatibility: ability to work together
+    compatible: able to work together
+    compliance: following the rules
+    comply: follow
+    consequential: related
+    constitute: make up
+    construed: understood
+    convey: share
+    conveyance: sharing
+    detriment: harm
+    display: show
+    distribute: share
+    distributes: shares
+    effectuate: carry out
+    enforce: make sure the rules are followed
+    enforcement: making sure the rules are followed
+    entity: person or organization
+    equivalent: same, similar
+    exclusion: not included
+    exercise: use
+    exercising: using
+    exploit: use
+    express: say, state
+    expressed: said, stated
+    expressly: clearly
+    fitness: ability
+    furnished: given
+    grant: give
+    hereby: now
+    hereof: this
+    hereunder: in this
+    implied: suggested
+    impossible: can't
+    incompatible: not able to work together
+    indemnify: protect
+    infringed: violated
+    infringements: violations
+    interest: share in
+    invalid: not valid
+    irrevocable: permanent
+    jurisdiction: area of law, place where the law applies, court
+    licenseable: can license
+    licensee: user
+    licensees: users
+    licensor: creator, author
+    licensors: creators, authors
+    litigation: lawsuit
+    location: place
+    merchantability: good enough to sell
+    merchantable: good enough to sell
+    modification: change
+    modified: changed
+    modify: change
+    moreover: also
+    non-exclusive: not the only, shared
+    noninfringement: not violating
+    notwithstanding: despite, including
+    obligation: duty, responsibility, requirement
+    obscure: hide
+    obtaining: getting
+    on behalf of: for
+    perform: do
+    permit: allow
+    permitted: allowed
+    prohibited: not allowed
+    propagate: share or spread
+    proprietary: owned
+    provisions: rules
+    publish: share
+    regulation: rule
+    relinquish: give up
+    relinquishment: giving up
+    remedy: fix, make right
+    reproduce: copy
+    royalty-free: free
+    shall: will
+    statute: law
+    steward: caretaker
+    stewardship: care
+    sublicensable: can license
+    subsequent: later
+    survive: last, continue
+    terminate: end
+    termination: end
+    thereof: that
+    third party: other person or organization
+    unencumbered: free
+    unmodified: unchanged
+    with respect to: about

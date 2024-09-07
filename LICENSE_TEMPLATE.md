@@ -137,4 +137,9 @@ reference_links:
       link_url: null, # URL for the link
       link_title: null, # title for the link -- optional, appears in a tooltip. We use the link text if you don't provide a title
     }
+original_gunning_fog: null
+# Gunning Fog index for the original license text; we'll calculate this when we generate the page
+# If you don't know what this is, don't worry about it; we'll take care of it
+plain_gunning_fog: null
+# Gunning Fog index for the plain language license text; we'll calculate this when we generate the page
 ---

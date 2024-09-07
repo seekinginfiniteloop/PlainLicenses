@@ -519,6 +519,8 @@ official_license_text: |
         This Source Code Form is "Incompatible With Secondary Licenses", as
         defined by the Mozilla Public License, v. 2.0.
 
+original_gunning_fog: 17.02
+plain_gunning_fog: 14.55 # we can do better
 link_in_original: true
 reference_links: null
 ---

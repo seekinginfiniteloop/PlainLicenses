@@ -3,20 +3,61 @@ title: Helping Plain License -- How to Contribute
 description: How to help Plain License and contribute to our mission of making licenses easier to understand.
 ---
 
-# We Need Your Help... Telling People How to Help Us
+# We Need Your Help!
 
-Our immediate priority was to create a small set of plain language licenses that anyone could use. We will get around to finishing our documentation explaining how to contribute to Plain License soon. If you want to help contribute to our documentation, or in any other way, please [submit an issue][submit-issue] or [contact us][contact-us].
+Plain License is a community-driven project, and we need your help to make it a success. Whether you're a developer, a lawyer, a writer, or just someone who wants to help, there are many ways you can contribute to our mission of making licenses easier to understand.
 
-**We are planning contribution guides for** (and reach out to us if you want to help with any of these):
+<div class="grid cards" markdown>
 
-- **Crafting New Licenses**. We want to make more licenses available in plain language.
-- **Translating Licenses**. We want to make our licenses available in as many languages as possible.
-- **Translating the Website or Documentation**. We want to make our website and documentation available in as many languages as possible.
-- **Improving Licenses**.
-- **Providing Legal Feedback**. If you are a lawyer or legal expert, we would love to hear your feedback on our licenses and your suggestions for improvement.
-- **Improving the Website or Documentation**.
-- **Donating**. We are a small team (of one, for now) and we could use your help to expand our mission. We are planning to accept donations soon, and will start with raising funds to become a non-profit. If you have experience chartering `501(c)(3)`s, and you are willing to donate your time to help us with the process, please reach out.
-- **Spreading the Word**. We want to reach as many people as possible with our mission to make licenses accessible. If you can help us spread the word, we would appreciate it.
+-   __Committing to Plain License__
 
-[submit-issue]: https://github.com/seekinginfiniteloop/plainlicense/issues "Submit a GitHub issue"
-[contact-us]: mailto:githubplainlicense.unguided198@passinbox.com "Contact Plain License"
+    ---
+    If you want to contribute to our site, you should learn about our [commit message format][commitformat]. This will help us track changes and make sure we can find them later. If that sounds too complicated, don't worry! You can still contribute to licenses, translations, improve our plain writing, and more without knowing how to code. Check out the other sections below to learn more about how you can help, or post on our [discussions][discussions] page if you have questions. You can also [contact us][contact-us] directly.
+
+-   __Recrafting or Improving Licenses__
+
+    ---
+    We want to make more licenses available in plain language. We call this process *recrafting* because it takes a lot of work and skill to get it right! [crafting licenses][crafting]
+
+-   __Translating Licenses__
+
+    ---
+    We want to make our licenses available in as many languages as possible. You can help by [translating licenses][translating].
+
+-   __Writing__
+
+    ---
+    We want all of our content to be as easy to understand as possible. We need your help. Read our plain writing tips to get started: [writing guidelines][writing]
+
+-   __Providing Legal Feedback__
+
+    ---
+    If you are a lawyer or legal expert, we would love to hear your feedback on our licenses and your suggestions for improvement: [legal contributions][legal]
+
+-   __Site Contributions__
+
+    ---
+    If you have ideas for improving our site, we would love to hear them. You can submit an issue on our GitHub page: [submit an issue][submit-issue], or join our [discussions][discussions] on GitHub. Or, you can jump right in. For many parts of our site, you don't need to know how to code to make changes. We use a simple markdown format that anyone can learn. [jump in][coding]
+
+-   __Donating__
+
+    ---
+    We are a small team (of one, for now) and we could use your help to expand our mission. You can donate time, money, or resources to help us grow: [donate to Plain License][donate]
+
+-   __Spread the Word__
+
+    ---
+    We want to reach as many people as possible with our mission to make licenses accessible. You can help by telling your friends, family, and colleagues about Plain License.
+
+</div>
+
+[commitformat]: commit.md "Commit Message Format"
+[crafting]: craft.md "License Crafting Guide"
+[writing]: write.md "Writing Guidelines"
+[translating]: translating.md "Translation Guide"
+[legal]: legal.md "Legal Contributions to Plain License"
+[donate]: donate.md "Donate to Plain License"
+[discussions]: {{ config.repo_url }}/discussions "Join the discussion on GitHub"
+[submit-issue]: {{ config.repo_url }}/issues "Submit a GitHub issue"
+[coding]: code.md "Contributing to Plain License"
+[contact-us]: mailto:adam@plainlicense.org "Contact Plain License"

@@ -1,0 +1,37 @@
+name: New License Submission
+description: Submit a new license or translation for consideration.
+title: "[License]: "
+labels: ["licenses", "triage", "enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please fill out the following information to submit a new license or translation for consideration.
+
+        If you are requesting a new license or license feature/enhancement, please use the [Feature Request](https://github.com/seekinginfiniteloop/PlainLicense/issues/new?assignees=&labels=enhancement&template=feature_request.yml&title=%5BEnhancement%5D%3A+) template instead.
+
+        You should use the license template provided in the [LICENSE_TEMPLATE.md](../../LICENSE_TEMPLATE.md) file.
+  - type: input
+    id: license
+    attributes:
+      label: License
+      description: What license or translation are you submitting?
+      placeholder: e.g. Plain Apache License 2.0 or French Translation of the Unlicense
+    validations:
+      required: true
+  - type: textarea
+    id: license-text
+    attributes:
+      label: License Text
+      description: What is the text of the license or translation?
+      placeholder: e.g. Attach or copy/paste the completed LICENSE_TEMPLATE.md file.
+    validations:
+      required: true
+  - type: input
+    id: contact
+    attributes:
+      label: Contact
+      description: How can we get in touch with you?
+      placeholder: e.g. email me at awesome_person@awesomegal.com
+    validations:
+      required: false

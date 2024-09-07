@@ -45,7 +45,7 @@ reader_license_text: |
 
   <h2 class="license-first-header">You are Free to Use, Change, and Share This Work</h2>
 
-  We, the author(s) of the work, give you a license to **use, copy, change, and share the work and all associated materials for free.** You can also sell or license the work under different terms. You agree to these terms by using, copying, or sharing the work. Everyone who gets a copy of this work may use the work under these terms.
+  We, the author(s) of the work, give you a license to **use, copy, change, and share the work and all related materials for free.** You can also sell or license the work under different terms. You agree to these terms by using, copying, or sharing the work. Everyone who gets a copy of this work may use the work under these terms.
 
   ### You Must Give Us Credit
 
@@ -80,6 +80,9 @@ official_license_text: |
   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
   OTHER DEALINGS IN THE SOFTWARE.
 
+
+original_gunning_fog: 21.94
+plain_gunning_fog: 9.74
 link_in_original: false
 
 reference_links: null

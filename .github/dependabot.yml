@@ -20,26 +20,44 @@
 
 version: 2
 updates:
-- package-ecosystem: npm
-  open-pull-requests-limit: 10
-  directory: "/"
-  labels: []
-  schedule:
-    interval: weekly
-    time: "04:00"
-- package-ecosystem: pip
-  # We only want to bump versions of packages in case of security updates, as
-  # we want to keep maximum compatibility - see https://t.ly/INSR_
-  open-pull-requests-limit: 0
-  directory: "/"
-  labels: []
-  schedule:
-    interval: weekly
-    time: "04:00"
-- package-ecosystem: github-actions
-  open-pull-requests-limit: 10
-  directory: "/"
-  labels: []
-  schedule:
-    interval: weekly
-    time: "04:00"
+  - package-ecosystem: npm
+    open-pull-requests-limit: 10
+    directory: "/"
+    labels: []
+    versioning-strategy: increase
+    schedule:
+      interval: weekly
+      time: "04:00"
+    commit-message:
+      prefix: "bot(npm): "
+    target-branch: main
+    assignees:
+      - seekinginfiniteloop
+  - package-ecosystem: pip
+    # We only want to bump versions of packages in case of security updates, as
+    # we want to keep maximum compatibility - see https://t.ly/INSR_
+    open-pull-requests-limit: 10
+    directory: "/"
+    labels: []
+    versioning-strategy: increase-if-necessary
+    schedule:
+      interval: weekly
+      time: "04:00"
+    commit-message:
+      prefix: "bot(pip): "
+    target-branch: main
+    assignees:
+      - seekinginfiniteloop
+  - package-ecosystem: github-actions
+    open-pull-requests-limit: 10
+    versioning-strategy: increase
+    directory: "/"
+    labels: []
+    schedule:
+      interval: weekly
+      time: "04:00"
+    commit-message:
+      prefix: "bot(github-actions): "
+    target-branch: main
+    assignees:
+      - seekinginfiniteloop

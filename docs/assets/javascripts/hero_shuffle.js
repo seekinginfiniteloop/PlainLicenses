@@ -5,6 +5,17 @@
  * The script also includes utility functions for color management and image settings, so images can be customized based on predefined styles and orientations.
  *
 */
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -13,6 +24,42 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (g && (g = 0, op[0] && (_ = 0)), _) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 };
 /**
  * Delays the execution for a specified amount of time.
@@ -25,9 +72,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
  * @returns {Promise<any>} A promise that resolves after the specified delay.
  */
 function delay(t, val) {
-    return new Promise(resolve => setTimeout(resolve, t, val));
+    return new Promise(function (resolve) { return setTimeout(resolve, t, val); });
 }
-let globalAbortController = new AbortController();
+var globalAbortController = new AbortController();
 /**
  * Resets the global AbortController instance.
  *
@@ -63,7 +110,7 @@ window.addEventListener('beforeunload', resetAbortController);
  * @property {string} white - The color value for white.
  * @property {string} zaffre - The color value for zaffre.
  */
-const colors = {
+var colors = {
     atomicOrange: "var(--atomic-tangerine)",
     aqua: "var(--aqua)",
     aquamarine: "var(--aquamarine)",
@@ -84,7 +131,7 @@ const colors = {
  *
  * @type {ImageSettings}
  */
-const defaultSettings = {
+var defaultSettings = {
     colors: { h1: colors.emerald, p: colors.emerald },
     scale: "1.1",
     objectFit: "scale-down",
@@ -100,7 +147,7 @@ const defaultSettings = {
  *
  * @type {Record<string, ImageSettings>}
  */
-const imageSettings = {
+var imageSettings = {
     anime: { colors: { h1: colors.atomicOrange, p: colors.emerald } },
     artbrut: { colors: { h1: colors.atomicOrange, p: colors.aqua } },
     comic: { colors: { h1: colors.aquamarine, p: colors.white } },
@@ -150,7 +197,7 @@ const imageSettings = {
  *
  * @type {ImageSettings}
  */
-const defaultPortraitSettings = {
+var defaultPortraitSettings = {
     colors: { h1: colors.emerald, p: colors.emerald },
     scale: "1.4",
     objectFit: "cover",
@@ -164,7 +211,7 @@ const defaultPortraitSettings = {
  *
  * @type {Record<string, ImageSettings>}
  */
-const portraitImageSettings = {
+var portraitImageSettings = {
     anime: {
         colors: { h1: colors.atomicOrange, p: colors.white },
         perspective: "-50rem",
@@ -190,11 +237,11 @@ const portraitImageSettings = {
  * @param {string} imageName - The name of the image for which to retrieve settings.
  * @returns {ImageSettings} The merged settings for the specified image.
  */
-const getImageSettings = (imageName) => {
-    const isPortrait = window.matchMedia("(orientation: portrait)").matches;
-    const landscapeSettings = imageSettings[imageName] || {};
-    const portraitSettings = portraitImageSettings[imageName] || {};
-    return Object.assign(Object.assign(Object.assign({}, defaultSettings), landscapeSettings), (isPortrait ? Object.assign(Object.assign({}, defaultPortraitSettings), portraitSettings) : {}));
+var getImageSettings = function (imageName) {
+    var isPortrait = window.matchMedia("(orientation: portrait)").matches;
+    var landscapeSettings = imageSettings[imageName] || {};
+    var portraitSettings = portraitImageSettings[imageName] || {};
+    return __assign(__assign(__assign({}, defaultSettings), landscapeSettings), (isPortrait ? __assign(__assign({}, defaultPortraitSettings), portraitSettings) : {}));
 };
 /**
  * Shuffles an array in place using the Fisher-Yates algorithm.
@@ -205,10 +252,11 @@ const getImageSettings = (imageName) => {
  * @param {T[]} array - The array to shuffle.
  * @returns {T[]} The shuffled array.
  */
-const shuffle = (array) => {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
+var shuffle = function (array) {
+    var _a;
+    for (var i = array.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        _a = [array[j], array[i]], array[i] = _a[0], array[j] = _a[1];
     }
     return array;
 };
@@ -225,17 +273,21 @@ const shuffle = (array) => {
  * @returns {Promise<Response>} A promise that resolves to the Response object representing the response to the request.
  * @throws {AbortError} Throws an error if the fetch request is aborted.
  */
-const parallaxLayer = document.getElementById('parallax-hero-image-layer');
+var parallaxLayer = document.getElementById('parallax-hero-image-layer');
 function abortableFetch(input_1) {
-    return __awaiter(this, arguments, void 0, function* (input, init = {}) {
-        const { signal } = globalAbortController;
-        if (init.signal) {
-            init.signal = AbortSignal.any([init.signal, signal]);
-        }
-        else {
-            init.signal = signal;
-        }
-        return fetch(input, init);
+    return __awaiter(this, arguments, void 0, function (input, init) {
+        var signal;
+        if (init === void 0) { init = {}; }
+        return __generator(this, function (_a) {
+            signal = globalAbortController.signal;
+            if (init.signal) {
+                init.signal = AbortSignal.any([init.signal, signal]);
+            }
+            else {
+                init.signal = signal;
+            }
+            return [2 /*return*/, fetch(input, init)];
+        });
     });
 }
 /**
@@ -248,20 +300,22 @@ function abortableFetch(input_1) {
  * @param {string} rootUrl - The root URL for the image assets.
  * @returns {ImageDataType} The generated image data object.
  */
-const generateImageDataType = (imageName, rootUrl) => {
-    const settings = getImageSettings(imageName);
-    const widths = ["1280", "1920", "2560", "3840"];
-    const baseUrl = `${rootUrl}/${imageName}/${imageName}`;
-    const url = `${baseUrl}_1280.webp`;
-    const srcset = widths
-        .map((imgWidth) => `${rootUrl}/${imageName}/${imageName}_${imgWidth}.webp ${imgWidth}w`)
+var generateImageDataType = function (imageName, rootUrl) {
+    var settings = getImageSettings(imageName);
+    var widths = ["1280", "1920", "2560", "3840"];
+    var baseUrl = "".concat(rootUrl, "/").concat(imageName, "/").concat(imageName);
+    var url = "".concat(baseUrl, "_1280.webp");
+    var srcset = widths
+        .map(function (imgWidth) {
+        return "".concat(rootUrl, "/").concat(imageName, "/").concat(imageName, "_").concat(imgWidth, ".webp ").concat(imgWidth, "w");
+    })
         .join(", ");
     return {
-        imageName,
-        baseUrl,
-        url,
-        srcset,
-        settings,
+        imageName: imageName,
+        baseUrl: baseUrl,
+        url: url,
+        srcset: srcset,
+        settings: settings,
         colorSpace: "srgb",
         data: new Uint8ClampedArray(),
         imgWidth: "1280",
@@ -276,16 +330,20 @@ const generateImageDataType = (imageName, rootUrl) => {
  * @returns {Promise<Record<string, ImageDataType>>} A promise that resolves to an object
  * containing image data for all images.
  */
-const getImageData = () => __awaiter(void 0, void 0, void 0, function* () {
-    const imageNames = Object.keys(imageSettings);
-    const shuffledImages = shuffle(imageNames);
-    const rootUrl = "assets/images/hero";
-    const imageData = {};
-    for (const imageName of shuffledImages) {
-        imageData[imageName] = generateImageDataType(imageName, rootUrl);
-    }
-    return imageData;
-});
+var getImageData = function () { return __awaiter(void 0, void 0, void 0, function () {
+    var imageNames, shuffledImages, rootUrl, imageData, _i, shuffledImages_1, imageName;
+    return __generator(this, function (_a) {
+        imageNames = Object.keys(imageSettings);
+        shuffledImages = shuffle(imageNames);
+        rootUrl = "assets/images/hero";
+        imageData = {};
+        for (_i = 0, shuffledImages_1 = shuffledImages; _i < shuffledImages_1.length; _i++) {
+            imageName = shuffledImages_1[_i];
+            imageData[imageName] = generateImageDataType(imageName, rootUrl);
+        }
+        return [2 /*return*/, imageData];
+    });
+}); };
 /**
  * Opens a connection to the IndexedDB database for image caching.
  *
@@ -294,11 +352,11 @@ const getImageData = () => __awaiter(void 0, void 0, void 0, function* () {
  *
  * @returns {Promise<IDBDatabase>} A promise that resolves to the opened database instance.
  */
-const openDB = () => {
-    return new Promise((resolve, reject) => {
-        const request = window.indexedDB.open("ImageCacheDB", 1);
+var openDB = function () {
+    return new Promise(function (resolve, reject) {
+        var request = window.indexedDB.open("ImageCacheDB", 1);
         request.onupgradeneeded = function (event) {
-            const db = event.target.result;
+            var db = event.target.result;
             db.createObjectStore("images", { keyPath: "url" });
         };
         request.onsuccess = function (event) {
@@ -319,22 +377,24 @@ const openDB = () => {
  * @param {string} optimalUrl - The URL of the image to retrieve from the cache.
  * @returns {Promise<Blob | void>} A promise that resolves to the cached image blob or void.
  */
-const getImageFromCache = (db, optimalUrl) => __awaiter(void 0, void 0, void 0, function* () {
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(["images"], "readonly");
-        const objectStore = transaction.objectStore("images");
-        const request = objectStore.get(optimalUrl);
-        request.onsuccess = () => {
-            if (request.result) {
-                resolve(request.result.image);
-            }
-            else {
-                storeImageInCache(db, optimalUrl);
-            }
-        };
-        request.onerror = () => reject("Failed to retrieve image from cache");
+var getImageFromCache = function (db, optimalUrl) { return __awaiter(void 0, void 0, void 0, function () {
+    return __generator(this, function (_a) {
+        return [2 /*return*/, new Promise(function (resolve, reject) {
+                var transaction = db.transaction(["images"], "readonly");
+                var objectStore = transaction.objectStore("images");
+                var request = objectStore.get(optimalUrl);
+                request.onsuccess = function () {
+                    if (request.result) {
+                        resolve(request.result.image);
+                    }
+                    else {
+                        storeImageInCache(db, optimalUrl);
+                    }
+                };
+                request.onerror = function () { return reject("Failed to retrieve image from cache"); };
+            })];
     });
-});
+}); };
 /**
  * Stores an image in the cache using the provided URL and blob.
  *
@@ -347,16 +407,29 @@ const getImageFromCache = (db, optimalUrl) => __awaiter(void 0, void 0, void 0, 
  * it will be fetched from the URL.
  * @returns {Promise<void>} A promise that resolves when the image is successfully stored.
  */
-const storeImageInCache = (db, optimalUrl, blob) => __awaiter(void 0, void 0, void 0, function* () {
-    blob = blob || (yield abortableFetch(optimalUrl).then((response) => response.blob()));
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(["images"], "readwrite");
-        const objectStore = transaction.objectStore("images");
-        const request = objectStore.add({ url: optimalUrl, image: blob });
-        request.onsuccess = () => resolve();
-        request.onerror = () => reject("Failed to store image in cache");
+var storeImageInCache = function (db, optimalUrl, blob) { return __awaiter(void 0, void 0, void 0, function () {
+    var _a;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
+            case 0:
+                _a = blob;
+                if (_a) return [3 /*break*/, 2];
+                return [4 /*yield*/, abortableFetch(optimalUrl).then(function (response) { return response.blob(); })];
+            case 1:
+                _a = (_b.sent());
+                _b.label = 2;
+            case 2:
+                blob = _a;
+                return [2 /*return*/, new Promise(function (resolve, reject) {
+                        var transaction = db.transaction(["images"], "readwrite");
+                        var objectStore = transaction.objectStore("images");
+                        var request = objectStore.add({ url: optimalUrl, image: blob });
+                        request.onsuccess = function () { return resolve(); };
+                        request.onerror = function () { return reject("Failed to store image in cache"); };
+                    })];
+        }
     });
-});
+}); };
 /**
  * Determines the optimal width for images based on the current screen width.
  *
@@ -365,8 +438,8 @@ const storeImageInCache = (db, optimalUrl, blob) => __awaiter(void 0, void 0, vo
  *
  * @returns {string} The optimal width for images based on the current screen size.
  */
-const determineOptimalWidth = () => {
-    const screenWidth = window.innerWidth;
+var determineOptimalWidth = function () {
+    var screenWidth = window.innerWidth;
     if (screenWidth <= 1280) {
         return "1280";
     }
@@ -388,14 +461,18 @@ const determineOptimalWidth = () => {
  * @returns {Promise<Map<string, string>>} A promise that resolves to a Map of transformation settings.
  */
 function getTransformationSettings(settings) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const transformationSettings = new Map();
-        for (const [key, value] of Object.entries(settings)) {
-            if (key.startsWith("transform") || key === "transition") {
-                transformationSettings.set(key, value);
+    return __awaiter(this, void 0, void 0, function () {
+        var transformationSettings, _i, _a, _b, key, value;
+        return __generator(this, function (_c) {
+            transformationSettings = new Map();
+            for (_i = 0, _a = Object.entries(settings); _i < _a.length; _i++) {
+                _b = _a[_i], key = _b[0], value = _b[1];
+                if (key.startsWith("transform") || key === "transition") {
+                    transformationSettings.set(key, value);
+                }
             }
-        }
-        return transformationSettings;
+            return [2 /*return*/, transformationSettings];
+        });
     });
 }
 /**
@@ -409,17 +486,21 @@ function getTransformationSettings(settings) {
  * @returns {Promise<HTMLImageElement>} A promise that resolves to the styled image element.
  */
 function setStyles(img, settings) {
-    return __awaiter(this, void 0, void 0, function* () {
-        for (const [key, value] of Object.entries(settings)) {
-            if ((value && key !== "colors") || key.startsWith("transform") || key === "transition") {
-                img.style.setProperty(key, value.toString());
+    return __awaiter(this, void 0, void 0, function () {
+        var _i, _a, _b, key, value;
+        return __generator(this, function (_c) {
+            for (_i = 0, _a = Object.entries(settings); _i < _a.length; _i++) {
+                _b = _a[_i], key = _b[0], value = _b[1];
+                if ((value && key !== "colors") || key.startsWith("transform") || key === "transition") {
+                    img.style.setProperty(key, value.toString());
+                }
             }
-        }
-        img.style.order = "-1";
-        img.style.alignContent = "flex-start";
-        img.style.alignSelf = "flex-start";
-        img.style.opacity = "0";
-        return img;
+            img.style.order = "-1";
+            img.style.alignContent = "flex-start";
+            img.style.alignSelf = "flex-start";
+            img.style.opacity = "0";
+            return [2 /*return*/, img];
+        });
     });
 }
 /**
@@ -432,15 +513,18 @@ function setStyles(img, settings) {
  * @param {Map<string, string>} transformationSettings - The transformation settings to apply.
  */
 function applyTransformation(img, transformationSettings) {
-    return __awaiter(this, void 0, void 0, function* () {
-        img.style.transform = "none";
-        requestAnimationFrame(() => {
-            img.style.transition += transformationSettings.get("transition") || "";
-            transformationSettings.forEach((value, key) => {
-                if (key !== "transition") {
-                    img.style.setProperty(key, value);
-                }
+    return __awaiter(this, void 0, void 0, function () {
+        return __generator(this, function (_a) {
+            img.style.transform = "none";
+            requestAnimationFrame(function () {
+                img.style.transition += transformationSettings.get("transition") || "";
+                transformationSettings.forEach(function (value, key) {
+                    if (key !== "transition") {
+                        img.style.setProperty(key, value);
+                    }
+                });
             });
+            return [2 /*return*/];
         });
     });
 }
@@ -454,45 +538,58 @@ function applyTransformation(img, transformationSettings) {
  * @param {boolean} [firstImage] - A flag indicating if this is the first image being created.
  * @returns {Promise<HTMLImageElement | void>} A promise that resolves to the created image element or void.
  */
-const createImageElement = (imageData, firstImage) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const db = yield openDB();
-        const optimalWidth = determineOptimalWidth();
-        const optimalUrl = `${imageData.baseUrl}_${optimalWidth}.webp`;
-        const result = getImageFromCache(db, optimalUrl);
-        const imageBlob = (yield Promise.any([result, abortableFetch(optimalUrl).then((response) => response.blob())]));
-        if (!imageBlob || imageBlob.size === 0) {
-            throw new Error("Failed to retrieve a valid image blob");
+var createImageElement = function (imageData, firstImage) { return __awaiter(void 0, void 0, void 0, function () {
+    var db, optimalWidth, optimalUrl, result, imageBlob, img, imageUrl_1, styledImg_1, error_1;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                _a.trys.push([0, 4, , 5]);
+                return [4 /*yield*/, openDB()];
+            case 1:
+                db = _a.sent();
+                optimalWidth = determineOptimalWidth();
+                optimalUrl = "".concat(imageData.baseUrl, "_").concat(optimalWidth, ".webp");
+                result = getImageFromCache(db, optimalUrl);
+                return [4 /*yield*/, Promise.any([result, abortableFetch(optimalUrl).then(function (response) { return response.blob(); })])];
+            case 2:
+                imageBlob = (_a.sent());
+                if (!imageBlob || imageBlob.size === 0) {
+                    throw new Error("Failed to retrieve a valid image blob");
+                }
+                img = new Image(Number(optimalWidth));
+                imageUrl_1 = URL.createObjectURL(imageBlob);
+                img.src = imageUrl_1;
+                img.srcset = imageData.srcset;
+                img.sizes =
+                    "(max-width: 1280px) 1280px, (max-width: 1920px) 1920px, (max-width: 2560px) 2560px, 3840px";
+                img.alt = "";
+                img.classList.add("hero-parallax__image");
+                img.draggable = false;
+                img.fetchPriority = firstImage ? "high" : "auto";
+                img.loading = firstImage ? "eager" : "lazy";
+                return [4 /*yield*/, setStyles(img, imageData.settings)];
+            case 3:
+                styledImg_1 = _a.sent();
+                styledImg_1.onload = function () {
+                    setTimeout(function () { return URL.revokeObjectURL(imageUrl_1); }, 60000);
+                    requestAnimationFrame(function () {
+                        styledImg_1.style.transition = "opacity .5s ease-out";
+                        styledImg_1.style.opacity = "1";
+                    });
+                };
+                styledImg_1.onerror = function (error) {
+                    console.error("Image failed to load:", imageData.imageName, error);
+                    return reloadOnFailure();
+                };
+                return [2 /*return*/, styledImg_1];
+            case 4:
+                error_1 = _a.sent();
+                console.error("Error in createImageElement:", error_1);
+                return [3 /*break*/, 5];
+            case 5: return [2 /*return*/];
         }
-        const img = new Image(Number(optimalWidth));
-        const imageUrl = URL.createObjectURL(imageBlob);
-        img.src = imageUrl;
-        img.srcset = imageData.srcset;
-        img.sizes =
-            "(max-width: 1280px) 1280px, (max-width: 1920px) 1920px, (max-width: 2560px) 2560px, 3840px";
-        img.alt = "";
-        img.classList.add("hero-parallax__image");
-        img.draggable = false;
-        img.fetchPriority = firstImage ? "high" : "auto";
-        img.loading = firstImage ? "eager" : "lazy";
-        const styledImg = yield setStyles(img, imageData.settings);
-        styledImg.onload = () => {
-            setTimeout(() => URL.revokeObjectURL(imageUrl), 60000);
-            requestAnimationFrame(() => {
-                styledImg.style.transition = "opacity .5s ease-out";
-                styledImg.style.opacity = "1";
-            });
-        };
-        styledImg.onerror = (error) => {
-            console.error("Image failed to load:", imageData.imageName, error);
-            return reloadOnFailure();
-        };
-        return styledImg;
-    }
-    catch (error) {
-        console.error("Error in createImageElement:", error);
-    }
-});
+    });
+}); };
 /**
  * Updates the colors of the CTA elements based on the provided color settings.
  *
@@ -502,18 +599,22 @@ const createImageElement = (imageData, firstImage) => __awaiter(void 0, void 0, 
  * @param {{ h1: string; p: string }} colors - The color settings for the header and paragraph.
  * @returns {Promise<void>} A promise that resolves when the colors have been updated.
  */
-const updateColors = (colors) => __awaiter(void 0, void 0, void 0, function* () {
-    const h1 = document.getElementById("CTA_header");
-    const p = document.getElementById("CTA_paragraph");
-    if (h1) {
-        h1.style.transition = "color 0.5s ease-in";
-        h1.style.color = colors.h1;
-    }
-    if (p) {
-        p.style.transition = "color 0.5s ease-in";
-        p.style.color = colors.p;
-    }
-});
+var updateColors = function (colors) { return __awaiter(void 0, void 0, void 0, function () {
+    var h1, p;
+    return __generator(this, function (_a) {
+        h1 = document.getElementById("CTA_header");
+        p = document.getElementById("CTA_paragraph");
+        if (h1) {
+            h1.style.transition = "color 0.5s ease-in";
+            h1.style.color = colors.h1;
+        }
+        if (p) {
+            p.style.transition = "color 0.5s ease-in";
+            p.style.color = colors.p;
+        }
+        return [2 /*return*/];
+    });
+}); };
 /**
  * Retrieves and displays the first image in the parallax layer.
  *
@@ -525,19 +626,30 @@ const updateColors = (colors) => __awaiter(void 0, void 0, void 0, function* () 
  * @returns {Promise<HTMLImageElement | void>} A promise that resolves to the created image element or void.
  */
 function getFirstImage(imageDatum, parallaxLayer) {
-    return __awaiter(this, void 0, void 0, function* () {
-        updateColors(imageDatum.settings.colors);
-        const imageElement = yield createImageElement(imageDatum, true);
-        if (!imageElement) {
-            console.error("Failed to create image element");
-            return reloadOnFailure();
-        }
-        const transformationSettings = yield getTransformationSettings(imageDatum.settings);
-        parallaxLayer.appendChild(imageElement);
-        if (transformationSettings) {
-            applyTransformation(imageElement, transformationSettings);
-            imageElement.style.opacity = "1";
-        }
+    return __awaiter(this, void 0, void 0, function () {
+        var imageElement, transformationSettings;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    updateColors(imageDatum.settings.colors);
+                    return [4 /*yield*/, createImageElement(imageDatum, true)];
+                case 1:
+                    imageElement = _a.sent();
+                    if (!imageElement) {
+                        console.error("Failed to create image element");
+                        return [2 /*return*/, reloadOnFailure()];
+                    }
+                    return [4 /*yield*/, getTransformationSettings(imageDatum.settings)];
+                case 2:
+                    transformationSettings = _a.sent();
+                    parallaxLayer.appendChild(imageElement);
+                    if (transformationSettings) {
+                        applyTransformation(imageElement, transformationSettings);
+                        imageElement.style.opacity = "1";
+                    }
+                    return [2 /*return*/];
+            }
+        });
     });
 }
 /**
@@ -552,20 +664,27 @@ function getFirstImage(imageDatum, parallaxLayer) {
  * @returns {Promise<void>} A promise that resolves when the transition is complete.
  */
 function transitionImages(lastImage, nextImage, transformationSettings) {
-    return __awaiter(this, void 0, void 0, function* () {
-        lastImage.style.transition = "opacity .3s ease-out";
-        lastImage.style.opacity = "0";
-        if (transformationSettings) {
-            applyTransformation(nextImage, transformationSettings);
-        }
-        nextImage.style.opacity = "1";
-        setTimeout(() => __awaiter(this, void 0, void 0, function* () {
-            if (lastImage && lastImage.parentNode) {
-                lastImage.parentNode.removeChild(lastImage);
+    return __awaiter(this, void 0, void 0, function () {
+        var _this = this;
+        return __generator(this, function (_a) {
+            lastImage.style.transition = "opacity .3s ease-out";
+            lastImage.style.opacity = "0";
+            if (transformationSettings) {
+                applyTransformation(nextImage, transformationSettings);
             }
-        }), 3000);
-        lastImage.addEventListener('transitionend', () => {
-            lastImage.remove();
+            nextImage.style.opacity = "1";
+            setTimeout(function () { return __awaiter(_this, void 0, void 0, function () {
+                return __generator(this, function (_a) {
+                    if (lastImage && lastImage.parentNode) {
+                        lastImage.parentNode.removeChild(lastImage);
+                    }
+                    return [2 /*return*/];
+                });
+            }); }, 3000);
+            lastImage.addEventListener('transitionend', function () {
+                lastImage.remove();
+            });
+            return [2 /*return*/];
         });
     });
 }
@@ -580,24 +699,43 @@ function transitionImages(lastImage, nextImage, transformationSettings) {
  * @returns {Promise<void>} A promise that resolves when the cycling is complete.
  */
 function cycleNextImage(imageDatum, parallaxLayer) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const preLoad = yield createImageElement(imageDatum);
-        if (!preLoad) {
-            console.error("Failed to preload image:", imageDatum.imageName);
-            return;
-        }
-        const lastImage = parallaxLayer.getElementsByTagName('img')[0];
-        preLoad.style.opacity = "0";
-        parallaxLayer.appendChild(preLoad);
-        // Wait for the new image to load before starting the transition
-        preLoad.onload = () => __awaiter(this, void 0, void 0, function* () {
-            const transformationSettings = yield getTransformationSettings(imageDatum.settings);
-            yield transitionImages(lastImage, preLoad, transformationSettings);
-            updateColors(imageDatum.settings.colors);
+    return __awaiter(this, void 0, void 0, function () {
+        var preLoad, lastImage;
+        var _this = this;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, createImageElement(imageDatum)];
+                case 1:
+                    preLoad = _a.sent();
+                    if (!preLoad) {
+                        console.error("Failed to preload image:", imageDatum.imageName);
+                        return [2 /*return*/];
+                    }
+                    lastImage = parallaxLayer.getElementsByTagName('img')[0];
+                    preLoad.style.opacity = "0";
+                    parallaxLayer.appendChild(preLoad);
+                    // Wait for the new image to load before starting the transition
+                    preLoad.onload = function () { return __awaiter(_this, void 0, void 0, function () {
+                        var transformationSettings;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0: return [4 /*yield*/, getTransformationSettings(imageDatum.settings)];
+                                case 1:
+                                    transformationSettings = _a.sent();
+                                    return [4 /*yield*/, transitionImages(lastImage, preLoad, transformationSettings)];
+                                case 2:
+                                    _a.sent();
+                                    updateColors(imageDatum.settings.colors);
+                                    return [2 /*return*/];
+                            }
+                        });
+                    }); };
+                    preLoad.onerror = function (error) {
+                        console.error("Image failed to load:", imageDatum.imageName, error);
+                    };
+                    return [2 /*return*/];
+            }
         });
-        preLoad.onerror = (error) => {
-            console.error("Image failed to load:", imageDatum.imageName, error);
-        };
     });
 }
 /**
@@ -610,37 +748,75 @@ function cycleNextImage(imageDatum, parallaxLayer) {
  * @param {boolean} [firstImage=true] - A flag indicating whether this is the first image cycle.
  * @returns {Promise<void>} A promise that resolves when the cycling process is initiated.
  */
-const cycleImages = (...args_1) => __awaiter(void 0, [...args_1], void 0, function* (firstImage = true) {
-    const imageData = yield getImageData();
-    if (firstImage && parallaxLayer) {
-        const firstLoad = imageData[Object.keys(imageData)[0]];
-        yield getFirstImage(firstLoad, parallaxLayer);
-        firstImage = false;
+var cycleImages = function () {
+    var args_1 = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+        args_1[_i] = arguments[_i];
     }
-    window.addEventListener('orientationchange', () => __awaiter(void 0, void 0, void 0, function* () {
-        const lastImage = parallaxLayer ? parallaxLayer.getElementsByTagName('img')[0] : null;
-        if (lastImage && parallaxLayer) {
-            const newData = yield getImageData();
-            const currentImage = newData[Object.keys(imageData)[0]];
-            cycleNextImage(currentImage, parallaxLayer);
-            cycleImages();
-        }
-    }));
-    const remainingKeys = Object.keys(imageData).slice(1);
-    const remainingImages = remainingKeys.map((key) => imageData[key]);
-    const cycleNext = (index) => __awaiter(void 0, void 0, void 0, function* () {
-        if (index >= remainingImages.length) {
-            index = 0; // Restart the cycle
-        }
-        yield delay(1000 * 30);
-        if (parallaxLayer) {
-            yield cycleNextImage(remainingImages[index], parallaxLayer);
-            cycleNext(index + 1);
-        }
-        ;
-        cycleNext(0);
+    return __awaiter(void 0, __spreadArray([], args_1, true), void 0, function (firstImage) {
+        var imageData, firstLoad, remainingKeys, remainingImages, cycleNext;
+        if (firstImage === void 0) { firstImage = true; }
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, getImageData()];
+                case 1:
+                    imageData = _a.sent();
+                    if (!(firstImage && parallaxLayer)) return [3 /*break*/, 3];
+                    firstLoad = imageData[Object.keys(imageData)[0]];
+                    return [4 /*yield*/, getFirstImage(firstLoad, parallaxLayer)];
+                case 2:
+                    _a.sent();
+                    firstImage = false;
+                    _a.label = 3;
+                case 3:
+                    window.addEventListener('orientationchange', function () { return __awaiter(void 0, void 0, void 0, function () {
+                        var lastImage, newData, currentImage;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0:
+                                    lastImage = parallaxLayer ? parallaxLayer.getElementsByTagName('img')[0] : null;
+                                    if (!(lastImage && parallaxLayer)) return [3 /*break*/, 2];
+                                    return [4 /*yield*/, getImageData()];
+                                case 1:
+                                    newData = _a.sent();
+                                    currentImage = newData[Object.keys(imageData)[0]];
+                                    cycleNextImage(currentImage, parallaxLayer);
+                                    cycleImages();
+                                    _a.label = 2;
+                                case 2: return [2 /*return*/];
+                            }
+                        });
+                    }); });
+                    remainingKeys = Object.keys(imageData).slice(1);
+                    remainingImages = remainingKeys.map(function (key) { return imageData[key]; });
+                    cycleNext = function (index) { return __awaiter(void 0, void 0, void 0, function () {
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0:
+                                    if (index >= remainingImages.length) {
+                                        index = 0; // Restart the cycle
+                                    }
+                                    return [4 /*yield*/, delay(1000 * 30)];
+                                case 1:
+                                    _a.sent();
+                                    if (!parallaxLayer) return [3 /*break*/, 3];
+                                    return [4 /*yield*/, cycleNextImage(remainingImages[index], parallaxLayer)];
+                                case 2:
+                                    _a.sent();
+                                    cycleNext(index + 1);
+                                    _a.label = 3;
+                                case 3:
+                                    ;
+                                    cycleNext(0);
+                                    return [2 /*return*/];
+                            }
+                        });
+                    }); };
+                    return [2 /*return*/];
+            }
+        });
     });
-});
+};
 cycleImages();
 /**
  * Handles image resizing events.
@@ -651,23 +827,27 @@ cycleImages();
  * @param {Event} event - The event that triggered the resize handling.
  * @returns {Promise<void>} A promise that resolves when the image cycling is complete.
  */
-const imageResize = function (event) {
-    return __awaiter(this, void 0, void 0, function* () {
-        if (event instanceof Event && parallaxLayer) {
-            const lastImage = parallaxLayer.getElementsByTagName('img')[0];
-            if (lastImage) {
-                lastImage.style.opacity = "0";
+var imageResize = function (event) {
+    return __awaiter(this, void 0, void 0, function () {
+        var lastImage, currentResolution, newResolution;
+        return __generator(this, function (_a) {
+            if (event instanceof Event && parallaxLayer) {
+                lastImage = parallaxLayer.getElementsByTagName('img')[0];
+                if (lastImage) {
+                    lastImage.style.opacity = "0";
+                }
+                currentResolution = lastImage ? lastImage.width : 0;
+                newResolution = determineOptimalWidth();
+                if (!lastImage || currentResolution !== Number(newResolution)) {
+                    cycleImages();
+                }
             }
-            const currentResolution = lastImage ? lastImage.width : 0;
-            const newResolution = determineOptimalWidth();
-            if (!lastImage || currentResolution !== Number(newResolution)) {
-                cycleImages();
-            }
-        }
-        ;
+            ;
+            return [2 /*return*/];
+        });
     });
 };
-let reloadAttempts = 0;
+var reloadAttempts = 0;
 /**
  * Reloads the current image in the parallax layer upon failure to display.
  *
@@ -679,44 +859,48 @@ let reloadAttempts = 0;
  * @returns {Promise<void>} A promise that resolves when the reload attempt is complete.
  * @throws {Error} Throws an error if the image reload fails, triggering a page reload.
  */
-const reloadOnFailure = () => __awaiter(void 0, void 0, void 0, function* () {
-    if (reloadAttempts > 4) {
-        console.error('Exceeded reload attempts, reloading page');
-    }
-    const imageLayer = document.getElementById("parallax-hero-image-layer");
-    const currentImage = imageLayer ? imageLayer.getElementsByTagName('img')[0] : null;
-    const currentImageVisible = currentImage && currentImage.style.opacity === '1';
-    if (document.readyState === 'complete' && !document.hidden && !document.hasFocus() && !currentImageVisible) {
-        if (currentImage) {
-            try {
-                const copiedImage = currentImage.cloneNode(true);
-                imageLayer.replaceChildren(copiedImage);
-                copiedImage.style.opacity = '1';
+var reloadOnFailure = function () { return __awaiter(void 0, void 0, void 0, function () {
+    var imageLayer, currentImage, currentImageVisible, copiedImage;
+    return __generator(this, function (_a) {
+        if (reloadAttempts > 4) {
+            console.error('Exceeded reload attempts, reloading page');
+        }
+        imageLayer = document.getElementById("parallax-hero-image-layer");
+        currentImage = imageLayer ? imageLayer.getElementsByTagName('img')[0] : null;
+        currentImageVisible = currentImage && currentImage.style.opacity === '1';
+        if (document.readyState === 'complete' && !document.hidden && !document.hasFocus() && !currentImageVisible) {
+            if (currentImage) {
+                try {
+                    copiedImage = currentImage.cloneNode(true);
+                    imageLayer.replaceChildren(copiedImage);
+                    copiedImage.style.opacity = '1';
+                }
+                catch (error) {
+                    console.error('Failed to reload image:', error);
+                    reloadAttempts++;
+                    location.reload();
+                }
             }
-            catch (error) {
-                console.error('Failed to reload image:', error);
+            else {
                 reloadAttempts++;
                 location.reload();
             }
         }
-        else {
-            reloadAttempts++;
-            location.reload();
-        }
-    }
-});
+        return [2 /*return*/];
+    });
+}); };
 /**
  * Polices the number of visible images in the parallax layer.
  * Helps to ensure that only one image is visible at a time.
 */
-const observer = new MutationObserver(() => {
+var observer = new MutationObserver(function () {
     if (parallaxLayer) {
-        const images = parallaxLayer.getElementsByTagName('img');
-        const visibleImages = Array.from(images).filter(img => img.style.opacity !== '0');
+        var images = parallaxLayer.getElementsByTagName('img');
+        var visibleImages = Array.from(images).filter(function (img) { return img.style.opacity !== '0'; });
         if (visibleImages.length > 1) {
-            visibleImages.slice(1).forEach(img => {
+            visibleImages.slice(1).forEach(function (img) {
                 img.style.opacity = '0';
-                setTimeout(() => {
+                setTimeout(function () {
                     if (img.parentNode) {
                         img.parentNode.removeChild(img);
                     }
@@ -724,12 +908,12 @@ const observer = new MutationObserver(() => {
             });
         }
         // Initial check in case there are already multiple visible images
-        const initialImages = parallaxLayer.getElementsByTagName('img');
-        const initialVisibleImages = Array.from(initialImages).filter(img => img.style.opacity !== '0');
+        var initialImages = parallaxLayer.getElementsByTagName('img');
+        var initialVisibleImages = Array.from(initialImages).filter(function (img) { return img.style.opacity !== '0'; });
         if (initialVisibleImages.length > 1) {
-            initialVisibleImages.slice(1).forEach(img => {
+            initialVisibleImages.slice(1).forEach(function (img) {
                 img.style.opacity = '0';
-                setTimeout(() => {
+                setTimeout(function () {
                     if (img.parentNode) {
                         img.parentNode.removeChild(img);
                     }
@@ -739,7 +923,7 @@ const observer = new MutationObserver(() => {
     }
 });
 /** --------------listeners------------- */
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', function () {
     if (parallaxLayer) {
         observer.observe(parallaxLayer, { childList: true, subtree: true });
     }

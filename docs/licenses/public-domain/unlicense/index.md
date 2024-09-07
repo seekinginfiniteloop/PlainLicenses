@@ -86,6 +86,8 @@ official_license_text: |
 
   For more information, please refer to <https://unlicense.org>.
 
+original_gunning_fog: 17.55
+plain_gunning_fog: 8.517
 link_in_original: true
 reference_links: null
 ---

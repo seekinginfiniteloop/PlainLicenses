@@ -4,11 +4,16 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ github.workspace }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -34,7 +39,7 @@ jobs:
           fi
       - name: Generate changelog
         run: |
-          node generate-changelog.js
+          node .github/scripts/generate-changelog.js
           if [ $? -ne 0 ]; then
             echo "Failed to generate changelog"
             exit 1
@@ -70,7 +75,7 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add CHANGELOG.md docs/licenses/**/CHANGELOG.md
-          git diff-index --quiet HEAD || git commit -m "docs: update changelogs [skip ci]"
+          git diff-index --quiet HEAD || git commit -m "bot(site): update changelogs [skip ci]"
           if [ $? -ne 0 ]; then
             echo "Failed to commit updated changelogs"
             exit 1
@@ -80,6 +85,12 @@ jobs:
             echo "Failed to push changes"
             exit 1
           fi
+      - name: Build and push
+        uses: alexthemaster/action-build-typescript@v1
+        with:
+          pushToBranch: true
+          branch: 'main'
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
 
   build:
     needs: release

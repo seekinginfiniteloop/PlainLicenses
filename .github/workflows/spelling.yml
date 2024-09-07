@@ -1,5 +1,12 @@
 name: Spellcheck
-on: [pull_request, push]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
   run:
@@ -14,3 +21,8 @@ jobs:
       with:
         config: "./_typos.toml"
         write_changes: true
+
+    - name: auto commit the minified files
+      uses: stefanzweifel/git-auto-commit-action@v5
+      with:
+        commit_message: "bot(site): Corrected spelling mistakes"

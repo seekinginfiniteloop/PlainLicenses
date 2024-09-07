@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const { execSync } = require("child_process");
 
-const licensesDir = path.join(__dirname, "docs", "licenses");
+const licensesDir = path.join("docs", "licenses");
 const projectChangelogPath = path.join(__dirname, "CHANGELOG.md");
 
 function getLastTag() {
