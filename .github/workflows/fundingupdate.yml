@@ -6,7 +6,7 @@ on:
   workflow_dispatch: # Allows manual triggering
   workflow_run: # Allows triggering from other workflows
     branches: [main]
-    workflows: ["Update Sponsors Progress"]
+    workflows: ["Release, Build, and Deploy"]
     types:
       - completed
 
