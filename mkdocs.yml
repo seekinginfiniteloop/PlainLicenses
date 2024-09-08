@@ -13,7 +13,7 @@ hooks:
 site_description: |
   Plain License: Terms for Everyone.
 
-  Licenses are difficult to read and understand. Complicated terms prevent innovation and creativity. We make them understandable for everyone.
+  Licenses are hard to read and understand. Complicated terms prevent innovation and creativity. We make them understandable for everyone.
 nav:
   - home: index.md
   - about:
@@ -38,7 +38,7 @@ nav:
           - licenses/proprietary/index.md
   - help:
       - helping/index.md
-      - craft: helping/crafting.md
+      - craft: helping/craft.md
       - write: helping/write.md
       - legal: helping/legal.md
       - translate: helping/translate.md
@@ -126,6 +126,7 @@ plugins:
         - how-to
         - licensing
       draft_if_future_date: true
+  - macros
   - offline
   - rss:
       match_path: "blog/posts/.*"
@@ -297,55 +298,69 @@ extra:
   extensions: # These are the extensions we use in our documentation for making the most of markdown for plain language. They map the extension name in markdown_extensions to a human-readable name, a URL to the extension's documentation, and a description of what the extension does.
     abbr:
       name: abbreviations and acronyms
-      url: https://squidfunk.github.io/mkdocs-material/reference/tooltips/#adding-abbreviations
-      description: Add abbreviations and acronyms with tooltips. You can do this sitewide by adding to (/includes/abbreviations.md) or on a per-page basis.
+      url: >
+        https://squidfunk.github.io/mkdocs-material/reference/tooltips/#adding-abbreviations "Adding abbreviations and acronyms with tooltips"
+      description: >
+        Add abbreviations and acronyms with tooltips. You can do this sitewide by adding to [abbreviations.md](https://github.com/seekinginfiniteloop/PlainLicense/edit/main/includes/abbreviations.md "/includes/abbreviations.md") or on a per-page basis.
     betterem:
       name: better emphasis
-      url: https://facelessuser.github.io/pymdown-extensions/extensions/betterem/
+      url: >
+        https://facelessuser.github.io/pymdown-extensions/extensions/betterem/ "Better emphasis in markdown"
       description: Adds support for smarter emphasis in markdown, including nested emphasis and better handling of underscores.
-    blocks.admonition:
+    admonition:
       name: admonitions (blocks API)
-      url: https://facelessuser.github.io/pymdown-extensions/extensions/blocks/plugins/admonition/
+      url: >
+        https://facelessuser.github.io/pymdown-extensions/extensions/blocks/plugins/admonition/ "Adding callout boxes with the blocks API"
       description: Add callout boxes. Use this to highlight important information or warnings.
-    blocks.details:
+    details:
       name: collapsible details (blocks API)
-      url: https://facelessuser.github.io/pymdown-extensions/extensions/blocks/plugins/details/
+      url: >
+        https://facelessuser.github.io/pymdown-extensions/extensions/blocks/plugins/details/ "Adding collapsible detail blocks with the blocks API"
       description: Add collapsible detail blocks. By default, they start collapsed.
     critic:
       name: critic markup
-      url: https://facelessuser.github.io/pymdown-extensions/extensions/critic/
-      description: Add [critic markup](http://criticmarkup.com/). Use this to suggest changes or make comments.
+      url: >
+        https://facelessuser.github.io/pymdown-extensions/extensions/critic/ "Adding critic markup to markdown"
+      description: >
+        Add [critic markup](http://criticmarkup.com/). Use this to suggest changes or make comments.
     def_list:
       name: definition lists
-      url: https://squidfunk.github.io/mkdocs-material/reference/lists/?h=def+list
+      url: >
+        https://squidfunk.github.io/mkdocs-material/reference/lists/?h=def+list "Adding definition lists"
       description: Add definition lists. Use this to define terms or concepts.
     emoji:
       name: emoji and icons
-      url: https://squidfunk.github.io/mkdocs-material/reference/icons-emojis/
+      url: >
+        https://squidfunk.github.io/mkdocs-material/reference/icons-emojis/ "Adding emoji and icons"
       description: Add emoji and icons. Use this to add visual interest or to convey meaning.
     footnotes:
       name: footnotes
-      url: https://squidfunk.github.io/mkdocs-material/reference/footnotes/
+      url: >
+        https://squidfunk.github.io/mkdocs-material/reference/footnotes/ "Adding footnotes"
       description: Add footnotes to provide additional information or context. Use this to avoid cluttering.
     mark:
       name: mark text (highlight)
-      url: https://facelessuser.github.io/pymdown-extensions/extensions/mark/
+      url: >
+        https://facelessuser.github.io/pymdown-extensions/extensions/mark/ "Highlight text in markdown"
       description: Add the ability to highlight text. Use this to draw attention to important information.
     smartsymbols:
       name: smart symbols
-      url: https://facelessuser.github.io/pymdown-extensions/extensions/smartsymbols/
-      description: |
-        Easily add special characters and symbols without needing to remember the code. One we use a lot here: `(c)` for copyright &copy.
+      url: >
+        https://facelessuser.github.io/pymdown-extensions/extensions/smartsymbols/ "Adding smart symbols to markdown"
+      description: >
+        Easily add special characters and symbols without needing to remember the code. One we use a lot here: `(c)` for copyright (c).
     tables:
       name: tables
-      url: https://squidfunk.github.io/mkdocs-material/reference/data-tables/
+      url: >
+        https://squidfunk.github.io/mkdocs-material/reference/data-tables/ "Adding sortable tables"
       description: Add sortable tables.
     tilde:
       name: tilde strikethrough
-      url: https://facelessuser.github.io/pymdown-extensions/extensions/tilde/
+      url: >
+        https://facelessuser.github.io/pymdown-extensions/extensions/tilde/ "Adding strikethrough text with tildes"
       description: Use strikethrough text with tildes. Use this to show deleted text or to indicate changes.
   shame_words: # These are 'shame words' for calculating the wall of shame. We use this list to determine how many 'shame words' are in the original license. The values are plain language alternatives to the more complex terms.
-  # TODO: Change implementation to use the stem or lexxer of the word as the key, and the plain language alternative as the value so we don't have to list every form of the word.
+    # TODO: Change implementation to use the stem or lexxer of the word as the key, and the plain language alternative as the value so we don't have to list every form of the word.
     absence: lack
     additional: more
     alter: change

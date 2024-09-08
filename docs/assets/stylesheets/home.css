@@ -44,7 +44,7 @@ html.js-focus-visible {
 
 html {
     height: 100%;
-    overflow: hidden;
+    overflow: auto;
 }
 
 body {
@@ -52,8 +52,7 @@ body {
     padding: 0;
     transform-style: preserve-3d;
     height: 100%;
-    overflow-y: scroll;
-    overflow-x: hidden;
+    overflow: auto;
     scroll-behavior: smooth;
 }
 
@@ -118,6 +117,8 @@ header.md-header:not(.md-header--shadow) {
     flex-direction: column;
     height: 140vh;
     width: 100vw;
+    scroll-snap-type: y proximity;
+    scroll-snap-align: start;
     justify-content: flex-start;
     align-items: flex-start;
     align-self: flex-start;
@@ -142,8 +143,6 @@ header.md-header:not(.md-header--shadow) {
     order: -1;
     pointer-events: auto;
     position: relative;
-    overflow-y: hidden;
-    overflow-x: hidden;
     top: 2rem;
     left: 0;
     right: 0;
@@ -155,6 +154,7 @@ header.md-header:not(.md-header--shadow) {
     grid-template-columns: 1fr;
     grid-template-rows: 1fr;
 }
+
 
 .hero-parallax__image {
     grid-column-start: 1;
@@ -171,6 +171,13 @@ header.md-header:not(.md-header--shadow) {
     overflow-y: auto;
     overflow-x: hidden;
     background: var(--gunmetal);
+    opacity: 0;
+    transition: opacity 1s ease-out;
+}
+
+.hero-parallax__layer .hero-parallax__image:first-child {
+    opacity: 1;
+    transition: opacity 1.5s ease-in;
 }
 
 .md-content__inner {
@@ -192,8 +199,37 @@ header.md-header:not(.md-header--shadow) {
     z-index: 40;
     width: 80%;
     padding-bottom: 5rem;
-    overflow-y: scroll;
-    overflow-x: hidden;
+    overflow: visible;
+    /*overflow-y: scroll;
+    overflow-x: auto;*/
+}
+
+:root {
+    --shadow-color: var(--emerald);
+    --shadow-multiplier: .125em;
+    --shadow-mixin:
+        0em calc(-1 * var(--shadow-multiplier)) 0em var(--shadow-color),
+        0em calc(-1 * var(--shadow-multiplier)) 0em var(--shadow-color),
+        0em calc(1 * var(--shadow-multiplier)) 0em var(--shadow-color),
+        0em calc(1 * var(--shadow-multiplier)) 0em var(--shadow-color),
+        calc(-1 * var(--shadow-multiplier)) 0em 0em var(--shadow-color),
+        calc(1 * var(--shadow-multiplier)) 0em 0em var(--shadow-color),
+        calc(-1 * var(--shadow-multiplier)) 0em 0em var(--shadow-color),
+        calc(1 * var(--shadow-multiplier)) 0em 0em var(--shadow-color),
+        calc(-1 * var(--shadow-multiplier)) calc(-1 * var(--shadow-multiplier)) 0em var(--shadow-color),
+        calc(1 * var(--shadow-multiplier)) calc(-1 * var(--shadow-multiplier)) 0em var(--shadow-color),
+        calc(-1 * var(--shadow-multiplier)) calc(1 * var(--shadow-multiplier)) 0em var(--shadow-color),
+        calc(1 * var(--shadow-multiplier)) calc(1 * var(--shadow-multiplier)) 0em var(--shadow-color),
+        calc(-1 * var(--shadow-multiplier)) calc(3 * var(--shadow-multiplier)) 0em var(--shadow-color),
+        0em calc(3 * var(--shadow-multiplier)) 0em var(--shadow-color),
+        calc(1 * var(--shadow-multiplier)) calc(3 * var(--shadow-multiplier)) 0em var(--shadow-color),
+        0em calc(3 * var(--shadow-multiplier)) var(1 * var(--shadow-multiplier)) rgba(0, 0, 0, .1),
+        0em 0em calc(1 * var(--shadow-multiplier)) rgba(0, 0, 0, .1),
+        0em calc(1 * var(--shadow-multiplier)) var(3 * var(--shadow-multiplier)) rgba(0, 0, 0, .3),
+        0em var(2 * var(--shadow-multiplier)) calc(3 * var(--shadow-multiplier)) rgba(0, 0, 0, .2),
+        0em calc(3 * var(--shadow-multiplier)) calc(3 * var(--shadow-multiplier)) rgba(0, 0, 0, .25),
+        0em calc(4 * var(--shadow-multiplier)) calc(4 * var(--shadow-multiplier)) rgba(0, 0, 0, .2),
+        0em calc(6 * var(--shadow-multiplier)) calc(6 * var(--shadow-multiplier)) rgba(0, 0, 0, .15);
 }
 
 #CTA_header {
@@ -203,9 +239,13 @@ header.md-header:not(.md-header--shadow) {
     font-size: clamp(4em, 8em, 12em);
     text-transform: uppercase;
     margin: 0.5rem;
-    text-align: left;
     object-position: bottom left;
     animation: glow 4s ease-in-out infinite alternate;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    --shadow-color: var(--ecru);
+    --shadow-multiplier: .25em;
+    text-shadow: var(--shadow-mixin);
 }
 
 #CTA_paragraph {
@@ -214,32 +254,13 @@ header.md-header:not(.md-header--shadow) {
     text-align: left;
     font-display: swap;
     text-transform: uppercase;
-    margin: 0rem, 1rem, 1rem, 1rem;
+    margin: 0rem 1rem 1rem 1rem;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    text-shadow: 0px -6px 0 #212121,
-        0px -6px 0 #212121,
-        0px 6px 0 #212121,
-        0px 6px 0 #212121,
-        -6px 0px 0 #212121,
-        6px 0px 0 #212121,
-        -6px 0px 0 #212121,
-        6px 0px 0 #212121,
-        -6px -6px 0 #212121,
-        6px -6px 0 #212121,
-        -6px 6px 0 #212121,
-        6px 6px 0 #212121,
-        -6px 18px 0 #212121,
-        0px 18px 0 #212121,
-        6px 18px 0 #212121,
-        0 19px 1px rgba(0, 0, 0, .1),
-        0 0 6px rgba(0, 0, 0, .1),
-        0 6px 3px rgba(0, 0, 0, .3),
-        0 12px 6px rgba(0, 0, 0, .2),
-        0 18px 18px rgba(0, 0, 0, .25),
-        0 24px 24px rgba(0, 0, 0, .2),
-        0 36px 36px rgba(0, 0, 0, .15);
-    text-align: left;
+    --shadow-color: var(--turkey-red);
+    --shadow-multiplier: .375em;
+    --shadow-mixin: var(--shadow-mixin);
+    text-shadow: var(--shadow-mixin);
     object-position: bottom left;
 }
 
@@ -252,9 +273,42 @@ header.md-header:not(.md-header--shadow) {
     }
 }
 
-#CTA_paragraph:hover,
-#CTA_paragraph:focus {
-    animation: ul 1000ms ease-in-out 100ms forwards;
+p#CTA_paragraph::after {
+    content: '';
+    position: relative;
+    left: 0;
+    bottom: 1em;
+    width: 100%;
+    height: 2em;
+    background: var(--emerald);
+    transform: scaleX(0.1);
+    transform-origin: left;
+    transition: transform 0.5s ease-out;
+    animation: thicken 0.5s ease-out forwards;
+    animation-play-state: paused;
+}
+
+p#CTA_paragraph::after:hover,
+p#CTA_paragraph::after:focus {
+    transform: scaleX(1);
+    animation-play-state: running;
+}
+
+@keyframes thicken {
+    0% {
+        height: 0rem;
+        bottom: -.1rem;
+    }
+
+    50% {
+        height: .3rem;
+        bottom: -.3rem;
+    }
+
+    100% {
+        height: .2rem;
+        bottom: -.2em;
+    }
 }
 
 @keyframes ul {
@@ -292,7 +346,7 @@ header.md-header:not(.md-header--shadow) {
     object-fit: cover;
 }
 
-a#hero-primary-button {
+div#hero-primary-button {
     font-family: "Montserrat", "Noto Sans", system-ui, sans-serif;
     font-display: swap;
     font-size: .9em;
@@ -307,7 +361,7 @@ a#hero-primary-button {
         scale 650ms ease-in;
 }
 
-a#hero-primary-button:hover {
+div#hero-primary-button:hover, div#hero-primary-button:focus {
     background-color: rgba(var(--emerald-adj), 1);
     color: rgba(var(--zaffre), 1);
     text-shadow: 0 0 .1em var(--gunmetal);
@@ -315,11 +369,11 @@ a#hero-primary-button:hover {
     scale: 1.1;
 }
 
-a#hero-primary-button:focus {
+div#hero-primary-button:active {
     background-color: rgba(var(--emerald-adj), 1);
     color: rgba(var(--ecru), 1);
     text-shadow: 0 0 .1em var(--gunmetal);
-    scale: 0.9;
+    scale: 0.8;
 }
 
 svg#arrow-down {
@@ -331,6 +385,12 @@ svg#arrow-down {
     left: 50%;
     fill: white;
     animation: blink 5s infinite;
+    cursor: pointer;
+}
+
+svg#arrow-down:hover {
+    fill: var(--emerald);
+    animation: blind 3s infinite;
 }
 
 @keyframes blink {
@@ -487,6 +547,10 @@ html.js-focus-visible a#yoshimi-link:hover {
     position: absolute;
     padding-top: .01rem;
     background-repeat: no-repeat;
+    scroll-snap-type: y mandatory;
+    scroll-snap-align: start;
+    scroll-behavior: smooth;
+    scroll-margin-block-start: 10vh;
     z-index: 10;
     background: var(--air-superiority-blue);
     background-attachment: fixed;
@@ -500,6 +564,7 @@ html.js-focus-visible a#yoshimi-link:hover {
 #pt2-hero-content-section-header {
     display: block;
     flex-grow: 3;
+    scroll-snap-align: start;
     align-self: center;
     justify-self: center;
     width: 100%;
@@ -509,7 +574,9 @@ html.js-focus-visible a#yoshimi-link:hover {
     z-index: 50;
 }
 
-
+#revolutionanchor {
+    scroll-behavior: smooth;
+}
 
 h1#pt2-hero-content-section-header {
     font-size: clamp(5em, 15em, 20em);
@@ -546,6 +613,11 @@ h1#pt2-hero-content-section-header {
     width: 100vw;
     position: absolute;
     padding-top: 1px;
+    scroll-snap-type: y mandatory;
+    scroll-snap-align: start;
+    scroll-margin-block-start: 10vh;
+    scroll-margin-block-end: 7vh;
+    scroll-snap-stop: always;
     background-repeat: no-repeat;
     z-index: 10;
     background: var(--gunmetal);
@@ -573,6 +645,7 @@ h1#pt3-hero-content-section-header.hero-content-section {
     color: var(--emerald);
     text-align: center;
     justify-self: center;
+    scroll-snap-align: start;
     width: 100%;
     margin-top: .3rem;
     z-index: 50;

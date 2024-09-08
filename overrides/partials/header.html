@@ -88,7 +88,7 @@
         {% endif %}
 
         <!-- Repository information -->
-        {% if config.repo_url %}
+        {% if config.repo_url|trim %}
         <div class="md-header__source">
             {% include "partials/source.html" %}
         </div>

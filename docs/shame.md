@@ -28,27 +28,31 @@ We provide different comparisons:
 
 ## Top Offenders: Unique Hard Words
 
-{{% set sorted_licenses = config.shame_counts | dictsort(by='value') | reverse %}
+{% if config.shame_counts %}
+{% set sorted_licenses = config.shame_counts | dictsort(by='value') | reverse %}
 {% for license, counts in sorted_licenses %}
-{% if loop.index > 3 %}
-{% break %}
-{% endif %}
+{% if loop.index <4 %}
 {{ loop.index }} {{ license }}: {{ counts | length }} unique offenses
-{% endfor %}}
+{% endif %}
+{% endfor %}
+{% endif %}
 
 ## Top Offenders: Frequency of Hard Words
 
+{% if config.shame_counts %}
 {% for license, counts in sorted_licenses %}
-{% if loop.index > 3 %}
-{% break %}
-{% endif %}
-{{ loop.index }} {{ license }}: {{ counts | map(attribute='count') | sum }} total offenses
+{% if loop.index < 4 %}
 
+{{ loop.index }} {{ license }}: {{ counts | map(attribute='count') | sum }} total offenses
+{% endif %}
 {% endfor %}
+{% endif %}
 
 ## Readability
 
-{{% set sorted_licenses = config.shame_readability | dictsort(by='value') %}
+{% if config.shame_readability %}
+{% set sorted_licenses = config.shame_readability | dictsort(by='value') %}
 {% for license, readability in sorted_licenses %}
 {{ license }}: {{ readability }}
-{% endfor %}}
+{% endfor %}
+{% endif %}

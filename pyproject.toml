@@ -47,6 +47,7 @@ dev-dependencies = [
     "uv>=0.2.24",
     "textblob>=0.18.0.post0",
     "spacy>=3.7.6",
+    "mkdocs-macros-plugin>=1.0.5",
 ]
 
 [tool.hatch.metadata]

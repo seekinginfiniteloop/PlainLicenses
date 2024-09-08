@@ -1,8 +1,8 @@
 "use strict";
 // Simplified query selector and event handler
 // some simple handling functions for license info sidebar
-var tabs = document.querySelectorAll(".md-typeset .tabbed-labels>label>[href]:first-child:hover a");
-tabs.forEach(function (tab) {
+const tabs = document.querySelectorAll(".md-typeset .tabbed-labels>label>[href]:first-child:hover a");
+tabs.forEach((tab) => {
     tab.addEventListener("mouseover", handleMouseOver);
     tab.addEventListener("mouseout", handleMouseOut);
 });
@@ -16,12 +16,12 @@ tabs.forEach(function (tab) {
  * @returns {void} - This function does not return a value.
  */
 function handleMouseOut(event) {
-    var target = event.target;
-    var url = new URL(target.getAttribute("href") || "", window.location.href);
-    var iconId = "icon-" + url.hash.slice(1);
-    var icon = document.getElementById(iconId);
+    const target = event.target;
+    const url = new URL(target.getAttribute("href") || "", window.location.href);
+    const iconId = "icon-" + url.hash.slice(1);
+    const icon = document.getElementById(iconId);
     if (icon) {
-        var svgPath = icon.querySelector("svg path");
+        const svgPath = icon.querySelector("svg path");
         if (svgPath) {
             svgPath.style.fill = "var(--md-accent-bg-color)";
         }
@@ -37,12 +37,12 @@ function handleMouseOut(event) {
  * @returns {void} - This function does not return a value.
  */
 function handleMouseOver(event) {
-    var target = event.target;
-    var url = new URL(target.getAttribute("href") || "", window.location.href);
-    var iconId = "icon-" + url.hash.slice(1);
-    var icon = document.getElementById(iconId);
+    const target = event.target;
+    const url = new URL(target.getAttribute("href") || "", window.location.href);
+    const iconId = "icon-" + url.hash.slice(1);
+    const icon = document.getElementById(iconId);
     if (icon) {
-        var svgPath = icon.querySelector("svg path");
+        const svgPath = icon.querySelector("svg path");
         if (svgPath) {
             svgPath.style.fill = "var(--emerald)";
         }
@@ -58,10 +58,10 @@ function handleMouseOver(event) {
  * @returns {void} - This function does not return a value.
  */
 function toggleSection(header) {
-    var content = header.nextElementSibling;
-    var triangle = header.querySelector(".triangle");
+    const content = header.nextElementSibling;
+    const triangle = header.querySelector(".triangle");
     if (content && triangle) {
-        var isExpanded = content.style.maxHeight;
+        const isExpanded = content.style.maxHeight;
         content.style.maxHeight = isExpanded ? "" : content.scrollHeight + "px";
         triangle.style.transform = isExpanded ? "rotate(0deg)" : "rotate(90deg)";
     }

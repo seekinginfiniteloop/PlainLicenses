@@ -65,7 +65,7 @@ Thank you for your patience and for helping make Plain License accessible to a g
 
 [iso]: https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes "ISO 639-1 Language Codes"
 [ietf]: https://en.wikipedia.org/wiki/IETF_language_tag "IETF Language Tag"
-[crafting]: crafting.md "License Crafting Guide"
-[i8]: {{ config.repo_url }}/issues/8 "Issue #8: Implement multi-language support for licenses"
-[i9]: {{ config.repo_url }}/issues/9 "Issue #9: Integrate Material for MKDocs Internationalization"
-[i10]: {{ config.repo_url }}/issues/10 "Issue #10: Add Multilanguage Support for Site Content"
+[crafting]: craft.md "License Crafting Guide"
+[i8]: {{ config.repo_url|trim }}/issues/8 "Issue #8: Implement multi-language support for licenses"
+[i9]: {{ config.repo_url|trim }}/issues/9 "Issue #9: Integrate Material for MKDocs Internationalization"
+[i10]: {{ config.repo_url|trim }}/issues/10 "Issue #10: Add Multilanguage Support for Site Content"

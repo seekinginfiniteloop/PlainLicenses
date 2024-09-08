@@ -11,7 +11,7 @@ const infoBox = document.getElementById('egg-box') as HTMLDialogElement;
  *                        information about the target element.
  * @returns {Promise<void>} A promise that resolves when the info box is displayed.
  */
-const showOverlay = async (event: Event) => {
+const showOverlay = async (event: Event): Promise<void> => {
     const target = event.target as HTMLElement;
     if (infoBox && (easterEgg.contains(target))) {
         infoBox.showModal();
@@ -30,7 +30,7 @@ const showOverlay = async (event: Event) => {
  *                        information about the target element.
  * @returns {Promise<void>} A promise that resolves when the info box is hidden.
  */
-const hideOverlay = async (event: Event) => {
+const hideOverlay = async (event: Event): Promise<void> => {
     const target = event.target as HTMLElement;
     if (infoBox && !infoBox.contains(target) && target !== easterEgg && !easterEgg.contains(target)) {
         infoBox.style.display = 'none';
@@ -48,7 +48,7 @@ const hideOverlay = async (event: Event) => {
  *
  * @returns {Promise<void>} A promise that resolves when the event listeners have been added.
  */
-const setEgg = async () => {
+const setEgg = async (): Promise<void> => {
     if (easterEgg && infoBox) {
         console.log('Adding event listeners');
         easterEgg.addEventListener('click', showOverlay);
@@ -64,59 +64,34 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-/**
- * Smoothly scrolls the window to a specified target element over a given duration.
- *
- * This function determines the target element based on the provided identifier, either as an ID or a CSS selector.
- * It calculates the distance to scroll and uses an easing function to create a smooth scrolling effect over the specified duration.
- *
- * @param {any} target - The target element to scroll to, specified as an ID (with a leading '#') or a CSS selector.
- * @param {number} [duration=1000] - The duration of the scroll animation in milliseconds (default is 1000ms).
- * @returns {void} - This function does not return a value.
- */
-function isParseable(url: string): boolean {
-    return URL.canParse(url);
-}
-
-function isAnchor(target: string): boolean {
-    try { return target.startsWith('#') || (isParseable(target) && Boolean(new URL(target).hash)); }
-    catch (e) { return false; }
-}
-
-function isElement(target: string): boolean {
-    try { return document.querySelector(target) !== null; }
-    catch (e) { return false; }
-}
-
-function smoothScroll(target: any = "#revolution-anchor", duration: number = 1000) {
-    if (!target || (!isAnchor(target) || !isElement(target))) {
-        return;
-    }
-
-    const targetID: string | null = target.startsWith('#') ? target.slice(1) : isParseable(target) ? (new URL(target).hash.slice(1)): null;
-    const targetElement: HTMLElement | null = (isElement(target) || targetID) ? (isElement(target) ? document.querySelector(target) as HTMLElement : (targetID ? document.getElementById(targetID) : null)) : null;
-
-    if (!targetElement) {
-        window.location.href = target;
-        return;
-    }
-
-    const targetPosition = targetElement.getBoundingClientRect().top + window.scrollY;
+function smoothScroll(target: HTMLElement, duration: number = 1000) {
+    const targetPosition = target.getBoundingClientRect().top + window.scrollY;
     const startPosition = window.scrollY;
     const distance = targetPosition - startPosition;
     let startTime: number | null = null;
 
-    requestAnimationFrame(function animation(currentTime: number) {
+    console.log(`Target Position: ${targetPosition}`);
+    console.log(`Start Position: ${startPosition}`);
+    console.log(`Distance: ${distance}`);
+
+    function animation(currentTime: number) {
         if (startTime === null) {
             startTime = currentTime;
         }
         const timeElapsed = currentTime - startTime;
         const run = ease(timeElapsed, startPosition, distance, duration);
+        console.log(`Time Elapsed: ${timeElapsed}`);
+        console.log(`Run: ${run}`);
         window.scrollTo(0, run);
+        console.log(`window.scrollTo called with: 0, ${run}`);
         if (timeElapsed < duration) {
             requestAnimationFrame(animation);
+        } else {
+            console.log('Scrolling completed');
         }
-    });
+    }
+
+    requestAnimationFrame(animation);
 }
 
 function ease(t: number, b: number, c: number, d: number): number {
@@ -127,18 +102,21 @@ function ease(t: number, b: number, c: number, d: number): number {
     t--;
     return -c / 2 * (t * (t - 2) - 1) + b;
 }
-
-
-// listener for smooth scroll
-document.querySelectorAll<HTMLAnchorElement>('[data-smooth-scroll]').forEach(link => {
-    link.addEventListener('click', function (e) {
-        e.preventDefault();
-        const target = (this as HTMLAnchorElement).getAttribute('href');
-        const durationAttr = (this as HTMLAnchorElement).getAttribute('data-duration');
+/**
+document.querySelectorAll<HTMLDivElement>('[data-smooth-scroll]').forEach(div => {
+    div.addEventListener('click', function (e) {
+        const targetId = (this as HTMLDivElement).getAttribute('data-anchor-target');
+        const targetElement = targetId ? document.getElementById(targetId) as HTMLAnchorElement : null;
+        const durationAttr = (this as HTMLDivElement).getAttribute('data-duration');
         const duration = durationAttr ? parseInt(durationAttr) : 1000;
 
-        if (target) {
-            smoothScroll(target, duration);
+        console.log('Target ID:', targetId);
+        console.log('Target element:', targetElement);
+        console.log('Duration:', duration);
+
+        if (targetElement) {
+            smoothScroll(targetElement, duration);
         }
     });
 });
+ */

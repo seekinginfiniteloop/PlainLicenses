@@ -1,4 +1,3 @@
-
 {% import "partials/nav-item.html" as item with context %}
 {% set class = "md-nav md-nav--primary" %}
 {% if "navigation.tabs" in features %}
@@ -15,7 +14,7 @@
             {% include "partials/logo.html" %}
         </a>
     </label>
-    {% if config.repo_url %}
+    {% if config.repo_url|trim %}
     <div class="md-nav__source">
         {% include "partials/source.html" %}
     </div>

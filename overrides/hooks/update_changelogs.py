@@ -3,11 +3,11 @@ import logging
 import re
 from pathlib import Path
 from typing import Sequence
-from ruamel import yaml
-from ruamel.yaml.compat import StringIO
+
 from _logconfig import get_logger
 from mkdocs.config.base import Config
 from mkdocs.structure.files import File, Files
+from ruamel import yaml
 
 yaml = yaml.YAML(typ="safe", pure=True)
 
@@ -20,6 +20,7 @@ logger = get_logger(
 include = re.compile(
     r"^licenses/(copyleft|proprietary|public-domain|permissive|source-available)/.+?/index\..*$"
 )
+
 
 def on_files(files: Files, config: Config) -> Files:
     file_sequence: Sequence[File] = files.documentation_pages()

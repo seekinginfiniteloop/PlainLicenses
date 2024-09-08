@@ -16,12 +16,12 @@ from mkdocs.structure.pages import Page
 # add sticky sidebar
 
 TAG_MAP = {
-    "distribution": "can-share", # allowances
+    "distribution": "can-share",  # allowances
     "commercial-use": "can-sell",
     "modifications": "can-change",
     "revokable": "can-revoke",
     "relicense": "relicense",
-    "disclose-source": "share-source", # requirements
+    "disclose-source": "share-source",  # requirements
     "document-changes": "describe-changes",
     "include-copyright": "give-credit",
     "same-license": "share-alike (strict)",

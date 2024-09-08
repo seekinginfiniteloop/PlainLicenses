@@ -45,11 +45,11 @@ We welcome legal professionals to critically examine our licenses. If you see po
 
 Your efforts to "rip apart" our licenses contribute significantly to their robustness and reliability.
 
-## 501(c)(3) Chartering Assistance
+## 501&lpar;c&rpar;(3) Chartering Assistance
 
-Plain License is seeking to become a chartered 501(c)(3) non-profit organization. We're looking for legal professionals with experience in this area to contribute their expertise.
+Plain License is seeking to become a chartered 501&lpar;c&rpar;(3) non-profit organization. We're looking for legal professionals with experience in this area to contribute their expertise.
 
-If you have experience with chartering 501(c)(3) organizations and are interested in helping, please visit our [Helping Plain License page][helping] for more details on how you can contribute to this crucial step in our organization's development.
+If you have experience with chartering 501&lpar;c&rpar;(3) organizations and are interested in helping, please visit our [Helping Plain License page][helping] for more details on how you can contribute to this crucial step in our organization's development.
 
 ## Professional Conduct and Nature of Contributions
 
