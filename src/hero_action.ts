@@ -102,9 +102,10 @@ function ease(t: number, b: number, c: number, d: number): number {
     t--;
     return -c / 2 * (t * (t - 2) - 1) + b;
 }
-/**
+
 document.querySelectorAll<HTMLDivElement>('[data-smooth-scroll]').forEach(div => {
     div.addEventListener('click', function (e) {
+        e.preventDefault();
         const targetId = (this as HTMLDivElement).getAttribute('data-anchor-target');
         const targetElement = targetId ? document.getElementById(targetId) as HTMLAnchorElement : null;
         const durationAttr = (this as HTMLDivElement).getAttribute('data-duration');
@@ -119,4 +120,3 @@ document.querySelectorAll<HTMLDivElement>('[data-smooth-scroll]').forEach(div =>
         }
     });
 });
- */

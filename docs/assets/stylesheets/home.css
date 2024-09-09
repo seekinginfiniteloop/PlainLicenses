@@ -3,6 +3,14 @@ Main stylesheet for the home page
 
 These are basic customizations for the home page.
 */
+@media screen and (prefers-reduced-motion: reduce) {
+	html {
+		scroll-behavior: auto;
+	}
+    #pt3-hero-content-section {
+        scroll-behavior: auto;
+    }
+}
 
 @font-face {
     font-family: "Bangers", system-ui;
@@ -44,7 +52,8 @@ html.js-focus-visible {
 
 html {
     height: 100%;
-    overflow: auto;
+    overflow: hidden;
+    scroll-behavior: auto;
 }
 
 body {
@@ -52,8 +61,8 @@ body {
     padding: 0;
     transform-style: preserve-3d;
     height: 100%;
-    overflow: auto;
-    scroll-behavior: smooth;
+    overflow-y: scroll;
+    overflow-x: hidden;
 }
 
 * {
@@ -81,8 +90,10 @@ header.md-header:not(.md-header--shadow) {
     object-fit: cover;
 }
 
+
 .md_main {
     z-index: auto;
+
 }
 
 .md-main__inner {
@@ -103,7 +114,6 @@ header.md-header:not(.md-header--shadow) {
     gap: 0;
     position: absolute;
     object-fit: cover;
-    scroll-behavior: smooth;
     z-index: 0;
     background: rgb(var(--gunmetal));
     background: linear-gradient(180deg, rgba(var(--gunmetal-adj), 0) 75%, rgba(var(--gunmetal-adj), 1) 100%) !important;
@@ -124,9 +134,9 @@ header.md-header:not(.md-header--shadow) {
     align-self: flex-start;
     align-content: flex-start;
     position: relative;
-    scroll-behavior: smooth;
+    transform: translateZ(-1px);
     overscroll-behavior-y: auto;
-    overflow-y: auto;
+    overflow-y: scroll;
     overflow-x: hidden;
     background: rgb(var(--gunmetal));
     background-attachment: fixed;
@@ -153,6 +163,7 @@ header.md-header:not(.md-header--shadow) {
     justify-content: center;
     grid-template-columns: 1fr;
     grid-template-rows: 1fr;
+
 }
 
 
@@ -168,7 +179,7 @@ header.md-header:not(.md-header--shadow) {
     position: absolute;
     padding: 0;
     z-index: -5;
-    overflow-y: auto;
+    overflow-y: scroll;
     overflow-x: hidden;
     background: var(--gunmetal);
     opacity: 0;
@@ -186,6 +197,7 @@ header.md-header:not(.md-header--shadow) {
     z-index: auto;
 }
 
+
 .mdx-hero__teaser {
     display: flex;
     flex-direction: column;
@@ -199,37 +211,8 @@ header.md-header:not(.md-header--shadow) {
     z-index: 40;
     width: 80%;
     padding-bottom: 5rem;
-    overflow: visible;
-    /*overflow-y: scroll;
-    overflow-x: auto;*/
-}
-
-:root {
-    --shadow-color: var(--emerald);
-    --shadow-multiplier: .125em;
-    --shadow-mixin:
-        0em calc(-1 * var(--shadow-multiplier)) 0em var(--shadow-color),
-        0em calc(-1 * var(--shadow-multiplier)) 0em var(--shadow-color),
-        0em calc(1 * var(--shadow-multiplier)) 0em var(--shadow-color),
-        0em calc(1 * var(--shadow-multiplier)) 0em var(--shadow-color),
-        calc(-1 * var(--shadow-multiplier)) 0em 0em var(--shadow-color),
-        calc(1 * var(--shadow-multiplier)) 0em 0em var(--shadow-color),
-        calc(-1 * var(--shadow-multiplier)) 0em 0em var(--shadow-color),
-        calc(1 * var(--shadow-multiplier)) 0em 0em var(--shadow-color),
-        calc(-1 * var(--shadow-multiplier)) calc(-1 * var(--shadow-multiplier)) 0em var(--shadow-color),
-        calc(1 * var(--shadow-multiplier)) calc(-1 * var(--shadow-multiplier)) 0em var(--shadow-color),
-        calc(-1 * var(--shadow-multiplier)) calc(1 * var(--shadow-multiplier)) 0em var(--shadow-color),
-        calc(1 * var(--shadow-multiplier)) calc(1 * var(--shadow-multiplier)) 0em var(--shadow-color),
-        calc(-1 * var(--shadow-multiplier)) calc(3 * var(--shadow-multiplier)) 0em var(--shadow-color),
-        0em calc(3 * var(--shadow-multiplier)) 0em var(--shadow-color),
-        calc(1 * var(--shadow-multiplier)) calc(3 * var(--shadow-multiplier)) 0em var(--shadow-color),
-        0em calc(3 * var(--shadow-multiplier)) var(1 * var(--shadow-multiplier)) rgba(0, 0, 0, .1),
-        0em 0em calc(1 * var(--shadow-multiplier)) rgba(0, 0, 0, .1),
-        0em calc(1 * var(--shadow-multiplier)) var(3 * var(--shadow-multiplier)) rgba(0, 0, 0, .3),
-        0em var(2 * var(--shadow-multiplier)) calc(3 * var(--shadow-multiplier)) rgba(0, 0, 0, .2),
-        0em calc(3 * var(--shadow-multiplier)) calc(3 * var(--shadow-multiplier)) rgba(0, 0, 0, .25),
-        0em calc(4 * var(--shadow-multiplier)) calc(4 * var(--shadow-multiplier)) rgba(0, 0, 0, .2),
-        0em calc(6 * var(--shadow-multiplier)) calc(6 * var(--shadow-multiplier)) rgba(0, 0, 0, .15);
+    overflow-y: scroll;
+    overflow-x: auto;
 }
 
 #CTA_header {
@@ -243,10 +226,9 @@ header.md-header:not(.md-header--shadow) {
     animation: glow 4s ease-in-out infinite alternate;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    --shadow-color: var(--ecru);
-    --shadow-multiplier: .25em;
-    text-shadow: var(--shadow-mixin);
 }
+
+
 
 #CTA_paragraph {
     font-size: clamp(1.5em, 3em, 4em);
@@ -257,10 +239,7 @@ header.md-header:not(.md-header--shadow) {
     margin: 0rem 1rem 1rem 1rem;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    --shadow-color: var(--turkey-red);
-    --shadow-multiplier: .375em;
-    --shadow-mixin: var(--shadow-mixin);
-    text-shadow: var(--shadow-mixin);
+    text-shadow: .05em .05em .0em var(--turkey-red);
     object-position: bottom left;
 }
 
@@ -273,61 +252,28 @@ header.md-header:not(.md-header--shadow) {
     }
 }
 
-p#CTA_paragraph::after {
-    content: '';
-    position: relative;
-    left: 0;
-    bottom: 1em;
-    width: 100%;
-    height: 2em;
-    background: var(--emerald);
-    transform: scaleX(0.1);
-    transform-origin: left;
-    transition: transform 0.5s ease-out;
-    animation: thicken 0.5s ease-out forwards;
-    animation-play-state: paused;
-}
-
-p#CTA_paragraph::after:hover,
-p#CTA_paragraph::after:focus {
-    transform: scaleX(1);
-    animation-play-state: running;
-}
-
-@keyframes thicken {
-    0% {
-        height: 0rem;
-        bottom: -.1rem;
-    }
-
-    50% {
-        height: .3rem;
-        bottom: -.3rem;
-    }
-
-    100% {
-        height: .2rem;
-        bottom: -.2em;
-    }
-}
-
 @keyframes ul {
     from {
         text-decoration: underline 0rem rgba(var(--emerald-adj), 0);
+        transform: scaleX(0);
     }
 
     to {
-        text-decoration: underline 0.3rem rgba(var(--emerald-adj), 1);
+        text-decoration: underline 0.2rem rgba(var(--emerald-adj), 1);
+        transform: scaleX(1);
     }
 }
 
 @keyframes glow {
     from {
-        text-shadow: 0 0 .3em var(--emerald);
+        text-shadow: 0 0 .2em var(--emerald),
+        .03em .03em 0em var(--ecru);
     }
 
     to {
-        text-shadow: 0 0 0.4em var(--emerald), 0 0 .35em var(--emerald);
+        text-shadow: 0 0 0.3em var(--emerald),
+        0 0 .35em var(--emerald),
+        .03em .03em 0em var(--ecru);
     }
 }
 
@@ -346,7 +292,7 @@ p#CTA_paragraph::after:focus {
     object-fit: cover;
 }
 
-div#hero-primary-button {
+a#hero-primary-button {
     font-family: "Montserrat", "Noto Sans", system-ui, sans-serif;
     font-display: swap;
     font-size: .9em;
@@ -361,7 +307,7 @@ div#hero-primary-button {
         scale 650ms ease-in;
 }
 
-div#hero-primary-button:hover, div#hero-primary-button:focus {
+a#hero-primary-button:hover, div#hero-primary-button:focus {
     background-color: rgba(var(--emerald-adj), 1);
     color: rgba(var(--zaffre), 1);
     text-shadow: 0 0 .1em var(--gunmetal);
@@ -369,7 +315,7 @@ div#hero-primary-button:hover, div#hero-primary-button:focus {
     scale: 1.1;
 }
 
-div#hero-primary-button:active {
+a#hero-primary-button:active {
     background-color: rgba(var(--emerald-adj), 1);
     color: rgba(var(--ecru), 1);
     text-shadow: 0 0 .1em var(--gunmetal);
@@ -390,7 +336,7 @@ svg#arrow-down {
 
 svg#arrow-down:hover {
     fill: var(--emerald);
-    animation: blind 3s infinite;
+    animation: blink 3s infinite;
 }
 
 @keyframes blink {
@@ -408,6 +354,7 @@ svg#arrow-down:hover {
 }
 
 /** Easter egg section */
+
 
 svg#the-egg {
     width: 1rem;
@@ -549,7 +496,7 @@ html.js-focus-visible a#yoshimi-link:hover {
     background-repeat: no-repeat;
     scroll-snap-type: y mandatory;
     scroll-snap-align: start;
-    scroll-behavior: smooth;
+
     scroll-margin-block-start: 10vh;
     z-index: 10;
     background: var(--air-superiority-blue);
@@ -559,6 +506,8 @@ html.js-focus-visible a#yoshimi-link:hover {
     align-self: center;
     justify-self: center;
     justify-items: center;
+    view-timeline: appear_on_scroll;
+    view-timeline-axis: block;
 }
 
 #pt2-hero-content-section-header {
@@ -572,10 +521,17 @@ html.js-focus-visible a#yoshimi-link:hover {
     margin-top: 5rem;
     padding: .5em;
     z-index: 50;
+    animation-name: appear_on_scroll;
+    animation-duration: 1s;
+    animation-timing-function: ease-in;
+    animation-fill-mode: forwards;
 }
 
 #revolutionanchor {
-    scroll-behavior: smooth;
+
+    display:contents;
+    position: relative;
+    top: 0;
 }
 
 h1#pt2-hero-content-section-header {
@@ -604,6 +560,7 @@ h1#pt2-hero-content-section-header {
     align-self: center;
     justify-self: center;
     justify-items: center;
+    view-timeline: appear_on_scroll;
 }
 
 #pt3-hero-content-section {
@@ -636,6 +593,8 @@ h1#pt2-hero-content-section-header {
         ". hlt3 hlt4 ."
         ". hlt5 hlt6 ."
         ". . . .";
+    view-timeline: appear_on_scroll;
+    view-timeline-axis: block;
 }
 
 h1#pt3-hero-content-section-header.hero-content-section {
@@ -651,7 +610,10 @@ h1#pt3-hero-content-section-header.hero-content-section {
     z-index: 50;
     display: grid;
     grid-area: head;
-
+    animation-name: appear_on_scroll;
+    animation-duration: 1s;
+    animation-timing-function: ease-in;
+    animation-fill-mode: forwards;
 }
 
 h2.hlt-header {
@@ -659,6 +621,10 @@ h2.hlt-header {
     font-size: 2em;
     text-align: left;
     margin-left: .2em;
+    animation-name: appear_on_scroll;
+    animation-duration: 1s;
+    animation-timing-function: ease-in;
+    animation-fill-mode: forwards;
 }
 
 p.hlt-paragraph {
@@ -670,6 +636,10 @@ p.hlt-paragraph {
     width: 100%;
     padding: 0;
     margin-left: .2em;
+    animation-name: appear_on_scroll;
+    animation-duration: 1s;
+    animation-timing-function: ease-in;
+    animation-fill-mode: forwards;
 }
 
 .hlt-paragraph a,

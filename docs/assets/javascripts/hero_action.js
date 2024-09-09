@@ -100,21 +100,18 @@ function ease(t, b, c, d) {
     t--;
     return -c / 2 * (t * (t - 2) - 1) + b;
 }
-/**
-document.querySelectorAll<HTMLDivElement>('[data-smooth-scroll]').forEach(div => {
+document.querySelectorAll('[data-smooth-scroll]').forEach(div => {
     div.addEventListener('click', function (e) {
-        const targetId = (this as HTMLDivElement).getAttribute('data-anchor-target');
-        const targetElement = targetId ? document.getElementById(targetId) as HTMLAnchorElement : null;
-        const durationAttr = (this as HTMLDivElement).getAttribute('data-duration');
+        e.preventDefault();
+        const targetId = this.getAttribute('data-anchor-target');
+        const targetElement = targetId ? document.getElementById(targetId) : null;
+        const durationAttr = this.getAttribute('data-duration');
         const duration = durationAttr ? parseInt(durationAttr) : 1000;
-
         console.log('Target ID:', targetId);
         console.log('Target element:', targetElement);
         console.log('Duration:', duration);
-
         if (targetElement) {
             smoothScroll(targetElement, duration);
         }
     });
 });
- */

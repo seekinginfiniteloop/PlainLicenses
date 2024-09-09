@@ -30,15 +30,14 @@
     <path
         d="M12 1a11 11 0 1 1 0 22 11 11 0 0 1 0-22ZM2.5 12a9.5 9.5 0 0 0 9.5 9.5 9.5 9.5 0 0 0 9.5-9.5A9.5 9.5 0 0 0 12 2.5 9.5 9.5 0 0 0 2.5 12Z" />
 </svg>
-<a href="pt3-hero-content-section" class="hero__scroll-down" data-smooth-scroll data-duration="4000">
+
         <svg id="arrow-down" title="scroll down for more" xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24">
+            viewBox="0 0 24 24"><a href="pt3-hero-content-section" class="hero__scroll-down" data-smooth-scroll
+                data-duration="4000">
             <path d="M11 4h2v12l5.5-5.5 1.42 1.42L12 19.84l-7.92-7.92L5.5 10.5 11 16z">
-            </path>
-        </svg></a>
+            </path></a>
+        </svg>
     </div>
-
-
 
     {% endblock %}
 
@@ -54,9 +53,8 @@
         <h1 class="hero-content-section .header" id="pt2-hero-content-section-header">get<br/> license terms<br/><span style="text-decoration:underline var(--emerald) .1em;">anyone</span><br/>can<br/>understand</h1>
     </section>
             <div id="pt2-3-buffer"></div>
-
-<div id="revolution-anchor"><section class="hero-content-section" id="pt3-hero-content-section"></div>
-        <h1 class="hero-content-section .header" id="pt3-hero-content-section-header">welcome to the plain language revolution</h1>
+<section class="hero-content-section" id="pt3-hero-content-section">
+    <h1 class="hero-content-section .header" id="pt3-hero-content-section-header">welcome to the plain language revolution</h1>
         <div class="hlt1" id="pt3-hero-content-section-hlt1">
             <div class="icn1" id="pt3-hero-content-section-icn1">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200" class="hlticon">
@@ -130,13 +128,12 @@
                 <p class="hlt-paragraph">Placeholder</p>
             </div>
         </div>
-
         </section>
-
 {% endblock %}
 {% endblock %}
 {% block scripts %}
 <script src="assets/javascripts/hero_shuffle.js" async></script>
 <script src="assets/javascripts/hero_action.js"></script>
+<script src="https://flackr.github.io/scroll-timeline/dist/scroll-timeline.js"></script>
 {{ super() }}
 {% endblock %}
