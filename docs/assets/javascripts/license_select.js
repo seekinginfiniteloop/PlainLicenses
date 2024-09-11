@@ -1,68 +1,47 @@
-"use strict";
-// Simplified query selector and event handler
-// some simple handling functions for license info sidebar
+import { fromEventPattern, Subscription } from 'rxjs';
+import { map, filter } from 'rxjs/operators';
+const subscriptions = new Subscription();
 const tabs = document.querySelectorAll(".md-typeset .tabbed-labels>label>[href]:first-child:hover a");
-tabs.forEach((tab) => {
-    tab.addEventListener("mouseover", handleMouseOver);
-    tab.addEventListener("mouseout", handleMouseOut);
-});
-/**
- * Handles the mouse out event for anchor elements, changing the fill color of associated SVG icons.
- *
- * This function retrieves the URL from the anchor's href attribute, constructs an icon ID from the URL's hash,
- * and updates the fill color of the corresponding SVG path to a specified accent color when the mouse leaves the anchor.
- *
- * @param {MouseEvent} event - The mouse event triggered when the mouse leaves the anchor element.
- * @returns {void} - This function does not return a value.
- */
-function handleMouseOut(event) {
-    const target = event.target;
+const getIconElement = (target) => {
     const url = new URL(target.getAttribute("href") || "", window.location.href);
     const iconId = "icon-" + url.hash.slice(1);
-    const icon = document.getElementById(iconId);
+    return document.getElementById(iconId);
+};
+const updateSvgFill = (icon, color) => {
     if (icon) {
         const svgPath = icon.querySelector("svg path");
         if (svgPath) {
-            svgPath.style.fill = "var(--md-accent-bg-color)";
+            svgPath.style.fill = color;
         }
     }
-}
-/**
- * Handles the mouse over event for anchor elements, changing the fill color of associated SVG icons.
- *
- * This function retrieves the URL from the anchor's href attribute, constructs an icon ID from the URL's hash,
- * and updates the fill color of the corresponding SVG path to a specified emerald color when the mouse hovers over the anchor.
- *
- * @param {MouseEvent} event - The mouse event triggered when the mouse enters the anchor element.
- * @returns {void} - This function does not return a value.
- */
-function handleMouseOver(event) {
-    const target = event.target;
-    const url = new URL(target.getAttribute("href") || "", window.location.href);
-    const iconId = "icon-" + url.hash.slice(1);
-    const icon = document.getElementById(iconId);
-    if (icon) {
-        const svgPath = icon.querySelector("svg path");
-        if (svgPath) {
-            svgPath.style.fill = "var(--emerald)";
-        }
-    }
-}
-/**
- * Toggles the visibility of a section's content and rotates a triangle indicator.
- *
- * This function expands or collapses the content section associated with the provided header element by adjusting
- * the max height of the content. It also rotates a triangle indicator to visually represent the expanded or collapsed state.
- *
- * @param {HTMLElement} header - The header element that triggers the toggle action when clicked.
- * @returns {void} - This function does not return a value.
- */
-function toggleSection(header) {
+};
+const createMouseEventObservable = (eventName) => fromEventPattern(handler => tabs.forEach(tab => tab.addEventListener(eventName, handler)), handler => tabs.forEach(tab => tab.removeEventListener(eventName, handler)));
+const mouseOver$ = createMouseEventObservable('mouseover');
+const mouseOut$ = createMouseEventObservable('mouseout');
+subscriptions.add(mouseOver$.pipe(map((event) => event.target), map(getIconElement)).subscribe(icon => updateSvgFill(icon, "var(--emerald)")));
+subscriptions.add(mouseOut$.pipe(map((event) => event.target), map(getIconElement)).subscribe(icon => updateSvgFill(icon, "var(--md-accent-bg-color)")));
+const toggleSection = (header) => {
     const content = header.nextElementSibling;
     const triangle = header.querySelector(".triangle");
     if (content && triangle) {
-        const isExpanded = content.style.maxHeight;
-        content.style.maxHeight = isExpanded ? "" : content.scrollHeight + "px";
+        const isExpanded = content.style.maxHeight !== "";
+        content.style.maxHeight = isExpanded ? "" : `${content.scrollHeight}px`;
         triangle.style.transform = isExpanded ? "rotate(0deg)" : "rotate(90deg)";
     }
-}
+};
+const headers = document.querySelectorAll('.section-header');
+const headerClicks$ = fromEventPattern((handler) => headers.forEach(header => header.addEventListener('click', handler)), (handler) => headers.forEach(header => header.removeEventListener('click', handler)));
+// Now add the subscription with proper typing
+subscriptions.add(headerClicks$.pipe(map((event) => event.currentTarget)).subscribe(toggleSection));
+subscriptions.add(window.viewport$.pipe(filter(({ height }) => height > 0)).subscribe(() => {
+    headers.forEach(header => {
+        const content = header.nextElementSibling;
+        if (content && content.style.maxHeight) {
+            content.style.maxHeight = `${content.scrollHeight}px`;
+        }
+    });
+}));
+document.addEventListener('beforeUnload', () => {
+    subscriptions.unsubscribe();
+});
+//# sourceMappingURL=license_select.js.map

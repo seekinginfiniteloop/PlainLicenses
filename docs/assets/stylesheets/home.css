@@ -184,6 +184,11 @@ header.md-header:not(.md-header--shadow) {
     background: var(--gunmetal);
     opacity: 0;
     transition: opacity 1s ease-out;
+    transform: scale(1) translate(0%, -25%);
+    perspective: 50rem;
+    object-fit: scale-down;
+    object-position: center bottom;
+    perspective-origin: center bottom;
 }
 
 .hero-parallax__layer .hero-parallax__image:first-child {
@@ -226,6 +231,7 @@ header.md-header:not(.md-header--shadow) {
     animation: glow 4s ease-in-out infinite alternate;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    color: --atomic-tangerine;
 }
 
 
@@ -241,6 +247,7 @@ header.md-header:not(.md-header--shadow) {
     -moz-osx-font-smoothing: grayscale;
     text-shadow: .05em .05em .0em var(--turkey-red);
     object-position: bottom left;
+    color: white;
 }
 
 @media screen and (orientation: portrait) {
@@ -292,7 +299,7 @@ header.md-header:not(.md-header--shadow) {
     object-fit: cover;
 }
 
-a#hero-primary-button {
+div#hero-primary-button {
     font-family: "Montserrat", "Noto Sans", system-ui, sans-serif;
     font-display: swap;
     font-size: .9em;
@@ -307,7 +314,7 @@ a#hero-primary-button {
         scale 650ms ease-in;
 }
 
-a#hero-primary-button:hover, div#hero-primary-button:focus {
+div#hero-primary-button:hover, div#hero-primary-button:focus {
     background-color: rgba(var(--emerald-adj), 1);
     color: rgba(var(--zaffre), 1);
     text-shadow: 0 0 .1em var(--gunmetal);
@@ -315,7 +322,7 @@ a#hero-primary-button:hover, div#hero-primary-button:focus {
     scale: 1.1;
 }
 
-a#hero-primary-button:active {
+div#hero-primary-button:active {
     background-color: rgba(var(--emerald-adj), 1);
     color: rgba(var(--ecru), 1);
     text-shadow: 0 0 .1em var(--gunmetal);
@@ -355,7 +362,6 @@ svg#arrow-down:hover {
 
 /** Easter egg section */
 
-
 svg#the-egg {
     width: 1rem;
     height: 1rem;
@@ -364,7 +370,7 @@ svg#the-egg {
     pointer-events: fill;
     z-index: 25;
     fill: #ccc;
-    display: block;
+    display: none; /* enabled by JavaScript; off for noscript */
     position: absolute;
     top: 40vh;
     right: 10vw;
@@ -521,10 +527,6 @@ html.js-focus-visible a#yoshimi-link:hover {
     margin-top: 5rem;
     padding: .5em;
     z-index: 50;
-    animation-name: appear_on_scroll;
-    animation-duration: 1s;
-    animation-timing-function: ease-in;
-    animation-fill-mode: forwards;
 }
 
 #revolutionanchor {
@@ -560,7 +562,6 @@ h1#pt2-hero-content-section-header {
     align-self: center;
     justify-self: center;
     justify-items: center;
-    view-timeline: appear_on_scroll;
 }
 
 #pt3-hero-content-section {
@@ -593,8 +594,6 @@ h1#pt2-hero-content-section-header {
         ". hlt3 hlt4 ."
         ". hlt5 hlt6 ."
         ". . . .";
-    view-timeline: appear_on_scroll;
-    view-timeline-axis: block;
 }
 
 h1#pt3-hero-content-section-header.hero-content-section {
@@ -610,10 +609,6 @@ h1#pt3-hero-content-section-header.hero-content-section {
     z-index: 50;
     display: grid;
     grid-area: head;
-    animation-name: appear_on_scroll;
-    animation-duration: 1s;
-    animation-timing-function: ease-in;
-    animation-fill-mode: forwards;
 }
 
 h2.hlt-header {
@@ -621,10 +616,6 @@ h2.hlt-header {
     font-size: 2em;
     text-align: left;
     margin-left: .2em;
-    animation-name: appear_on_scroll;
-    animation-duration: 1s;
-    animation-timing-function: ease-in;
-    animation-fill-mode: forwards;
 }
 
 p.hlt-paragraph {
@@ -636,10 +627,6 @@ p.hlt-paragraph {
     width: 100%;
     padding: 0;
     margin-left: .2em;
-    animation-name: appear_on_scroll;
-    animation-duration: 1s;
-    animation-timing-function: ease-in;
-    animation-fill-mode: forwards;
 }
 
 .hlt-paragraph a,
@@ -1073,6 +1060,13 @@ html.js-focus-visible.js body div.md-container main.md-main div.md-main__inner.m
         background-color: rgba(var(--zaffre-adj), .6);
         margin-top: 2rem;
     }
+
+    .hero-parallax__image {
+    scale: 1.4;
+    object-fit: cover;
+    translate: 0% 20%;
+    }
+
 }
 
 @font-face {

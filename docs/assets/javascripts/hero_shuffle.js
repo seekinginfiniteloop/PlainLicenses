@@ -1,49 +1,11 @@
-"use strict";
-/** ------------ Hero Image Shuffle -------------
- * This script handles the dynamic loading and cycling of hero images on the home page.
- * It uses IndexedDB for image caching and applies transformations to images for visual effects.
- * The script also includes utility functions for color management and image settings, so images can be customized based on predefined styles and orientations.
- *
-*/
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-/**
- * Delays the execution for a specified amount of time.
- *
- * This function returns a promise that resolves after a given number of milliseconds,
- * optionally returning a value when the promise resolves.
- *
- * @param {number} t - The duration of the delay in milliseconds.
- * @param {any} [val] - An optional value to be returned when the promise resolves.
- * @returns {Promise<any>} A promise that resolves after the specified delay.
- */
-function delay(t, val) {
-    return new Promise(resolve => setTimeout(resolve, t, val));
-}
-let globalAbortController = new AbortController();
-/**
- * Resets the global AbortController instance.
- *
- * This function aborts any ongoing operations associated with the current global
- * AbortController and creates a new instance, allowing for fresh abort signals
- * to be issued for subsequent operations.
- *
- * @returns {void} This function does not return a value.
- * @throws {AbortError} Throws an error if there are ongoing operations that are aborted.
- */
-function resetAbortController() {
-    globalAbortController.abort();
-    globalAbortController = new AbortController();
-}
-// Listen for navigation events
-window.addEventListener('beforeunload', resetAbortController);
+import { Observable, Subscription, fromEvent, merge, BehaviorSubject, catchError, EMPTY, throttleTime, take } from 'rxjs';
+import { debounceTime, filter, map, startWith, tap, distinctUntilChanged } from 'rxjs/operators';
+const subscriptions = new Subscription();
+let currentPath = window.location.pathname;
+const currentPathSubject = new BehaviorSubject(currentPath);
+// we have javascript, so set css for .hero-parallax__image to display: none
+const heroParallaxImage = document.querySelector('.hero-parallax__image');
+heroParallaxImage.style.display = 'none';
 /**
  * An object representing various color values used in the application.
  *
@@ -90,6 +52,7 @@ const defaultSettings = {
     objectFit: "scale-down",
     perspective: "50em",
     perspectiveOrigin: "center bottom",
+    objectPosition: "center bottom",
     // TODO: get translated transforms to work
 };
 /**
@@ -108,13 +71,11 @@ const imageSettings = {
         colors: { h1: colors.mindaro, p: colors.aqua },
         perspectiveOrigin: "30% 20%",
         scale: "1",
-        objectPosition: "center bottom",
         translate: "0% -30%",
     },
     fantasy: {
         colors: { h1: colors.white, p: colors.mindaro },
         scale: "1",
-        objectPosition: "center bottom",
         translate: "0% -20%",
     },
     farcical: {
@@ -124,8 +85,7 @@ const imageSettings = {
     },
     fauvist: { colors: { h1: colors.mindaro, p: colors.white } },
     minimal: {
-        colors: { h1: colors.atomicOrange, p: colors.atomicOrange },
-        objectPosition: "center bottom",
+        colors: { h1: colors.atomicOrange, p: colors.white },
         scale: "1",
         perspective: "50rem",
         translate: "0% -25%",
@@ -134,7 +94,6 @@ const imageSettings = {
         colors: { h1: colors.blueBlue, p: colors.white },
         scale: "1",
         perspective: "40rem",
-        objectPosition: "center bottom",
         translate: "0% -25%",
     },
     surreal: {
@@ -152,9 +111,8 @@ const imageSettings = {
  */
 const defaultPortraitSettings = {
     colors: { h1: colors.emerald, p: colors.emerald },
-    scale: "1.4",
     objectFit: "cover",
-    objectPosition: "center bottom",
+    scale: "1.4",
 };
 /**
  * A record of portrait image settings keyed by image name.
@@ -194,7 +152,11 @@ const getImageSettings = (imageName) => {
     const isPortrait = window.matchMedia("(orientation: portrait)").matches;
     const landscapeSettings = imageSettings[imageName] || {};
     const portraitSettings = portraitImageSettings[imageName] || {};
-    return Object.assign(Object.assign(Object.assign({}, defaultSettings), landscapeSettings), (isPortrait ? Object.assign(Object.assign({}, defaultPortraitSettings), portraitSettings) : {}));
+    return {
+        ...defaultSettings,
+        ...landscapeSettings,
+        ...(isPortrait ? { ...defaultPortraitSettings, ...portraitSettings } : {}),
+    };
 };
 /**
  * Shuffles an array in place using the Fisher-Yates algorithm.
@@ -213,31 +175,6 @@ const shuffle = (array) => {
     return array;
 };
 const parallaxLayer = document.getElementById('parallax-hero-image-layer');
-/**
- * Performs a fetch request that can be aborted using an AbortController.
- *
- * This asynchronous function enhances the standard fetch API by allowing the request
- * to be aborted if the global abort controller's signal is triggered. It merges any
- * existing signal from the `init` parameter with the global signal to ensure that
- * both can control the fetch request's lifecycle.
- *
- * @param {RequestInfo | URL} input - The resource to fetch, either as a URL string or a Request object.
- * @param {RequestInit} [init={}] - An optional configuration object for the fetch request.
- * @returns {Promise<Response>} A promise that resolves to the Response object representing the response to the request.
- * @throws {AbortError} Throws an error if the fetch request is aborted.
- */
-function abortableFetch(input_1) {
-    return __awaiter(this, arguments, void 0, function* (input, init = {}) {
-        const { signal } = globalAbortController;
-        if (init.signal) {
-            init.signal = AbortSignal.any([init.signal, signal]);
-        }
-        else {
-            init.signal = signal;
-        }
-        return fetch(input, init);
-    });
-}
 /**
  * Generates the image data type for a given image name and root URL.
  *
@@ -284,71 +221,81 @@ const imageData = getImageData();
  * This function creates or opens the "ImageCacheDB" database and sets up the necessary
  * object store for caching images.
  *
- * @returns {Promise<IDBDatabase>} A promise that resolves to the opened database instance.
+ * @returns {Observable<IDBDatabase>} An observable that resolves to the opened database instance.
  */
 const openDB = () => {
-    return new Promise((resolve, reject) => {
+    return new Observable((subscriber) => {
         const request = window.indexedDB.open("ImageCacheDB", 1);
         request.onupgradeneeded = function (event) {
             const db = event.target.result;
             db.createObjectStore("images", { keyPath: "url" });
         };
         request.onsuccess = function (event) {
-            resolve(event.target.result);
+            subscriber.next(event.target.result);
+            subscriber.complete();
         };
         request.onerror = function (event) {
-            reject("Database error: " + event.target.error);
+            subscriber.error("Database error: " + event.target.error);
         };
     });
 };
 /**
- * Retrieves an image from the cache based on the optimal URL.
+ * Retrieves an image from the IndexedDB cache or stores it if not found.
  *
- * This asynchronous function attempts to get an image from the IndexedDB cache.
- * If the image is not found, it triggers the caching process.
+ * This function attempts to fetch an image from the specified IndexedDB database using the provided URL.
+ * If the image is not found in the cache, it calls `storeImageInCache` to store the image and completes the observable.
  *
- * @param {IDBDatabase} db - The database instance to use for the cache retrieval.
+ * @param {IDBDatabase} db - The IndexedDB database instance from which to retrieve the image.
  * @param {string} optimalUrl - The URL of the image to retrieve from the cache.
- * @returns {Promise<Blob | void>} A promise that resolves to the cached image blob or void.
+ * @returns {Observable<Blob | void>} An observable that emits the image Blob if found, or completes if the image is stored successfully.
  */
-const getImageFromCache = (db, optimalUrl) => __awaiter(void 0, void 0, void 0, function* () {
-    return new Promise((resolve, reject) => {
+const getImageFromCache = (db, optimalUrl) => {
+    return new Observable((subscriber) => {
         const transaction = db.transaction(["images"], "readonly");
         const objectStore = transaction.objectStore("images");
         const request = objectStore.get(optimalUrl);
         request.onsuccess = () => {
             if (request.result) {
-                resolve(request.result.image);
+                subscriber.next(request.result.image);
             }
             else {
-                storeImageInCache(db, optimalUrl);
+                storeImageInCache(db, optimalUrl).subscribe({
+                    complete: () => subscriber.complete(),
+                    error: (err) => subscriber.error(err)
+                });
             }
         };
-        request.onerror = () => reject("Failed to retrieve image from cache");
+        request.onerror = () => subscriber.error("Failed to retrieve image from cache");
     });
-});
+};
 /**
- * Stores an image in the cache using the provided URL and blob.
+ * Stores an image in the IndexedDB cache from a specified URL or a provided Blob.
  *
- * This asynchronous function adds an image to the IndexedDB cache, allowing for
- * faster retrieval in the future.
+ * This function either fetches an image from the given URL or uses a provided Blob to store it in the
+ * IndexedDB under the "images" object store. It returns an observable that completes when the image
+ * is successfully stored or emits an error if the operation fails.
  *
- * @param {IDBDatabase} db - The database instance to use for storing the image.
- * @param {string} optimalUrl - The URL of the image to store in the cache.
- * @param {Blob | Promise<Blob>} [blob] - The image blob to store; if not provided,
- * it will be fetched from the URL.
- * @returns {Promise<void>} A promise that resolves when the image is successfully stored.
+ * @param {IDBDatabase} db - The IndexedDB database instance where the image will be stored.
+ * @param {string} optimalUrl - The URL of the image to be stored in the cache.
+ * @param {Blob | Promise<Blob>} [blob] - An optional Blob or a Promise that resolves to a Blob representing the image.
+ * If not provided, the image will be fetched from the optimalUrl.
+ * @returns {Observable<void>} An observable that completes when the image is successfully stored or emits an error if the operation fails.
  */
-const storeImageInCache = (db, optimalUrl, blob) => __awaiter(void 0, void 0, void 0, function* () {
-    blob = blob || (yield abortableFetch(optimalUrl).then((response) => response.blob()));
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(["images"], "readwrite");
-        const objectStore = transaction.objectStore("images");
-        const request = objectStore.add({ url: optimalUrl, image: blob });
-        request.onsuccess = () => resolve();
-        request.onerror = () => reject("Failed to store image in cache");
+const storeImageInCache = (db, optimalUrl, blob) => {
+    return new Observable((subscriber) => {
+        const storeBlob = blob || window.fetch(optimalUrl).then((response) => response.blob());
+        Promise.resolve(storeBlob).then((resolvedBlob) => {
+            const transaction = db.transaction(["images"], "readwrite");
+            const objectStore = transaction.objectStore("images");
+            const request = objectStore.add({ url: optimalUrl, image: resolvedBlob });
+            request.onsuccess = () => {
+                subscriber.next();
+                subscriber.complete();
+            };
+            request.onerror = () => subscriber.error("Failed to store image in cache");
+        });
     });
-});
+};
 /**
  * Determines the optimal width for images based on the current screen width.
  *
@@ -378,18 +325,17 @@ const determineOptimalWidth = () => {
  *
  * @param {ImageSettings} settings - The settings object from which to extract transformations.
  * @returns {Promise<Map<string, string>>} A promise that resolves to a Map of transformation settings.
- */
-function getTransformationSettings(settings) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const transformationSettings = new Map();
-        for (const [key, value] of Object.entries(settings)) {
-            if (key.startsWith("transform") || key === "transition") {
-                transformationSettings.set(key, value);
-            }
+TODO: Debug
+async function getTransformationSettings(settings: ImageSettings) {
+    const transformationSettings = new Map<string, string>();
+    for (const [key, value] of Object.entries(settings)) {
+        if (key.startsWith("transform") || key === "transition") {
+            transformationSettings.set(key, value);
         }
-        return transformationSettings;
-    });
+    }
+    return transformationSettings;
 }
+ */
 /**
  * Applies the specified styles to an image element.
  *
@@ -400,17 +346,15 @@ function getTransformationSettings(settings) {
  * @param {ImageSettings} settings - The settings object containing style properties.
  * @returns {Promise<HTMLImageElement>} A promise that resolves to the styled image element.
  */
-function setStyles(img, settings) {
-    return __awaiter(this, void 0, void 0, function* () {
-        for (const [key, value] of Object.entries(settings)) {
-            if ((value && key !== "colors")) { // TODO: debug || key.startsWith("transform") || key === "transition") {
-                img.style.setProperty(key, value.toString());
-            }
+async function setStyles(img, settings) {
+    for (const [key, value] of Object.entries(settings)) {
+        if ((value && key !== "colors")) { // TODO: debug || key.startsWith("transform") || key === "transition") {
+            img.style.setProperty(key, value.toString());
         }
-        img.style.alignContent = "flex-start";
-        img.style.alignSelf = "flex-start";
-        return img;
-    });
+    }
+    img.style.alignContent = "flex-start";
+    img.style.alignSelf = "flex-start";
+    return img;
 }
 /**
  * Applies transformation settings to an image element.
@@ -422,70 +366,81 @@ function setStyles(img, settings) {
  * @param {Map<string, string>} transformationSettings - The transformation settings to apply.
  *
  * TODO: Debug this
- */
-function applyTransformation(img, transformationSettings) {
-    return __awaiter(this, void 0, void 0, function* () {
-        img.style.transform = "none";
-        requestAnimationFrame(() => {
-            img.style.transition += transformationSettings.get("transition") || "";
-            transformationSettings.forEach((value, key) => {
-                if (key !== "transition") {
-                    img.style.setProperty(key, value);
-                }
-            });
+async function applyTransformation(img: HTMLImageElement, transformationSettings: Map<string, string>) {
+    img.style.transform = "none";
+    requestAnimationFrame(() => {
+        img.style.transition += transformationSettings.get("transition") || "";
+        transformationSettings.forEach((value, key) => {
+            if (key !== "transition") {
+                img.style.setProperty(key, value);
+            }
         });
     });
 }
-/**
- * Creates an image element based on the provided image data.
- *
- * This asynchronous function generates an HTMLImageElement, sets its properties,
- * and applies styles based on the provided image data.
- *
- * @param {ImageDataType} imageDatum - The data object containing information about the image.
- * @param {boolean} [firstImage] - A flag indicating if this is the first image being created.
- * @returns {Promise<HTMLImageElement | void>} A promise that resolves to the created image element or void.
  */
-const createImageElement = (imageDatum, firstImage) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const db = yield openDB();
-        const optimalWidth = determineOptimalWidth();
-        const optimalUrl = imageDatum ? `${imageDatum.baseUrl}_${optimalWidth}.webp` : null;
-        if (!optimalUrl) {
-            throw new Error("Failed to determine optimal URL for image");
-        }
-        const result = getImageFromCache(db, optimalUrl);
-        const imageBlob = (yield Promise.any([result, abortableFetch(optimalUrl).then((response) => response.blob())]));
-        if (!imageBlob || imageBlob.size === 0) {
-            throw new Error("Failed to retrieve a valid image blob");
-        }
-        const img = new Image(Number(optimalWidth));
-        const imageUrl = URL.createObjectURL(imageBlob);
-        img.src = imageUrl;
-        img.srcset = imageDatum.srcset;
-        img.sizes =
-            "(max-width: 1280px) 1280px, (max-width: 1920px) 1920px, (max-width: 2560px) 2560px, 3840px";
-        img.alt = "";
-        img.classList.add("hero-parallax__image");
-        img.draggable = false;
-        img.fetchPriority = firstImage ? "high" : "auto";
-        img.loading = "eager";
-        const styledImg = yield setStyles(img, imageDatum.settings);
-        styledImg.onload = () => {
-            setTimeout(() => URL.revokeObjectURL(imageUrl), 60000);
-            requestAnimationFrame(() => {
-            });
-        };
-        styledImg.onerror = (error) => {
-            console.error("Image failed to load:", imageDatum.imageName, error);
-            throw new Error("Failed to load image");
-        };
-        return styledImg;
-    }
-    catch (error) {
-        console.error("Error in createImageElement:", error);
-    }
-});
+/**
+ * Creates an HTMLImageElement from image data, retrieving it from cache or fetching it as needed.
+ *
+ * This function constructs an image element by determining the optimal URL based on the provided image data.
+ * It retrieves the image from the IndexedDB cache, applies styles, and sets attributes for the image element.
+ * The observable emits the styled image element once it has loaded successfully or emits an error if any step fails.
+ *
+ * @param {ImageDataType} imageDatum - The data containing information about the image, including its base URL and settings.
+ * @param {boolean} [firstImage] - An optional flag indicating if this is the first image being created, affecting its fetch priority.
+ * @returns {Observable<HTMLImageElement | void>} An observable that emits the created HTMLImageElement when loaded successfully or an error if the process fails.
+ */
+const createImageElement = (imageDatum, firstImage) => {
+    return new Observable((subscriber) => {
+        openDB().pipe(tap((db) => {
+            const optimalWidth = determineOptimalWidth();
+            const optimalUrl = imageDatum ? `${imageDatum.baseUrl}_${optimalWidth}.webp` : null;
+            if (!optimalUrl) {
+                throw new Error("Failed to determine optimal URL for image");
+            }
+            return { db, optimalUrl };
+        }), map(({ db, optimalUrl }) => getImageFromCache(db, optimalUrl)), map((imageBlob) => {
+            if (!imageBlob || imageBlob.size === 0) {
+                throw new Error("Failed to retrieve a valid image blob");
+            }
+            const img = new Image(Number(determineOptimalWidth()));
+            const imageUrl = URL.createObjectURL(imageBlob);
+            img.src = imageUrl;
+            img.srcset = imageDatum.srcset;
+            img.sizes = "(max-width: 1280px) 1280px, (max-width: 1920px) 1920px, (max-width: 2560px) 2560px, 3840px";
+            img.alt = "";
+            img.classList.add("hero-parallax__image");
+            img.draggable = false;
+            img.fetchPriority = firstImage ? "high" : "auto";
+            img.loading = "eager";
+            return setStyles(img, imageDatum.settings);
+        }), catchError(err => {
+            console.error("Error in createImageElement:", err);
+            return EMPTY; // Return empty observable on error
+        })).subscribe({
+            next: (styledImgPromise) => {
+                styledImgPromise.then((styledImg) => {
+                    styledImg.onload = () => {
+                        setTimeout(() => URL.revokeObjectURL(styledImg.src), 60000);
+                        requestAnimationFrame(() => {
+                            subscriber.next(styledImg);
+                            subscriber.complete();
+                        });
+                    };
+                    styledImg.onerror = (error) => {
+                        console.error("Image failed to load:", imageDatum.imageName, error);
+                        subscriber.error(new Error("Failed to load image"));
+                    };
+                }).catch((error) => {
+                    console.error("Error styling image:", error);
+                    subscriber.error(new Error("Failed to style image"));
+                });
+            },
+            error: (error) => {
+                subscriber.error(error);
+            }
+        });
+    });
+};
 /**
  * Updates the colors of the CTA elements based on the provided color settings.
  *
@@ -495,7 +450,7 @@ const createImageElement = (imageDatum, firstImage) => __awaiter(void 0, void 0,
  * @param {{ h1: string; p: string }} colors - The color settings for the header and paragraph.
  * @returns {Promise<void>} A promise that resolves when the colors have been updated.
  */
-const updateColors = (colors) => __awaiter(void 0, void 0, void 0, function* () {
+const updateColors = async (colors) => {
     const h1 = document.getElementById("CTA_header");
     const p = document.getElementById("CTA_paragraph");
     if (h1) {
@@ -506,77 +461,107 @@ const updateColors = (colors) => __awaiter(void 0, void 0, void 0, function* () 
         p.style.transition = "color 0.5s ease-in";
         p.style.color = colors.p;
     }
-});
+};
 /**
- * Retrieves and displays the first image in the parallax layer.
+ * Retrieves and displays the first image based on the provided image data, handling transitions if necessary.
  *
- * This asynchronous function updates the colors of the CTA elements, creates the first
- * image element, and appends it to the specified parallax layer.
+ * This function checks for the validity of the parallax layer and image data before proceeding. It updates
+ * the colors based on the image settings, creates an image element, and manages the transition of existing
+ * images if one is present. The observable emits completion or error based on the success of these operations.
  *
- * @param {ImageDataType} imageDatum - The data object containing information about the image.
- * @param {HTMLElement} parallaxLayer - The layer to which the image will be appended.
- * @returns {Promise<HTMLImageElement | void>} A promise that resolves to the created image element or void.
+ * @param {ImageDataType} imageDatum - The data containing information about the image, including its settings.
+ * @returns {Observable<void>} An observable that completes when the image is successfully added to the parallax layer
+ * or emits an error if any step in the process fails.
  */
-function getFirstImage(imageDatum) {
-    return __awaiter(this, void 0, void 0, function* () {
+const getFirstImage = (imageDatum) => {
+    return new Observable((subscriber) => {
         if (!parallaxLayer || !imageDatum) {
             console.error("Invalid parallax layer or image data");
+            subscriber.error(new Error("Invalid parallax layer or image data"));
             return;
         }
         updateColors(imageDatum.settings.colors);
-        const imageElement = yield createImageElement(imageDatum, true);
-        if (!imageElement) {
-            console.error("Failed to create image element");
-            return reloadOnFailure();
-        }
-        // const transformationSettings = await getTransformationSettings(imageDatum.settings);
-        // if (transformationSettings) {
-        //        applyTransformation(imageElement, transformationSettings);
-        // }
-        const existingImage = parallaxLayer.getElementsByTagName('img')[0];
-        if (existingImage) {
-            console.log("Existing image found on first load; attempting transition.");
-            transitionImages(existingImage, imageElement);
-        }
-        imageElement.style.transition = "none";
-        parallaxLayer.prepend(imageElement);
+        createImageElement(imageDatum, true).subscribe({
+            next: (imageElement) => {
+                if (!imageElement) {
+                    console.error("Failed to create image element");
+                    subscriber.error(new Error("Failed to create image element"));
+                    return;
+                }
+                const existingImage = parallaxLayer.getElementsByTagName('img')[0];
+                if (existingImage) {
+                    console.log("Existing image found on first load; attempting transition.");
+                    transitionImages(existingImage, imageElement).subscribe({
+                        complete: () => {
+                            parallaxLayer.prepend(imageElement);
+                            subscriber.complete();
+                        },
+                        error: (err) => subscriber.error(err)
+                    });
+                }
+                else {
+                    imageElement.style.transition = "none";
+                    parallaxLayer.prepend(imageElement);
+                    subscriber.complete();
+                }
+            },
+            error: (err) => subscriber.error(err)
+        });
     });
-}
+};
 /**
- * Transitions between two images in the parallax layer.
+ * Manages the transition between two images in a parallax layer with a specified duration.
  *
- * This asynchronous function fades out the last image and fades in the next image,
- * applying any specified transformation settings during the transition.
+ * This function handles the visual transition of images by fading out the last image and fading in the next image.
+ * It listens for the end of the transition and removes the last image from the DOM once the transition is complete.
+ * The function emits completion or error based on the success of the transition process.
  *
- * @param {HTMLImageElement} lastImage - The image element that is currently displayed.
- * @param {HTMLImageElement} nextImage - The image element that will be displayed next.
- * @param {Map<string, string>} [transformationSettings] - The transformation settings to apply to the next image.
- * @returns {Promise<void>} A promise that resolves when the transition is complete.
+ * @param {HTMLImageElement} lastImage - The image element that is currently displayed and will be transitioned out.
+ * @param {HTMLImageElement} nextImage - The image element that will be displayed and transitioned in.
+ * @param {number} [transitionTime=1600] - The duration of the transition in milliseconds (default is 1600ms).
+ * @returns {Observable<void>} An observable that completes when the transition is finished or emits an error if any step in the process fails.
  */
-function transitionImages(lastImage_1, nextImage_1) {
-    return __awaiter(this, arguments, void 0, function* (lastImage, nextImage, transitionTime = 1600, transformationSettings) {
+const transitionImages = (lastImage, nextImage) => {
+    return new Observable((subscriber) => {
         console.log('Transitioning images');
-        //if (transformationSettings) {
-        //    applyTransformation(nextImage, transformationSettings);
-        //}
         if (!parallaxLayer || !lastImage || !nextImage) {
             console.error("Invalid parallax layer or image elements");
+            subscriber.error(new Error("Invalid parallax layer or image elements"));
             return;
         }
         lastImage.style.transition = lastImage.style.transition !== "none" ? lastImage.style.transition : "opacity 1.5s ease-in";
         const lastImageElement = parallaxLayer.getElementsByClassName('hero-parallax__image')[0];
-        console.log('lastImageElement', lastImageElement);
         if (lastImageElement) {
             parallaxLayer.prepend(nextImage);
             console.log("prepended next image");
-            //lastImageElement.addEventListener('transitionend', () => {
-            //  lastImageElement.remove();
-            //console.log('last image removed');
-            //});
+            fromEvent(lastImageElement, 'transitionend').pipe(take(1), throttleTime(500) // Throttle the transition to avoid excessive firing
+            ).subscribe({
+                next: () => {
+                    lastImageElement.remove();
+                    console.log('last image removed');
+                    subscriber.complete();
+                },
+                error: (err) => subscriber.error(err)
+            });
+            requestAnimationFrame(() => {
+                lastImageElement.style.opacity = '0';
+                nextImage.style.opacity = '1';
+            });
         }
-        return;
+        else {
+            subscriber.complete();
+        }
     });
-}
+};
+/**
+ * A generator function that yields image data from a collection of image data types.
+ *
+ * This function iterates over a collection of image data, yielding each `ImageDataType` object one at a time.
+ * It handles potential errors during iteration and logs them to the console. The generator can be used to
+ * sequentially access image data without loading the entire collection into memory at once.
+ *
+ * @returns {Generator<ImageDataType>} A generator that produces `ImageDataType` objects from the image data collection.
+ */
 function* imageDatumGenerator() {
     const imageDataResult = imageData;
     if (imageDataResult && imageDataResult.size > 0) {
@@ -592,11 +577,10 @@ function* imageDatumGenerator() {
 }
 // Variables for image cycling
 let generatorExhausted = false;
-let reloadAttempts = 0;
 let isPageVisible = true;
 let cycleImagesInterval = null;
 const interval = 25000; // Interval for cycling images]
-const imageGen = imageDatumGenerator();
+let imageGen = imageDatumGenerator();
 const imageDatumGen = function () {
     if (generatorExhausted) {
         return null;
@@ -610,42 +594,6 @@ const imageDatumGen = function () {
         return null;
     }
 };
-/**
- * Reloads the current image in the parallax layer upon failure to display.
- *
- * This asynchronous function checks the visibility of the current image and attempts to
- * reload it if certain conditions are met, such as the document being fully loaded and
- * not hidden or focused. If the reload attempts exceed a specified limit, it logs an error
- * and reloads the entire page.
- *
- * @returns {Promise<void>} A promise that resolves when the reload attempt is complete.
- * @throws {Error} Throws an error if the image reload fails, triggering a page reload.
- */
-const reloadOnFailure = () => __awaiter(void 0, void 0, void 0, function* () {
-    console.log('reload triggered');
-    if (reloadAttempts > 4) {
-        console.error('Exceeded reload attempts');
-        return;
-    }
-    const currentImage = parallaxLayer ? parallaxLayer.getElementsByTagName('img')[0] : null;
-    if (document.readyState === 'complete' && !document.hidden && !document.hasFocus()) {
-        if (currentImage && parallaxLayer) {
-            try {
-                const copiedImage = currentImage.cloneNode(true);
-                transitionImages(currentImage, copiedImage);
-            }
-            catch (error) {
-                console.error('Failed to reload image:', error);
-                reloadAttempts++;
-                window.location.reload();
-            }
-        }
-        else {
-            reloadAttempts++;
-            window.location.reload();
-        }
-    }
-});
 /**
  * Stops the cycling of images in the parallax layer.
  *
@@ -661,98 +609,158 @@ const stopImageCycling = () => {
     }
 };
 /**
- * Initiates the cycling of images in the parallax layer at a specified interval.
+ * Starts the cycling of images in the parallax layer.
  *
- * This asynchronous function retrieves the first image from the parallax layer and starts an interval timer to cycle through the images. If the page is visible, it applies a delay before beginning the cycling process.
+ * This function sets an interval timer to cycle through images in the parallax layer,
+ * transitioning between each image at a specified interval.
  *
- * @returns {Promise<void>} A promise that resolves when the image cycling has started.
+ * @returns {Subscription} The subscription to the interval timer for cycling images.
  */
-const startImageCycling = () => __awaiter(void 0, void 0, void 0, function* () {
-    const firstImage = parallaxLayer ? parallaxLayer.getElementsByTagName('img')[0] : null;
-    if (firstImage && isPageVisible) {
-        console.log("waiting on first image to finish its cycle");
-        yield delay(interval);
-    }
-    if (isPageVisible) {
-        cycleImagesInterval = setInterval(() => __awaiter(void 0, void 0, void 0, function* () {
-            yield cycleImages();
-        }), interval);
-    }
-});
-/**
- * Handles changes in the visibility state of the document.
- *
- * This function is triggered when the visibility of the page changes. It updates the `isPageVisible` flag and starts or stops image cycling based on whether the page is currently visible or hidden.
- *
- * @returns {void} This function does not return a value.
- */
-const handleVisibilityChange = () => {
-    if (document.hidden) {
-        isPageVisible = false;
-        stopImageCycling();
-    }
-    else {
-        isPageVisible = true;
-        startImageCycling();
-    }
+const startImageCycling = () => {
+    return merge(window.viewport$, fromEvent(document, 'visibilitychange')).pipe(startWith(null), debounceTime(300), filter(() => isPageVisible && !!parallaxLayer), tap(() => {
+        const firstImage = parallaxLayer.getElementsByTagName('img')[0];
+        if (firstImage) {
+            return new Promise(resolve => setTimeout(resolve, interval));
+        }
+        else {
+            return EMPTY;
+        }
+    })).subscribe(() => {
+        cycleImages().subscribe();
+    });
 };
 /**
- * Fetches the first image from a specified parallax layer.
+ * Monitors the visibility state of the document and manages image cycling accordingly.
  *
- * This asynchronous function checks if there are any images within the parallax layer. If no images are found and the parallax layer exists, it retrieves the first image data and invokes the `getFirstImage` function to process it.
+ * This function subscribes to the 'visibilitychange' event on the document, updating the `isPageVisible`
+ * variable based on the document's visibility state. When the page becomes visible, it starts cycling through
+ * images, and when it becomes hidden, it stops the cycling process.
  *
- * @returns {Promise<void>} A promise that resolves when the image has been processed or if no action is taken.
+ * @returns {Subscription} A subscription object that can be used to unsubscribe from the visibility change events.
  */
-const fetchFirstImage = () => __awaiter(void 0, void 0, void 0, function* () {
-    try {
+const handleVisibilityChange = () => {
+    return fromEvent(document, 'visibilitychange').subscribe(() => {
+        isPageVisible = !document.hidden;
+        if (isPageVisible) {
+            startImageCycling();
+        }
+        else {
+            stopImageCycling();
+        }
+    });
+};
+/**
+ * Fetches the first image based on generated image data and emits completion or error.
+ *
+ * This function generates image data using `imageDatumGen` and attempts to retrieve the first image
+ * using the `getFirstImage` function. It subscribes to the observable returned by `getFirstImage`,
+ * completing or emitting an error based on the result. If no image data is generated, it completes immediately.
+ *
+ * @returns {Observable<void>} An observable that completes when the image fetching process is complete or emits an error if it fails.
+ */
+const fetchFirstImage = () => {
+    return new Observable((subscriber) => {
         const datum = imageDatumGen();
         if (datum) {
-            yield getFirstImage(datum);
+            getFirstImage(datum).pipe(catchError(err => {
+                console.error("Error fetching first image:", err);
+                return EMPTY; // Return empty observable to end gracefully
+            })).subscribe({
+                complete: () => subscriber.complete(),
+                error: (err) => subscriber.error(err)
+            });
         }
-    }
-    catch (error) {
-        console.error("Error fetching first image:", error);
-    }
-});
+        else {
+            subscriber.complete();
+        }
+    });
+};
 /**
- * Cycles through images in a parallax layer asynchronously.
+ * Cycles through images in a parallax layer, transitioning to the next image based on availability.
  *
- * This function retrieves the current image and updates the index to point to the next image in the sequence. If the next image is successfully fetched, it transitions to that image; otherwise, it logs an error and triggers a reload on failure.
+ * This function retrieves images from the parallax layer and manages the transition between them.
+ * If there are more images to display, it creates a new image element and debounces the fetch to prevent rapid requests.
+ * If all images have been exhausted, it transitions to the last image in the collection, throttling the transition to manage performance.
  *
- * @returns {Promise<void>} A promise that resolves when the image cycling operation is complete.
+ * @returns {Observable<void>} An observable that completes when the image cycling process is finished or emits an error if any step fails.
  */
-const cycleImages = () => __awaiter(void 0, void 0, void 0, function* () {
-    const images = parallaxLayer ? parallaxLayer.getElementsByTagName('img') : [];
-    if (!generatorExhausted) {
-        const nextDatum = imageDatumGen();
-        if (nextDatum) {
-            const nextImage = yield createImageElement(nextDatum);
-            if (nextImage) {
-                nextImage.onload = () => __awaiter(void 0, void 0, void 0, function* () {
-                    yield transitionImages(images[0], nextImage);
+const cycleImages = () => {
+    return new Observable((subscriber) => {
+        const images = parallaxLayer ? parallaxLayer.getElementsByTagName('img') : [];
+        if (!generatorExhausted) {
+            const nextDatum = imageDatumGen();
+            if (nextDatum) {
+                createImageElement(nextDatum).pipe(debounceTime(1000) // Debounce to prevent rapid image fetches
+                ).subscribe({
+                    next: (nextImage) => {
+                        if (nextImage) {
+                            nextImage.onload = () => {
+                                transitionImages(images[0], nextImage).subscribe({
+                                    complete: () => subscriber.complete(),
+                                    error: (err) => subscriber.error(err)
+                                });
+                            };
+                        }
+                    },
+                    error: (err) => subscriber.error(err)
                 });
             }
         }
-    }
-    else { // if generator exhausted, we already have all images
-        const currentImage = images[0];
-        const nextImage = images[-1]; // last image is the first image because we always prepend
-        if (nextImage) {
-            yield transitionImages(currentImage, nextImage);
+        else {
+            const currentImage = images[0];
+            const nextImage = images[images.length - 1];
+            if (nextImage) {
+                transitionImages(currentImage, nextImage).pipe(throttleTime(500) // Throttle transitions
+                ).subscribe({
+                    complete: () => subscriber.complete(),
+                    error: (err) => subscriber.error(err)
+                });
+            }
+        }
+    });
+};
+// Initialize the script
+subscriptions.add(fetchFirstImage().pipe(catchError(err => {
+    console.error('Error fetching first image:', err);
+    return EMPTY;
+})).subscribe());
+subscriptions.add(handleVisibilityChange());
+subscriptions.add(startImageCycling());
+/// Use window.viewport$ to handle resize events
+subscriptions.add(window.viewport$.pipe(debounceTime(300)).subscribe(() => {
+    // we recalculate the optimal image width on resize
+    // if it changes, we fetch the image
+    const optimalWidth = determineOptimalWidth();
+    const currentImage = parallaxLayer.getElementsByTagName('img')[0];
+    const currentImageWidth = currentImage ? currentImage.width.toString() : "0";
+    if (currentImageWidth !== optimalWidth) {
+        const currentImageDatum = imageData.get(currentImage.alt);
+        if (currentImageDatum) {
+            createImageElement(currentImageDatum).subscribe({
+                next: (imageElement) => {
+                    if (imageElement) {
+                        transitionImages(currentImage, imageElement).subscribe();
+                    }
+                },
+                error: (err) => console.error("Error fetching image on resize:", err)
+            });
         }
     }
+}));
+// Use window.location$ to handle navigation events
+subscriptions.add(window.location$.pipe(map(location => location.pathname), distinctUntilChanged(), filter(pathname => pathname !== currentPath)).subscribe(pathname => {
+    currentPath = pathname;
+    currentPathSubject.next(pathname);
+    // Stop image cycling when navigating away
+    stopImageCycling();
+    console.log('Navigation occurred to:', pathname);
+    // Restart image cycling if on the root index.html or '/'
+    if (pathname === "/" || pathname === "/index.html") {
+        startImageCycling();
+    }
+}));
+// Unsubscribe from all subscriptions when the window is closed or reloaded
+window.addEventListener('beforeunload', () => {
+    subscriptions.unsubscribe();
 });
-fetchFirstImage();
-// Add event listener for visibility change
-document.addEventListener('visibilitychange', handleVisibilityChange);
-startImageCycling();
-// Initial setup
-/**document.addEventListener('DOMContentLoaded', () => {
-    // Event listeners for handling orientation changes and page visibility.
-    window.addEventListener('visibilitychange', reloadOnFailure);
-    window.addEventListener('pageshow', reloadOnFailure);
-    window.addEventListener('pagereveal', reloadOnFailure);
-
-    startImageCycling();
-});
-*/
+//# sourceMappingURL=hero_shuffle.js.map

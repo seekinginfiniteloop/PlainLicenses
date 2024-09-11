@@ -4,6 +4,7 @@
 .workbench/
 .devenv/
 .devenv/*
+typings
 
 # mkdocs
 .cache
