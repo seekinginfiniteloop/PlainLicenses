@@ -10,6 +10,8 @@ import {
 } from "rxjs"
 import { distinctUntilChanged, filter, map, switchMap } from "rxjs/operators"
 
+import * as imgSettings from "./hero_image_config"
+
 /** !!! NOTE ON IMAGE HANDLING: !!!
  * Only the first child of the parallax layer is set to display. All other children of parallax layer are set to display: none. When a new image is fetched, it is prepended to the parallax layer, and the old image is pushed back a spot. The new image automatically transitions to display and the old automatically transitions to hidden (display: none). This setup provides a fallback in that we don't rely on javascript to set the display of the images. If the javascript fails, the first image will still display. We also don't have to set transitions because the change to/from first child *is* the transition.
  *
@@ -18,234 +20,10 @@ import { distinctUntilChanged, filter, map, switchMap } from "rxjs/operators"
  * I wouldn't use this approach for a large number of images or extremely large images, but for a small number of images, it's a simple and effective way to handle the image cycling.
  */
 
-// Declare the RxJS observables provided by Material for MkDocs
-
-const document$ = (window as any).document$ as Observable<Document>
-const location$ = (window as any).location$ as Observable<URL>
-const viewport$ = (window as any).viewport$ as Observable<ViewPort>
-
 const subscriptions: Subscription[] = []
 
 const portraitMediaQuery = window.matchMedia("(orientation: portrait)")
 const isPortrait = (): boolean => !!portraitMediaQuery.matches
-
-// we have javascript, so set css for .hero-parallax__image to display: none
-const heroParallaxImage = document.querySelector(
-  ".hero-parallax__image"
-) as HTMLElement
-heroParallaxImage.style.display = "none"
-
-/**
- * An object representing various color values used in the application.
- *
- * This object contains color definitions that can be referenced throughout the code
- * to maintain consistency in color usage.
- *
- * @type {Object}
- * @property {string} atomicOrange - The color value for atomic orange.
- * @property {string} aqua - The color value for aqua.
- * @property {string} aquamarine - The color value for aquamarine.
- * @property {string} blueBlue - The color value for blue blue.
- * @property {string} darkEmerald - The color value for dark emerald.
- * @property {string} dutchWhite - The color value for dutch white.
- * @property {string} ecru - The color value for ecru.
- * @property {string} emerald - The color value for emerald.
- * @property {string} mindaro - The color value for mindaro.
- * @property {string} white - The color value for white.
- * @property {string} zaffre - The color value for zaffre.
- */
-const colors: { [key: string]: string } = {
-  atomicOrange: "var(--atomic-tangerine)",
-  aqua: "var(--aqua)",
-  aquamarine: "var(--aquamarine)",
-  blueBlue: "var(--blue-blue)",
-  darkEmerald: "var(--dark-emerald)",
-  dutchWhite: "var(--dutch-white)",
-  ecru: "var(--ecru)",
-  emerald: "var(--emerald)",
-  mindaro: "var(--mindaro)",
-  white: "white",
-  zaffre: "var(--zaffre)"
-}
-
-/**
- * Represents the settings for transforming an element's appearance.
- *
- * This interface defines optional properties that can be used to specify
- * various CSS transformation settings, including transition effects,
- * transformation origin, and style behavior
- *
- */
-interface TransformationSettings {
-  transition?: string // The CSS transition property for smooth changes.
-  transitionBehavior?: string // The behavior of the transition (e.g., ease, linear).
-  transform?: string // The CSS transform property to apply transformations.
-  transformOrigin?: string // The origin point for the transformation.
-  transformStyle?: string // The style of the transformation (e.g., flat, preserve-3d).
-}
-
-/**
- * Interface representing the settings for an image.
- *
- * This interface defines the structure of the settings object that can be applied to images,
- * including color settings, dimensions, and transformation properties.
- *
- * @interface ImageSettings
- * @property {{ h1: string; p: string }} colors - The color settings for the image.
- * @property {string} [height] - The height of the image.
- * @property {string} [animation] - The animation settings for the image.
- * @property {string} [perspective] - The perspective setting for the image.
- * @property {string} [perspectiveOrigin] - The origin point for the perspective.
- * @property {TransformationSettings} [transformationSettings] - Settings for transoformation animations.
- * @property {string} [scale] - The scale settings for the image.
- * @property {string} [objectFit] - The fit settings for the image.
- * @property {string} [objectPosition] - The position settings for the image.
- */
-interface ImageSettings {
-  colors: { h1: string, p: string }
-  height?: string
-  animation?: string
-  perspective?: string
-  perspectiveOrigin?: string
-  transformationSettings?: TransformationSettings
-  transformStyle?: string
-  translate?: string
-  scale?: string
-  objectFit?: string
-  objectPosition?: string
-}
-
-/**
- * Default settings for images.
- *
- * This object contains the default settings that will be applied to images unless overridden
- * by specific settings.
- *
- * @type {ImageSettings}
- */
-const defaultSettings: ImageSettings = {
-  colors: { h1: colors.emerald, p: colors.emerald },
-  scale: "1.1",
-  objectFit: "scale-down",
-  perspective: "50em",
-  perspectiveOrigin: "center bottom",
-  objectPosition: "center bottom"
-  // TODO: get translated transforms to work
-}
-
-/**
- * A record of image settings keyed by image name.
- *
- * This object holds specific settings for different images, allowing for customization
- * of each image's appearance and behavior.
- *
- * @type {Record<string, ImageSettings>}
- */
-const imageSettings: Record<string, ImageSettings> = {
-  anime: { colors: { h1: colors.atomicOrange, p: colors.emerald } },
-  artbrut: { colors: { h1: colors.atomicOrange, p: colors.aqua } },
-  comic: { colors: { h1: colors.aquamarine, p: colors.white } },
-  fanciful: {
-    colors: { h1: colors.mindaro, p: colors.aqua },
-    perspectiveOrigin: "30% 20%",
-    scale: "1",
-    translate: "0% -30%"
-  },
-  fantasy: {
-    colors: { h1: colors.white, p: colors.mindaro },
-    scale: "1",
-    translate: "0% -20%"
-  },
-  farcical: {
-    colors: { h1: colors.atomicOrange, p: colors.aqua },
-    scale: "1",
-    translate: "0% -35%"
-  },
-  fauvist: { colors: { h1: colors.mindaro, p: colors.white } },
-  minimal: {
-    colors: { h1: colors.atomicOrange, p: colors.white },
-    scale: "1",
-    perspective: "50rem",
-    translate: "0% -25%"
-  },
-  mystical: {
-    colors: { h1: colors.blueBlue, p: colors.white },
-    scale: "1",
-    perspective: "40rem",
-    translate: "0% -25%"
-  },
-  surreal: {
-    colors: { h1: colors.white, p: colors.atomicOrange },
-    scale: "1",
-    translate: "0% -25%"
-  },
-}
-
-/**
- * Default settings for portrait images.
- *
- * This object contains the default settings that will be applied to portrait images.
- *
- * @type {ImageSettings}
- */
-const defaultPortraitSettings: ImageSettings = {
-  colors: { h1: colors.emerald, p: colors.emerald },
-  objectFit: "cover",
-  scale: "1.4"
-}
-
-/**
- * A record of portrait image settings keyed by image name.
- *
- * This object holds specific settings for different portrait images, allowing for customization
- * of each portrait image's appearance and behavior.
- *
- * @type {Record<string, ImageSettings>}
- */
-const portraitImageSettings: Record<string, ImageSettings> = {
-  anime: {
-    colors: { h1: colors.atomicOrange, p: colors.white },
-    perspective: "-50rem",
-    scale: "1.8",
-    translate: "0% 40%"
-  },
-  artbrut: {
-    colors: { h1: colors.atomicOrange, p: colors.aqua },
-    translate: "0% 20%"
-  },
-  comic: {
-    colors: { h1: colors.atomicOrange, p: colors.aqua },
-    translate: "0% 20%"
-  },
-  fanciful: {
-    colors: { h1: colors.mindaro, p: colors.atomicOrange },
-    translate: "0% 20%"
-  },
-  fantasy: {
-    colors: { h1: colors.atomicOrange, p: colors.mindaro },
-    translate: "0% 20%"
-  },
-  farcical: {
-    colors: { h1: colors.mindaro, p: colors.aqua },
-    translate: "0% 16%"
-  },
-  fauvist: {
-    colors: { h1: colors.mindaro, p: colors.white },
-    translate: "0% 18%"
-  },
-  minimal: {
-    colors: { h1: colors.atomicOrange, p: colors.white },
-    translate: "0% 20%"
-  },
-  mystical: {
-    colors: { h1: colors.white, p: colors.aquamarine },
-    translate: "0% 20%"
-  },
-  surreal: {
-    colors: { h1: colors.white, p: colors.atomicOrange },
-    translate: "0% 20%"
-  },
-}
 
 /**
  * Retrieves the image settings for a given image name.
@@ -253,24 +31,24 @@ const portraitImageSettings: Record<string, ImageSettings> = {
  * This function checks if the device is in portrait mode and merges the default settings
  * with the specific settings for the requested image, returning the final settings object.
  *
- * @param {string} imageName - The name of the image for which to retrieve settings.
- * @returns {ImageSettings} The merged settings for the specified image.
+ * @param imageName - The name of the image for which to retrieve settings.
+ * @returns The merged settings for the specified image.
  */
-const getImageSettings = (imageName: string): Map<string, ImageSettings> => {
-  const landscapeSettings = imageSettings[imageName] || {}
-  const portraitSettings = portraitImageSettings[imageName] || {}
+const getImageSettings = (imageName: string): Map<string, imgSettings.ImageSettings> => {
+  const landscapeSettings = imgSettings.imageSettings[imageName] || {}
+  const portraitSettings = imgSettings.portraitImageSettings[imageName] || {}
   const combinedLandscapeSettings = {
-    ...defaultSettings,
+    ...imgSettings.defaultSettings,
     ...landscapeSettings
   }
   const combinedPortraitSettings = {
-    ...defaultSettings,
-    ...defaultPortraitSettings,
+    ...imgSettings.defaultSettings,
+    ...imgSettings.defaultPortraitSettings,
     ...portraitSettings
   }
 
   return new Map(
-    ["landscape", "portrait"].map((key) => [
+    ["landscape", "portrait"].map(key => [
       key,
       key === "landscape"
         ? combinedLandscapeSettings
@@ -278,6 +56,8 @@ const getImageSettings = (imageName: string): Map<string, ImageSettings> => {
     ])
   )
 }
+
+const parallaxLayer = document.getElementById("parallax-hero-image-layer")
 
 /**
  * Shuffles an array in place using the Fisher-Yates algorithm.
@@ -288,43 +68,13 @@ const getImageSettings = (imageName: string): Map<string, ImageSettings> => {
  * @param array - The array to shuffle.
  * @returns The shuffled array.
  */
-const shuffle = <T>(array: T[]): T[] => {
+const shuffleArray = <T>(array: T[]): T[] => {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
+    [array[i], array[j]] = [array[j], array[i]]
   }
-  return array;
+  return array
 }
-
-/**
- * Interface representing the data structure for image information.
- *
- * This interface defines the properties that describe an image, including its name,
- * URL, settings, and other relevant data.
- *
- * @interface ImageDataType
- * @property {string} imageName - The name of the image.
- * @property {string} baseUrl - The base URL for the image.
- * @property {string} url - The full URL for the image.
- * @property {string} srcset - The srcset attribute for responsive images.
- * @property {ImageSettings} settings - The settings associated with the image.
- * @property {PredefinedColorSpace} colorSpace - The color space of the image.
- * @property {Uint8ClampedArray} data - The image data as a Uint8ClampedArray.
- * @property {string} imgWidth - The width of the image.
- */
-interface ImageDataType {
-  imageName: string
-  baseUrl: string
-  url: string
-  srcset: string
-  landscapeSettings: ImageSettings
-  portraitSettings: ImageSettings
-  colorSpace: PredefinedColorSpace
-  data: Uint8ClampedArray
-  imgWidth: string
-}
-
-const parallaxLayer = document.getElementById("parallax-hero-image-layer")
 
 /**
  * Generates the image data type for a given image name and root URL.
@@ -339,19 +89,19 @@ const parallaxLayer = document.getElementById("parallax-hero-image-layer")
 const generateImageDataType = (
   imageName: string,
   rootUrl: string
-): ImageDataType => {
-  const combinedSettings: Map<string, ImageSettings> =
+): imgSettings.ImageDataType => {
+  const combinedSettings: Map<string, imgSettings.ImageSettings> =
     getImageSettings(imageName)
-  const landscapeSettings: ImageSettings =
-    combinedSettings.get("landscape") || defaultSettings
-  const portraitSettings: ImageSettings =
-    combinedSettings.get("portrait") || defaultPortraitSettings
+  const landscapeSettings: imgSettings.ImageSettings =
+    combinedSettings.get("landscape") || imgSettings.defaultSettings
+  const portraitSettings: imgSettings.ImageSettings =
+    combinedSettings.get("portrait") || imgSettings.defaultPortraitSettings
   const widths: string[] = ["1280", "1920", "2560", "3840"]
   const baseUrl: string = `${rootUrl}/${imageName}/${imageName}`
   const url: string = `${baseUrl}_1280.webp`
   const srcset: string = widths
     .map(
-      (imgWidth) =>
+      imgWidth =>
         `${rootUrl}/${imageName}/${imageName}_${imgWidth}.webp ${imgWidth}w`
     )
     .join(", ")
@@ -372,19 +122,19 @@ const generateImageDataType = (
 /**
  * Generates a map of image data types from shuffled image names.
  *
- * This function retrieves the keys from the `imageSettings` object, shuffles them,
- * and constructs a map where each key corresponds to an `ImageDataType` generated
+ * This function retrieves the keys from the `imgSettings.imageSettings` object, shuffles them,
+ * and constructs a map where each key corresponds to an `imgSettings.ImageDataType` generated
  * from the image name and a predefined root URL. This allows for dynamic image
  * data retrieval in a randomized order.
  *
  * @returns A map containing image names as keys and
- *          their corresponding `ImageDataType` objects as values.
+ *          their corresponding `imgSettings.ImageDataType` objects as values.
  */
-const getImageData = function (): Map<string, ImageDataType> {
-  const imageNames = Object.keys(imageSettings)
-  const shuffledImages = shuffle(imageNames)
+const getImageData = function (): Map<string, imgSettings.ImageDataType> {
+  const imageNames = Object.keys(imgSettings.imageSettings)
+  const shuffledImages = shuffleArray(imageNames)
   const rootUrl = "assets/images/hero"
-  const imageData = new Map<string, ImageDataType>()
+  const imageData = new Map<string, imgSettings.ImageDataType>()
   for (const imageName of shuffledImages) {
     imageData.set(imageName, generateImageDataType(imageName, rootUrl))
   }
@@ -413,7 +163,7 @@ const openDB = async (): Promise<IDBDatabase> => {
     }
 
     request.onerror = function (event) {
-      reject("Database error: " + (event.target as IDBOpenDBRequest).error)
+      reject(`Database error: ${  (event.target as IDBOpenDBRequest).error}`)
     }
   })
 }
@@ -458,8 +208,7 @@ const getImageFromCache = async (
  *
  * @param db - The IndexedDB database instance where the image will be stored.
  * @param optimalUrl - The URL of the image to be stored in the cache.
- * @param - An optional Blob or a Promise that resolves to a Blob representing the image.
- * If not provided, the image will be fetched from the optimalUrl.
+ * @param blob - An optional Blob or a Promise that resolves to a Blob representing the image.
  * @returns An observable that completes when the image is successfully stored or emits an error if the operation fails.
  */
 const storeImageInCache = (
@@ -467,11 +216,11 @@ const storeImageInCache = (
   optimalUrl: string,
   blob?: Blob | Promise<Blob>
 ): Observable<void> => {
-  return new Observable((subscriber) => {
+  return new Observable(subscriber => {
     const storeBlob =
-      blob || window.fetch(optimalUrl).then((response) => response.blob())
+      blob || window.fetch(optimalUrl).then(response => response.blob())
 
-    Promise.resolve(storeBlob).then((resolvedBlob) => {
+    void Promise.resolve(storeBlob).then(resolvedBlob => {
       const transaction = db.transaction(["images"], "readwrite")
       const objectStore = transaction.objectStore("images")
       const request = objectStore.add({ url: optimalUrl, image: resolvedBlob })
@@ -492,7 +241,7 @@ const storeImageInCache = (
  * This function checks the width of the window and returns the appropriate width
  * value for responsive image loading.
  *
- * @param screenWidth
+ * @param screenWidth - The width of the screen, if available.
  * @returns The optimal width for images based on the current screen size.
  */
 const determineOptimalWidth = (screenWidth?: number): string => {
@@ -521,7 +270,7 @@ const determineOptimalWidth = (screenWidth?: number): string => {
  */
 async function setStyles(
   img: HTMLImageElement,
-  settings: ImageSettings
+  settings: imgSettings.ImageSettings
 ): Promise<HTMLImageElement> {
   for (const [key, value] of Object.entries(settings)) {
     if (key !== "colors" && key !== "transformationSettings") {
@@ -554,7 +303,7 @@ async function applyTransformation(img: HTMLImageElement, transformationSettings
         })
     })
 }
-     */
+ */
 
 /**
  * Creates an image element based on the provided image data.
@@ -563,12 +312,12 @@ async function applyTransformation(img: HTMLImageElement, transformationSettings
  * and applies styles based on the provided image data.
  *
  * @param imageDatum - The data object containing information about the image.
- * @param - A flag indicating if this is the first image being created.
+ * @param - - A flag indicating if this is the first image being created.
  * @returns A promise that resolves to the created image element or void.
  */
 
 const fetchAndSetImage = async (
-  imageDatum: ImageDataType,
+  imageDatum: imgSettings.ImageDataType,
   firstImage?: boolean
 ): Promise<HTMLImageElement | void> => {
   try {
@@ -583,7 +332,7 @@ const fetchAndSetImage = async (
     const result = getImageFromCache(db, optimalUrl)
     const imageBlob = (await Promise.any([
       result,
-      fetch(optimalUrl).then(response => response.blob()),
+      fetch(optimalUrl).then(response => response.blob())
     ])) as Blob
 
     if (!imageBlob || imageBlob.size === 0) {
@@ -628,12 +377,11 @@ const fetchAndSetImage = async (
  * This asynchronous function facilitates generating an HTMLImageElement based on whether or not it is the first image being created.
  *
  * @param imageDatum - The data object containing information about the image.
- * @param - A flag indicating if this is the first image being created.
- * @param firstImage
+ * @param firstImage - A flag indicating if this is the first image being created.
  * @returns A promise that resolves to the created image element or void.
  */
 const createImageElement = async (
-  imageDatum: ImageDataType,
+  imageDatum: imgSettings.ImageDataType,
   firstImage?: boolean
 ): Promise<void | HTMLImageElement> => {
   if (firstImage) {
@@ -650,11 +398,11 @@ const createImageElement = async (
  * elements, including transition effects for a smooth color change.
  *
  * @param colors - The color settings for the header and paragraph.
- * @param transition
+ * @param transition - The transition effect to apply to the color change.
  * @returns A promise that resolves when the colors have been updated.
  */
 const updateColors = async (
-  colors: { h1: string; p: string },
+  colors: { h1: string, p: string },
   transition = "color 5s ease-in"
 ): Promise<void> => {
   const h1 = document.getElementById("CTA_header")
@@ -677,11 +425,10 @@ const updateColors = async (
  * image element, and appends it to the specified parallax layer.
  *
  * @param imageDatum - The data object containing information about the image.
- * @param parallaxLayer - The layer to which the image will be appended.
  * @returns A promise that resolves to the created image element or void.
  */
 async function getFirstImage(
-  imageDatum: ImageDataType
+  imageDatum: imgSettings.ImageDataType
 ): Promise<HTMLImageElement | void> {
   if (!parallaxLayer || !imageDatum) {
     return
@@ -707,9 +454,9 @@ async function getFirstImage(
 
   const existingImage = parallaxLayer.getElementsByTagName(
     "img"
-  )[0] as HTMLImageElement
+  )[0]
   if (existingImage) {
-    transitionImages(existingImage, imageElement)
+    await transitionImages(existingImage, imageElement)
   }
   imageElement.style.transition = "none"
   parallaxLayer.prepend(imageElement)
@@ -723,7 +470,6 @@ async function getFirstImage(
  *
  * @param lastImage - The image element that is currently displayed.
  * @param nextImage - The image element that will be displayed next.
- * @param - The transformation settings to apply to the next image.
  * @returns A promise that resolves when the transition is complete.
  */
 async function transitionImages(
@@ -732,11 +478,10 @@ async function transitionImages(
 ): Promise<void> {
   // removed transformationSettings until it works
 
-  //if (transformationSettings) {
+  // if (transformationSettings) {
   //    applyTransformation(nextImage, transformationSettings)
-  //}
+  // }
   if (!parallaxLayer || !lastImage || !nextImage) {
-    console.error("Invalid parallax layer or image elements")
     return
   }
   lastImage.style.transition =
@@ -759,10 +504,10 @@ async function transitionImages(
  * each image datum one at a time. It handles potential errors during iteration and logs
  * them to the console, ensuring that the generator can be used safely in asynchronous contexts.
  *
- * @returns A generator that produces ImageDataType objects
+ * @returns A generator that produces imgSettings.ImageDataType objects
  *          from the image data collection.
  */
-function* imageDatumGenerator(): Generator<ImageDataType> {
+function* imageDatumGenerator(): Generator<imgSettings.ImageDataType> {
   const imageDataResult = imageData
   if (imageDataResult && imageDataResult.size > 0) {
     try {
@@ -770,18 +515,18 @@ function* imageDatumGenerator(): Generator<ImageDataType> {
         yield imageDatum
       }
     } catch (error) {
-      console.error("Error in imageDatumGenerator:", error)
+      // do something with the error
     }
   }
 }
 
-let generatedImageData: Array<ImageDataType | null> = []
+const generatedImageData: Array<imgSettings.ImageDataType | undefined> = []
 
 // Variables for image cycling
 let generatorExhausted = false
 let isPageVisible = true
-let cycleImagesSubscription: Subscription | null = null
-const intervalTime = 25000; // Interval for cycling images]
+let cycleImagesSubscription: Subscription | undefined
+const intervalTime = 25000 // Interval for cycling images]
 const imageGen = imageDatumGenerator()
 
 const imageData = getImageData()
@@ -796,16 +541,16 @@ const imageData = getImageData()
  * @returns The next image datum if available, or null if the
  *          generator has been exhausted or no datum is found.
  */
-const imageDatumGen = function (): ImageDataType | null {
+const imageDatumGen = function (): imgSettings.ImageDataType | undefined {
   if (generatorExhausted) {
-    return null
+    return undefined
   }
   const nextImageDatum = imageGen.next().value
   if (nextImageDatum) {
     return nextImageDatum
   } else {
     generatorExhausted = true
-    return null
+    return undefined
   }
 }
 
@@ -814,13 +559,11 @@ const imageDatumGen = function (): ImageDataType | null {
  *
  * This function clears the interval timer used for cycling images, effectively stopping
  * the image cycling process.
- *
- * @returns {void} This function does not return a value.
  */
 const stopImageCycling = (): void => {
   if (cycleImagesSubscription) {
     cycleImagesSubscription.unsubscribe()
-    cycleImagesSubscription = null
+    cycleImagesSubscription = undefined
   }
 }
 
@@ -835,8 +578,8 @@ const stopImageCycling = (): void => {
  */
 const startImageCycling = async (): Promise<void> => {
   const firstImage = parallaxLayer
-    ? (parallaxLayer.getElementsByTagName("img")[0] as HTMLImageElement)
-    : null
+    ? (parallaxLayer.getElementsByTagName("img")[0])
+    : undefined
   if (firstImage && isPageVisible) {
     delay(intervalTime)
 
@@ -849,7 +592,7 @@ const startImageCycling = async (): Promise<void> => {
     cycleImagesSubscription = combineLatest([interval$, viewport$, location$])
       .pipe(takeUntil(location$))
       .subscribe(([,]) => {
-        cycleImages()
+        void cycleImages()
       })
   }
 }
@@ -858,8 +601,6 @@ const startImageCycling = async (): Promise<void> => {
  * Handles changes in the visibility state of the document.
  *
  * This function is triggered when the visibility of the page changes. It updates the `isPageVisible` flag and starts or stops image cycling based on whether the page is currently visible or hidden.
- *
- * @returns {void} This function does not return a value.
  */
 const handleVisibilityChange = (): void => {
   if (document.hidden) {
@@ -867,7 +608,7 @@ const handleVisibilityChange = (): void => {
     stopImageCycling()
   } else {
     isPageVisible = true
-    startImageCycling()
+    void startImageCycling()
   }
 }
 
@@ -886,28 +627,28 @@ const fetchFirstImage = async (): Promise<void> => {
       await getFirstImage(datum)
     }
   } catch (error) {
-    console.error("Error fetching first image:", error)
+    // Handle the error here
   }
 }
 
 /**
- * Maps HTMLImageElements to their corresponding ImageDataType based on a data attribute.
+ * Maps HTMLImageElements to their corresponding imgSettings.ImageDataType based on a data attribute.
  *
  * This function iterates over an array of HTMLImageElement objects, retrieves the value of the
- * "data-name" attribute, and uses it to find and store the associated ImageDataType in a Map.
+ * "data-name" attribute, and uses it to find and store the associated imgSettings.ImageDataType in a Map.
  *
  * @param images - An array of HTMLImageElement objects to be processed.
  * @returns A Map where the keys are image names and the values are
- *                                        the corresponding ImageDataType objects.
+ *                                        the corresponding imgSettings.ImageDataType objects.
  */
 const mapImageData = (
   images: Array<HTMLImageElement>
-): Map<string, ImageDataType> => {
-  const imageMap = new Map<string, ImageDataType>()
+): Map<string, imgSettings.ImageDataType> => {
+  const imageMap = new Map<string, imgSettings.ImageDataType>()
   for (const image of images) {
     const imageName = image.getAttribute("data-name")
     if (imageName && generatedImageData) {
-      const imageDatum = generatedImageData.find((datum) =>
+      const imageDatum = generatedImageData.find(datum =>
         datum ? datum.imageName === imageName : undefined
       )
       if (imageDatum) {
@@ -927,7 +668,6 @@ const mapImageData = (
  *
  * @param image - The image element to apply new settings to.
  * @param changeTo - The orientation to change the image settings to.
- * @returns This function does not return a value.
  */
 const injectNewSettings = (
   image: HTMLImageElement,
@@ -935,7 +675,7 @@ const injectNewSettings = (
 ): void => {
   const images = parallaxLayer ? parallaxLayer.getElementsByTagName("img") : []
   const imageMap = mapImageData(Array.from(images))
-  const currentImage = images ? (images[0] as HTMLImageElement) : null
+  const currentImage = images ? (images[0]) : undefined
   if (!currentImage) {
     return
   } else {
@@ -946,14 +686,14 @@ const injectNewSettings = (
       changeTo === "portrait"
         ? currentDatum
           ? currentDatum.portraitSettings
-          : null
+          : undefined
         : currentDatum
         ? currentDatum.landscapeSettings
-        : null
+        : undefined
     if (settings) {
       image.style.transition = "none"
-      setStyles(image, settings)
-      updateColors(settings.colors, "none")
+      void setStyles(image, settings)
+      void updateColors(settings.colors, "none")
     }
   }
   const otherImages = Array.from(images).slice(1)
@@ -965,7 +705,7 @@ const injectNewSettings = (
           ? imgDatum.portraitSettings
           : imgDatum.landscapeSettings
       if (settings) {
-        setStyles(img, settings)
+        void setStyles(img, settings)
       }
     }
   }
@@ -982,33 +722,34 @@ const injectNewSettings = (
  *          is finished or errors if an issue occurs during the image creation or transition.
  */
 const cycleImages = async (): Promise<Observable<void>> => {
-  return new Observable((subscriber) => {
+  return new Observable(subscriber => {
     const images = parallaxLayer
       ? parallaxLayer.getElementsByTagName("img")
       : []
-    const lastImage = images[0] as HTMLImageElement
+    const lastImage = images[0]
 
     if (!generatorExhausted) {
       const nextDatum = imageDatumGen()
       generatedImageData.push(nextDatum)
       if (nextDatum) {
         createImageElement(nextDatum)
-          .then((nextImage) => {
-            transitionImages(lastImage, nextImage as HTMLImageElement)
-            subscriber.complete()
+          .then(nextImage => {
+            transitionImages(lastImage, nextImage as HTMLImageElement).then(() => {
+              subscriber.complete()
+            }).catch(err => subscriber.error(err))
           })
-          .catch((err) => subscriber.error(err))
+          .catch(err => subscriber.error(err))
       } else {
         subscriber.complete()
       }
     } else {
-      const nextImage = images[images.length - 1] as HTMLImageElement; // last image is the first image because we always prepend
+      const nextImage = images[images.length - 1] // last image is the first image because we always prepend
       if (nextImage) {
         transitionImages(lastImage, nextImage)
           .then(() => {
             subscriber.complete()
           })
-          .catch((err) => subscriber.error(err))
+          .catch(err => subscriber.error(err))
       } else {
         subscriber.complete()
       }
@@ -1016,74 +757,76 @@ const cycleImages = async (): Promise<Observable<void>> => {
   })
 }
 
-const initialize = async (): Promise<void> => {
+export const shuffle = async (): Promise<void> => {
   try {
     await fetchFirstImage()
-    startImageCycling()
+    void startImageCycling()
   } catch (error) {
-    console.error("Error initiating image cycling:", error)
+    // Handle the error here
   }
 }
-
 const createOrientationObservable = (
-  mediaQuery: MediaQueryList
+    mediaQuery: MediaQueryList
 ): Observable<boolean> => {
-  return fromEventPattern<boolean>(
-    (handler) => {
-      mediaQuery.addEventListener("change", handler)
-      return () => mediaQuery.removeEventListener("change", handler)
-    },
-    (_, event: MediaQueryListEvent) => event.matches
-  )
-}
+    return fromEventPattern<boolean>(
+      handler => {
+        mediaQuery.addEventListener("change", handler)
+        return () => mediaQuery.removeEventListener("change", handler)
+      },
+      (_, event: MediaQueryListEvent) => event.matches
+    )
+  }
 
-// observable that monitors changes in viewport orientation if the page is visible
+  // observable that monitors changes in viewport orientation if the page is visible
 const orientation$ = createOrientationObservable(portraitMediaQuery).pipe(
-  filter((isPageVisible) => isPageVisible),
+  filter(() => isPageVisible === true),
   map((event: boolean) => event),
   distinctUntilChanged()
 )
 
-// we inject new settings when the orientation changes for existing images; new images will have the correct settings
-orientation$.subscribe(() => {
-  if (isPortrait() && parallaxLayer) {
-    injectNewSettings(
-      parallaxLayer.getElementsByTagName("img")[0] as HTMLImageElement,
-      "portrait"
-    )
-  } else if (parallaxLayer) {
-    injectNewSettings(
-      parallaxLayer.getElementsByTagName("img")[0] as HTMLImageElement,
-      "landscape"
-    )
-  }
-})
+const initSubscriptions = async (): Promise<void> => {
+  orientation$.subscribe(() => {
+    if (isPortrait() && parallaxLayer) {
+      injectNewSettings(
+        parallaxLayer.getElementsByTagName("img")[0],
+        "portrait"
+      )
+    } else if (parallaxLayer) {
+      // we inject new settings when the orientation changes for existing images; new images will have the correct settings
 
-// we subscribe to the visibility change event
-subscriptions.push(
-  document$
-    .pipe(switchMap((doc) => fromEvent(doc, "visibilitychange")))
-    .subscribe(() => handleVisibilityChange())
-)
+      injectNewSettings(
+        parallaxLayer.getElementsByTagName("img")[0],
+        "landscape"
+      )
+    }
+  })
 
-subscriptions.push(
-  location$
-    .pipe(
-      distinctUntilChanged(
-        (a: URL, b: URL) => a === b || a.pathname === b.pathname
-      ),
-      filter((loc) => loc.pathname === "/" || loc.pathname === "/index.html"),
-      map(() => {
-        stopImageCycling()
-        return null; // Ensure map returns a value
-      })
-    )
-    .subscribe()
-)
+  // we subscribe to the visibility change event
+  subscriptions.push(
+    document$
+      .pipe(switchMap(doc => fromEvent(doc, "visibilitychange")))
+      .subscribe(() => handleVisibilityChange())
+  )
+
+  subscriptions.push(
+    location$
+      .pipe(
+        distinctUntilChanged(
+          (a: URL, b: URL) => a === b || a.pathname === b.pathname
+        ),
+        filter(loc => loc.pathname === "/" || loc.pathname === "/index.html"),
+        map(() => {
+          stopImageCycling()
+          return undefined // Ensure map returns a value
+        })
+      )
+      .subscribe()
+  )
+}
+
+void initSubscriptions()
 
 window.addEventListener("beforeunload", () => {
   stopImageCycling()
-  subscriptions.forEach((sub) => sub.unsubscribe())
+  subscriptions.forEach(sub => sub.unsubscribe())
 })
-
-initialize()
