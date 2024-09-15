@@ -5,6 +5,9 @@
 .devenv/
 .devenv/*
 typings
+.testbuild
+.testbuild/*
+.testbuild/**/*
 
 # mkdocs
 .cache

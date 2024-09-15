@@ -17,7 +17,7 @@ Plain Version: {{ plain_version|trim }}
 /// admonition | {{ interpretation_title|trim }}
     type: note
 
-{{  interpretation_text|trim|wordwrap(width=80, break_long_words=False) }}
+{{  interpretation_text|trim }}
 ///
 <p class="license-divider"></p>
 {% include "partials/license_disclaimer_block.md" %}

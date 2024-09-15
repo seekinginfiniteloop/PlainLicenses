@@ -28,11 +28,6 @@ conditions: []
 limitations:
   - liability
   - warranty
-tags:
-  - can-sell
-  - can-change
-  - can-share
-  - relicense
 
 intro: null
 reader_license_text: |

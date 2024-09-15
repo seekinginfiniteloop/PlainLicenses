@@ -18,7 +18,10 @@ dependencies = [
     "mkdocs-static-i18n[material]>=1.2.3",
     "mkdocs[i18n]>=1.6.0",
     "pygments>=2.18.0",
-    "pymdown-extensions>=10.8.1",
+    "pymdown-extensions>=10.9",
+    "mkdocs-macros-plugin>=1.0.5",
+    "mkdocs-minify-plugin>=0.8.0",
+    "pyyaml_env_tag>=0.1.0",
 ]
 readme = "README.md"
 requires-python = ">= 3.12"
@@ -46,8 +49,6 @@ dev-dependencies = [
     "tqdm>=4.66.4",
     "uv>=0.2.24",
     "textblob>=0.18.0.post0",
-    "spacy>=3.7.6",
-    "mkdocs-macros-plugin>=1.0.5",
 ]
 
 [tool.hatch.metadata]

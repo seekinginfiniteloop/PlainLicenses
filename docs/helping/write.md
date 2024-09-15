@@ -45,7 +45,7 @@ If a license talks about "contributors" as well as 'licensors' (or similar), we 
     - Don't feel bound by the original format
     - Group related information together
 
-3.   **Use Active Voice and Informal Tone**
+3.  **Use Active Voice and Informal Tone**
 
     - Write as if you're speaking to the reader
     - Avoid formal or stuffy language

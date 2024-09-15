@@ -1,33 +1,18 @@
 import json
 import logging
 import re
-import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from re import Pattern
+from re import Match, Pattern
 from typing import Any
 
+from _logconfig import get_logger
 from jinja2 import Environment, FileSystemLoader, Template
 from mkdocs.config.defaults import MkDocsConfig
 from mkdocs.plugins import event_priority
 from mkdocs.structure.files import File
 from mkdocs.structure.pages import Page
 
-# add sticky sidebar
-
-TAG_MAP = {
-    "distribution": "can-share",  # allowances
-    "commercial-use": "can-sell",
-    "modifications": "can-change",
-    "revokable": "can-revoke",
-    "relicense": "relicense",
-    "disclose-source": "share-source",  # requirements
-    "document-changes": "describe-changes",
-    "include-copyright": "give-credit",
-    "same-license": "share-alike (strict)",
-    "same-license--file": "share-alike (relaxed)",
-    "same-license--library": "share-alike (relaxed)",
-}
 
 annotation_pattern: Pattern[str] = re.compile(
     r"(?P<citation>\([123]\)).*?(?P<class>\{\s\.annotate\s\})[\n\s]{1,4}[123]\.\s{1,2}(?P<annotation>.+?)\n",
@@ -39,37 +24,33 @@ header_pattern: Pattern[str] = re.compile(
 
 placeholders = re.compile(r"\{\{\s(.*?)\s\}\}")
 
-logger = None
-
 
 def start_logging(level: int = logging.INFO) -> logging.Logger:
-    global logger
-    if logger is not None:
-        return logger
-
-    logger = logging.getLogger(__name__)
-    logger.setLevel(level)
-
-    if logger.hasHandlers():
-        logger.handlers.clear()
-
-    handlers = [
-        logging.FileHandler(".workbench/content_assembly.log"),
-        logging.StreamHandler(stream=sys.stdout),
-    ]
-
-    formatter = logging.Formatter(
-        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    return get_logger(
+        __name__,
+        level,
     )
-    for handler in handlers:
-        handler.setLevel(level)
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)
 
-    return logger
+
+logger = start_logging(logging.WARNING)
 
 
 def clean_content(content: dict[str, Any]) -> dict[str, Any]:
+    """
+    Cleans up the content by stripping whitespace from string values.
+    This function iterates through a dictionary and removes leading and trailing whitespace
+    from string entries, as well as from each string in lists, ensuring that the content is
+    formatted consistently.
+
+    Args:
+        content (dict[str, Any]): A dictionary containing content that may include strings and lists of strings.
+
+    Returns:
+        dict[str, Any]: The cleaned dictionary with whitespace removed from string values.
+
+    Examples:
+        cleaned_content = clean_content({"title": "  Example Title  ", "tags": ["  tag1  ", "tag2 "]})
+    """
     for key, value in content.items():
         if isinstance(value, str):
             content[key] = value.strip()
@@ -82,8 +63,25 @@ def clean_content(content: dict[str, Any]) -> dict[str, Any]:
 def on_page_markdown(
     markdown_content: str, page: Page, config: MkDocsConfig, files: list[File]
 ) -> str:
+    """
+    Processes the Markdown content of a page and appends additional license information.
+    This function updates the page's metadata with license attributes, renders a boilerplate template,
+    and combines it with the original Markdown content to produce the final output.
+
+    Args:
+        markdown_content (str): The original Markdown content of the page.
+        page (Page): The page object containing metadata and content.
+        config (MkDocsConfig): The configuration settings for MkDocs.
+        files (list[File]): A list of files associated with the documentation.
+
+    Returns:
+        str: The combined Markdown content including the original content and the rendered license information.
+
+    Raises:
+        Exception: If there is an error during template rendering or logging.
+    """
     if not logger:
-        globals()["logger"] = start_logging()
+        logger = start_logging(logging.INFO)
     logger.debug("on_page_markdown called")
     if not page.meta.get("category"):
         logger.debug(f"No category found in page meta for page {page.title}")
@@ -98,7 +96,6 @@ def on_page_markdown(
         key: Template(value).render(meta) if isinstance(value, str) else value
         for key, value in boilerplate.items()
     }
-
     meta.update(rendered_boilerplate)
     page.meta = clean_content(meta)
     context = page.meta
@@ -109,7 +106,7 @@ def on_page_markdown(
     return f"{markdown_content}\n{rendered_content}"
 
 
-def on_post_page(output, page, config):
+def on_post_page(output: str, page: Page, config: Config) -> Any:
     if re.match(
         r"licenses/(permissive|copyleft|public-domain/source-available|proprietary)/(.+?)/index.html",
         page.url,
@@ -127,9 +124,19 @@ def load_json(path: Path) -> dict[str, Any]:
 
 class LicenseContent:
     def __init__(self, page: Page) -> None:
+        """
+        Initializes a new instance of the class with the provided page object.
+        This constructor sets up various attributes related to the page's metadata, including tags,
+        license type, and processed license texts, ensuring that the object is ready for further operations.
+
+        Args:
+            page (Page): The page object containing metadata and content related to the license.
+
+        Examples:
+            license_instance = LicenseClass(page)
+        """
         self.page = page
         self.meta = page.meta
-        # self.tags = self.meta.get("tags") or self.get_tags(self.meta)
         self.year = str(datetime.now().year)
         self.license_type = (
             "dedication" if "public" in self.meta["category"] else "license"
@@ -139,19 +146,16 @@ class LicenseContent:
         self.plaintext_license_text = self.process_markdown_to_plaintext()
         self.plain_version = self.get_plain_version()
 
-    @staticmethod
-    def get_tags(meta: dict[str, Any]) -> list[str] | None:
-        if not meta.get("tags") or meta.get("tags", [])[0] == "placeholder":
-            other_tags = []
-            if conditions := meta.get("conditions"):
-                other_tags.extend(conditions)
-            if permissions := meta.get("permissions"):
-                other_tags.extend(permissions)
-            if limitations := meta.get("limitations"):
-                other_tags.extend(limitations)
-            return [TAG_MAP[tag] for tag in other_tags if tag in TAG_MAP]
-
     def process_markdown_to_plaintext(self) -> str:
+        """
+        Strips Markdown formatting from the license text to produce a plaintext version.
+
+        Returns:
+            str: The processed plaintext version of the Markdown license text.
+
+        Examples:
+            plain_text = process_markdown_to_plaintext()
+        """
         text = self.markdown_license_text
         text = self.process_definitions(text, plaintext=True)
         text = re.sub(
@@ -165,6 +169,21 @@ class LicenseContent:
 
     @staticmethod
     def process_definitions(text: str, plaintext: bool = False) -> str:
+        """
+        Identifies and processes definitions in the input text, formatting them appropriately.
+
+        Args:
+            text (str): The input text containing definitions to be processed.
+            plaintext (bool, optional): A flag indicating whether to return definitions in plaintext format.
+                Defaults to False.
+
+        Returns:
+            str: The processed text with definitions formatted appropriately.
+
+        Examples:
+            processed_text = process_definitions(input_text, plaintext=True)
+        """
+
         definition_pattern = re.compile(
             r"(?P<term>`[\w\s]+`)\s*?\n{1,2}[:]\s{1,4}(?P<def>[\w\s]+)\n{2}",
             re.MULTILINE,
@@ -188,6 +207,14 @@ class LicenseContent:
         return text
 
     def get_plain_version(self) -> str:
+        """
+        Retrieves the plain version of the package from a JSON file.
+        This function checks for the existence of a `package.json` file in the same directory as the page URL,
+        and extracts the version information, returning a default value if the file does not exist or if the version is not valid.
+
+        Returns:
+            str: The version string from the package, or "0.0.0" if the file is missing or the version is not valid.
+        """
         path = Path(self.page.url)
         path = path.parent / "package.json"
         if not path.exists():
@@ -213,7 +240,18 @@ class LicenseContent:
 
         footnotes = []
 
-        def replacement(match) -> str:
+        def replacement(match: Match) -> str:
+            """
+            Generates a footnote reference and stores the corresponding annotation.
+            This function is used as a replacement callback for regular expression matches,
+            incrementing the footnote number and appending the matched annotation to the footnotes list.
+
+            Args:
+                match (re.Match): The match object containing the annotation to be processed.
+
+            Returns:
+                str: A formatted string representing the footnote reference.
+            """
             footnote_num = len(footnotes) + 1
             footnotes.append(match.group("annotation").strip())
             return f"[^{footnote_num}]"
@@ -226,6 +264,14 @@ class LicenseContent:
         return transformed_text
 
     def process_mkdocs_to_markdown(self) -> str:
+        """
+        Processes MkDocs content and transforms it into Markdown format.
+        This function converts the text to footnotes, applies a header transformation,
+        and processes any definitions present in the text to produce a final Markdown string.
+
+        Returns:
+            str: The processed Markdown text after transformations and definitions have been applied.
+        """
         text = self.transform_text_to_footnotes(self.reader)
         logger.debug(f"Transformed text: {text}")
         text = header_pattern.sub(r"## \1", text)
@@ -233,6 +279,16 @@ class LicenseContent:
 
     @property
     def attributes(self) -> dict[str, Any | int | str]:
+        """
+        Retrieves a dictionary of attributes related to the license.
+        This property consolidates various license-related information into a single dictionary,
+        making it easier to access and manage the relevant data.
+
+        Returns:
+            dict[str, Any | int | str]: A dictionary containing attributes such as year,
+            markdown and plaintext license texts, plain version, and license type.
+        """
+
         return {
             # "tags": self.tags,
             "year": self.year,

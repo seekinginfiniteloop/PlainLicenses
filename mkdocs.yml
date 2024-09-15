@@ -10,46 +10,46 @@ hooks:
   - overrides/hooks/content_assembly.py
   - overrides/hooks/md_filter.py
   - overrides/hooks/set_pil.py
+  - overrides/hooks/set_jinja_extensions.py
+  - overrides/hooks/update_site_license.py
 site_description: |
   Plain License: Terms for Everyone.
 
   Licenses are hard to read and understand. Complicated terms prevent innovation and creativity. We make them understandable for everyone.
 nav:
-  - home: index.md
-  - about:
-      - about/index.md
-  - faq:
-      - faq/index.md
+  - home: !relative $docs_dir/index.md
+  - about: !relative $docs_dir/about/index.md
+  - faq: !relative $docs_dir/faq/index.md
   - our licenses:
-      - licenses/index.md
+      - !relative $docs_dir/licenses/index.md
       - public domain:
-          - licenses/public-domain/index.md
+          - !relative $docs_dir/licenses/public-domain/index.md
           - Unlicense: licenses/public-domain/unlicense/index.md
       - permissive licenses:
-          - licenses/permissive/index.md
-          - MIT: licenses/permissive/mit/index.md
+          - !relative $docs_dir/licenses/permissive/index.md
+          - MIT: !relative $docs_dir/licenses/permissive/mit/index.md
       - copyleft licenses:
-          - licenses/copyleft/index.md
-          - MPL: licenses/copyleft/mpl-2.0/index.md
+          - !relative $docs_dir/licenses/copyleft/index.md
+          - MPL: !relative $docs_dir/licenses/copyleft/mpl-2.0/index.md
       - source-available licenses:
-          - licenses/source-available/index.md
-          - Elastic License: licenses/source-available/elastic-2.0/index.md
+          - !relative $docs_dir/licenses/source-available/index.md
+          - Elastic License: !relative $docs_dir/licenses/source-available/elastic-2.0/index.md
       - proprietary licenses:
-          - licenses/proprietary/index.md
+          - !relative $docs_dir/licenses/proprietary/index.md
   - help:
-      - helping/index.md
-      - craft: helping/craft.md
-      - write: helping/write.md
-      - legal: helping/legal.md
-      - translate: helping/translate.md
-      - code: helping/code.md
-      - donate: helping/donate.md
-  - blog: blog/index.md
+      - !relative $docs_dir/helping/index.md
+      - craft: !relative $docs_dir/helping/craft.md
+      - write: !relative $docs_dir/helping/write.md
+      - legal: !relative $docs_dir/helping/legal.md
+      - translate: !relative $docs_dir/helping/translate.md
+      - code: !relative $docs_dir/helping/code.md
+      - donate: !relative $docs_dir/helping/donate.md
+  - blog: !relative $docs_dir/blog/index.md
 theme:
   name: material
   custom_dir: overrides
-  logo: assets/images/named_logo_color_transp.svg
-  favicon: assets/images/favicon.png
+  logo: !relative $docs_dir/assets/images/named_logo_color_transp.svg
+  favicon: !relative $docs_dir/assets/images/favicon.png
   font:
     text: Noto Sans
     code: Noto Sans Mono
@@ -58,6 +58,7 @@ theme:
     - content.code.annotate
     - content.code.copy
     - content.code.select
+    - content.tooltips
     - content.footnote.tooltips
     - navigation.footer
     - navigation.indexes
@@ -129,7 +130,7 @@ plugins:
   - macros
   - offline
   - rss:
-      match_path: "blog/posts/.*"
+      match_path: !relative $docs_dir/blog/posts/.*
       date_from_meta:
         as_creation: date.created
         as_update: date.updated
@@ -141,17 +142,30 @@ plugins:
         font_family: Raleway
         color: "#FFFFFF"
         background_color: "#0d19a3"
-        image: assets/images/logo_only_color_transp.png
+        image: !relative $docs_dir/assets/images/logo_only_color_transp.png
   - tags:
       tags: true
       enabled: true
       tags_file: tags.md
-  - privacy
+  - privacy:
+      assets: true
+      assets_fetch: true
   - git-revision-date-localized:
       enable_creation_date: true
       fallback_to_build_date: true
       type: date
   - git-authors
+  - minify:
+      minify_html: true
+      minify_js: true
+      minify_css: true
+      htmlmin_opts:
+          remove_comments: true
+      cache_safe: true
+      js_files:
+          - !relative $docs_dir/assets/javascripts/*.js
+      css_files:
+          - !relative $docs_dir/assets/stylesheets/*.css
 markdown_extensions:
   - abbr
   - attr_list
@@ -174,7 +188,7 @@ markdown_extensions:
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
       options:
         custom_icons:
-          - overrides/.icons
+          - !relative $config_dir/overrides/.icons
   - pymdownx.highlight:
       default_lang: markdown
       guess_lang: true
@@ -204,6 +218,8 @@ markdown_extensions:
   - pymdownx.snippets:
       auto_append:
         - includes/abbreviations.md
+      base_path:
+        - !relative $config_dir
   - pymdownx.saneheaders
   - pymdownx.superfences:
       custom_fences:
@@ -224,9 +240,10 @@ markdown_extensions:
           kwds: { case: lower, percent_encode: true },
         }
 extra_javascript:
-  - assets/javascripts/imports.js
-  - assets/javascripts/license_select.js
-  #- assets/javascripts/feedback.js
+  #TO DO, integrate: - !relative $docs_dir/assets/javascripts/feedback.js
+  - >
+    https://cdn.skypack.dev/pin/tablesort@v5.3.0-H3FmQXw8sIDAOcU4Sju8/mode=imports,min/optimized/tablesort.js
+  - !relative $docs_dir/assets/javascripts/tablesort.js
 extra_css:
   - assets/stylesheets/colors.css
   - assets/stylesheets/extra.css
@@ -239,6 +256,7 @@ not_in_nav: |
   index*
   CHANGELOG*
   tags
+  shame*
 extra:
   tags: # maps the tags in the license front matter to the names above in theme.icon.tag. This allows us to replace the tag with an icon in the license template.
     can-share: canshare
@@ -257,13 +275,13 @@ extra:
     description: >
       Plain License: {{ plain_name|trim }}. Terms for everyone. The {{ original_name|trim }}, but now in plain language for everyone to understand.
     plain_url: >
-      /licenses/{{ category.lower()|trim }}/{{ spdx_id.lower()|trim }}/
+      !relative $docs_dir/licenses/{{ category.lower()|trim }}/{{ spdx_id.lower()|trim }}/
     github_base_url: >
       https://github.com/seekinginfiniteloop/PlainLicense
     github_issues_link: >
       [submit an issue](https://github.com/seekinginfiniteloop/PlainLicense/issues/new/choose "Submit an issue on GitHub")
     github_edit_link: >
-      [edit yourself](https://github.com/seekinginfiniteloop/PlainLicense/edit/main/docs/licenses/{{ category.lower()|trim }}/{{ spdx_id.lower()|trim }}/index.md "Edit this license on GitHub")
+      [edit this page](https://github.com/seekinginfiniteloop/PlainLicense/edit/main/docs/licenses/{{ category.lower()|trim }}/{{ spdx_id.lower()|trim }}/index.md "Edit this license on GitHub")
     hide: # list of mkdocs components to hide in licenses; the table of contents is already hidden in the license template.
     official_link: >
       [{{ original_name|trim }}]({{ original_url|trim }} "Official {{ original_name|trim }}")
@@ -273,6 +291,18 @@ extra:
       The {{ plain_name|trim }} is a plain language adaptation of the {{ original_name|trim }}. We made the {{ plain_name|trim }} to make the {{ original_name|trim }} more accessible and understandable. We tried to match the {{ original_name|trim }}'s legal intent exactly. **If you think the {{ plain_name|trim }}'s terms are legally unclear, use the official {{ official_link|trim }} to clarify the terms.**
 
       If a court finds that any part of this {{ license_type }} cannot be enforced, the rest of the {{ license_type }} will still apply.
+    tag_map: # maps the keys in license frontmatter for conditions, permissions, and limitations to the simplified tags we use in the license template.
+      distribution: can-share,  # allowances
+      commercial-use: can-sell,
+      modifications: can-change,
+      revokable: can-revoke,
+      relicense: relicense, # end allowances
+      disclose-source: share-source,  # requirements
+      document-changes: describe-changes,
+      include-copyright: give-credit,
+      same-license: share-alike (strict),
+      same-license--file: share-alike (relaxed),
+      same-license--library: share-alike (relaxed), # end requirements
     tag_text: # These values map to each of the tags in the license frontmatter, and are used for tooltips.
       can-share: >
         <strong>Share Freely</strong>: You can share or distribute any work that uses this {{ license_type }} freely.
@@ -358,7 +388,7 @@ extra:
       url: >
         https://facelessuser.github.io/pymdown-extensions/extensions/tilde/ "Adding strikethrough text with tildes"
       description: Use strikethrough text with tildes. Use this to show deleted text or to indicate changes.
-  shame_words: # These are 'shame words' for calculating the wall of shame. We use this list to determine how many 'shame words' are in the original license. The values are plain language alternatives to the more complex terms.
+  shame_words: # These are 'shame words' for calculating the wall of shame (forthcoming). We use this list to determine how many 'shame words' are in the original license. The values are plain language alternatives to the more complex terms.
     # TODO: Change implementation to use the stem or lexxer of the word as the key, and the plain language alternative as the value so we don't have to list every form of the word.
     absence: lack
     additional: more

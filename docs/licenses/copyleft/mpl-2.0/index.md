@@ -35,13 +35,6 @@ limitations:
     - liability
     - trademark-use
     - warranty
-tags:
-    - can-share
-    - can-sell
-    - can-change
-    - share-source
-    - give-credit
-    - share-alike (relaxed)
 
 intro: null
 reader_license_text: |

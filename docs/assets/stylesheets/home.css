@@ -377,18 +377,13 @@ svg#the-egg {
     opacity: 0.55;
 }
 
-svg#the-egg:hover {
+svg#the-egg:hover, svg#the-egg:focus, svg#the-egg:target {
+    fill: var(--emerald);
+    opacity: 1;
+}
+
+svg#the-egg:active {
     fill: var(--ecru);
-    opacity: 1;
-}
-
-svg#the-egg:target {
-    fill: var(--emerald);
-    opacity: 1;
-}
-
-svg#the-egg:focus {
-    fill: var(--emerald);
     opacity: 1;
 }
 
@@ -512,8 +507,6 @@ html.js-focus-visible a#yoshimi-link:hover {
     align-self: center;
     justify-self: center;
     justify-items: center;
-    view-timeline: appear_on_scroll;
-    view-timeline-axis: block;
 }
 
 #pt2-hero-content-section-header {

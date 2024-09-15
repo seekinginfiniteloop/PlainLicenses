@@ -32,7 +32,7 @@ We want developers of all skill levels to contribute to Plain License. Whether y
 -   **Styles**: We significantly customize the default Material for MKDocs theme. These css files are in the `docs/assets/stylesheets` folder. It's probably obvious, but `colors.css` sets all of the base color variables for the site, `extra.css` handles most of the added styling across the sites, `home.css` if for the landing page, and `license.css` is for the license pages.
 -   **Helper Scripts**: Any development helper scripts are in the `scripts` folder. These are usually python scripts that help with the development process; if you want to make all of our jobs easier, drop a script in here. The `image_conversion.py` script scales up and saves images for the landing page at multiple sizes.
 
-### The Role of the MKDocs Configuration
+### The MKDocs Configuration
 
 The `mkdocs.yml` file in the root directory is the configuration file for the site. It tells MKDocs how to build the site, what pages to include, and how to format the pages. The configuration file is in [YAML][yamlspec]. We heavily use the `extra` field to pass variables to the Jinja2 templates. This keeps the templates flexible, and allows us to change the site's appearance without changing the templates themselves. It also lets us update only one file when we need to change something site-wide.
 
@@ -46,7 +46,7 @@ The `mkdocs.yml` file in the root directory is the configuration file for the si
 [jinja]: https://jinja.palletsprojects.com "Jinja2 documentation"
 [docs]: {{ config.repo_url|trim }}/docs "Our Docs Folder"
 [mkdocs-yml]: {{ config.repo_url|trim }}/mkdocs.yml "our mkdocs.yml configuration file"
-[config]: #the-role-of-the-mkdocs-configuration "MKDocs Configuration"
+[config]: #the-mkdocs-configuration "MKDocs Configuration"
 [yamlspec]: https://yaml.org/ "YAML Specification"
 [licenses]: {{ config.repo_url|trim }}/docs/licenses "Licenses Folder"
 [licensehook]: {{ config.repo_url|trim }}/overrides/hooks/content_assembly.py "License Assembly Hook"

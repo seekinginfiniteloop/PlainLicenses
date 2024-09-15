@@ -9,7 +9,7 @@ Plain License is a community-driven project, and we need your help to make it a 
 
 <div class="grid cards" markdown>
 
--   __Committing to Plain License__
+-   __~Commit~-ting to Plain License__
 
     ---
     If you want to contribute to our site, you should learn about our [commit message format][commitformat]. This will help us track changes and make sure we can find them later. If that sounds too complicated, don't worry! You can still contribute to licenses, translations, improve our plain writing, and more without knowing how to code. Check out the other sections below to learn more about how you can help, or post on our [discussions][discussions] page if you have questions. You can also [contact us][contact-us] directly.

@@ -34,7 +34,7 @@
 #     NOTE:
 #         - **DO NOT INCLUDE THE TITLE AND VERSIONS FOR license text.** Start with the
 #         first section of the license text. The title and versions are generated
-#         automatically.
+#         automatically. Headers and text are not.
 #         - Don't include an interpretation, not-legal-advice, or not-official section; #           those are generated automatically.
 #
 # 6) Save the file in the appropriate directory (docs/licenses/{{category}}/{spdx-id}}/# index.md. Don't worry
@@ -68,7 +68,7 @@ note: >
   {{ notes }}
 # We use choosealicense.com's tagging system; we haven't implemented this yet, but we
 # will in the future, which divides tags into permissions, conditions, and limitations
-# SELECT ONLY TAGS THAT APPLY TO THE LICENSE, AND REMOVE THE REST
+# SELECT ONLY TAGS THAT APPLY TO THE LICENSE, AND REMOVE THE REST. If the license is already on the site, please use the same tags as the existing license.
 permissions: # AS APPLICABLE:
   - distribution
   - commercial-use
@@ -90,19 +90,21 @@ limitations: # AS APPLICABLE:
   - patent-use
   - trademark-use
   - warranty
-tags: # tags appended based on permissions, conditions, limitations
-  - placeholder
+# NOTE: The simplified tags you see on license pages, with icon representations are added in the build process automatically. They are appended based on permissions, conditions, limitations
+# The mapping is in the config (mkdocs.yml) under the
+# extras.boilerplate.tag_map key.
 
-# introductory text before the license tab interface, this is appended to the standard
-# intro text -- optional. If you don't have anything to add, set to `null`
+# intro text for the license page; this is appended to the standard intro text. Optional and usually empty; if empty, change to `null`
 intro: |
   {{ intro }}
 
-# Reader License Text -- can include mkdocs markdown
+# Reader License Text -- MKDocs markdown format. Make it pretty.
+# See [Writing Guidelines](plainlicense.org/helping/write.html)
 # Scripts will automatically generate the rest of the tabs, text, and links
-# You SHOULD NOT include code blocks here; those are generated automatically
-# You can use inline code spans, but not code blocks
-# Don't include the header; it is generated automatically
+# **Don't include code blocks (three backticks)**
+# Inline code spans are OK (one backtick)
+# Don't include the license title (e.g. Plain MIT); it is generated automatically
+# Headers are NOT generated automatically; include them in the text
 # Don't use reference tags in the license text; use in-line links instead
 reader_license_text: |
   {{ reader_license_text }}
@@ -116,13 +118,6 @@ reader_license_text: |
 official_license_text: |
   {{ official_license_text }}
 
-# list of reference links for the page (any link in format [text][reference_tag] will
-# be replaced with a link if you define the reference_tag below)
-# If you use a link or text that has a placeholder, use the placeholder (e.g.
-# reference_tag: mit  link_url: {{ original_url }} link_title: {{ original_name }}).
-# That helps keep the links consistent across licenses and minimizes changes when we
-# update the site.
-
 link_in_original: false
 # boolean, if the original license includes a link to the original_url, set to true
 # if the original license does not include a link to the original_url, set to false;
@@ -131,6 +126,7 @@ link_in_original: false
 # list of reference links for the page; DON'T USE REFERENCE TAGS IN THE LICENSE TEXT --
 # it's hard to maintain. Use in-line links instead. You can use them in the intro,
 # instructions, how, and note.
+# Define a unique reference_tag name here, and then add the link in the text (not license text!) using the reference_tag, like so: [Learn more about this awesome thing][my_unique_reference_tag]
 reference_links:
   - {
       reference_tag: null, # reference tag for the link
