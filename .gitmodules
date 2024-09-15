@@ -1,0 +1,4 @@
+[submodule "external/mkdocs-material"]
+	path = external/mkdocs-material
+	url = https://github.com/squidfunk/mkdocs-material.git
+	branch = master
