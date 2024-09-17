@@ -1,0 +1,11 @@
+[submodule "external/mkdocs-material"]
+	path = external/mkdocs-material
+	url = https://github.com/squidfunk/mkdocs-material.git
+	branch = master
+[submodule "license-list-data"]
+	path = license-list-data
+	url = https://github.com/spdx/license-list-data.git
+	branch = main
+[submodule "/home/uniquemarlin/dev/DevProjects/PlainLicense/mkdocs-material"]
+	path = /home/uniquemarlin/dev/DevProjects/PlainLicense/mkdocs-material
+	url = https://github.com/squidfunk/mkdocs-material.git
