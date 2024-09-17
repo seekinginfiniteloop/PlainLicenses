@@ -5,54 +5,48 @@ repo_name: PlainLicense
 edit_uri: edit/main/docs/
 copyright: Plain License's authors dedicate all original content to the public domain. No rights reserved.
 hooks:
-  - overrides/hooks/socialmedia.py
-  - overrides/hooks/update_changelogs.py
-  - overrides/hooks/content_assembly.py
-  - overrides/hooks/md_filter.py
-  - overrides/hooks/set_pil.py
-  - overrides/hooks/set_jinja_extensions.py
-  - overrides/hooks/update_site_license.py
-site_description: |
-  Plain License: Terms for Everyone.
+  - overrides/hooks/socialmedia.py # Material hook for social media cards
+  - overrides/hooks/update_changelogs.py # Handles changelog updates for individual licenses
+  - overrides/hooks/content_assembly.py # Assembles licenses from frontmatter and boilerplate (boilerplate below)
+  - overrides/hooks/env_settings.py # Sets up jinja2 environment variables for the site
+  - overrides/hooks/update_site_license.py # Updates the site license to match the latest Plain Unlicense
 
-  Licenses are hard to read and understand. Complicated terms prevent innovation and creativity. We make them understandable for everyone.
-nav:
-  - home: !relative $docs_dir/index.md
-  - about: !relative $docs_dir/about/index.md
-  - faq: !relative $docs_dir/faq/index.md
-  - our licenses:
-      - !relative $docs_dir/licenses/index.md
-      - public domain:
-          - !relative $docs_dir/licenses/public-domain/index.md
-          - Unlicense: licenses/public-domain/unlicense/index.md
+  Plain License: Terms for Everyone. We make licenses readable, understandable, and accessible.
+
+  - faq: faq/index.md
+  - home: index.md
+  - about: about/index.md
+  - faq: faq/index.md
+          - licenses/public-domain/index.md
+      - licenses/index.md
       - permissive licenses:
-          - !relative $docs_dir/licenses/permissive/index.md
-          - MIT: !relative $docs_dir/licenses/permissive/mit/index.md
+          - licenses/public-domain/index.md
+          - MIT: licenses/permissive/mit/index.md
       - copyleft licenses:
-          - !relative $docs_dir/licenses/copyleft/index.md
-          - MPL: !relative $docs_dir/licenses/copyleft/mpl-2.0/index.md
+          - licenses/permissive/index.md
+          - MIT: licenses/permissive/mit/index.md
       - source-available licenses:
-          - !relative $docs_dir/licenses/source-available/index.md
-          - Elastic License: !relative $docs_dir/licenses/source-available/elastic-2.0/index.md
+          - licenses/copyleft/index.md
+          - MPL: licenses/copyleft/mpl-2.0/index.md
       - proprietary licenses:
-          - !relative $docs_dir/licenses/proprietary/index.md
-  - help:
-      - !relative $docs_dir/helping/index.md
-      - craft: !relative $docs_dir/helping/craft.md
-      - write: !relative $docs_dir/helping/write.md
-      - legal: !relative $docs_dir/helping/legal.md
-      - translate: !relative $docs_dir/helping/translate.md
-      - code: !relative $docs_dir/helping/code.md
-      - donate: !relative $docs_dir/helping/donate.md
-  - blog: !relative $docs_dir/blog/index.md
-theme:
-  name: material
-  custom_dir: overrides
-  logo: !relative $docs_dir/assets/images/named_logo_color_transp.svg
-  favicon: !relative $docs_dir/assets/images/favicon.png
+          - licenses/source-available/index.md
+          - Elastic License: licenses/source-available/elastic-2.0/index.md
+      - helping/index.md
+          - licenses/proprietary/index.md
+      - write: helping/write.md
+      - helping/index.md
+      - craft: helping/craft.md
+      - write: helping/write.md
+      - legal: helping/legal.md
+      - translate: helping/translate.md
+      - code: helping/code.md
+      - donate: helping/donate.md
+  - blog: blog/index.md
+  logo: assets/images/named_logo_color_transp.svg
+  favicon: assets/images/favicon.png
   font:
-    text: Noto Sans
-    code: Noto Sans Mono
+  logo: assets/images/named_logo_color_transp.svg
+  favicon: assets/images/favicon.png
   features:
     - content.action.edit
     - content.code.annotate
@@ -63,11 +57,9 @@ theme:
     - navigation.footer
     - navigation.indexes
     - navigation.instant
-    - navigation.instant.prefetch
     - navigation.instant.progress
     - navigation.path
     - navigation.sections
-    - navigation.tabs
     - navigation.top
     - navigation.tracking
     - search.highlight
@@ -90,12 +82,10 @@ theme:
       givecredit: nounproject/copyright
       describechanges: octicons/file-diff-24
       sharesource: octicons/book-24
-
   palette:
     # Palette toggle for system automatic mode; chooses the color scheme based on the user's system preference, but allows the user to override it.
     - media: "(prefers-color-scheme)"
       primary: custom
-      accent: custom
       toggle:
         icon: material/weather-night
         name: Switch to dark mode
@@ -130,24 +120,24 @@ plugins:
   - macros
   - offline
   - rss:
-      match_path: !relative $docs_dir/blog/posts/.*
+      match_path: blog/posts/.*
       date_from_meta:
         as_creation: date.created
         as_update: date.updated
   - search:
-      separator: '[\s\-,:!=\[\]()"/]+|(?!\b)(?=[A-Z][a-z])|\.(?!\d)|&[lg]t;'
+      match_path: blog/posts/.*
   #- shame_counter
   - social:
       cards_layout_options:
         font_family: Raleway
         color: "#FFFFFF"
         background_color: "#0d19a3"
-        image: !relative $docs_dir/assets/images/logo_only_color_transp.png
+        image: assets/images/logo_only_color_transp.png
   - tags:
       tags: true
       enabled: true
       tags_file: tags.md
-  - privacy:
+        image: assets/images/logo_only_color_transp.png
       assets: true
       assets_fetch: true
   - git-revision-date-localized:
@@ -155,40 +145,14 @@ plugins:
       fallback_to_build_date: true
       type: date
   - git-authors
-  - minify:
-      minify_html: true
-      minify_js: true
-      minify_css: true
-      htmlmin_opts:
-          remove_comments: true
-      cache_safe: true
-      js_files:
-          - !relative $docs_dir/assets/javascripts/*.js
-      css_files:
-          - !relative $docs_dir/assets/stylesheets/*.css
 markdown_extensions:
   - abbr
   - attr_list
   - def_list
   - md_in_html
-  - footnotes
-  - markdown.extensions.meta
-  - pymdownx.blocks.admonition
-  - pymdownx.blocks.definition
-  - pymdownx.blocks.details
-  - pymdownx.blocks.html
-  - pymdownx.blocks.tab:
-      alternate_style: true
-      slugify:
-        !!python/object/apply:pymdownx.slugs.slugify {
-          kwds: { case: lower, percent_encode: true, combine_header_slug: true },
-        }
-  - pymdownx.emoji:
-      emoji_index: !!python/name:material.extensions.emoji.twemoji
-      emoji_generator: !!python/name:material.extensions.emoji.to_svg
       options:
         custom_icons:
-          - !relative $config_dir/overrides/.icons
+          - overrides/.icons
   - pymdownx.highlight:
       default_lang: markdown
       guess_lang: true
@@ -199,16 +163,12 @@ markdown_extensions:
   - pymdownx.caret
   - pymdownx.inlinehilite
   - pymdownx.keys:
-      separator: +
-      strict: false
-      camel_case: false
-  - pymdownx.mark
   - pymdownx.magiclink:
       hide_protocol: true
       repo_url_shortener: true
       social_url_shortener: true
-      repo_url_shorthand:
-      social_url_shorthand: true
+      repo_url_shorthand: true
+          - overrides/.icons
       provider: github
       user: seekinginfiniteloop
       repo: PlainLicense
@@ -219,7 +179,7 @@ markdown_extensions:
       auto_append:
         - includes/abbreviations.md
       base_path:
-        - !relative $config_dir
+        - /
   - pymdownx.saneheaders
   - pymdownx.superfences:
       custom_fences:
@@ -227,7 +187,7 @@ markdown_extensions:
           class: mermaid
           format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.striphtml:
-      strip_comments: true
+      repo_url_shorthand: true
   - pymdownx.tilde
   - sane_lists
   - tables
@@ -235,15 +195,19 @@ markdown_extensions:
       toc_depth: 3
       permalink_title: An anchor link you can use to share this section
       permalink: true
-      slugify:
-        !!python/object/apply:pymdownx.slugs.slugify {
-          kwds: { case: lower, percent_encode: true },
-        }
 extra_javascript:
-  #TO DO, integrate: - !relative $docs_dir/assets/javascripts/feedback.js
-  - >
-    https://cdn.skypack.dev/pin/tablesort@v5.3.0-H3FmQXw8sIDAOcU4Sju8/mode=imports,min/optimized/tablesort.js
-  - !relative $docs_dir/assets/javascripts/tablesort.js
+  #TO DO, integrate: - assets/javascripts/feedback.js
+  - path: assets/javascripts/bundle.js
+  - path: >
+        - /
+    async: true
+    defer: true
+  - path: assets/javascripts/tablesort.js
+    async: true
+    defer: true
+  - path: assets/javascripts/pixel.js
+    async: true
+    defer: true
 extra_css:
   - assets/stylesheets/colors.css
   - assets/stylesheets/extra.css
@@ -251,15 +215,19 @@ extra_css:
 watch:
   - includes
   - overrides
-  - mkdocs.yml
-not_in_nav: |
-  index*
-  CHANGELOG*
   tags
-  shame*
-extra:
-  tags: # maps the tags in the license front matter to the names above in theme.icon.tag. This allows us to replace the tag with an icon in the license template.
-    can-share: canshare
+  #TO DO, integrate: - assets/javascripts/feedback.js
+  - path: assets/javascripts/bundle.js
+  - path: >
+      https://cdn.skypack.dev/pin/tablesort@v5.3.0-H3FmQXw8sIDAOcU4Sju8/mode=imports,min/optimized/tablesort.js
+    async: true
+    defer: true
+  - path: assets/javascripts/tablesort.js
+    async: true
+    defer: true
+  - path: assets/javascripts/pixel.js
+    async: true
+    defer: true
     can-sell: cansell
     can-change: canchange
     can-revoke: canrevoke
@@ -275,7 +243,7 @@ extra:
     description: >
       Plain License: {{ plain_name|trim }}. Terms for everyone. The {{ original_name|trim }}, but now in plain language for everyone to understand.
     plain_url: >
-      !relative $docs_dir/licenses/{{ category.lower()|trim }}/{{ spdx_id.lower()|trim }}/
+      "licenses/{{ category.lower()|trim }}/{{ spdx_id.lower()|trim }}/"
     github_base_url: >
       https://github.com/seekinginfiniteloop/PlainLicense
     github_issues_link: >
@@ -291,13 +259,13 @@ extra:
       The {{ plain_name|trim }} is a plain language adaptation of the {{ original_name|trim }}. We made the {{ plain_name|trim }} to make the {{ original_name|trim }} more accessible and understandable. We tried to match the {{ original_name|trim }}'s legal intent exactly. **If you think the {{ plain_name|trim }}'s terms are legally unclear, use the official {{ official_link|trim }} to clarify the terms.**
 
       If a court finds that any part of this {{ license_type }} cannot be enforced, the rest of the {{ license_type }} will still apply.
-    tag_map: # maps the keys in license frontmatter for conditions, permissions, and limitations to the simplified tags we use in the license template.
-      distribution: can-share,  # allowances
+      "licenses/{{ category.lower()|trim }}/{{ spdx_id.lower()|trim }}/"
+      distribution: can-share, # allowances
       commercial-use: can-sell,
       modifications: can-change,
       revokable: can-revoke,
       relicense: relicense, # end allowances
-      disclose-source: share-source,  # requirements
+      disclose-source: share-source, # requirements
       document-changes: describe-changes,
       include-copyright: give-credit,
       same-license: share-alike (strict),
@@ -308,12 +276,12 @@ extra:
         <strong>Share Freely</strong>: You can share or distribute any work that uses this {{ license_type }} freely.
       can-sell: >
         Use Commercially: You can sell any work that uses this {{ license_type }}, and you don't have to pay anyone anything or share your work.
-      can-change: >
+      distribution: can-share, # allowances
         Change freely: You can change any work that uses this {{ license_type }} however you want.
       can-revoke: >
         Taksies-backsies: You can revoke this license from any work that uses it at any time (if you hold the copyright).
       relicense: >
-        Relicense: You can change the {{ license_type }} to a different {{ license_type }} if you want. You may need to follow certain rules, like giving credit to the original author.
+      disclose-source: share-source, # requirements
       share-alike (strict): >
         Share-Alike (strict): If you change or modify any work that uses this license, you must share your changes under the same license.
       share-alike (relaxed): >

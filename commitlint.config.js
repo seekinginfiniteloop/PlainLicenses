@@ -1,25 +1,9 @@
+const { allowedCommitTypes, allowedCommitScopes } = require('.github/scripts/generate-changelog.js');
+
 module.exports = {
-  extends: ["@commitlint/config-conventional"],
+  extends: ['@commitlint/config-conventional'],
   rules: {
-    "type-enum": [
-      2,
-      "always",
-      [
-        "subs",
-        "admin",
-        "content",
-        "feat",
-        "fix",
-        "blog",
-        "ci",
-        "script",
-        "refactor",
-        "config",
-        "chore",
-        "build",
-      ],
-    ],
-    "scope-empty": [2, "never"],
-    "subject-case": [2, "always", "sentence-case"],
+    'type-enum': [2, 'always', allowedCommitTypes],
+    'scope-enum': [2, 'always', allowedCommitScopes],
   },
 };

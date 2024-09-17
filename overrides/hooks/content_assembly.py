@@ -8,11 +8,10 @@ from typing import Any
 
 from _logconfig import get_logger
 from jinja2 import Environment, FileSystemLoader, Template
-from mkdocs.config.defaults import MkDocsConfig
+from mkdocs.config.base import Config as MkDocsConfig
 from mkdocs.plugins import event_priority
 from mkdocs.structure.files import File
 from mkdocs.structure.pages import Page
-
 
 annotation_pattern: Pattern[str] = re.compile(
     r"(?P<citation>\([123]\)).*?(?P<class>\{\s\.annotate\s\})[\n\s]{1,4}[123]\.\s{1,2}(?P<annotation>.+?)\n",
@@ -25,17 +24,13 @@ header_pattern: Pattern[str] = re.compile(
 placeholders = re.compile(r"\{\{\s(.*?)\s\}\}")
 
 
-def start_logging(level: int = logging.INFO) -> logging.Logger:
-    return get_logger(
+if not hasattr(__name__, "ASSEMBLER_LOGGER"):
+    ASSEMBLER_LOGGER = get_logger(
         __name__,
-        level,
+        logging.INFO,
     )
 
-
-logger = start_logging(logging.WARNING)
-
-
-def clean_content(content: dict[str, Any]) -> dict[str, Any]:
+def clean_content(content: dict[str, Any]) -> dict[str, Any] | None:
     """
     Cleans up the content by stripping whitespace from string values.
     This function iterates through a dictionary and removes leading and trailing whitespace
@@ -52,11 +47,13 @@ def clean_content(content: dict[str, Any]) -> dict[str, Any]:
         cleaned_content = clean_content({"title": "  Example Title  ", "tags": ["  tag1  ", "tag2 "]})
     """
     for key, value in content.items():
-        if isinstance(value, str):
-            content[key] = value.strip()
-        elif isinstance(value, list) and all(isinstance(item, str) for item in value):
-            content[key] = [item.strip() for item in value]
-    return content
+        return (
+            {key.strip(): value.strip()}
+            if isinstance(value, str)
+            else {key: [item.strip() for item in value]}
+            if isinstance(value, list) and all(isinstance(item, str) for item in value)
+            else {key: value}
+        )
 
 
 @event_priority(100)
@@ -80,11 +77,9 @@ def on_page_markdown(
     Raises:
         Exception: If there is an error during template rendering or logging.
     """
-    if not logger:
-        logger = start_logging(logging.INFO)
-    logger.debug("on_page_markdown called")
+    ASSEMBLER_LOGGER.debug(f"Processing page {page.title} in on_page_markdown")
     if not page.meta.get("category"):
-        logger.debug(f"No category found in page meta for page {page.title}")
+        ASSEMBLER_LOGGER.debug(f"No category found in page meta for page {page.title}")
         return markdown_content
 
     meta = page.meta
@@ -106,15 +101,14 @@ def on_page_markdown(
     return f"{markdown_content}\n{rendered_content}"
 
 
-def on_post_page(output: str, page: Page, config: Config) -> Any:
+def on_post_page(output: str, page: Page, config: MkDocsConfig) -> Any:
     if re.match(
         r"licenses/(permissive|copyleft|public-domain/source-available|proprietary)/(.+?)/index.html",
         page.url,
     ):
-        logger.info(f"Final processing page {page.url}")
-    if match := re.search(r"\{\{\s?year\s?\}\}", output):
-        logging.info("Replacing year placeholder")
-        output = output.replace(match[0], str(datetime.now().year))
+        if match := re.search(r"\{\{\s?year\s?\}\}", output):
+            logging.info("Replacing year placeholder")
+            output = output.replace(match[0], str(datetime.now().year))
     return output
 
 
@@ -145,6 +139,7 @@ class LicenseContent:
         self.markdown_license_text = self.process_mkdocs_to_markdown()
         self.plaintext_license_text = self.process_markdown_to_plaintext()
         self.plain_version = self.get_plain_version()
+        ASSEMBLER_LOGGER.info("Created License Content object for %s", self.meta["plain_name"])
 
     def process_markdown_to_plaintext(self) -> str:
         """
@@ -189,7 +184,7 @@ class LicenseContent:
             re.MULTILINE,
         )
         if matches := definition_pattern.finditer(text):
-            logger.debug(
+            ASSEMBLER_LOGGER.debug(
                 f"Processing definitions: {[match.group(0) for match in matches]}"
             )
             for match in matches:
@@ -240,7 +235,7 @@ class LicenseContent:
 
         footnotes = []
 
-        def replacement(match: Match) -> str:
+        def replacement(match: Match[str]) -> str:
             """
             Generates a footnote reference and stores the corresponding annotation.
             This function is used as a replacement callback for regular expression matches,
@@ -273,7 +268,7 @@ class LicenseContent:
             str: The processed Markdown text after transformations and definitions have been applied.
         """
         text = self.transform_text_to_footnotes(self.reader)
-        logger.debug(f"Transformed text: {text}")
+        ASSEMBLER_LOGGER.debug(f"Transformed text: {text}")
         text = header_pattern.sub(r"## \1", text)
         return self.process_definitions(text)
 

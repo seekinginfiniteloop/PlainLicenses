@@ -1,8 +1,9 @@
-from mkdocs.plugins import BasePlugin
-from mkdocs.structure.pages import Page
-from mkdocs.config import Config
-from mkdocs.structure.files import Files
 from jinja2 import Environment
+from mkdocs.config.base import Config as MkDocsConfig
+from mkdocs.plugins import BasePlugin
+from mkdocs.structure.files import Files
+from mkdocs.structure.pages import Page
+
 
 class ShameCounter(BasePlugin):
     """A plugin that tracks the occurrence of specified 'shame' words in license texts.
@@ -15,21 +16,25 @@ class ShameCounter(BasePlugin):
         total_counts (dict): A dictionary storing total counts of shame words across all licenses.
     """
 
-    def on_config(self, config: Config) -> Config:
+    def on_config(self, config: MkDocsConfig) -> MkDocsConfig:
         """Initializes the shame_counts and total_counts dictionaries.
 
         Args:
-            config (Config): The configuration object.
+            config (MkDocsConfig): The configuration object.
 
         Returns:
-            Config: The updated configuration object.
+            MkDocsConfig: The updated configuration object.
         """
         self.shame_counts = {}
         self.total_counts = {}
-        self.shame_words = [word.strip() for word in config["extra"]["shame_words"].keys()]
+        self.shame_words = [
+            word.strip() for word in config["extra"]["shame_words"].keys()
+        ]
         return config
 
-    def on_page_markdown(self, markdown: str, page: Page, config: Config, files: Files) -> str:
+    def on_page_markdown(
+        self, markdown: str, page: Page, config: MkDocsConfig, files: Files
+    ) -> str:
         """Processes the markdown content of a page to count shame words in license texts.
 
         This method checks if the page belongs to license documents and counts occurrences
@@ -38,7 +43,7 @@ class ShameCounter(BasePlugin):
         Args:
             markdown (str): The markdown content of the page.
             page (Page): The page object containing metadata.
-            config (Config): The configuration object containing shame words.
+            config (MkDocsConfig): The configuration object containing shame words.
             files (Files): The files object.
 
         Returns:
@@ -59,7 +64,7 @@ class ShameCounter(BasePlugin):
 
         return markdown
 
-    def on_env(self, env: Environment, config: Config, files: Files):
+    def on_env(self, env: Environment, config: MkDocsConfig, files: Files):
         """Adds shame counts to the environment for access in templates.
 
         This method makes the shame_counts and total_counts available in the environment's
@@ -67,7 +72,7 @@ class ShameCounter(BasePlugin):
 
         Args:
             env (Environment): The environment object to be modified.
-            config (Config): The configuration object.
+            config (MkDocsConfig): The configuration object.
             files (Files): The files object.
 
         Returns:

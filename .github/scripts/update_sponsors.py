@@ -2,7 +2,7 @@ import os
 import re
 
 import requests
-import yaml
+import ez_yaml as yaml
 
 DONATE_FILE = "docs/helping/donate.md"
 GOAL = 5000
@@ -86,7 +86,7 @@ def update_front_matter(content: str, amount: int) -> str:
     if front_matter_match := re.match(
         r"^---\s*\n(.*?)\n---\s*\n", content, re.DOTALL | re.MULTILINE
     ):
-        front_matter = yaml.safe_load(front_matter_match[1])
+        front_matter = yaml.to_object(front_matter_match[1])
         rest_of_document = content[front_matter_match.end() :]
     else:
         front_matter = {}
@@ -95,7 +95,7 @@ def update_front_matter(content: str, amount: int) -> str:
     front_matter["funding-progress"] = amount
 
     # Convert the updated front matter back to YAML
-    updated_front_matter = yaml.dump(front_matter, default_flow_style=False)
+    updated_front_matter = yaml.to_string(front_matter)
 
     # Reconstruct the document
     return f"---\n{updated_front_matter}---\n{rest_of_document}"

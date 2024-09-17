@@ -4,11 +4,6 @@
   "description": "Plain language versions of popular licenses",
   "main": "index.js",
   "scripts": {
-    "build": "ts-node -T external/mkdocs-material/tools/build --optimize",
-    "build:all": "ts-node -T external/mkdocs-material/tools/build --all --optimize",
-    "build:dirty": "ts-node -T external/mkdocs-material/tools/build --dirty",
-    "prebuild": "npm run update-submodule",
-    "update-submodule": ".github/scripts/update-submodule.sh",
     "release": "semantic-release",
     "generate-changelog": "node .github/scripts/generate-changelog.js",
     "prepare": "husky",
@@ -20,7 +15,6 @@
     "fix": "run-p fix:*",
     "fix:style": "run-p fix:style:*",
     "fix:style:ts": "eslint --cache \"src/**/*.ts\" --fix",
-    "start": "ts-node -T tools/build --verbose --all --dirty --watch",
     "upgrade": "run-s upgrade:*",
     "upgrade:bump": "ncu --upgrade --filterVersion \"/^\\^/\"",
     "upgrade:install": "npm install"
@@ -53,6 +47,7 @@
     "tablesort": "^5.3.0"
   },
   "devDependencies": {
+    "@asn.aeb/esbuild-css-modules-plugin": "^0.1.9",
     "@fortawesome/fontawesome-free": "^6.6.0",
     "@linthtml/linthtml": "^0.10.1",
     "@mdi/svg": "^7.4.47",

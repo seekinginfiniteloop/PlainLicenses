@@ -1,5 +1,13 @@
 [default]
 locale = "en-us"
 check-file = true
-ignore-hidden = true
+check-filename = true
+extend-ignore-re = ["(?s)(#|//)\\s*spellchecker:off.*?\\n\\s*(#|//)\\s*spellchecker:on"]
 
+[files]
+ignore-hidden = true
+ignore-files = true
+extend-exclude = """
+mkdocs-material
+license-list-data
+"""

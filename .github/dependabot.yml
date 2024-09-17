@@ -24,12 +24,14 @@ updates:
     open-pull-requests-limit: 10
     directory: "/"
     labels: []
-    versioning-strategy: increase
+    versioning-strategy: increase-if-necessary
     schedule:
       interval: weekly
       time: "04:00"
     commit-message:
-      prefix: "bot(npm): "
+      prefix: "bot(deps): "
+    pull-request-title:
+      prefix: "bot(deps): "
     target-branch: main
     assignees:
       - seekinginfiniteloop
@@ -44,7 +46,7 @@ updates:
       interval: weekly
       time: "04:00"
     commit-message:
-      prefix: "bot(pip): "
+      prefix: "bot(deps): "
     target-branch: main
     assignees:
       - seekinginfiniteloop
@@ -57,7 +59,7 @@ updates:
       interval: weekly
       time: "04:00"
     commit-message:
-      prefix: "bot(github-actions): "
+      prefix: "bot(deps): "
     target-branch: main
     assignees:
       - seekinginfiniteloop

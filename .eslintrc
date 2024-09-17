@@ -5,9 +5,16 @@
     "project": [
       "tsconfig.json",
       "src/docs/assets/tsconfig.json",
-      ".github/tsconfig.json"
+      ".github/tsconfig.json",
+      "package.json"
     ]
   },
+  "files": [
+    "*.ts",
+    "*.tsx",
+    "*.js",
+    "*.jsx"
+  ],
   "plugins": [
     "@typescript-eslint",
     "@stylistic/ts",

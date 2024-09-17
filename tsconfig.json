@@ -4,12 +4,13 @@
     "baseUrl": "./",
     "outDir": "overrides/assets/javascripts",
     "esModuleInterop": true,
+    "isolatedModules": true,
     "allowSyntheticDefaultImports": true,
     "jsx": "react",
     "jsxFactory": "h",
     "lib": ["dom", "esnext", "webworker"],
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "module": "esnext",
+    "moduleResolution": "Bundler",
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": true,
     "noImplicitReturns": true,
@@ -17,11 +18,8 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "paths": {
-      "~/*": [
-        "./templates/assets/javascripts/*",
-        "./overrides/assets/javascripts/*"
-      ],
-      "~external/*": ["./external/mkdocs-material/src/templates/assets/javascripts/*", "./external/mkdocs-material/typings/*"]
+      "~/*": ["./src/*"],
+      "~external/*": ["./typings"]
     },
 
     "removeComments": false,
@@ -34,10 +32,5 @@
     "stripInternal": true,
     "target": "es2018"
   },
-  "include": [
-  "src/**/*.ts",
-  "external/mkdocs-material/src/**/*.ts",
-  "external/mkdocs-material/typings/**/*.ts"
-]
-
+  "include": ["src/**/*.ts"]
 }

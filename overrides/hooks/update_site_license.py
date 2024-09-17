@@ -1,24 +1,23 @@
 """
 Hook that updates the site license to match the current version of the Plain Unlicense, so we're always up-to-date and aren't using an old version of the license.
 """
+
 import logging
 from pathlib import Path
 from textwrap import wrap
 
 from _logconfig import get_logger
-from mkdocs.config.base import Config
+from mkdocs.config.base import Config as MkDocsConfig
 from mkdocs.structure.nav import Navigation
 from mkdocs.structure.pages import Page
 from mkdocs.utils.templates import TemplateContext
 
-logger = get_logger(
-    __name__,
-    logging.INFO,
-)
+if not hasattr(__name__, "SITE_LICENSE_LOGGER"):
+    SITE_LICENSE_LOGGER = get_logger(__name__, logging.INFO)
 
 
 def on_page_context(
-    context: TemplateContext, page: Page, config: Config, nav: Navigation
+    context: TemplateContext, page: Page, config: MkDocsConfig, nav: Navigation
 ) -> TemplateContext:
     """
     Handles the page context for a specific page in the documentation site.
@@ -28,21 +27,25 @@ def on_page_context(
     Args:
         context (TemplateContext): The current template context.
         page (Page): The page object containing metadata and content.
-        config (Config): The configuration object for the site.
+        config (MkDocsConfig): The configuration object for the site.
         nav (Navigation): The navigation structure of the site.
 
     Returns:
         TemplateContext: The updated template context after processing the page.
     """
+    globals()["SITE_LICENSE_LOGGER"] = get_logger(
+        __name__,
+        logging.INFO,
+    )
     meta = page.meta
     if "original_name" not in meta:
         return context
     if meta["original_name"].strip().lower() == "unlicense":
-        logger.debug("found unlicense")
-        logger.debug(f"PATH: {Path.cwd()}")
+        SITE_LICENSE_LOGGER.debug("found unlicense")
+        SITE_LICENSE_LOGGER.debug(f"PATH: {Path.cwd()}")
         license = SiteLicense(context, page)
         license.check_for_updates()
-        logger.debug(f"license: {license.full_text}")
+        SITE_LICENSE_LOGGER.debug(f"license: {license.full_text}")
     return context
 
 
@@ -65,6 +68,7 @@ class SiteLicense:
         license = SiteLicense(context, page)
         print(license)
     """
+
     def __init__(self, context: TemplateContext, page: Page) -> None:
         """
         Initializes a SiteLicense object with the provided context and page metadata.
@@ -78,11 +82,11 @@ class SiteLicense:
         Examples:
             license = SiteLicense(context, page)
         """
-        logger.info("Creating SiteLicense object")
+        SITE_LICENSE_LOGGER.info("Creating SiteLicense object")
         self.context = context
         self.self_location = "UNLICENSE"
         self.self_path = Path.cwd() / self.self_location
-        logger.debug(f"self_location: {self.self_location}")
+        SITE_LICENSE_LOGGER.debug(f"self_location: {self.self_location}")
         self.name = page.meta.get("plain_name", "Plain Unlicense").strip()
         self.title = f"\n# {self.name}"
         self.raw_text = page.meta.get("markdown_license_text", "").strip()
@@ -90,14 +94,16 @@ class SiteLicense:
         self.interpretation_text_raw = page.meta.get("interpretation_text", "").strip()
         self.interpretation_text = self.wrap_text(self.interpretation_text_raw)
         self.interpretation_title = page.meta.get("interpretation_title", "").strip()
-        self.interpretation_section = f"### {self.interpretation_title}\n\n{self.interpretation_text}"
+        self.interpretation_section = (
+            f"### {self.interpretation_title}\n\n{self.interpretation_text}"
+        )
         self.version = page.meta.get("plain_version", "").strip()
         self.version_text = f"Plain Version: {self.version}"
         self.original_url = page.meta.get("original_url", "").strip()
 
         self.full_text = f"{self.title}\n\n{self.version_text}\n\n{self.text}\n\n{self.interpretation_section}\n\nOfficial Unlicense: [Unlicense.org]({self.original_url})"
 
-        logger.debug(f"full_text: {self.full_text}")
+        SITE_LICENSE_LOGGER.debug(f"full_text: {self.full_text}")
 
     def wrap_text(self, text: str) -> str:
         """
@@ -119,10 +125,19 @@ class SiteLicense:
         for i, paragraph in enumerate(paragraphs):
             if paragraph.strip().startswith("-"):
                 bullets = paragraph.split("\n")
-                bullets = [wrap(bullet, width=80, break_long_words=False) for bullet in bullets]
+                bullets = [
+                    wrap(bullet, width=80, break_long_words=False) for bullet in bullets
+                ]
                 bullet_paragraphs.append((i, bullets))
-        paragraphs = [paragraph for i, paragraph in enumerate(paragraphs) if i not in [i for i, _ in bullet_paragraphs]]
-        wrapped_paragraphs = ["\n".join(wrap(paragraph, width=80, break_long_words=False)) for paragraph in paragraphs]
+        paragraphs = [
+            paragraph
+            for i, paragraph in enumerate(paragraphs)
+            if i not in [i for i, _ in bullet_paragraphs]
+        ]
+        wrapped_paragraphs = [
+            "\n".join(wrap(paragraph, width=80, break_long_words=False))
+            for paragraph in paragraphs
+        ]
         for i, bullets in bullet_paragraphs:
             bullets = ["\n".join(bullet) for bullet in bullets]
             wrapped_paragraphs.insert(i, "\n".join(bullets))
@@ -133,14 +148,17 @@ class SiteLicense:
         return self.full_text
 
     def check_for_updates(self) -> None:
-        """Checks if the license file matches the current license and updates it if necessary."""
+        """
+        Checks if the license file matches the current license and updates it if it doesn't.
+        """
         if self.self_path.exists():
             existing_text = self.self_path.read_text()
             if existing_text != self.full_text:
                 self.self_path.unlink()
                 self.self_path.touch()
-                logger.info("Updating UNLICENSE file")
+                SITE_LICENSE_LOGGER.info("Updating UNLICENSE file")
                 self.self_path.write_text(self.full_text)
+                SITE_LICENSE_LOGGER.info("UNLICENSE file updated")
         else:
-            logger.debug("UNLICENSE file not found")
-            logger.debug(f"PATH: {self.self_path}")
+            SITE_LICENSE_LOGGER.debug("UNLICENSE file not found")
+            SITE_LICENSE_LOGGER.debug(f"PATH: {self.self_path}")

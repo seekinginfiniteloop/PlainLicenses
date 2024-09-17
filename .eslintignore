@@ -30,6 +30,7 @@ venv
 .vscode
 
 # Build files
+docs
 build
 MANIFEST
 manifest.json

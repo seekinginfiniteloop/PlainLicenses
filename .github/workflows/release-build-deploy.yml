@@ -20,41 +20,35 @@ jobs:
         with:
           fetch-depth: 0
           submodules: recursive
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "lts/*"
-      - name: Install dependencies
-        run: |
-          npm ci
-          if [ $? -ne 0 ]; then
-            echo "Failed to install dependencies"
-            exit 1
-          fi
-      - name: Install commitlint
-        run: |
-          npm install -g @commitlint/{cli,config-conventional}
-          if [ $? -ne 0 ]; then
-            echo "Failed to install commitlint"
-            exit 1
-          fi
-      - name: Set up submodules
-        run: |
-          ./scripts/update-submodule.sh
-      - name: Install dependencies
-        run: |
-          npm install
 
-      - name: build changelog
-        run: |
-          npm run build
+      - name: Cache npm dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-cache-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            npm-cache-
+
+      - name: Install npm dependencies
+        run: npm ci --include dev
+
+      - name: Install commitlint
+        run: npm install -g @commitlint/{cli,config-conventional}
+
+      - name: Update submodules
+        run: .github/scripts/update-submodules.sh
+
+      - name: Build changelog
+        run: npm run build
+
       - name: Generate changelog
-        run: |
-          node .github/scripts/generate-changelog.js
-          if [ $? -ne 0 ]; then
-            echo "Failed to generate changelog"
-            exit 1
-          fi
+        run: node .github/scripts/generate-changelog.js
+
       - name: Release project
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -63,6 +57,7 @@ jobs:
           timeout_minutes: 10
           max_attempts: 3
           command: npx semantic-release
+
       - name: Release individual licenses
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -74,34 +69,23 @@ jobs:
               (
                 cd $license
                 npx semantic-release -e ../../../.releaserc.json
-                if [ $? -ne 0 ]; then
-                  echo "Failed to release $license"
-                  exit 1
-                fi
               )
             fi
           done
+
       - name: Commit updated changelogs
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add CHANGELOG.md docs/licenses/**/CHANGELOG.md
-          git diff-index --quiet HEAD || git commit -m "bot(site): update changelogs [skip ci]"
-          if [ $? -ne 0 ]; then
-            echo "Failed to commit updated changelogs"
-            exit 1
-          fi
+          git diff-index --quiet HEAD || git commit -m "bot(site): update changelogs [ci]"
           git push
-          if [ $? -ne 0 ]; then
-            echo "Failed to push changes"
-            exit 1
-          fi
-      - name: Build and push
-        uses: alexthemaster/action-build-typescript@v1
+
+      - name: Upload npm cache
+        uses: actions/upload-artifact@v4
         with:
-          pushToBranch: true
-          branch: 'main'
-          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          name: npm-cache
+          path: ~/.npm
 
   build:
     needs: release
@@ -116,31 +100,38 @@ jobs:
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v2
         with:
-          python-version: 3.12
-      - name: Cache dependencies
-        run: echo "cache_id=$(date --utc '+%V')" >> $GITHUB_ENV
-      - name: Restore cache
-        uses: actions/cache@v4
+          version: "latest"
+          enable-cache: true
+          cache-local-path: .cache/uv
+          cache-dependency-glob: |
+            pyproject.toml
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          key: mkdocs-material-${{ env.cache_id }}
-          path: .cache
-          restore-keys: |
-            mkdocs-material-
-      - name: Install dependencies
+          node-version: "lts/*"
+      - name: Download npm cache
+        uses: actions/download-artifact@v4
+        with:
+          name: npm-cache
+          path: .cache/npm
+
+      - name: Install npm dependencies
+        run: npm ci --include dev
+
+      - name: Build Scripts
+        run: npm run build
+      - name: install Python with uv
         run: |
-          export PYTHONPATH=$PYTHONPATH:custom_extensions
-          pip install --upgrade pip
-          pip install markdown pymdown-extensions mkdocs-material[imaging] mkdocs-static-i18n[material] mkdocs-git-revision-date-localized-plugin mkdocs-git-authors-plugin mkdocs-rss-plugin mkdocs[i18n] pygments pyyaml mkdocs-hooks-plugin
+          uv python install cpython-3.12.5-linux-x86_64-gnu
+          uv pip install .
       - name: Build MkDocs site
         run: |
-          mkdocs build
-          if [ $? -ne 0 ]; then
-            echo "Failed to build MkDocs site"
-            exit 1
-          fi
+          rm -rf site
+          mkdocs build -d site
       - name: Upload built site
         uses: actions/upload-artifact@v4
         with:
@@ -154,16 +145,18 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Download built site
-        uses: actions/download-artifact@v4.1.8
+        uses: actions/download-artifact@v4
         with:
           name: site
           path: site
+
       - name: Deploy mkdocs
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          mkdocs gh-deploy --force
+          mkdocs gh-deploy --force -m "bot(site): deploy site"
 
   notify:
     needs: [release, deploy]
@@ -173,7 +166,7 @@ jobs:
       - name: Create GitHub Issue
         uses: actions/github-script@v7
         with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             github.rest.issues.create({
               owner: context.repo.owner,
