@@ -26,7 +26,7 @@ double_check_directory() {
     # Since we are about to hard reset, we MAKE ABSOLUTELY SURE
     # That we are NOT in the root of the repository
     local expected_dir="$1"
-    
+
     local top_level_dir="$(git rev-parse --show-toplevel)"
     local cwd="$(pwd)"
 
@@ -166,6 +166,8 @@ sync_files_with_sparse_checkout() {
         if [[ ! $(set -e && double_check_directory ${expected_dir}) -ne 0 ]]; then
             error_exit "Error occurred in double_check_directory."
         fi
+        echo "stashing changes..."
+        git stash save "going to hard reset submodule..." || error_exit "Failed to stash changes."
         git reset --hard "origin/${branch}" || error_exit "Failed to reset submodule."
         git clean -fdx || error_exit "Failed to clean submodule."
         git read-tree -mu HEAD || error_exit "Failed to update working tree."
