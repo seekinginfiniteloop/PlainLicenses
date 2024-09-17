@@ -22,6 +22,25 @@ error_exit() {
     exit 1
 }
 
+double_check_directory() {
+    # Since we are about to hard reset, we MAKE ABSOLUTELY SURE
+    # That we are NOT in the root of the repository
+    local expected_dir="$1"
+    
+    local top_level_dir="$(git rev-parse --show-toplevel)"
+    local cwd="$(pwd)"
+
+    if [[ "${top_level_dir}" == "${cwd}" ]]; then
+        error_exit "You are in the root of the repository. Please change to a subdirectory. Exiting..."
+    fi
+    if [[ cwd != expected_dir ]]; then
+        error_exit "You are not in the expected directory. Please change to the correct directory. Exiting..."
+    fi
+
+    echo "Directory check passed."
+    return 0
+}
+
 # Enable sparse checkout
 enable_sparse_checkout() {
     local sparse_paths="$1"
@@ -33,7 +52,7 @@ enable_sparse_checkout() {
     SPARSE_CHECKOUT_FILE="${GIT_DIR}/info/sparse-checkout"
 
     # Overwrite the sparse-checkout file
-    printf "%s\n" ${sparse_paths} > "${SPARSE_CHECKOUT_FILE}"
+    printf "%s\n" "${sparse_paths}" > "${SPARSE_CHECKOUT_FILE}"
 }
 
 # Create/add submodule if it doesn't exist
@@ -62,7 +81,7 @@ check_sparse_checkout_file() {
     local current_paths
     mapfile -t current_paths < "${sparse_checkout_file}"
 
-    local expected_paths=(${sparse_paths})
+    local expected_paths=("${sparse_paths}")
 
     if [[ "${#current_paths[@]}" -ne "${#expected_paths[@]}" ]]; then
         return 1  # Paths do not match
@@ -83,7 +102,7 @@ update_sparse_checkout() {
     local sparse_checkout_file="$2"
 
     echo "Updating sparse checkout..."
-    printf "%s\n" ${sparse_paths} > "${sparse_checkout_file}"
+    printf "%s\n" "${sparse_paths}" > "${sparse_checkout_file}"
     git read-tree -mu HEAD
 }
 
@@ -113,7 +132,7 @@ check_files_match_sparse_checkout() {
     mapfile -t sorted_actual < <(printf "%s\n" "${actual_files[@]}" | sort)
 
     for i in "${!sorted_expected[@]}"; do
-        if [[ "${sorted_expected[$i]}" != "${sorted_actual[$i]}" ]]; then
+        if [[ "${sorted_expected[$i]}" != "${sorted_actual["$i"]}" ]]; then
             return 1  # Files do not match
         fi
     done
@@ -142,7 +161,11 @@ sync_files_with_sparse_checkout() {
     check_files_match_sparse_checkout "${sparse_paths}"
     status=$?
     if [[ ${status} -eq 1 ]]; then
+        local expected_dir="${sparse_paths%%/*}"
         echo "Files do not match sparse-checkout. Resetting submodule..."
+        if [[ ! $(set -e && double_check_directory ${expected_dir}) -ne 0 ]]; then
+            error_exit "Error occurred in double_check_directory."
+        fi
         git reset --hard "origin/${branch}" || error_exit "Failed to reset submodule."
         git clean -fdx || error_exit "Failed to clean submodule."
         git read-tree -mu HEAD || error_exit "Failed to update working tree."
