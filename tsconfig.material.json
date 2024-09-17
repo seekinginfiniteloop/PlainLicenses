@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./",
+    "extends": "./tsconfig.json",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "paths": {
+      "~/*": ["mkdocs-material/src/templates/assets/javascripts/*"]
+    }
+  },
+  "include": [
+    "mkdocs-material/src/templates/assets/javascripts/*.ts",
+    "mkdocs-material/tools",
+    "mkdocs-material/typings",
+    "src/*.ts"
+  ]
+}

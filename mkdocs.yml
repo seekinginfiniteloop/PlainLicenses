@@ -10,30 +10,30 @@ hooks:
   - overrides/hooks/content_assembly.py # Assembles licenses from frontmatter and boilerplate (boilerplate below)
   - overrides/hooks/env_settings.py # Sets up jinja2 environment variables for the site
   - overrides/hooks/update_site_license.py # Updates the site license to match the latest Plain Unlicense
-
+site_description: |
   Plain License: Terms for Everyone. We make licenses readable, understandable, and accessible.
 
-  - faq: faq/index.md
+nav:
   - home: index.md
   - about: about/index.md
   - faq: faq/index.md
-          - licenses/public-domain/index.md
+  - our licenses:
       - licenses/index.md
-      - permissive licenses:
+      - public domain:
           - licenses/public-domain/index.md
-          - MIT: licenses/permissive/mit/index.md
-      - copyleft licenses:
+          - Unlicense: licenses/public-domain/unlicense/index.md
+      - permissive licenses:
           - licenses/permissive/index.md
           - MIT: licenses/permissive/mit/index.md
-      - source-available licenses:
+      - copyleft licenses:
           - licenses/copyleft/index.md
           - MPL: licenses/copyleft/mpl-2.0/index.md
-      - proprietary licenses:
+      - source-available licenses:
           - licenses/source-available/index.md
           - Elastic License: licenses/source-available/elastic-2.0/index.md
-      - helping/index.md
+      - proprietary licenses:
           - licenses/proprietary/index.md
-      - write: helping/write.md
+  - help:
       - helping/index.md
       - craft: helping/craft.md
       - write: helping/write.md
@@ -42,11 +42,14 @@ hooks:
       - code: helping/code.md
       - donate: helping/donate.md
   - blog: blog/index.md
+theme:
+  name: material
+  custom_dir: overrides
   logo: assets/images/named_logo_color_transp.svg
   favicon: assets/images/favicon.png
   font:
-  logo: assets/images/named_logo_color_transp.svg
-  favicon: assets/images/favicon.png
+    text: Noto Sans
+    code: Noto Sans Mono
   features:
     - content.action.edit
     - content.code.annotate
@@ -60,6 +63,7 @@ hooks:
     - navigation.instant.progress
     - navigation.path
     - navigation.sections
+    - navigation.tabs
     - navigation.top
     - navigation.tracking
     - search.highlight
@@ -86,6 +90,7 @@ hooks:
     # Palette toggle for system automatic mode; chooses the color scheme based on the user's system preference, but allows the user to override it.
     - media: "(prefers-color-scheme)"
       primary: custom
+      accent: custom
       toggle:
         icon: material/weather-night
         name: Switch to dark mode
@@ -125,7 +130,7 @@ plugins:
         as_creation: date.created
         as_update: date.updated
   - search:
-      match_path: blog/posts/.*
+      separator: '[\s\-,:!=\[\]()"/]+|(?!\b)(?=[A-Z][a-z])|\.(?!\d)|&[lg]t;'
   #- shame_counter
   - social:
       cards_layout_options:
@@ -137,7 +142,7 @@ plugins:
       tags: true
       enabled: true
       tags_file: tags.md
-        image: assets/images/logo_only_color_transp.png
+  - privacy:
       assets: true
       assets_fetch: true
   - git-revision-date-localized:
@@ -150,6 +155,17 @@ markdown_extensions:
   - attr_list
   - def_list
   - md_in_html
+  - footnotes
+  - markdown.extensions.meta
+  - pymdownx.blocks.admonition
+  - pymdownx.blocks.definition
+  - pymdownx.blocks.details
+  - pymdownx.blocks.html
+  - pymdownx.blocks.tab:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
       options:
         custom_icons:
           - overrides/.icons
@@ -163,12 +179,16 @@ markdown_extensions:
   - pymdownx.caret
   - pymdownx.inlinehilite
   - pymdownx.keys:
+      separator: +
+      strict: false
+      camel_case: false
+  - pymdownx.mark
   - pymdownx.magiclink:
       hide_protocol: true
       repo_url_shortener: true
       social_url_shortener: true
       repo_url_shorthand: true
-          - overrides/.icons
+      social_url_shorthand: true
       provider: github
       user: seekinginfiniteloop
       repo: PlainLicense
@@ -187,7 +207,7 @@ markdown_extensions:
           class: mermaid
           format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.striphtml:
-      repo_url_shorthand: true
+      strip_comments: true
   - pymdownx.tilde
   - sane_lists
   - tables
@@ -199,7 +219,7 @@ extra_javascript:
   #TO DO, integrate: - assets/javascripts/feedback.js
   - path: assets/javascripts/bundle.js
   - path: >
-        - /
+      https://cdn.skypack.dev/pin/tablesort@v5.3.0-H3FmQXw8sIDAOcU4Sju8/mode=imports,min/optimized/tablesort.js
     async: true
     defer: true
   - path: assets/javascripts/tablesort.js
@@ -215,19 +235,15 @@ extra_css:
 watch:
   - includes
   - overrides
+  - mkdocs.yml
+not_in_nav: |
+  index*
+  CHANGELOG*
   tags
-  #TO DO, integrate: - assets/javascripts/feedback.js
-  - path: assets/javascripts/bundle.js
-  - path: >
-      https://cdn.skypack.dev/pin/tablesort@v5.3.0-H3FmQXw8sIDAOcU4Sju8/mode=imports,min/optimized/tablesort.js
-    async: true
-    defer: true
-  - path: assets/javascripts/tablesort.js
-    async: true
-    defer: true
-  - path: assets/javascripts/pixel.js
-    async: true
-    defer: true
+  shame*
+extra:
+  tags: # maps the tags in the license front matter to the names above in theme.icon.tag. This allows us to replace the tag with an icon in the license template.
+    can-share: canshare
     can-sell: cansell
     can-change: canchange
     can-revoke: canrevoke
@@ -259,7 +275,7 @@ watch:
       The {{ plain_name|trim }} is a plain language adaptation of the {{ original_name|trim }}. We made the {{ plain_name|trim }} to make the {{ original_name|trim }} more accessible and understandable. We tried to match the {{ original_name|trim }}'s legal intent exactly. **If you think the {{ plain_name|trim }}'s terms are legally unclear, use the official {{ official_link|trim }} to clarify the terms.**
 
       If a court finds that any part of this {{ license_type }} cannot be enforced, the rest of the {{ license_type }} will still apply.
-      "licenses/{{ category.lower()|trim }}/{{ spdx_id.lower()|trim }}/"
+    tag_map: # maps the keys in license frontmatter for conditions, permissions, and limitations to the simplified tags we use in the license template.
       distribution: can-share, # allowances
       commercial-use: can-sell,
       modifications: can-change,
@@ -276,12 +292,12 @@ watch:
         <strong>Share Freely</strong>: You can share or distribute any work that uses this {{ license_type }} freely.
       can-sell: >
         Use Commercially: You can sell any work that uses this {{ license_type }}, and you don't have to pay anyone anything or share your work.
-      distribution: can-share, # allowances
+      can-change: >
         Change freely: You can change any work that uses this {{ license_type }} however you want.
       can-revoke: >
         Taksies-backsies: You can revoke this license from any work that uses it at any time (if you hold the copyright).
       relicense: >
-      disclose-source: share-source, # requirements
+        Relicense: You can change the {{ license_type }} to a different {{ license_type }} if you want. You may need to follow certain rules, like giving credit to the original author.
       share-alike (strict): >
         Share-Alike (strict): If you change or modify any work that uses this license, you must share your changes under the same license.
       share-alike (relaxed): >

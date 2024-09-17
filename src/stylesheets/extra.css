@@ -1,0 +1,278 @@
+[data-md-color-scheme="slate"] {
+    --md-hue: 235.2;
+    --md-typeset-a-color: var(--ecru);
+    --md-default-fg-color--light: hsla(var(--md-hue), 15%, 90%, 0.75);
+}
+
+[data-md-color-scheme="slate"] .md-typeset .md-button {
+    color: var(--emerald);
+    transition: all ease-out 0.2s;
+}
+
+[data-md-color-scheme="slate"] .md-typeset .md-button:hover {
+    color: var(--emerald);
+    background-color: var(--zaffre);
+    transition: all ease-out 0.2s;
+}
+
+.md-typeset dl p {
+    font-size: .95rem;
+    line-height: 1.6em;
+    font-family: Noto Sans, sans-serif;
+}
+
+.md-typeset summary {
+    font-size: 1.2em;
+    font-weight: 500;
+}
+
+.md-typeset h1,
+.md-typeset h2,
+.md-typeset h3,
+.md-typeset h4,
+.md-typeset h5,
+.md-typeset h6 {
+    font-family: Montserrat, Raleway, Poppins, Lato, Noto Sans, Helvetica, Arial, sans-serif;
+}
+
+.md-typeset {
+    font-size: .9rem;
+    line-height: 1.6;
+}
+
+body {
+    font-size: 0.6rem;
+}
+
+.md-typeset h1 {
+    font-size: 1.75em;
+    line-height: 1.2;
+    margin: .6em 0 1em 0;
+}
+
+.md-typeset h2 {
+    font-size: 1.4em;
+    line-height: 1.3;
+    margin: 1em 0 0.75em;
+}
+
+.md-typeset h3 {
+    font-size: 1.3em;
+    line-height: 1.4;
+    margin: 1em 0 0.7em;
+}
+
+.md-typeset h4 {
+    font-size: 1.2em;
+    line-height: 1.5;
+    margin: 1em 0 0.6em;
+}
+
+.md-typeset h5,
+.md-typeset h6 {
+    font-size: 1em;
+    line-height: 1.6;
+    margin: 1em 0 0.5em;
+}
+
+.md-typeset h1,
+.md-typeset h2 {
+    font-weight: 400;
+    /* Slightly increased from 300 for better readability */
+}
+
+.md-typeset h3 {
+    font-weight: 500;
+    /* Increased from 400 to differentiate from body text */
+}
+
+.md-typeset .md-typeset__table {
+    margin-inline-start: 5%;
+    margin-inline-end: 5%;
+    text-align: center;
+}
+
+.md-typeset .md-typeset__table,
+.md-typeset .md-typeset__table table {
+    text-align: center;
+    --columns: 2;
+}
+
+.md_typeset .md-typeset__table table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+.md-typeset .md-typeset__table th {
+    font-size: 1.4em;
+    font-weight: 600;
+    padding: 1em;
+    text-align: center;
+}
+
+.md-typeset .md-typeset__table td {
+    font-size: 1.2em;
+    padding: 1em;
+    text-align: left;
+}
+
+[data-md-color-scheme="default"] {
+
+    .md-typeset h1,
+    .md-typeset h2,
+    .md-typeset h3,
+    .md-typeset h4,
+    .md-typeset h5,
+    .md-typeset h6 {
+        color: hsla(var(--md-hue), 100%, 23%, 1);
+    }
+}
+
+/* Styling for the header and navigation tabs */
+a.md-header__button.md-logo img {
+    height: 3.5rem;
+    width: auto;
+}
+
+.md-tabs {
+    height: 3em;
+    text-align: center;
+    display: flex;
+}
+
+.md-tabs__link {
+    align-items: baseline;
+    font-size: 1.7em;
+    font-weight: 500;
+    margin: .3em 1em;
+    transition: all ease-out 0.2s;
+}
+
+li.md-tabs__item a.md-tabs__link:hover {
+    color: var(--emerald);
+}
+
+.md-ellipsis {
+    font-size: 1.2em;
+    margin-bottom: .5em;
+}
+
+
+.md-nav__container a.md-nav__link {
+
+    font-size: 1.2em;
+    font-weight: 500;
+    margin: .02em 0;
+}
+
+
+li.md-nav__item--active:nth-child(4)>div:nth-child(2)>a:nth-child(1)>span:nth-child(1) {
+    color: var(--md-default-fg-color--light) !important;
+    border-bottom: .03em dotted var(--ecru);
+    margin: 0em;
+}
+
+li.md-nav__item.md-nav__item--active.md-nav__item--section.md-nav__item--nested nav.md-nav ul.md-nav__list li.md-nav__item.md-nav__item--active.md-nav__item--section.md-nav__item--nested div.md-nav__link.md-nav__container a.md-nav__link span#nav-item-main.md-ellipsis::before {
+    content: "→ ";
+    margin: 0em;
+    color: var(--ecru);
+    font-size: 0.7em;
+
+}
+
+li.md-nav__item.md-nav__item--active.md-nav__item--section.md-nav__item--nested nav.md-nav ul.md-nav__list li.md-nav__item.md-nav__item--active.md-nav__item--section.md-nav__item--nested div.md-nav__link.md-nav__container a.md-nav__link span#nav-item-main.md-ellipsis {
+    margin-left: 0em;
+    border-bottom: .05em dotted var(--ecru);
+    font-size: 1.1em;
+
+}
+
+a.md-nav__link:nth-child(3)>span:nth-child(1) {
+    color: var(--md-default-fg-color);
+}
+
+a.md-nav__link--active:nth-child(3)>span:nth-child(1)::before {
+    content: "↳ ";
+    margin-left: 0em;
+    color: var(--ecru);
+    font-size: 0.7em;
+}
+
+a.md-nav__link--active:nth-child(3)>span:nth-child(1) {
+    border-bottom: .1em solid var(--ecru);
+    font-size: 1.2em;
+}
+
+/* the second level of nav */
+li.md-nav__item.md-nav__item--active.md-nav__item--section.md-nav__item--nested nav.md-nav ul.md-nav__list li.md-nav__item.md-nav__item--section.md-nav__item--nested nav.md-nav ul.md-nav__list li.md-nav__item a.md-nav__link span.md-ellipsis {
+    margin-top: 0.01em;
+    margin-left: .5em;
+}
+
+.md-typeset .admonition {
+    font-size: .8em;
+}
+
+@media screen and (max-width: 76.2344em) {
+    .md-tabs {
+        display: none;
+    }
+}
+
+.progress-bar {
+    height: 1.2rem;
+    float: left;
+    background-color: var(--zaffre);
+}
+
+.md-typeset .progress-label {
+    position: absolute;
+    width: 100%;
+    margin: 0;
+    color: var(--md-text-color);
+    font-weight: 700;
+    line-height: 1.4rem;
+    white-space: nowrap;
+    text-align: center;
+    text-shadow: -.0625em -.0625em .375em var(--md-default-bg-color--light), .0625em -.0625em .375em var(--md-default-bg-color--light), -.0625em .0625em .375em var(--md-default-bg-color--light), .0625em .0625em .375em var(--md-default-bg-color--light);
+}
+
+
+.md-typeset .progress {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 1.2rem;
+    margin: .5rem 0;
+    background-color: var(--md-default-fg-color--lightest);
+}
+
+
+.md-typeset .progress.candystripe .progress-bar {
+    background-image: linear-gradient(135deg, var(--emerald) 27%, transparent 27%, transparent 52%, var(--emerald) 52%, var(--emerald) 77%, transparent 77%, transparent);
+    background-size: 2rem 2rem;
+}
+
+.progress-100plus .progress-bar {
+    background-color: var(--zaffre);
+}
+
+.progress-80plus .progress-bar {
+    background-color: var(--ecru);
+}
+
+.progress-60plus .progress-bar {
+    background-color: var(--atomic-tangerine);
+}
+
+.progress-40plus .progress-bar {
+    background-color: var(--turkey-red);
+}
+
+.progress-20plus .progress-bar {
+    background-color: var(--turkey-red);
+}
+
+.progress-0plus .progress-bar {
+    background-color: var(--turkey-red);
+}

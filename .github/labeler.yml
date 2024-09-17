@@ -1,0 +1,26 @@
+documentation:
+  - changed-files:
+    - any-glob-to-any-file: ['**/*.md']
+
+
+dependencies:
+  - changed-files:
+    - any-glob-to-any-file: ['pyproject.toml', '*-lock.json', '*.lock', 'requirements*', 'uv']
+
+licenses:
+  - changed-files:
+    - any-glob-to-any-file: ['docs/licenses/**/**/*.md', 'LICENSE_TEMPLATE.md']
+
+ci:
+  - changed-files:
+    - any-glob-to-any-file: ['.github/*', 'commitlint*', '*lint*']
+
+scripts:
+  - changed-files:
+    - any-glob-to-all-files: ['*.js', '*.ts', '*scripts/*', '*.sh']
+
+
+# i18n:
+# question:
+# bug:
+# enhancement
