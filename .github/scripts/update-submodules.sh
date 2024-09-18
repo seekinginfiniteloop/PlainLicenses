@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# TODO: Debugging -- you may need to run this a few times to get it to work. It tends to hand up on the first submodule.
+
 set -e
 
 # Declare associative array for submodules and their properties
@@ -14,7 +16,6 @@ submodules["mkdocs-material,url"]="https://github.com/squidfunk/mkdocs-material.
 submodules["mkdocs-material,branch"]="master"
 submodules["mkdocs-material,sparse_paths"]="/material/templates/assets/javascripts /material/templates/assets/stylesheets"
 
-CWD="$(pwd)"
 GIT_DIR="$(git rev-parse --git-dir)"
 GIT_DIR_ABS_PATH="$(git rev-parse --absolute-git-dir)"
 REPO_ROOT_ABS_PATH="$(git rev-parse --show-toplevel)"
@@ -117,14 +118,13 @@ update_sparse_checkout() {
 # Function to check if the files in the directory match the sparse paths
 check_files_match_sparse_checkout() {
     local sparse_paths="$1"
-
     # Convert sparse paths to expected file paths
     local expected_files=()
     for path in ${sparse_paths}; do
         # Remove leading slashes and wildcards
         path="${path#/}"
         path="${path%/*}"
-        expected_files+=("${path}")
+        expected_files+=("${SUBMODULE_ABS_PATH}/${path}")
     done
 
     # Get the list of actual files/directories

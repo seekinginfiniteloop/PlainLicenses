@@ -36,7 +36,6 @@ We want developers of all skill levels to contribute to Plain License. Whether y
 
 The `mkdocs.yml` file in the root directory is the configuration file for the site. It tells MKDocs how to build the site, what pages to include, and how to format the pages. The configuration file is in [YAML][yamlspec]. We heavily use the `extra` field to pass variables to the Jinja2 templates. This keeps the templates flexible, and allows us to change the site's appearance without changing the templates themselves. It also lets us update only one file when we need to change something site-wide.
 
-
 [ci]: https://en.wikipedia.org/wiki/Continual_improvement_process "Continual Improvement Process"
 [issues]: {{ config.repo_url|trim }}/issues "Submit an Issue"
 [commit-guidelines]: commit.md "Commit Message Guidelines"
