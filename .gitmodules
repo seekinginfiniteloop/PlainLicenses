@@ -1,0 +1,4 @@
+[submodule "external/license-list-data"]
+	path = external/license-list-data
+	url = https://github.com/spdx/license-list-data.git
+	branch = main
