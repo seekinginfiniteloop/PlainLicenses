@@ -1,6 +1,7 @@
 import { gsap } from "gsap"
 import { ScrollToPlugin } from "gsap/ScrollToPlugin"
 import {
+  EMPTY,
   Observable,
   OperatorFunction,
   Subscription,
@@ -14,6 +15,7 @@ import {
   distinctUntilKeyChanged,
   filter,
   map,
+  switchMap,
   tap
 } from "rxjs/operators"
 
@@ -23,6 +25,8 @@ const subscriptions: Subscription[] = []
 
 const easterEgg = document.getElementById("the-egg")
 const infoBox = document.getElementById("egg-box") as HTMLDialogElement | null
+
+const { location$} = window
 
 if (!easterEgg || !infoBox) {
   // We don't have the necessary elements, so we don't need to do anything
@@ -111,6 +115,8 @@ const showOverlay = (): void => {
   }
 }
 
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
 /**
  * Retrieves scrolling target information and associated attributes from a given HTML element.
  *
@@ -154,20 +160,30 @@ const getScrollTargets = (
  * @param offsetY - The vertical offset to apply to the scroll position.
  */
 const scrollTo = (
-  target: string | number,
-  duration: number,
-  offsetY: number = 0
+     target: string | number,
+     duration: number,
+     offsetY: number = 0
 ): void => {
-  gsap.to(window, {
-    duration,
-    scrollTo: {
-      y: target,
-      offsetY
-    },
-    ease: "power3",
-    autoKill: true
-  })
-}
+  // we check if the user has preferred reduced motion
+  if (typeof gsap !== 'undefined' && gsap.to) {
+       // Use GSAP if available
+       gsap.to(window, {
+         duration,
+         scrollTo: {
+           y: target,
+           offsetY
+         },
+         ease: "power3",
+         autoKill: true
+       });
+     } else ('scrollTo' in window) {
+       // Fallback to native or polyfilled scrollTo
+       window.scrollTo({
+         top: typeof target === 'number' ? target : 0,
+         behavior: 'smooth'
+       });
+     }
+   }
 
 /**
  * Creates an observable that handles smooth scrolling behavior for a specified HTML element.
@@ -185,13 +201,21 @@ const smoothScroll$ = (el: HTMLElement): Observable<void> => {
   const { target, duration, pauseTargetAttr, pauseDuration, targetAttr } =
     getScrollTargets(el)
 
+  if (prefersReducedMotion) {
+    // we skip animation and jump to the target
+
+    window.location.hash = targetAttr?.replace('#', '') || '';
+    return of(void 0)
+  }
+
   if (pauseTargetAttr && pauseDuration && targetAttr) {
     scrollTo(parseInt(pauseTargetAttr, 10), duration / 2)
     return timer(pauseDuration * 1000).pipe(
       tap(() => scrollTo(parseInt(targetAttr, 10), duration / 2)),
       map(() => void 0)
     )
-  } else {
+  }
+  else {
     scrollTo(target, duration)
     return of(void 0)
   }
@@ -235,7 +259,21 @@ export const action = async () => {
       return target?.closest("#the-egg") === target
     }),
     debounceTime(100)
-  )
+  ).pipe(
+    tap(() => showOverlay()),
+    // Complete the observable after showing the overlay
+    tap(() => {
+      console.log('Easter egg clicked, overlay shown');
+    })
+  );
+
+  subscriptions.push(
+    eggInteraction$.subscribe({
+      next: () => { }, // The action is handled in the tap operator
+      error: (err) => console.error('Error in egg interaction:', err),
+      complete: () => console.log('Egg interaction observable completed')
+    })
+  );
 
   // Observable that emits when the user interacts with the info box overlay
   const leaveInfoBoxInteraction$ = createInteractionObservable<InteractionEvent>(
@@ -248,57 +286,78 @@ export const action = async () => {
       )
     }),
     debounceTime(100)
-  )
+  ).pipe(
+    tap(() => hideOverlay()),
+    tap(() => {
+      console.log('Info box closed');
+    })
+  );
+
+  subscriptions.push(
+    leaveInfoBoxInteraction$.subscribe({
+      next: () => { }, // The action is handled in the tap operator
+      error: (err) => console.error('Error in leaving info box:', err),
+      complete: () => console.log('Leave info box observable completed')
+    })
+  );
 
   // Observable that emits when the user interacts with the hero primary button or arrow down element
+
   const heroButtonInteraction$ = createInteractionObservable<InteractionEvent>(
     filter((event: InteractionEvent) => {
       if (event instanceof Event) {
-        event.preventDefault()
+        event.preventDefault();
       }
-      const target = event.target as HTMLElement | null
+      const target = event.target as HTMLElement | null;
       return (
         target?.closest("#hero-primary-button") !== undefined ||
         target?.closest("#arrowdown") !== undefined
-      )
+      );
     }),
     debounceTime(100)
-  )
-  subscriptions.push(
-    eggInteraction$.subscribe(() => {
-      showOverlay()
-    })
-  )
-
-  subscriptions.push(
-    leaveInfoBoxInteraction$.subscribe(() => {
-      hideOverlay()
-    })
-  )
-
-  subscriptions.push(
-    heroButtonInteraction$.subscribe(event => {
-      const target = event.target as HTMLElement | null
+  ).pipe(
+    switchMap(event => {
+      const target = event.target as HTMLElement | null;
       if (target) {
-        smoothScroll$(target).subscribe()
+        return smoothScroll$(target);
       }
+      return EMPTY;
+    }),
+    tap(() => {
+      console.log('Smooth scroll completed');
     })
-  )
+  );
 
-  // Observable that emits when the user navigates to a new page
+  subscriptions.push(
+    heroButtonInteraction$.subscribe({
+      next: () => { }, // The action is handled in the switchMap and tap operators
+      error: (err) => console.error('Error in hero button interaction:', err),
+      complete: () => console.log('Hero button interaction observable completed')
+    })
+  );
+
   const pathObservable$ = location$.pipe(
     distinctUntilKeyChanged("pathname"),
     map(
       (location: { pathname: string }) =>
         location.pathname !== "index.html" && location.pathname !== "/"
     ),
-    filter(location => location !== undefined)
-  )
+    filter(location => location !== undefined),
+    tap(() => hideOverlay()),
+    tap(() => {
+      console.log('Path changed, overlay hidden');
+    })
+  );
 
-  subscriptions.push(pathObservable$.subscribe(() => hideOverlay()))
-}
-
+  subscriptions.push(
+    pathObservable$.subscribe({
+      next: () => { }, // The action is handled in the tap operator
+      error: (err) => console.error('Error in path change:', err),
+      complete: () => console.log('Path observable completed')
+    })
+  );
   // we clean up the subscriptions when the user leaves the page
-window.addEventListener("beforeunload", () => {
+  window.addEventListener("beforeunload", () => {
     subscriptions.forEach(sub => sub.unsubscribe())
   })
+};

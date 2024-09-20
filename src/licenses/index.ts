@@ -1,7 +1,10 @@
 import { Observable, OperatorFunction, Subscription, fromEvent, fromEventPattern, merge } from "rxjs"
 import { filter, map, switchMap } from "rxjs/operators"
+import { logger } from "~/hero/log"
 
-const subscriptions = new Subscription()
+const subscriptions = Array<Subscription>()
+
+const { document$, viewport$ } = window
 
 const hoverTabs = document.querySelectorAll<HTMLAnchorElement>(".md-typeset .tabbed-labels>label>[href]:first-child:hover a")
 
@@ -68,7 +71,7 @@ const triangleInteraction$: Observable<InteractionEvent> = createInteractionObse
  *
  * @returns This function does not return a value.
  */
-const toggleSection = async (): Promise<void> => {
+const toggleSection = (): void => {
     const content = document.querySelector<HTMLElement>(".section-content")
     const triangle = document.querySelector<HTMLElement>(".triangle")
     if (content && triangle) {
@@ -78,70 +81,115 @@ const toggleSection = async (): Promise<void> => {
     }
 }
 
-subscriptions.add(triangleInteraction$.subscribe(() => toggleSection().then().catch(e => { throw e })))
-
-/** -------- license tab highlight behavior --------
- *  maps license hoverTabs to icons for color-coded hover
- * */
+subscriptions.push(triangleInteraction$.subscribe({
+  next: () => {
+    toggleSection()
+  },
+  error: (err) => {
+    logger.error("Error in triangleInteraction$ observable:", err);
+  }
+}));
 
 /**
- * Gets the icon element associated with a given anchor element.
+ * Retrieves the icon element associated with a given tab.
  *
- * @param target - The anchor element from which to extract the icon ID.
- * @returns The icon element associated with the anchor, or null if not found.
+ * This function constructs an icon ID based on the hash of the URL
+ * derived from the tab's href attribute and returns the corresponding
+ * HTML element from the document.
+ *
+ * @param tab - The anchor element representing the tab.
+ * @returns The icon element if found, otherwise null.
  */
-const getIconElement = (target: HTMLAnchorElement) => {
-    const url = new URL(target.getAttribute("href") || "", window.location.href)
-    const iconId = `icon-${  url.hash.slice(1)}`
-    return document.getElementById(iconId)
+const getIconElement = (tab: HTMLAnchorElement) => {
+  const url = new URL(tab.getAttribute("href") || "", window.location.href);
+  const iconId = `icon-${url.hash.slice(1)}`;
+  return document.getElementById(iconId);
 }
 
-/**
- * Updates the fill color of the SVG path within a given icon element.
- *
- * @param icon - The icon element containing the SVG whose path fill color will be updated.
- * @param color - The color to apply to the SVG path fill.
- */
+
 const updateSvgFill = (icon: HTMLElement | null, color: string): void => {
-    if (icon) {
-      const svgPath = icon.querySelector<SVGPathElement>("svg path")
-      if (svgPath) {
-        svgPath.style.fill = color
-      }
+  if (icon) {
+    const svgPath = icon.querySelector<SVGPathElement>("svg path");
+    if (svgPath) {
+      svgPath.style.fill = color;
     }
-}
+  }
+};
 
-/**
- * Creates an observable that listens for a specified mouse event on tab elements.
- * It emits the event when triggered, allowing for further processing.
- * This function enables the color-coded hover effect on license tabs.
- *
- * @param eventName - The name of the mouse event to listen for (e.g., 'click', 'mouseover').
- * @returns An observable that emits the specified mouse events from the tab elements.
- */
-const createMouseEventObservable = (eventName: string): Observable<Event> => document$.pipe(() =>
-    fromEventPattern(
-        handler => hoverTabs.forEach(tab => tab.addEventListener(eventName, handler)),
-        handler => hoverTabs.forEach(tab => tab.removeEventListener(eventName, handler))
-    ))
+const createMouseEventObservable = (eventName: string): Observable<MouseEvent> =>
+  document$.pipe(switchMap(() =>
+    fromEventPattern<MouseEvent>(
+      handler => hoverTabs.forEach(tab => tab.addEventListener(eventName, handler as EventListener)),
+      handler => hoverTabs.forEach(tab => tab.removeEventListener(eventName, handler as EventListener))
+    )
+  ));
 
-const mouseOver$ = createMouseEventObservable("mouseover") as Observable<MouseEvent>
-const mouseOut$ = createMouseEventObservable("mouseout") as Observable<MouseEvent>
+const mouseOver$ = createMouseEventObservable("mouseover");
+const mouseOut$ = createMouseEventObservable("mouseout");
 
-subscriptions.add(
-  mouseOver$.pipe(
-    map((event: MouseEvent) => event.target as HTMLAnchorElement),
-    map(getIconElement)
-  ).subscribe(icon => updateSvgFill(icon, "var(--emerald)"))
-)
+const hoverEffect$ = merge(
+  mouseOver$.pipe(map(event => ({ event, isOver: true }))),
+  mouseOut$.pipe(map(event => ({ event, isOver: false })))
+).pipe(
+  map(({ event, isOver }) => {
+    const tab = event.target as HTMLAnchorElement;
+    return {
+      tab,
+      icon: getIconElement(tab),
+      isOver
+    };
+  })
+);
 
-subscriptions.add(
-  mouseOut$.pipe(
-    map((event: MouseEvent) => event.target as HTMLAnchorElement),
-    map(getIconElement)
-  ).subscribe(icon => updateSvgFill(icon, "var(--md-accent-bg-color)"))
-)
+subscriptions.push(
+  hoverEffect$.subscribe({
+    next: ({ tab, icon, isOver }) => {
+      const color = isOver ? "var(--emerald)" : "var(--md-accent-bg-color)";
+      updateSvgFill(icon, color);
+      // You can add additional styling for the tab here if needed
+      tab.classList.toggle('hovered', isOver);
+    },
+    error: (err) => logger.error("Error in hoverEffect$ observable:", err)
+  })
+);
 
+// To handle icon hover, we need to create a separate observable
+const icons = Array.from(document.querySelectorAll('[id^="icon-"]'));
+
+const createIconMouseEventObservable = (eventName: string): Observable<MouseEvent> =>
+  document$.pipe(switchMap(() =>
+    fromEventPattern<MouseEvent>(
+      handler => icons.forEach(icon => icon.addEventListener(eventName, handler as EventListener)),
+      handler => icons.forEach(icon => icon.removeEventListener(eventName, handler as EventListener))
+    )
+  ));
+
+const iconMouseOver$ = createIconMouseEventObservable("mouseover");
+const iconMouseOut$ = createIconMouseEventObservable("mouseout");
+
+const iconHoverEffect$ = merge(
+  iconMouseOver$.pipe(map(event => ({ event, isOver: true }))),
+  iconMouseOut$.pipe(map(event => ({ event, isOver: false })))
+).pipe(
+  map(({ event, isOver }) => {
+    const icon = event.target as HTMLElement;
+    const iconId = icon.id;
+    const tabId = iconId.replace('icon-', '');
+    const tab = document.querySelector(`a[href="#${tabId}"]`) as HTMLAnchorElement;
+    return { icon, tab, isOver };
+  })
+);
+
+subscriptions.push(
+  iconHoverEffect$.subscribe({
+    next: ({ icon, tab, isOver }) => {
+      const color = isOver ? "var(--emerald)" : "var(--md-accent-bg-color)";
+      updateSvgFill(icon, color);
+      tab?.classList.toggle('hovered', isOver);
+    },
+    error: (err) => logger.error("Error in iconHoverEffect$ observable:", err)
+  })
+);
 const headers = document.querySelectorAll<HTMLElement>(".section-header")
 const headerClicks$: Observable<MouseEvent> = fromEventPattern<MouseEvent>(
   (handler: (e: MouseEvent) => void) =>
@@ -150,24 +198,26 @@ const headerClicks$: Observable<MouseEvent> = fromEventPattern<MouseEvent>(
         headers.forEach(header => header.removeEventListener("click", handler))
 )
 
-headerClicks$.pipe(
+subscriptions.push(headerClicks$.pipe(
   map((event: MouseEvent) => event.currentTarget as HTMLElement)
-).subscribe(toggleSection)
+).subscribe({next: () => toggleSection(), error: (err) => logger.error("Error in headerClicks$ observable:", err)}))
 
-subscriptions.add(
+subscriptions.push(
   viewport$.pipe(map(view => (
         { height: view.size.height }
   )), filter(view => view.height > 0)
   ).subscribe(() => {
-        headers.forEach(header => {
-            const content = header.nextElementSibling as HTMLElement
-            if (content && content.style.maxHeight) {
-              content.style.maxHeight = `${content.scrollHeight}px`
-            }
-        })
-    })
-)
+    next: () => {
+      headers.forEach(header => {
+        const content = header.nextElementSibling as HTMLElement
+        if (content && content.style.maxHeight) {
+          content.style.maxHeight = `${content.scrollHeight}px`
+        }
+      })
+    }
+  })
+    )
 
 document.addEventListener("beforeUnload", () => {
-    subscriptions.unsubscribe()
+    subscriptions.forEach((sub) => sub.unsubscribe())
 })

@@ -150,6 +150,7 @@ p.md-nav__description.license {
 /* initial quicklink color */
 [data-md-color-scheme="default"] nav.md-nav.md-nav--secondary div.quick_links a.quicklink_group span.tab_quick_link svg path {
     fill: var(--zaffre);
+    transition: fill 0.3s ease;
 }
 
 [data-md-color-scheme="slate"] nav.md-nav.md-nav--secondary div.quick_links a.quicklink_group span.tab_quick_link svg path {
@@ -161,6 +162,11 @@ nav.md-nav.md-nav--secondary div.quick_links a.quicklink_group:hover span.tab_qu
     cursor: pointer;
     fill: var(--emerald);
     width: 100%;
+}
+
+.md-typeset .tabbed-labels > label > [href]:first-child.hovered {
+    cursor: pointer;
+    color : var(--emerald);
 }
 
 nav.md-nav.md-nav--secondary div.quick_links a.quicklink_group:active {
