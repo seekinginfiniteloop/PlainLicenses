@@ -117,7 +117,7 @@ const showOverlay = (): void => {
   }
 }
 
-  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
 
 /**
  * Retrieves scrolling target information and associated attributes from a given HTML element.
@@ -167,9 +167,9 @@ const scrollTo = (
      offsetY: number = 0
 ): void => {
   // we check if the user has preferred reduced motion
-  if (typeof gsap !== 'undefined' && gsap.to) {
+  if (typeof gsap !== "undefined" && gsap.to) {
        // Use GSAP if available
-       gsap.to(window, {
+    gsap.to(window, {
          duration,
          scrollTo: {
            y: target,
@@ -177,14 +177,14 @@ const scrollTo = (
          },
          ease: "power3",
          autoKill: true
-       });
-     } else if ('scrollTo' in window) {
+       })
+  } else if ("scrollTo" in window) {
        // Fallback to native or polyfilled scrollTo
-       window.scrollTo({
-         top: typeof target === 'number' ? target : 0,
-         behavior: 'smooth'
-       });
-     }
+    window.scrollTo({
+         top: typeof target === "number" ? target : 0,
+         behavior: "smooth"
+       })
+  }
    }
 
 /**
@@ -206,7 +206,7 @@ const smoothScroll$ = (el: HTMLElement): Observable<void> => {
   if (prefersReducedMotion) {
     // we skip animation and jump to the target
 
-    window.location.hash = targetAttr?.replace('#', '') || '';
+    window.location.hash = targetAttr?.replace("#", "") || ""
     return of(void 0)
   }
 
@@ -216,8 +216,7 @@ const smoothScroll$ = (el: HTMLElement): Observable<void> => {
       tap(() => scrollTo(parseInt(targetAttr, 10), duration / 2)),
       map(() => void 0)
     )
-  }
-  else {
+  } else {
     scrollTo(target, duration)
     return of(void 0)
   }
@@ -265,17 +264,17 @@ const allSubscriptions = (): void => {
     tap(() => showOverlay()),
     // Complete the observable after showing the overlay
     tap(() => {
-      logger.info('Easter egg clicked, overlay shown');
+      logger.info("Easter egg clicked, overlay shown")
     })
-  );
+  )
 
   subscriptions.push(
     eggInteraction$.subscribe({
       next: () => { }, // The action is handled in the tap operator
-      error: (err) => logger.error('Error in egg interaction:', err),
-      complete: () => logger.info('Egg interaction observable completed')
+      error: err => logger.error("Error in egg interaction:", err),
+      complete: () => logger.info("Egg interaction observable completed")
     })
-  );
+  )
 
   // Observable that emits when the user interacts with the info box overlay
   const leaveInfoBoxInteraction$ = createInteractionObservable<InteractionEvent>(
@@ -291,52 +290,52 @@ const allSubscriptions = (): void => {
   ).pipe(
     tap(() => hideOverlay()),
     tap(() => {
-      logger.info('Info box closed');
+      logger.info("Info box closed")
     })
-  );
+  )
 
   subscriptions.push(
     leaveInfoBoxInteraction$.subscribe({
       next: () => { }, // The action is handled in the tap operator
-      error: (err) => logger.error('Error in leaving info box:', err),
-      complete: () => logger.info('Leave info box observable completed')
+      error: err => logger.error("Error in leaving info box:", err),
+      complete: () => logger.info("Leave info box observable completed")
     })
-  );
+  )
 
   // Observable that emits when the user interacts with the hero primary button or arrow down element
 
   const heroButtonInteraction$ = createInteractionObservable<InteractionEvent>(
     filter((event: InteractionEvent) => {
       if (event instanceof Event) {
-        event.preventDefault();
+        event.preventDefault()
       }
-      const target = event.target as HTMLElement | null;
+      const target = event.target as HTMLElement | null
       return (
         target?.closest("#hero-primary-button") !== undefined ||
         target?.closest("#arrowdown") !== undefined
-      );
+      )
     }),
     debounceTime(100)
   ).pipe(
     switchMap(event => {
-      const target = event.target as HTMLElement | null;
+      const target = event.target as HTMLElement | null
       if (target) {
-        return smoothScroll$(target);
+        return smoothScroll$(target)
       }
-      return EMPTY;
+      return EMPTY
     }),
     tap(() => {
-      logger.info('Smooth scroll completed');
+      logger.info("Smooth scroll completed")
     })
-  );
+  )
 
   subscriptions.push(
     heroButtonInteraction$.subscribe({
       next: () => { }, // The action is handled in the switchMap and tap operators
-      error: (err) => logger.error('Error in hero button interaction:', err),
-      complete: () => logger.info('Hero button interaction observable completed')
+      error: err => logger.error("Error in hero button interaction:", err),
+      complete: () => logger.info("Hero button interaction observable completed")
     })
-  );
+  )
 
   const pathObservable$ = location$.pipe(
     distinctUntilKeyChanged("pathname"),
@@ -347,28 +346,28 @@ const allSubscriptions = (): void => {
     filter(location => location !== undefined),
     tap(() => hideOverlay()),
     tap(() => {
-      logger.info('Path changed, overlay hidden');
+      logger.info("Path changed, overlay hidden")
     })
-  );
+  )
 
   subscriptions.push(
     pathObservable$.subscribe({
       next: () => { }, // The action is handled in the tap operator
-      error: (err) => logger.error('Error in path change:', err),
-      complete: () => logger.info('Path observable completed')
+      error: err => logger.error("Error in path change:", err),
+      complete: () => logger.info("Path observable completed")
     })
-  );
+  )
   // we clean up the subscriptions when the user leaves the page
   window.addEventListener("beforeunload", () => {
     subscriptions.forEach(sub => sub.unsubscribe())
   })
-};
+}
 
 // we create and return an observable for the allSubscriptions function
 export const action$ = () => {
-  return new Observable<void>((subscriber) => {
-    allSubscriptions();
-    subscriber.next();
-    subscriber.complete();
+  return new Observable<void>(subscriber => {
+    allSubscriptions()
+    subscriber.next()
+    subscriber.complete()
   })
-};
+}

@@ -18,6 +18,11 @@ import { logger } from "~/log"
 
 const { document$, viewport$, location$ } = window
 
+const CONFIG = {
+  INTERVAL_TIME: 25000
+}
+
+
 const subscriptions: Subscription[] = []
 
 const portraitMediaQuery = window.matchMedia("(orientation: portrait)")

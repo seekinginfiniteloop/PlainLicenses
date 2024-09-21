@@ -1,5 +1,6 @@
 import { Observable, OperatorFunction, Subscription, fromEvent, fromEventPattern, merge } from "rxjs"
 import { filter, map, switchMap } from "rxjs/operators"
+
 import { logger } from "~/log"
 
 const subscriptions = Array<Subscription>()
@@ -81,7 +82,6 @@ const toggleSection = (): void => {
     }
 }
 
-
 /**
  * Retrieves the icon element associated with a given tab.
  *
@@ -93,20 +93,19 @@ const toggleSection = (): void => {
  * @returns The icon element if found, otherwise null.
  */
 const getIconElement = (tab: HTMLAnchorElement) => {
-  const url = new URL(tab.getAttribute("href") || "", window.location.href);
-  const iconId = `icon-${url.hash.slice(1)}`;
-  return document.getElementById(iconId);
+  const url = new URL(tab.getAttribute("href") || "", window.location.href)
+  const iconId = `icon-${url.hash.slice(1)}`
+  return document.getElementById(iconId)
 }
-
 
 const updateSvgFill = (icon: HTMLElement | null, color: string): void => {
   if (icon) {
-    const svgPath = icon.querySelector<SVGPathElement>("svg path");
+    const svgPath = icon.querySelector<SVGPathElement>("svg path")
     if (svgPath) {
-      svgPath.style.fill = color;
+      svgPath.style.fill = color
     }
   }
-};
+}
 
 const createMouseEventObservable = (eventName: string): Observable<MouseEvent> =>
   document$.pipe(switchMap(() =>
@@ -114,27 +113,27 @@ const createMouseEventObservable = (eventName: string): Observable<MouseEvent> =
       handler => hoverTabs.forEach(tab => tab.addEventListener(eventName, handler as EventListener)),
       handler => hoverTabs.forEach(tab => tab.removeEventListener(eventName, handler as EventListener))
     )
-  ));
+  ))
 
-const mouseOver$ = createMouseEventObservable("mouseover");
-const mouseOut$ = createMouseEventObservable("mouseout");
+const mouseOver$ = createMouseEventObservable("mouseover")
+const mouseOut$ = createMouseEventObservable("mouseout")
 
 const hoverEffect$ = merge(
   mouseOver$.pipe(map(event => ({ event, isOver: true }))),
   mouseOut$.pipe(map(event => ({ event, isOver: false })))
 ).pipe(
   map(({ event, isOver }) => {
-    const tab = event.target as HTMLAnchorElement;
+    const tab = event.target as HTMLAnchorElement
     return {
       tab,
       icon: getIconElement(tab),
       isOver
-    };
+    }
   })
-);
+)
 
 // To handle icon hover, we need to create a separate observable
-const icons = Array.from(document.querySelectorAll('[id^="icon-"]'));
+const icons = Array.from(document.querySelectorAll('[id^="icon-"]'))
 
 const createIconMouseEventObservable = (eventName: string): Observable<MouseEvent> =>
   document$.pipe(switchMap(() =>
@@ -142,23 +141,23 @@ const createIconMouseEventObservable = (eventName: string): Observable<MouseEven
       handler => icons.forEach(icon => icon.addEventListener(eventName, handler as EventListener)),
       handler => icons.forEach(icon => icon.removeEventListener(eventName, handler as EventListener))
     )
-  ));
+  ))
 
-const iconMouseOver$ = createIconMouseEventObservable("mouseover");
-const iconMouseOut$ = createIconMouseEventObservable("mouseout");
+const iconMouseOver$ = createIconMouseEventObservable("mouseover")
+const iconMouseOut$ = createIconMouseEventObservable("mouseout")
 
 const iconHoverEffect$ = merge(
   iconMouseOver$.pipe(map(event => ({ event, isOver: true }))),
   iconMouseOut$.pipe(map(event => ({ event, isOver: false })))
 ).pipe(
   map(({ event, isOver }) => {
-    const icon = event.target as HTMLElement;
-    const iconId = icon.id;
-    const tabId = iconId.replace("icon-", "");
-    const tab = document.querySelector(`a[href="#${tabId}"]`) as HTMLAnchorElement;
-    return { icon, tab, isOver };
+    const icon = event.target as HTMLElement
+    const iconId = icon.id
+    const tabId = iconId.replace("icon-", "")
+    const tab = document.querySelector(`a[href="#${tabId}"]`) as HTMLAnchorElement
+    return { icon, tab, isOver }
   })
-);
+)
 
 const headers = document.querySelectorAll<HTMLElement>(".section-header")
 const headerClicks$: Observable<MouseEvent> = fromEventPattern<MouseEvent>(
@@ -173,34 +172,34 @@ export const subscribeToAll = () => {
     next: () => {
       toggleSection()
     },
-    error: (err) => {
-      logger.error("Error in triangleInteraction$ observable:", err);
+    error: err => {
+      logger.error("Error in triangleInteraction$ observable:", err)
     }
-  }));
+  }))
   subscriptions.push(
     hoverEffect$.subscribe({
       next: ({ tab, icon, isOver }) => {
-        const color = isOver ? "var(--emerald)" : "var(--md-accent-bg-color)";
-        updateSvgFill(icon, color);
+        const color = isOver ? "var(--emerald)" : "var(--md-accent-bg-color)"
+        updateSvgFill(icon, color)
         // You can add additional styling for the tab here if needed
-        tab.classList.toggle("hovered", isOver);
+        tab.classList.toggle("hovered", isOver)
       },
-      error: (err) => logger.error("Error in hoverEffect$ observable:", err)
+      error: err => logger.error("Error in hoverEffect$ observable:", err)
     })
-  );
+  )
   subscriptions.push(
     iconHoverEffect$.subscribe({
       next: ({ icon, tab, isOver }) => {
-        const color = isOver ? "var(--emerald)" : "var(--md-accent-bg-color)";
-        updateSvgFill(icon, color);
-        tab?.classList.toggle("hovered", isOver);
+        const color = isOver ? "var(--emerald)" : "var(--md-accent-bg-color)"
+        updateSvgFill(icon, color)
+        tab?.classList.toggle("hovered", isOver)
       },
-      error: (err) => logger.error("Error in iconHoverEffect$ observable:", err)
+      error: err => logger.error("Error in iconHoverEffect$ observable:", err)
     })
-  );
+  )
   subscriptions.push(headerClicks$.pipe(
     map((event: MouseEvent) => event.currentTarget as HTMLElement)
-  ).subscribe({ next: () => toggleSection(), error: (err) => logger.error("Error in headerClicks$ observable:", err) }));
+  ).subscribe({ next: () => toggleSection(), error: err => logger.error("Error in headerClicks$ observable:", err) }))
 
   subscriptions.push(
     viewport$.pipe(map(view => (
@@ -218,8 +217,7 @@ export const subscribeToAll = () => {
         error: (err: any) => logger.error("Error in viewport$ observable:", err)
       }))
 
-
   document.addEventListener("beforeUnload", () => {
-    subscriptions.forEach((sub:) => sub.unsubscribe())
+    subscriptions.forEach((sub: Subscription) => sub.unsubscribe())
   })
 }

@@ -5,7 +5,7 @@ import { initializeHero } from "./hero"
 
 const { location$ } = window
 
-const licensePattern = /\/licenses\/(source-available|proprietary|permissive|public-domain|copyleft)\/\w+-?\d?\.?\d?\/index.html$/;
+const licensePattern = /\/licenses\/(source-available|proprietary|permissive|public-domain|copyleft)\/\w+-?\d?\.?\d?\/index.html$/
 
 // we watch the location$ Subject for changes to the URL, and if it matches the license pattern, we subscribe to all the observables
 location$.subscribe({
@@ -17,5 +17,5 @@ location$.subscribe({
       initializeHero()
     }
   },
-  error: (err: any) => logger.error("Error in location$ observable:", err)
+  error: (err: Error): void => logger.error("Error in location$ observable:", err)
 })
