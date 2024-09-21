@@ -2,7 +2,7 @@
   "compilerOptions": {
     "alwaysStrict": true,
     "baseUrl": "./",
-    "outDir": "overrides/assets/javascripts",
+    "outDir": "docs/assets/javascripts",
     "esModuleInterop": true,
     "isolatedModules": true,
     "allowSyntheticDefaultImports": true,
@@ -18,7 +18,7 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "paths": {
-      "~/*": ["./src/*"],
+      "~/*": ["./src/javascripts/*"],
       "~external/*": ["./typings"]
     },
 

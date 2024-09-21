@@ -4,6 +4,25 @@ import { cssModulesPlugin } from "@asn.aeb/esbuild-css-modules-plugin";
 const materialCssDir = "mkdocs-material/src/templates/assets/stylesheets"
 const plainCssDir = "src/stylesheets"
 
+const manifest = JSON.parse(Deno.readTextFileSync("src/base_manifest.json"));
+
+// we need to resolve globs (e.g. mystyle.*.css) in the manifest
+// to the actual file names (e.g. mystyle.123456.css)
+const files = () => {
+  for (const key in manifest) {
+    const value = manifest[key]; // this is an array of globs
+    for (const v in value) {
+      if (v.endsWith(".*")) {
+        const folders = Deno.readDirSync("overrides/assets/");
+        
+
+        }
+        }
+      }
+    }
+  }
+};
+
 const webConfig = {
   bundle: true,
   minify: true,

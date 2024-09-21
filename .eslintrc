@@ -9,12 +9,6 @@
       "package.json"
     ]
   },
-  "files": [
-    "*.ts",
-    "*.tsx",
-    "*.js",
-    "*.jsx"
-  ],
   "plugins": [
     "@typescript-eslint",
     "@stylistic/ts",
@@ -29,7 +23,7 @@
     "plugin:@typescript-eslint/recommended"
   ],
   "settings": {
-    "import/extensions": [".ts", ".tsx", ".js", ".jsx", ".json"],
+    "import/extensions": [".ts", ".tsx", ".js", ".jsx", ".json", ".mjs"],
     "import/parsers": {
       "@typescript-eslint/parser": [".ts", ".tsx"]
     }

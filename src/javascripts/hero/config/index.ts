@@ -1,5 +1,6 @@
 
 /**
+ * TODO: programmatically import, ensuring stylesheet loads first
  * An object representing various color values used in the application.
  *
  * This object contains color definitions that can be referenced throughout the code
@@ -55,6 +56,7 @@ interface TransformationSettings {
  * including color settings, dimensions, and transformation properties.
  *
  * @interface ImageSettings
+ * @property {string} versionHash - The version hash for the image.
  * @property {{ h1: string; p: string }} colors - The color settings for the image.
  * @property {string} [height] - The height of the image.
  * @property {string} [animation] - The animation settings for the image.
@@ -66,6 +68,7 @@ interface TransformationSettings {
  * @property {string} [objectPosition] - The position settings for the image.
  */
 export interface ImageSettings {
+  versionHash?: string
   colors: { h1: string, p: string }
   height?: string
   animation?: string
@@ -88,6 +91,7 @@ export interface ImageSettings {
  * @type {ImageSettings}
  */
 export const defaultSettings: ImageSettings = {
+  versionHash: "v.1.0",
   colors: { h1: colors.emerald, p: colors.emerald },
   scale: "1.1",
   objectFit: "scale-down",
@@ -218,6 +222,7 @@ export const portraitImageSettings: Record<string, ImageSettings> = {
  * URL, settings, and other relevant data.
  *
  * @interface ImageDataType
+ * @property {string} versionHash - The version hash for the image.
  * @property {string} imageName - The name of the image.
  * @property {string} baseUrl - The base URL for the image.
  * @property {string} url - The full URL for the image.
@@ -228,6 +233,7 @@ export const portraitImageSettings: Record<string, ImageSettings> = {
  * @property {string} imgWidth - The width of the image.
  */
 export interface ImageDataType {
+  versionHash: string
   imageName: string
   baseUrl: string
   url: string

@@ -47,7 +47,7 @@ jobs:
         run: .github/scripts/update-submodules.sh
 
       - name: Build changelog
-        run: npm run build
+        run: export NODE_ENV=production && npm run build
 
       - name: Generate changelog
         run: node .github/scripts/generate-changelog.js

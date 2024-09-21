@@ -1,6 +1,6 @@
 import { Observable, OperatorFunction, Subscription, fromEvent, fromEventPattern, merge } from "rxjs"
 import { filter, map, switchMap } from "rxjs/operators"
-import { logger } from "~/hero/log"
+import { logger } from "~/log"
 
 const subscriptions = Array<Subscription>()
 
@@ -81,14 +81,6 @@ const toggleSection = (): void => {
     }
 }
 
-subscriptions.push(triangleInteraction$.subscribe({
-  next: () => {
-    toggleSection()
-  },
-  error: (err) => {
-    logger.error("Error in triangleInteraction$ observable:", err);
-  }
-}));
 
 /**
  * Retrieves the icon element associated with a given tab.
@@ -141,18 +133,6 @@ const hoverEffect$ = merge(
   })
 );
 
-subscriptions.push(
-  hoverEffect$.subscribe({
-    next: ({ tab, icon, isOver }) => {
-      const color = isOver ? "var(--emerald)" : "var(--md-accent-bg-color)";
-      updateSvgFill(icon, color);
-      // You can add additional styling for the tab here if needed
-      tab.classList.toggle('hovered', isOver);
-    },
-    error: (err) => logger.error("Error in hoverEffect$ observable:", err)
-  })
-);
-
 // To handle icon hover, we need to create a separate observable
 const icons = Array.from(document.querySelectorAll('[id^="icon-"]'));
 
@@ -174,22 +154,12 @@ const iconHoverEffect$ = merge(
   map(({ event, isOver }) => {
     const icon = event.target as HTMLElement;
     const iconId = icon.id;
-    const tabId = iconId.replace('icon-', '');
+    const tabId = iconId.replace("icon-", "");
     const tab = document.querySelector(`a[href="#${tabId}"]`) as HTMLAnchorElement;
     return { icon, tab, isOver };
   })
 );
 
-subscriptions.push(
-  iconHoverEffect$.subscribe({
-    next: ({ icon, tab, isOver }) => {
-      const color = isOver ? "var(--emerald)" : "var(--md-accent-bg-color)";
-      updateSvgFill(icon, color);
-      tab?.classList.toggle('hovered', isOver);
-    },
-    error: (err) => logger.error("Error in iconHoverEffect$ observable:", err)
-  })
-);
 const headers = document.querySelectorAll<HTMLElement>(".section-header")
 const headerClicks$: Observable<MouseEvent> = fromEventPattern<MouseEvent>(
   (handler: (e: MouseEvent) => void) =>
@@ -198,26 +168,58 @@ const headerClicks$: Observable<MouseEvent> = fromEventPattern<MouseEvent>(
         headers.forEach(header => header.removeEventListener("click", handler))
 )
 
-subscriptions.push(headerClicks$.pipe(
-  map((event: MouseEvent) => event.currentTarget as HTMLElement)
-).subscribe({next: () => toggleSection(), error: (err) => logger.error("Error in headerClicks$ observable:", err)}))
-
-subscriptions.push(
-  viewport$.pipe(map(view => (
-        { height: view.size.height }
-  )), filter(view => view.height > 0)
-  ).subscribe(() => {
+export const subscribeToAll = () => {
+  subscriptions.push(triangleInteraction$.subscribe({
     next: () => {
-      headers.forEach(header => {
-        const content = header.nextElementSibling as HTMLElement
-        if (content && content.style.maxHeight) {
-          content.style.maxHeight = `${content.scrollHeight}px`
-        }
-      })
+      toggleSection()
+    },
+    error: (err) => {
+      logger.error("Error in triangleInteraction$ observable:", err);
     }
-  })
-    )
+  }));
+  subscriptions.push(
+    hoverEffect$.subscribe({
+      next: ({ tab, icon, isOver }) => {
+        const color = isOver ? "var(--emerald)" : "var(--md-accent-bg-color)";
+        updateSvgFill(icon, color);
+        // You can add additional styling for the tab here if needed
+        tab.classList.toggle("hovered", isOver);
+      },
+      error: (err) => logger.error("Error in hoverEffect$ observable:", err)
+    })
+  );
+  subscriptions.push(
+    iconHoverEffect$.subscribe({
+      next: ({ icon, tab, isOver }) => {
+        const color = isOver ? "var(--emerald)" : "var(--md-accent-bg-color)";
+        updateSvgFill(icon, color);
+        tab?.classList.toggle("hovered", isOver);
+      },
+      error: (err) => logger.error("Error in iconHoverEffect$ observable:", err)
+    })
+  );
+  subscriptions.push(headerClicks$.pipe(
+    map((event: MouseEvent) => event.currentTarget as HTMLElement)
+  ).subscribe({ next: () => toggleSection(), error: (err) => logger.error("Error in headerClicks$ observable:", err) }));
 
-document.addEventListener("beforeUnload", () => {
-    subscriptions.forEach((sub) => sub.unsubscribe())
-})
+  subscriptions.push(
+    viewport$.pipe(map(view => (
+        { height: view.size.height }
+    )), filter(view => view.height > 0)
+    ).subscribe({
+        next: () => {
+          headers.forEach(header => {
+            const content = header.nextElementSibling as HTMLElement
+            if (content && content.style.maxHeight) {
+              content.style.maxHeight = `${content.scrollHeight}px`
+            }
+          })
+        },
+        error: (err: any) => logger.error("Error in viewport$ observable:", err)
+      }))
+
+
+  document.addEventListener("beforeUnload", () => {
+    subscriptions.forEach((sub:) => sub.unsubscribe())
+  })
+}

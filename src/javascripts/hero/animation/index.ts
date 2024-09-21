@@ -19,12 +19,14 @@ import {
   tap
 } from "rxjs/operators"
 
+import { logger } from "~/log"
+
 gsap.registerPlugin(ScrollToPlugin)
 
 const subscriptions: Subscription[] = []
 
 const easterEgg = document.getElementById("the-egg")
-const infoBox = document.getElementById("egg-box") as HTMLDialogElement | null
+const infoBox = document.getElementById("egg-box") as HTMLDialogElement
 
 const { location$} = window
 
@@ -176,7 +178,7 @@ const scrollTo = (
          ease: "power3",
          autoKill: true
        });
-     } else ('scrollTo' in window) {
+     } else if ('scrollTo' in window) {
        // Fallback to native or polyfilled scrollTo
        window.scrollTo({
          top: typeof target === 'number' ? target : 0,
@@ -242,7 +244,7 @@ const parseAttribute = (
   return attrValue ? parseInt(attrValue, 10) : defaultValue
 }
 
-export const action = async () => {
+const allSubscriptions = (): void => {
 
   // Observable that emits when the user interacts with the easter egg element
   const eggInteraction$ = createInteractionObservable<InteractionEvent>(
@@ -263,15 +265,15 @@ export const action = async () => {
     tap(() => showOverlay()),
     // Complete the observable after showing the overlay
     tap(() => {
-      console.log('Easter egg clicked, overlay shown');
+      logger.info('Easter egg clicked, overlay shown');
     })
   );
 
   subscriptions.push(
     eggInteraction$.subscribe({
       next: () => { }, // The action is handled in the tap operator
-      error: (err) => console.error('Error in egg interaction:', err),
-      complete: () => console.log('Egg interaction observable completed')
+      error: (err) => logger.error('Error in egg interaction:', err),
+      complete: () => logger.info('Egg interaction observable completed')
     })
   );
 
@@ -289,15 +291,15 @@ export const action = async () => {
   ).pipe(
     tap(() => hideOverlay()),
     tap(() => {
-      console.log('Info box closed');
+      logger.info('Info box closed');
     })
   );
 
   subscriptions.push(
     leaveInfoBoxInteraction$.subscribe({
       next: () => { }, // The action is handled in the tap operator
-      error: (err) => console.error('Error in leaving info box:', err),
-      complete: () => console.log('Leave info box observable completed')
+      error: (err) => logger.error('Error in leaving info box:', err),
+      complete: () => logger.info('Leave info box observable completed')
     })
   );
 
@@ -324,15 +326,15 @@ export const action = async () => {
       return EMPTY;
     }),
     tap(() => {
-      console.log('Smooth scroll completed');
+      logger.info('Smooth scroll completed');
     })
   );
 
   subscriptions.push(
     heroButtonInteraction$.subscribe({
       next: () => { }, // The action is handled in the switchMap and tap operators
-      error: (err) => console.error('Error in hero button interaction:', err),
-      complete: () => console.log('Hero button interaction observable completed')
+      error: (err) => logger.error('Error in hero button interaction:', err),
+      complete: () => logger.info('Hero button interaction observable completed')
     })
   );
 
@@ -345,19 +347,28 @@ export const action = async () => {
     filter(location => location !== undefined),
     tap(() => hideOverlay()),
     tap(() => {
-      console.log('Path changed, overlay hidden');
+      logger.info('Path changed, overlay hidden');
     })
   );
 
   subscriptions.push(
     pathObservable$.subscribe({
       next: () => { }, // The action is handled in the tap operator
-      error: (err) => console.error('Error in path change:', err),
-      complete: () => console.log('Path observable completed')
+      error: (err) => logger.error('Error in path change:', err),
+      complete: () => logger.info('Path observable completed')
     })
   );
   // we clean up the subscriptions when the user leaves the page
   window.addEventListener("beforeunload", () => {
     subscriptions.forEach(sub => sub.unsubscribe())
+  })
+};
+
+// we create and return an observable for the allSubscriptions function
+export const action$ = () => {
+  return new Observable<void>((subscriber) => {
+    allSubscriptions();
+    subscriber.next();
+    subscriber.complete();
   })
 };
