@@ -30,7 +30,12 @@ const isPortrait = (): boolean => !!portraitMediaQuery.matches
 
 const parallaxLayer = document.getElementById("parallax-hero-image-layer")
 
-// Simplified getImageSettings function
+/**
+ * Retrieves image settings for a specified image name in both landscape and portrait orientations. Merges default settings with image-specific settings. Images inherit default settings if any setting is not specified.
+ *
+ * @param imageName - The name of the image for which settings are to be retrieved.
+ * @returns A Map containing the image settings for both "landscape" and "portrait" orientations.
+ */
 const getImageSettings = (imageName: string): Map<string, imgSettings.ImageSettings> => {
   const landscapeSettings = {
     ...imgSettings.defaultSettings,
@@ -46,9 +51,17 @@ const getImageSettings = (imageName: string): Map<string, imgSettings.ImageSetti
     ["landscape", landscapeSettings],
     ["portrait", portraitSettings]
   ]);
-};
+}
 
-// Simplified generateImageDataType function
+
+/**
+ * Generates image data for an image with the specified name. The image data comes from the ImageSettings object.
+ *
+ * @param imageName - The name of the image for which data is to be generated.
+ * @returns An object containing the image data type, including
+ *          properties such as imageName, baseUrl, url, srcset, landscapeSettings,
+ *          portraitSettings, colorSpace, data, and imgWidth.
+ */
 const generateImageDataType = (imageName: string): imgSettings.ImageDataType => {
   const combinedSettings = getImageSettings(imageName);
   const widths = ["1280", "1920", "2560", "3840"];
@@ -68,11 +81,16 @@ const generateImageDataType = (imageName: string): imgSettings.ImageDataType => 
     data: new Uint8ClampedArray(),
     imgWidth: "1280"
   };
-};
+}
 
-// Simplified cache functions
+// Opens a cache with the specified name using the Cache API
 const openCache = (): Observable<Cache> => from(caches.open(CONFIG.CACHE_NAME));
 
+/**
+ * Implements a cache first strategy for fetching images. If the image is in the cache, it is returned. Otherwise, the image is fetched and cached.
+ * @param url image url
+ * @returns Observable of the response
+ */
 const getImage = (url: string): Observable<Response> =>
   openCache().pipe(
     mergeMap(cache =>
@@ -86,10 +104,19 @@ const getImage = (url: string): Observable<Response> =>
     })
   );
 
+
+/**
+ * Fetches an image and caches it.
+ * @param url image url
+ * @param cache cache object
+ * @returns Observable of the response
+ */
 const fetchAndCacheImage = (url: string, cache: Cache): Observable<Response> =>
   from(fetch(url)).pipe(
     tap(response => {
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       cache.put(url, response.clone());
     }),
     catchError(error => {
@@ -98,7 +125,12 @@ const fetchAndCacheImage = (url: string, cache: Cache): Observable<Response> =>
     })
   );
 
-// Simplified loadImage function
+/**
+  * Loads an image from the server.
+  * @param imageName image name; the name from the image settings object
+  * @param version image version
+  * @returns Observable of the image blob
+  */
 export const loadImage = (imageName: string, version: string): Observable<Blob> => {
   const url = `${CONFIG.ROOT_URL}/${imageName}?v=${version}`;
   return getImage(url).pipe(
@@ -110,7 +142,12 @@ export const loadImage = (imageName: string, version: string): Observable<Blob> 
   );
 };
 
-// Simplified setStyles function
+/**
+ * Sets the styles for an image element based on the specified settings.
+ * @param img image element
+ * @param settings image settings
+ * @returns Observable of the image element
+ */
 const setStyles = (img: HTMLImageElement, settings: imgSettings.ImageSettings): Observable<HTMLImageElement> =>
   of(img).pipe(
     tap(image => {
@@ -124,19 +161,24 @@ const setStyles = (img: HTMLImageElement, settings: imgSettings.ImageSettings): 
     })
   );
 
-// Combined fetchAndSetImage function
+/**
+ * Fetches and sets an image element based on the specified image data.
+ * @param imageDatum image data for a single image
+ * @param firstImage flag indicating whether this is the first image to be fetched, which means we load it immediately and without a transition
+ * @returns Observable of the image element
+ */
 const fetchAndSetImage = (imageDatum: imgSettings.ImageDataType, firstImage = false): Observable<HTMLImageElement> => {
   const optimalWidth = window.innerWidth <= 1280 ? "1280" :
                        window.innerWidth <= 1920 ? "1920" :
                        window.innerWidth <= 2560 ? "2560" : "3840";
   const optimalUrl = `${imageDatum.baseUrl}_${optimalWidth}.webp`;
 
-  return loadImage(imageDatum.imageName, '1.0.0').pipe(
+  return loadImage(imageDatum.imageName, 'hashValue').pipe(
     mergeMap(imageBlob => {
-      const img = new Image(Number(optimalWidth));
+      const img = new Image();
       const imageUrl = URL.createObjectURL(imageBlob);
 
-      img.src = imageUrl;
+      img.src = optimalUrl;
       img.srcset = imageDatum.srcset;
       img.sizes = "(max-width: 1280px) 1280px, (max-width: 1920px) 1920px, (max-width: 2560px) 2560px, 3840px";
       img.alt = "";
@@ -163,7 +205,11 @@ const fetchAndSetImage = (imageDatum: imgSettings.ImageDataType, firstImage = fa
   );
 };
 
-// Simplified updateColors function
+/**
+ * Updates the colors of the header and paragraph elements.
+ * @param colors object containing the colors for the header and paragraph elements
+ * @param transition transition string
+ */
 const updateColors = (colors: { h1: string, p: string }, transition = "color 5s ease-in"): Observable<void> =>
   of(undefined).pipe(
     tap(() => {
@@ -180,8 +226,12 @@ const updateColors = (colors: { h1: string, p: string }, transition = "color 5s 
     })
   );
 
-// Simplified getFirstImage function
-const getFirstImage = (imageDatum: imgSettings.ImageDataType): Observable<void> => {
+/**
+ * retrieves the first image for the hero section
+ * @param imageDatum image data for a single image
+ * @returns Observable of the image element
+ */
+const getFirstImage = (imageDatum: imgSettings.ImageDataType): Observable<HTMLImageElement> => {
   if (!parallaxLayer || !imageDatum) {
     return EMPTY;
   }
@@ -203,7 +253,10 @@ const getFirstImage = (imageDatum: imgSettings.ImageDataType): Observable<void> 
   );
 };
 
-// Simplified image generator
+/**
+ * generates an image data type generator
+ * @yields image datum objects
+ */
 function* imageDatumGenerator(): Generator<imgSettings.ImageDataType> {
   const imageNames = Object.keys(imgSettings.imageSettings);
   for (const imageName of imageNames) {
@@ -212,11 +265,15 @@ function* imageDatumGenerator(): Generator<imgSettings.ImageDataType> {
 }
 
 // Variables for image cycling
-let generatorExhausted = false;
+let generatorExhausted = false; // turns true when the generator is exhausted
 let isPageVisible = true;
 let cycleImagesSubscription: Subscription | undefined;
 const imageGen = imageDatumGenerator();
 
+/**
+ * Returns the next image data type from the generator
+ * @returns image data type or undefined if the generator is exhausted
+ */
 const imageDatumGen = (): imgSettings.ImageDataType | undefined => {
   if (generatorExhausted) {
     return undefined;
@@ -229,6 +286,9 @@ const imageDatumGen = (): imgSettings.ImageDataType | undefined => {
   return nextImageDatum.value;
 };
 
+/**
+ * Stops the image cycling subscription
+ */
 const stopImageCycling = (): void => {
   if (cycleImagesSubscription) {
     cycleImagesSubscription.unsubscribe();
@@ -236,6 +296,12 @@ const stopImageCycling = (): void => {
   }
 };
 
+/**
+ * Starts the image cycling subscription
+ * @returns Observable of void
+ * @throws {Error} if the first image is not found
+ * @throws {Error} if the image cycling subscription fails
+ */
 const startImageCycling = (): Observable<void> => {
   const firstImage = parallaxLayer?.getElementsByTagName("img")[0];
   if (firstImage && isPageVisible) {
@@ -260,9 +326,16 @@ const startImageCycling = (): Observable<void> => {
   return EMPTY;
 };
 
+/**
+ * Handles visibility change events
+ * @returns Observable of void
+ */
 const handleVisibilityChange = (): Observable<void> =>
   isPageVisible ? startImageCycling() : of(stopImageCycling());
 
+/**
+ * Cycles the images in the hero section
+ */
 const cycleImages = (): Observable<void> => {
   if (!parallaxLayer) {
     return EMPTY;
@@ -311,6 +384,11 @@ export const shuffle = (): Observable<void> => {
     })
   ) : EMPTY;
 };
+/**
+ * Creates an observable for screen orientation changes.
+ * @param the media query list for the orientation
+ * @returns boolean observable for orientation changes
+ */
 
 const createOrientationObservable = (mediaQuery: MediaQueryList): Observable<boolean> =>
   fromEventPattern<boolean>(
@@ -319,6 +397,14 @@ const createOrientationObservable = (mediaQuery: MediaQueryList): Observable<boo
     (event: MediaQueryListEvent) => event.matches
   );
 
+/**
+ * Handles visibility changes
+ * @returns Observable of void
+ * @throws {Error} if the first image is not found
+ * @throws {Error} if the image cycling subscription fails
+ * @throws {Error} if the visibility change subscription fails
+ *
+  */
 const orientation$ = createOrientationObservable(portraitMediaQuery).pipe(
   filter(() => isPageVisible),
   distinctUntilChanged(),
@@ -340,6 +426,9 @@ const orientation$ = createOrientationObservable(portraitMediaQuery).pipe(
   })
 );
 
+/**
+ * Creates an observable for visibility changes (e.g. navigating to a different tab or window). We use this to trigger the start and stop of image cycling.
+ */
 const locationChange$ = location$.pipe(
   distinctUntilChanged((a: URL, b: URL) => a.pathname === b.pathname),
   filter(loc => loc.pathname === "/" || loc.pathname === "/index.html"),
@@ -350,6 +439,7 @@ const locationChange$ = location$.pipe(
   })
 );
 
+//
 const initSubscriptions = (): void => {
   const subscribeWithErrorHandling = (observable: Observable<any>, name: string) =>
     observable.subscribe({

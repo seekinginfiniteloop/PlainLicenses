@@ -8,6 +8,10 @@ extend-ignore-re = ["(?s)(#|//)\\s*spellchecker:off.*?\\n\\s*(#|//)\\s*spellchec
 ignore-hidden = true
 ignore-files = true
 extend-exclude = """
+node_modules
 mkdocs-material
 license-list-data
+external
+vendor
+.git
 """
