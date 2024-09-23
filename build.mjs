@@ -6,22 +6,18 @@ const plainCssDir = "src/stylesheets"
 
 const manifest = JSON.parse(Deno.readTextFileSync("src/base_manifest.json"));
 
-// we need to resolve globs (e.g. mystyle.*.css) in the manifest
-// to the actual file names (e.g. mystyle.123456.css)
-const files = () => {
-  for (const key in manifest) {
-    const value = manifest[key]; // this is an array of globs
-    for (const v in value) {
-      if (v.endsWith(".*")) {
-        const folders = Deno.readDirSync("overrides/assets/");
-        
-
-        }
-        }
+for (const key in manifest) {
+  const value = manifest[key];
+  if (value.endsWith(".*")) {
+    const files = Deno.readDirSync("overrides/assets/stylesheets");
+    for (const file of files) {
+      if (file.name.startsWith(value.replace(".*", ""))) {
+        manifest[key] = file.name;
+        break;
       }
     }
   }
-};
+}
 
 const webConfig = {
   bundle: true,

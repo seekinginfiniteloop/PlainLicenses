@@ -8,8 +8,8 @@
     "src/stylesheets/home.css*"
   ],
   "scripts": [
-    "src/javascripts/index.ts*",
-    "external/mkdocs-material/material/templates/assets/javascripts/bundle.*.min.js"
+    "external/mkdocs-material/material/templates/assets/javascripts/bundle.*.min.js",
+    "src/javascripts/index.ts"
   ],
   "fonts": [
     "src/fonts/*.woff*"

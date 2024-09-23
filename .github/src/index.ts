@@ -1,9 +1,8 @@
 import * as fs from "fs";
 import * as path from "path";
 
-
 const spdxFilename = "licenses.json";
-const spdxJsonPath = path.join("license-list-data", "json", spdxFilename);
+const spdxJsonPath = path.join("external", "license-list-data", "json", spdxFilename);
 
 export interface spdxLicense {
   reference: URL;
