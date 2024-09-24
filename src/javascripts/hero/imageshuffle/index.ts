@@ -7,10 +7,13 @@ import {
   fromEvent,
   fromEventPattern,
   interval,
+  lastValueFrom,
+  map,
   of,
+  startWith,
   throwError
 } from "rxjs"
-import { catchError, distinctUntilChanged, filter, mergeMap, switchMap, tap } from "rxjs/operators"
+import { catchError, distinctUntilChanged, filter, mergeMap, switchMap, tap, share, shareReplay } from "rxjs/operators"
 
 import { getAsset } from "~/cache"
 import * as imgSettings from "~/hero/config"
@@ -22,11 +25,15 @@ const CONFIG = {
   INTERVAL_TIME: 25000
 }
 
-
 const subscriptions: Subscription[] = []
 
 const portraitMediaQuery = window.matchMedia("(orientation: portrait)")
-const isPortrait = (): boolean => !!portraitMediaQuery.matches
+
+const isPortrait$: Observable<boolean> = fromEvent(window, "resize").pipe(
+  map(() => portraitMediaQuery.matches),
+  startWith(portraitMediaQuery.matches),
+  shareReplay(1)
+)
 
 const parallaxLayer = document.getElementById("parallax-hero-image-layer")
 
@@ -66,14 +73,14 @@ const generateImageDataType = (imageName: string): imgSettings.ImageDataType => 
   const widths = ["1280", "1920", "2560", "3840"]
   const baseUrl = `assets/images/hero/${imageName}/${imageName}`
   const srcset = widths
-    .map(imgWidth => `${baseUrl}_${imgWidth}.webp ${imgWidth}w`)
+    .map(imgWidth => `${baseUrl}_${imgWidth}.avif ${imgWidth}w`)
     .join(", ")
 
   return {
     versionHash: combinedSettings.get("landscape")?.versionHash || "v.1.0",
     imageName,
     baseUrl,
-    url: `${baseUrl}_1280.webp`,
+    url: `${baseUrl}_1280.avif`,
     srcset,
     landscapeSettings: combinedSettings.get("landscape") || imgSettings.defaultSettings,
     portraitSettings: combinedSettings.get("portrait") || imgSettings.defaultPortraitSettings,
@@ -130,7 +137,7 @@ const fetchAndSetImage = (imageDatum: imgSettings.ImageDataType, firstImage = fa
                        window.innerWidth <= 1920 ? "1920" :
       window.innerWidth <= 2560 ? "2560" : "3840"
   const {versionHash} = imageDatum
-  const optimalUrl = `${imageDatum.baseUrl}_${optimalWidth}.webp?hash=${versionHash}`
+  const optimalUrl = `${imageDatum.baseUrl}_${optimalWidth}.avif?hash=${versionHash}`
 
   return loadImage(imageDatum.imageName, "hashValue").pipe(
     mergeMap(imageBlob => {
@@ -145,18 +152,19 @@ const fetchAndSetImage = (imageDatum: imgSettings.ImageDataType, firstImage = fa
       img.draggable = false
       img.fetchPriority = firstImage ? "high" : "auto"
       img.loading = "eager"
-
-      const settings = isPortrait() ? imageDatum.portraitSettings : imageDatum.landscapeSettings
-      return setStyles(img, settings).pipe(
-        tap(styledImg => {
-          styledImg.onload = () => {
-            setTimeout(() => URL.revokeObjectURL(imageUrl), 60000)
-            requestAnimationFrame(() => {})
-          }
-          styledImg.onerror = () => {}
-        })
-      )
-    }),
+// YOU WERE HERE
+      const settings = isPortrait$.subscribe({ next: value => pipe(value ? imageDatum.portraitSettings : imageDatum.landscapeSettings, error:       if (settings) {
+        return setStyles(img, settings).pipe(
+          tap(styledImg => {
+            styledImg.onload = () => {
+              setTimeout(() => URL.revokeObjectURL(imageUrl), 60000)
+              requestAnimationFrame(() => { })
+            }
+            styledImg.onerror = () => { }
+          })
+        )
+      }
+}),
     catchError(error => {
       logger.error("Error in fetchAndSetImage:", error)
       return throwError(() => new Error("Failed to fetch and set image"))
@@ -166,13 +174,11 @@ const fetchAndSetImage = (imageDatum: imgSettings.ImageDataType, firstImage = fa
 
 /**
  * Updates the colors of the header and paragraph elements.
- * - @param colors object containing the colors for the header and paragraph elements
- * - @param transition transition string
- * @param colors
- * @param transition
+ * @param colors - object containing the colors for the header and paragraph elements
+ * @param transition - string value for the transition
  * @returns An Observable that emits void.
  */
-const updateColors = (colors: { h1: string, p: string }, transition = "color 5s ease-in"): Observable<void> =>
+const updateColors = (colors: { h1: string, p: string }, transition: string = "color 5s ease-in"): Observable<void> =>
   of(undefined).pipe(
     tap(() => {
       const h1 = document.getElementById("CTA_header")
@@ -198,7 +204,7 @@ const getFirstImage = (imageDatum: imgSettings.ImageDataType): Observable<HTMLIm
     return EMPTY
   }
 
-  const settings = isPortrait() ? imageDatum.portraitSettings : imageDatum.landscapeSettings
+  const settings = isPortrait$ ? imageDatum.portraitSettings : imageDatum.landscapeSettings
 
   return updateColors(settings.colors).pipe(
     mergeMap(() => fetchAndSetImage(imageDatum, true)),
@@ -376,13 +382,13 @@ const createOrientationObservable = (mediaQuery: MediaQueryList): Observable<boo
 const orientation$ = createOrientationObservable(portraitMediaQuery).pipe(
   filter(() => isPageVisible),
   distinctUntilChanged(),
-  tap(isPortrait => {
+  tap(() => {
     if (parallaxLayer) {
       const firstImage = parallaxLayer.getElementsByTagName("img")[0]
       if (firstImage) {
         const imageName = firstImage.getAttribute("data-name") || ""
         const imageDatum = generateImageDataType(imageName)
-        const settings = isPortrait ? imageDatum.portraitSettings : imageDatum.landscapeSettings
+        const settings = isPortrait$ ? imageDatum.portraitSettings : imageDatum.landscapeSettings
         setStyles(firstImage, settings).subscribe()
         updateColors(settings.colors, "none").subscribe()
       }

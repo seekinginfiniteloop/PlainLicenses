@@ -25,7 +25,7 @@ export const paths: GlobbedPaths =
     "src/fonts/*.woff2",
   ],
   "images": [
-    "src/images/hero/**/*.webp",
+    "src/images/hero/**/*.avif",
     "src/images/*.svg",
     "src/images/*.png"
   ]
@@ -40,6 +40,7 @@ export const webConfig: esbuild.BuildOptions = {
   target: "es2018",
   outbase: "docs/assets/",
   chunkNames: "chunks/[name].[hash]",
+  assetNames: "[name].[hash]",
   outdir: "src",
   loader: {
     ".js": "js",
@@ -52,6 +53,7 @@ export const webConfig: esbuild.BuildOptions = {
     ".svg": "file",
     ".webp": "file",
   },
+  allowOverwrite: true,
   splitting: true,
   plugins: [
     cssModulesPlugin({
@@ -73,6 +75,8 @@ export const nodeConfig: esbuild.BuildOptions = {
   minify: false,
   splitting: false,
   plugins: [],
+  allowOverwrite: true,
+  outExtension: {'.js': '.mjs'}
 };
 
 export interface Project {
