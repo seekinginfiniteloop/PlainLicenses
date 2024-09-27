@@ -1,11 +1,11 @@
-import { GlobbedPaths, paths, webConfig, nodeConfig, GHActions, Project, baseProject } from "./config";
 import * as esbuild from "esbuild";
-import { optimize } from "svgo"
-import { Observable, from } from "rxjs";
-import { promisify } from 'util';
-import * as glob from 'glob';
 import * as fs from 'fs';
+import * as glob from 'glob';
 import * as path from 'path';
+import { Observable, from } from "rxjs";
+import { optimize } from "svgo";
+import { promisify } from 'util';
+import { GHActions, GlobbedPaths, MetaFileOutputs, Project, baseProject, nodeConfig, paths, webConfig } from "./config";
 
 const globPromise = promisify(glob.glob);
 const readFilePromise = promisify(fs.readFile);
@@ -20,7 +20,7 @@ async function ensureDirExists(dir: string) {
 }
 
 /** ~~ from Martin Donath, (c) 2016-2023 Martin Donath ~~
- *  ~~ subject to the MIT license: https://github.com/squidfunk/mkdocs-material/LICENSE
+ *  ~~ subject to the MIT license: https://github.com/squidfunk/mkdocs-material/blob/master/LICENSE
  * Minify SVG data
  * @param data: string
  * @returns optimized SVG string
@@ -101,14 +101,24 @@ async function processAllMkDocs() {
   console.log('Updated paths:', paths);
 }
 
-function build(project: Project): Observable<void> {
-  return from((async () => {
+async function build(project: Project): Promise<Observable<unknown>> {
+  return from((new Promise(() => {
     const config = project.platform === "node" ? nodeConfig : webConfig;
-    await esbuild.build({
+    const result = esbuild.build({
       ...config,
       ...project
-    });
-  })());
+    }).then(async (result) => {
+      if (result && result.metafile) {
+        const output = await metaOutput(result);
+        if (output) {
+          await writeMeta(output);
+          const table = await hashTable(output);
+          await writeFilePromise(path.join('docs/assets/javascripts', 'hashTable.json'), JSON.stringify(table, null, 2));
+          await metaOutputMap(result);
+        }
+      }
+    })
+  })))
 }
 
 async function clearDirs() {
@@ -129,53 +139,115 @@ async function transformSvg(): Promise<void> {
   }
 }
 
-async function filterFilePaths(filePaths: string[]) {
-  const newFilePaths: string[] = [];
-  filePaths.forEach((file: string) => {
-    newFilePaths.push(file.replace('docs/', ''));
-  })
-}
-
-
-  async function writeManifest(): Promise<void> {
-    const manifestPath = 'docs/assets/manifest.json';
-    const styleSheets = (await globPromise('docs/assets/stylesheets/*.css', { includeChildMatches: true }) as string[]);
-    const scripts = await globPromise('docs/assets/javascripts/*.js', { includeChildMatches: true }) as string[];
-    const fonts = await globPromise('docs/assets/fonts/*', { includeChildMatches: true }) as string[];
-    const images = await globPromise('docs/assets/images/*', { includeChildMatches: true }) as string[];
-    const manifest = {
-      styleSheets: filterFilePaths(styleSheets),
-      scripts: filterFilePaths(scripts),
-      fonts: filterFilePaths(fonts),
-      images: filterFilePaths(images)
-    }
-    const manifestJson = JSON.stringify(manifest, null, 2);
-    if (fs.existsSync(manifestPath)) {
-      fs.unlinkSync(manifestPath);
-    }
-    await writeFilePromise(manifestPath, manifestJson);
-    console.log('Manifest written to:', manifestPath);
-    }
-
 async function buildAll() {
   await processAllMkDocs().catch(error => {
   console.error('Error processing files:', error);
 });
   GHActions.forEach(async (project) => {
-    build(project).subscribe({
+    (await (await build(project)).subscribe({
       next: () => console.log(`Build for ${project.platform} completed successfully`),
       error: (error) => console.error(`Error building ${project.platform}:`, error),
       complete: () => console.log(`Build for ${project.platform} completed`)
-    });
+    }));
   });
   await clearDirs();
   await transformSvg();
-  build(baseProject).subscribe({
-    next: () => console.log(`Build for ${baseProject.platform} completed successfully`),
+  (await build(baseProject)).subscribe({
+    next: () => { console.log(`Build for ${baseProject.platform} completed successfully`);
+        },
     error: (error) => console.error(`Error building ${baseProject.platform}:`, error),
     complete: () => console.log(`Build for ${baseProject.platform} completed`)
   });
-  await writeManifest();
 }
+
+const metaOutput = async (result: esbuild.BuildResult) => {
+  if (!result.metafile) {
+    return {};
+  }
+  Object.keys(result.metafile.outputs).reduce((acc: {}, key: string) => {
+    const output = result.metafile?.outputs[key];
+    acc[key] = {
+      bytes: output?.bytes,
+      inputs: output ? Object.keys(output.inputs) : [],
+      exports: output?.exports,
+      entryPoint: output?.entryPoint,
+    };
+    return acc;
+  }, {})
+}
+
+async function handleBundle(output: MetaFileOutputs, mapping: {}): Promise<{}> {
+  const outputFile = Object.keys(output)[0];
+  const path = outputFile.replace('docs/', '');
+  const extension = path.split('.').pop() ? ('.css' ? 'css' : 'js') : '';
+  if (extension === 'css') {
+    mapping['CSSBUNDLE'] = path;
+  } else if (extension === 'js') {
+    mapping['SCRIPTBUNDLE'] = path;
+  }
+  return mapping;
+}
+
+const metaOutputMap = async (result: esbuild.BuildResult) => {
+  const mapping = {};
+  if (result && result.metafile) {
+    Object.keys(result.metafile.outputs).forEach(key => {
+      const output = result?.metafile?.outputs[key];
+      if (!output) {
+        return;
+      } else if (output?.entryPoint?.endsWith(".css") || output?.entryPoint?.endsWith(".js")) {
+
+        return handleBundle(output, mapping);
+      }
+      const relativePath = path.relative('assets', key);
+      const originalName = path.basename(output?.entryPoint || Object.keys(output.inputs)[0]);
+      mapping[originalName] = relativePath;
+    }
+    )
+    const outputMetaPath = path.join('overrides', 'buildmeta.json');
+    await writeFilePromise(outputMetaPath, JSON.stringify(mapping, null, 2));
+  }
+}
+
+const writeMeta = async (metaOutput: {}) => {
+  const metaJson = JSON.stringify({ metaOutput }, null, 2);
+  await writeFilePromise(path.join('docs', 'meta.json'), metaJson);
+}
+
+const hashTable = async (metaOutput: {}): Promise<{}> => {
+  const table = {};
+  Object.keys(metaOutput).forEach((key) => {
+    const baseFileName = key.split('.').slice(0, -1).join('.');
+    const hash = key.split('.').pop();
+    table[baseFileName] = hash;
+  })
+  return table;
+};
+
 // Execute the file processing
 await buildAll();
+
+
+/** For MinSVG function:
+ *
+ * Copyright (c) 2016-2024 Martin Donath <martin.donath@squidfunk.com>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to
+deal in the Software without restriction, including without limitation the
+rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+sell copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+IN THE SOFTWARE.
+
+ */

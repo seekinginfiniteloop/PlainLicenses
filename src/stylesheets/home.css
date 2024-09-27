@@ -22,8 +22,8 @@ These are basic customizations for the home page.
     local("Bangers"),
     local("Bangers Regular"),
     local("Bangers-Regular"),
-    url("../../docs/assets/fonts/Bangers-Regular.woff2") format("woff2"),
-    url("../../docs/assets/fonts/Bangers-Regular.woff") format("woff");
+    url("../fonts/bangers-regular.woff2") format("woff2"),
+    url("../fonts/bangers-regular.woff") format("woff");
   /* stylelint-disable-next-line @stylistic/max-line-length */
   unicode-range: U+000D, U+0020-002F, U+003A-0040, U+005B-007E, U+0131, U+0300, U+2013-2014, U+2018-2019, U+201C-201D, U+2026, U+25FC;
 }
@@ -143,35 +143,6 @@ header.md-header:not(.md-header--shadow) {
 
   height: 100vh;
   pointer-events: auto;
-}
-
-.hero-parallax__image {
-  position: absolute;
-  top: 0;
-  z-index: -5;
-  display: block;
-  flex-grow: 2;
-  grid-column-start: 1;
-  align-self: start;
-  justify-self: start;
-  width: 100%;
-  padding: 0;
-  margin-top: 0;
-  overflow-x: hidden;
-  overflow-y: scroll;
-  object-fit: scale-down;
-  object-position: center bottom;
-  background: var(--gunmetal);
-  opacity: 0;
-  transition: opacity 1000ms ease-out;
-  transform: scale(1) translate(0%, -25%);
-  perspective: 50rem;
-  perspective-origin: center bottom;
-}
-
-.hero-parallax__layer .hero-parallax__image:first-child {
-  opacity: 1;
-  transition: opacity 1500ms ease-in;
 }
 
 .md-content__inner {

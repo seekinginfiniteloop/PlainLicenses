@@ -1,0 +1,168 @@
+/* Default settings */
+:root {
+  --white: #ffffff;
+}
+
+.hero-parallax__image {
+  --scale: 1.1;
+  --object-fit: scale-down;
+  --perspective: 50em;
+  --perspective-origin: center bottom;
+  --object-position: center bottom;
+  --translate-x: 0%;
+  --translate-y: 0%;
+  position: absolute;
+
+  top: 0;
+  z-index: -5;
+  display: block;
+  flex-grow: 2;
+  grid-column-start: 1;
+  align-self: start;
+  justify-self: start;
+  width: 100%;
+  padding: 0;
+  margin-top: 0;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  object-fit: var(--object-fit);
+  object-position: center bottom;
+  background: var(--gunmetal);
+  opacity: 0;
+  transition: transform 300ms ease, scale 300ms ease, translate 300ms ease, opacity 1000ms ease, perspective 300ms ease, perspective-origin 300ms ease;
+  transform: translate(var(--translate-x), var(--translate-y));
+  scale: var(--scale);
+  perspective: var(--perspective);
+  perspective-origin: center bottom;
+}
+
+.hero-parallax__image--anime {
+  --h1-color: var(--atomic-tangerine);
+  --p-color: var(--emerald);
+}
+
+.hero-parallax__image--artbrut {
+  --h1-color: var(--atomic-tangerine);
+  --p-color: var(--aqua);
+}
+
+.hero-parallax__image--comic {
+  --h1-color: var(--aquamarine);
+  --p-color: var(--white);
+}
+.hero-parallax__image--fanciful {
+  --h1-color: var(--mindaro);
+  --p-color: var(--aqua);
+  --perspective-origin: 30% 20%;
+  --scale: 1;
+  --translate-y: -30%;
+}
+.hero-parallax__image--fantasy {
+  --h1-color: var(--white);
+  --p-color: var(--mindaro);
+  --scale: 1;
+  --translate-y: -20%;
+}
+.hero-parallax__image--farcical {
+  --h1-color: var(--atomic-tangerine);
+  --p-color: var(--aqua);
+  --sccale: 1;
+  --translate-y: -35%;
+}
+.hero-parallax__image--fauvist {
+  --h1-color: var(--mindaro);
+  --p-color: var(--white);
+}
+.hero-parallax__image--minimal {
+  --h1-color: var(--atomic-tangerine);
+  --p-color: var(--white);
+  --scale: 1;
+  --perspective: 50rem;
+  --translate-y: -25%;
+}
+.hero-parallax__image--mystical {
+  --h1-color: var(--blue-blue);
+  --p-color: var(--white);
+  --scale: 1;
+  --perspective: 40rem;
+  --translate-y: -25%;
+}
+.hero-parallax__image--surreal {
+  --h1-color: var(--white);
+  --p-color: var(--atomic-tangerine);
+  --scale: 1;
+  --translate-y: -25%;
+}
+
+/* Portrait orientation */
+@media (orientation: portrait) {
+  .hero-parallax__image {
+    --scale: 1.4;
+    --object-fit: cover;
+    --translate-y: 20%;
+  }
+  .hero-parallax__image--anime {
+    --h1-color: var(--atomic-tangerine);
+    --p-color: var(--white);
+    --perspective: -50rem;
+    --scale: 1.8;
+    --translate-y: 40%;
+  }
+  .hero-parallax__image--artbrut {
+    --h1-color: var(--atomic-tangerine);
+    --p-color: var(--aqua);
+  }
+  .hero-parallax__image--comic {
+    --h1-color: var(--aquamarine);
+    --p-color: var(--white);
+    --scale: 1.2;
+  }
+  .hero-parallax__image--fanciful {
+    --h1-color: var(--mindaro);
+    --p-color: var(--atomic-tangerine);
+  }
+  .hero-parallax__image--fantasy {
+    --h1-color: var(--atomic-tangerine);
+    --p-color: var(--mindaro);
+  }
+  .hero-parallax__image--farcical {
+    --h1-color: var(--mindaro);
+    --p-color: var(--aqua);
+    --translate-y: 16%;
+  }
+  .hero-parallax__image--fauvist {
+    --h1-color: var(--mindaro);
+    --p-color: var(--white);
+    --translate-y: 18%;
+  }
+  .hero-parallax__image--minimal {
+    --h1-color: var(--atomic-tangerine);
+    --p-color: var(--white);
+  }
+  .hero-parallax__image--mystical {
+    --h1-color: var(--white);
+    --p-color: var(--aquamarine);
+  }
+  .hero-parallax__image--surreal {
+    --h1-color: var(--white);
+    --p-color: var(--atomic-tangerine);
+  }
+}
+
+/* Apply colors to text elements */
+#CTA_header {
+  color: var(--h1-color, var(--emerald));
+  transition: color 300ms ease;
+}
+
+#CTA_paragraph {
+  color: var(--p-color, var(--emerald));
+  transition: color 300ms ease;
+}
+
+.hero-parallax__layer .hero-parallax__image:first-child {
+  align-content: flex-start;
+  align-self: flex-start;
+  opacity: 1;
+  transition: opacity 1500ms ease-in;
+}

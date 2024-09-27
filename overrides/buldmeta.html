@@ -1,0 +1,17 @@
+{% set asset_mapping = load_json('buildmeta.json') %}
+
+{% macro asset_url(filename) %}
+{% if filename in asset_mapping %}
+{{ base_url }}/assets/{{ asset_mapping[filename] }}
+{% else %}
+{{ base_url }}/{{ filename }}
+{% endif %}
+{% endmacro %}
+
+{% macro css_bundle() %}
+<link rel="stylesheet" href="{{ asset_url('CSSBUNDLE') }}">
+{% endmacro %}
+
+{% macro js_bundle() %}
+<script src="{{ asset_url('SCRIPTBUNDLE') }}"></script>
+{% endmacro %}

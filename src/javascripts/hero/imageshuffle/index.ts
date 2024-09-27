@@ -7,17 +7,15 @@ import {
   fromEvent,
   fromEventPattern,
   interval,
-  lastValueFrom,
   map,
   of,
-  startWith,
   throwError
-} from "rxjs"
-import { catchError, distinctUntilChanged, filter, mergeMap, switchMap, tap, share, shareReplay } from "rxjs/operators"
+} from "rxjs";
+import { catchError, distinctUntilChanged, filter, mergeMap, switchMap, tap } from "rxjs/operators";
 
-import { getAsset } from "~/cache"
-import * as imgSettings from "~/hero/config"
-import { logger } from "~/log"
+import { getAsset } from "~/cache";
+import { logger } from "~/log";
+import { ImageSettings } from "./_types";
 
 const { document$, viewport$, location$ } = window
 
@@ -29,66 +27,33 @@ const subscriptions: Subscription[] = []
 
 const portraitMediaQuery = window.matchMedia("(orientation: portrait)")
 
-const isPortrait$: Observable<boolean> = fromEvent(window, "resize").pipe(
-  map(() => portraitMediaQuery.matches),
-  startWith(portraitMediaQuery.matches),
-  shareReplay(1)
-)
+const imageNames = ['abstract', 'anime', 'artbrut', 'comic', 'fanciful', 'fantasy', 'farcical', 'fauvist', 'minimal', 'mystical', 'surreal']
 
 const parallaxLayer = document.getElementById("parallax-hero-image-layer")
 
+const getHashTable = async () => {
+  const tableJson = await fetch("hashTable.json")
+  return await tableJson.json();
+}
+
+const hashTable = await getHashTable()
+
 /**
- * Retrieves image settings for a specified image name in both landscape and portrait orientations. Merges default settings with image-specific settings. Images inherit default settings if any setting is not specified.
- *
+ * Retrieves the image settings object.
  * @param imageName - The name of the image for which settings are to be retrieved.
- * @returns A Map containing the image settings for both "landscape" and "portrait" orientations.
+ * @returns The image settings object.
  */
-const getImageSettings = (imageName: string): Map<string, imgSettings.ImageSettings> => {
-  const landscapeSettings = {
-    ...imgSettings.defaultSettings,
-    ...imgSettings.imageSettings[imageName]
-  }
-  const portraitSettings = {
-    ...imgSettings.defaultSettings,
-    ...imgSettings.defaultPortraitSettings,
-    ...imgSettings.portraitImageSettings[imageName]
-  }
 
-  return new Map([
-    ["landscape", landscapeSettings],
-    ["portrait", portraitSettings]
-  ])
-}
-
-/**
- * Generates image data for an image with the specified name. The image data comes from the ImageSettings object.
- *
- * @param imageName - The name of the image for which data is to be generated.
- * @returns An object containing the image data type, including
- *          properties such as imageName, baseUrl, url, srcset, landscapeSettings,
- *          portraitSettings, colorSpace, data, and imgWidth.
- */
-const generateImageDataType = (imageName: string): imgSettings.ImageDataType => {
-  const combinedSettings = getImageSettings(imageName)
-  const widths = ["1280", "1920", "2560", "3840"]
+async function getImageUrls(imageName: string, hashTable: { [key: string]: string }): Promise<void | string[]> {
   const baseUrl = `assets/images/hero/${imageName}/${imageName}`
-  const srcset = widths
-    .map(imgWidth => `${baseUrl}_${imgWidth}.avif ${imgWidth}w`)
-    .join(", ")
-
-  return {
-    versionHash: combinedSettings.get("landscape")?.versionHash || "v.1.0",
-    imageName,
-    baseUrl,
-    url: `${baseUrl}_1280.avif`,
-    srcset,
-    landscapeSettings: combinedSettings.get("landscape") || imgSettings.defaultSettings,
-    portraitSettings: combinedSettings.get("portrait") || imgSettings.defaultPortraitSettings,
-    colorSpace: "srgb",
-    data: new Uint8ClampedArray(),
-    imgWidth: "1280"
-  }
-}
+  const widths = ["1280", "1920", "2560", "3840"]
+  const urls: string[] = []
+  widths.forEach(width => {
+    const lookup = `${imageName}_${width}.avif`
+    const hash = hashTable[lookup] as string
+    urls.push(`${baseUrl}_${width}.${hash}.avif`)
+    return urls
+  })}
 
 /**
  * Loads an image from the server.
@@ -96,9 +61,8 @@ const generateImageDataType = (imageName: string): imgSettings.ImageDataType => 
  * @param version - image version
  * @returns Observable of the image blob
  */
-export const loadImage = (imageName: string, version: string): Observable<Blob> => {
-  const url = `assets/images/hero/${imageName}?v=${version}`
-  return getAsset(url).pipe(
+const loadImage = (imageUrl: string): Observable<Blob> => {
+  return getAsset(imageUrl).pipe(
     mergeMap(response => from(response.blob())),
     catchError(error => {
       logger.error("Error loading image:", error)
@@ -107,151 +71,120 @@ export const loadImage = (imageName: string, version: string): Observable<Blob> 
   )
 }
 
-/**
- * Sets the styles for an image element based on the specified settings.
- * @param img - image element
- * @param settings - image settings
- * @returns Observable of the image element
- */
-const setStyles = (img: HTMLImageElement, settings: imgSettings.ImageSettings): Observable<HTMLImageElement> =>
-  of(img).pipe(
-    tap(image => {
-      Object.entries(settings).forEach(([key, value]) => {
-        if (key !== "colors" && key !== "transformationSettings") {
-          image.style.setProperty(key, value.toString())
-        }
-      })
-      image.style.alignContent = "flex-start"
-      image.style.alignSelf = "flex-start"
-    })
-  )
+  // Determine the optimal width based on screen size
+const getOptimalWidth = () => {
+    const screenWidth = Math.max(window.innerWidth, window.innerHeight);
+    if (screenWidth <= 1280) {
+      return "1280";
+    }
+    if (screenWidth <= 1920) {
+      return "1920";
+    }
+    if (screenWidth <= 2560) {
+      return "2560";
+    }
+    return "3840";
+  };
+
 
 /**
  * Fetches and sets an image element based on the specified image data.
- * @param imageDatum - image data for a single image
+ * @param imgSettings - image data for a single image
  * @param firstImage - flag indicating whether this is the first image to be fetched, which means we load it immediately and without a transition
  * @returns Observable of the image element
  */
-const fetchAndSetImage = (imageDatum: imgSettings.ImageDataType, firstImage = false): Observable<HTMLImageElement> => {
-  const optimalWidth = window.innerWidth <= 1280 ? "1280" :
-                       window.innerWidth <= 1920 ? "1920" :
-      window.innerWidth <= 2560 ? "2560" : "3840"
-  const {versionHash} = imageDatum
-  const optimalUrl = `${imageDatum.baseUrl}_${optimalWidth}.avif?hash=${versionHash}`
-
-  return loadImage(imageDatum.imageName, "hashValue").pipe(
+const fetchAndSetImage = (imgSettings: ImageSettings): Observable<void> => {
+  const { imageName, srcset, src } = imgSettings;
+  return loadImage(src).pipe(
     mergeMap(imageBlob => {
-      const img = new Image()
-      const imageUrl = URL.createObjectURL(imageBlob)
+      const img = new Image();
+      const imageUrl = URL.createObjectURL(imageBlob);
+      img.src = src;
+      img.srcset = srcset;
+      img.sizes = "(max-width: 1280px) 1280px, (max-width: 1920px) 1920px, (max-width: 2560px) 2560px, 3840px";
+      img.alt = "";
+      img.classList.add("hero-parallax__image", `hero-parallax__image--${imageName}`);
+      img.draggable = false;
+      img.loading = "eager";
 
-      img.src = optimalUrl
-      img.srcset = imageDatum.srcset
-      img.sizes = "(max-width: 1280px) 1280px, (max-width: 1920px) 1920px, (max-width: 2560px) 2560px, 3840px"
-      img.alt = ""
-      img.classList.add("hero-parallax__image")
-      img.draggable = false
-      img.fetchPriority = firstImage ? "high" : "auto"
-      img.loading = "eager"
-// YOU WERE HERE
-      const settings = isPortrait$.subscribe({ next: value => pipe(value ? imageDatum.portraitSettings : imageDatum.landscapeSettings, error:       if (settings) {
-        return setStyles(img, settings).pipe(
-          tap(styledImg => {
-            styledImg.onload = () => {
-              setTimeout(() => URL.revokeObjectURL(imageUrl), 60000)
-              requestAnimationFrame(() => { })
-            }
-            styledImg.onerror = () => { }
-          })
-        )
-      }
-}),
-    catchError(error => {
-      logger.error("Error in fetchAndSetImage:", error)
-      return throwError(() => new Error("Failed to fetch and set image"))
-    })
-  )
-}
-
-/**
- * Updates the colors of the header and paragraph elements.
- * @param colors - object containing the colors for the header and paragraph elements
- * @param transition - string value for the transition
- * @returns An Observable that emits void.
- */
-const updateColors = (colors: { h1: string, p: string }, transition: string = "color 5s ease-in"): Observable<void> =>
-  of(undefined).pipe(
-    tap(() => {
-      const h1 = document.getElementById("CTA_header")
-      const p = document.getElementById("CTA_paragraph")
-      if (h1) {
-        h1.style.transition = transition
-        h1.style.color = colors.h1
-      }
-      if (p) {
-        p.style.transition = transition
-        p.style.color = colors.p
-      }
-    })
-  )
-
-/**
- * retrieves the first image for the hero section
- * @param imageDatum - image data for a single image
- * @returns Observable of the image element
- */
-const getFirstImage = (imageDatum: imgSettings.ImageDataType): Observable<HTMLImageElement> => {
-  if (!parallaxLayer || !imageDatum) {
-    return EMPTY
-  }
-
-  const settings = isPortrait$ ? imageDatum.portraitSettings : imageDatum.landscapeSettings
-
-  return updateColors(settings.colors).pipe(
-    mergeMap(() => fetchAndSetImage(imageDatum, true)),
-    tap(imageElement => {
-      if (imageElement instanceof HTMLImageElement) {
-        imageElement.style.transition = "none"
-        parallaxLayer.prepend(imageElement)
-      }
+      return from(new Promise<void>((resolve) => {
+        img.onload = () => {
+          URL.revokeObjectURL(imageUrl);
+          resolve();
+        };
+      })).pipe(
+        tap(() => {
+          if (parallaxLayer) {
+            parallaxLayer.prepend(img);
+          }
+        })
+      );
     }),
     catchError(error => {
-      logger.error("Error in getFirstImage:", error)
-      return EMPTY
+      logger.error("Error in fetchAndSetImage:", error);
+      return of(); // Return an empty observable on error
     })
-  )
+  );
+};
+
+
+async function generateImageSettings(): Promise<ImageSettings[]> {
+  const imageSettings: ImageSettings[] = []
+  const optimalWidth = getOptimalWidth()
+  imageNames.forEach((imageName) => {
+    const urls = getImageUrls(imageName, hashTable).then(urls => urls).catch(error => {
+      logger.error(`Failed to generate image settings for ${imageName}: ${error}`)
+      return undefined
+    }
+    )
+    if (urls && urls instanceof Array && urls.length > 0) {
+      const srcset = urls?.map(url => `${url as string} ${optimalWidth}w`).join(", ")
+      const src = urls?.find(url => url.includes(optimalWidth))
+      if (!src || !srcset) {
+        throw new Error(`Failed to generate image settings for ${imageName}`)
+      }
+      imageSettings.push({ "imageName": imageName, "srcset": srcset, "src": src })
+    }
+  })
+  return imageSettings
 }
+
+async function randomizeImageSettings(imageSettings: ImageSettings[]): Promise < ImageSettings[] > {
+  return imageSettings.sort(() => Math.random() - 0.5);
+}
+
+let imageSettings: ImageSettings[] = await randomizeImageSettings(await generateImageSettings())
 
 /**
  * generates an image data type generator
  * @yields image datum objects
  */
-function* imageDatumGenerator(): Generator<imgSettings.ImageDataType> {
-  const imageNames = Object.keys(imgSettings.imageSettings)
-  for (const imageName of imageNames) {
-    yield generateImageDataType(imageName)
-  }
+function* imageRetrievalGenerator(): Generator<ImageSettings> {
+  imageSettings.forEach(_imageSetting =>
+    yield _imageSetting
+  )
 }
 
-// Variables for image cycling
+  // Variables for image cycling
 let generatorExhausted = false // turns true when the generator is exhausted
 const isPageVisible = true
 let cycleImagesSubscription: Subscription | undefined
-const imageGen = imageDatumGenerator()
+const imageGen = imageRetrievalGenerator()
 
 /**
  * Returns the next image data type from the generator
  * @returns image data type or undefined if the generator is exhausted
  */
-const imageDatumGen = (): imgSettings.ImageDataType | undefined => {
+const imageSettingsGen = (): ImageSettings | undefined => {
   if (generatorExhausted) {
     return undefined
   }
-  const nextImageDatum = imageGen.next()
-  if (nextImageDatum.done) {
+  const nextImageSettings = imageGen.next()
+  if (nextImageSettings.done) {
     generatorExhausted = true
     return undefined
   }
-  return nextImageDatum.value
+  return nextImageSettings.value
 }
 
 /**
@@ -271,27 +204,21 @@ const stopImageCycling = (): void => {
  * @throws {Error} if the image cycling subscription fails
  */
 const startImageCycling = (): Observable<void> => {
-  const firstImage = parallaxLayer?.getElementsByTagName("img")[0]
-  if (firstImage && isPageVisible) {
-    stopImageCycling()
-
-    return new Observable(subscriber => {
-      cycleImagesSubscription = combineLatest([interval(CONFIG.INTERVAL_TIME), viewport$, location$])
-        .pipe(
-          switchMap(() => cycleImages()),
-          catchError(error => {
-            logger.error("Error cycling images:", error)
-            return EMPTY
-          })
-        )
-        .subscribe({
-          next: () => logger.info("Image cycled successfully"),
-          error: err => subscriber.error(err),
-          complete: () => subscriber.complete()
+  return new Observable(subscriber => {
+    combineLatest([interval(CONFIG.INTERVAL_TIME), viewport$, location$])
+      .pipe(
+        switchMap(() => cycleImages()),
+        catchError(error => {
+          logger.error("Error cycling images:", error);
+          return EMPTY;
         })
-    })
-  }
-  return EMPTY
+      )
+      .subscribe({
+        next: () => logger.info("Image cycled successfully"),
+          error: (err: Error) => subscriber.error(err),
+        complete: () => subscriber.complete()
+      });
+  });
 }
 
 /**
@@ -307,55 +234,41 @@ const handleVisibilityChange = (): Observable<void> =>
  */
 const cycleImages = (): Observable<void> => {
   if (!parallaxLayer) {
-    return EMPTY
+    return EMPTY;
   }
 
-  return new Observable(subscriber => {
-    const images = parallaxLayer.getElementsByTagName("img")
-    const lastImage = images[0]
+  const images = parallaxLayer.getElementsByTagName("img");
+  const lastImage = images[0];
+  const nextImage = generatorExhausted ? undefined : imageSettingsGen();
 
-    const nextDatum = generatorExhausted ? undefined : imageDatumGen()
-    if (nextDatum !== undefined) {
-      fetchAndSetImage(nextDatum).subscribe({
-        next: nextImage => {
-          if (nextImage && lastImage) {
-            lastImage.style.transition = lastImage.style.transition !== "none"
-              ? lastImage.style.transition
-              : "opacity 1.5s ease-in"
-            parallaxLayer.prepend(nextImage)
-          }
-          subscriber.complete()
-        },
-        error: err => subscriber.error(err)
+  if (nextImage !== undefined) {
+    return fetchAndSetImage(nextImage).pipe(
+      catchError((err: Error): Observable<void> => {
+        logger.error(`error fetching next image ${err}`);
+        return EMPTY;
       })
-    } else if (images.length > 1) {
-      const nextImage = images[images.length - 1]
-      if (nextImage && lastImage) {
-        lastImage.style.transition = lastImage.style.transition !== "none"
-          ? lastImage.style.transition
-          : "opacity 1.5s ease-in"
-        parallaxLayer.prepend(nextImage)
-      }
-      subscriber.complete()
-    } else {
-      subscriber.complete()
+    );
+  }
+
+  if (images.length > 1) {
+    const recycledImage = images[images.length - 1];
+    if (nextImage && lastImage) {
+      parallaxLayer.prepend(recycledImage);
     }
-  })
+  }
+
+  return EMPTY;
 }
+
+
 
 /**
  * Shuffles the images in the hero section
  * @returns Observable of void
  */
 export const shuffle = (): Observable<void> => {
-  const datum = imageDatumGen()
-  return datum ? getFirstImage(datum).pipe(
-    mergeMap(() => startImageCycling()),
-    catchError(error => {
-      logger.error("Error in shuffle:", error)
-      return EMPTY
-    })
-  ) : EMPTY
+  const settings = imageSettingsGen()
+  return settings ? fetchAndSetImage(settings).pipe(map(() => {})) : EMPTY
 }
 
 /**
@@ -371,6 +284,44 @@ const createOrientationObservable = (mediaQuery: MediaQueryList): Observable<boo
     (event: MediaQueryListEvent) => event.matches
   )
 
+function setNewSrc(img: HTMLImageElement, optimalWidth: string) {
+  const newSrc = img.srcset.split(",").find(url => url.includes(optimalWidth))?.split(" ")[0]
+  if (newSrc) {
+    img.src = newSrc
+  }
+  Array.from(parallaxLayer?.getElementsByTagName("img") || []).forEach((image, index) => {
+    if (index !== 0) {
+      const newChildSrc = image.srcset.split(",").find(url => url.includes(optimalWidth))?.split(" ")[0];
+      if (newChildSrc) {
+        image.src = newChildSrc;
+      }
+    }
+  })
+;
+  // we exhaust the generator and use the yielded settings to create a new generator with adjusted settings
+  const nextSettings: ImageSettings[] = []
+  while (imageSettingsGen()) {
+    const nextValue = imageSettingsGen()
+    if (nextValue !== undefined) {
+      nextSettings.push(nextValue)
+    }
+    else {
+      break
+    }
+  }
+  nextSettings.forEach((setting) => {
+    if (newSrc) {
+      setting.src = newSrc
+    } else {
+      setting
+    }
+  })
+  if (nextSettings && nextSettings instanceof Array && nextSettings.length > 0) {
+    imageSettings = nextSettings
+  }
+}
+
+
 /**
  * Handles visibility changes
  * @returns Observable of void
@@ -384,16 +335,16 @@ const orientation$ = createOrientationObservable(portraitMediaQuery).pipe(
   distinctUntilChanged(),
   tap(() => {
     if (parallaxLayer) {
-      const firstImage = parallaxLayer.getElementsByTagName("img")[0]
-      if (firstImage) {
-        const imageName = firstImage.getAttribute("data-name") || ""
-        const imageDatum = generateImageDataType(imageName)
-        const settings = isPortrait$ ? imageDatum.portraitSettings : imageDatum.landscapeSettings
-        setStyles(firstImage, settings).subscribe()
-        updateColors(settings.colors, "none").subscribe()
+      const currentImage = parallaxLayer.getElementsByTagName("img")[0] as HTMLImageElement
+      if (currentImage) {
+        const currentWidth = currentImage.width
+        const optimalWidth = getOptimalWidth()
+        if (currentWidth !== parseInt(optimalWidth)) {
+          setNewSrc(currentImage, optimalWidth)
+        }
       }
     }
-  }),
+}),
   catchError(error => {
     logger.error("Error in orientation observable:", error)
     return EMPTY

@@ -1,6 +1,14 @@
 import * as esbuild from "esbuild";
 import { cssModulesPlugin } from "@asn.aeb/esbuild-css-modules-plugin";
 
+export interface MetaFileOutputs {
+  bytes: number;
+  inputs: { [path: string]: { bytesInOutput: number } };
+  imports: { path: string; kind: string; external?: boolean }[];
+  exports: string[];
+  entryPoint?: string;
+  cssBundle?: string;
+}
 
 export type GlobbedPaths = {
   [key in "styleSheets" | "scripts" | "fonts" | "images"]: string[];
@@ -14,7 +22,8 @@ export const paths: GlobbedPaths =
     "src/stylesheets/colors.css",
     "src/stylesheets/extra.css",
     "src/stylesheets/license.css",
-    "src/stylesheets/home.css"
+    "src/stylesheets/home.css",
+    "src/stylesheets/heroimages.css"
   ],
   "scripts": [
     "external/mkdocs-material/material/templates/assets/javascripts/bundle.*.min.js",
@@ -35,6 +44,7 @@ export const webConfig: esbuild.BuildOptions = {
   bundle: true,
   minify: true,
   sourcemap: true,
+  metafile: true,
   format: "esm",
   platform: "browser",
   target: "es2018",
@@ -69,6 +79,7 @@ export const nodeConfig: esbuild.BuildOptions = {
   loader: webConfig.loader,
   format: "esm",
   bundle: true,
+  metafile: true,
   platform: "node",
   target: "node18",
   sourcemap: false,

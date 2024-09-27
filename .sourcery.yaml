@@ -1,0 +1,27 @@
+rule_settings:
+  enable:
+    - default
+    - gpsg
+  disable:
+    - dont-self-assign-variables
+  python_version: '3.12'
+  rule_types:
+    - refactoring
+    - suggestion
+    - comment
+
+ignore:
+  - node_modules
+  - .git
+  - .venv
+  - tox
+  - vendor
+  - external
+  - env
+  - .env
+  - .tox
+  - node_modules
+  - .venv
+  - env
+  - .env
+  - /usr/*

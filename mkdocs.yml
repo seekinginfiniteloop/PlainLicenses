@@ -12,7 +12,6 @@ hooks:
   - overrides/hooks/update_site_license.py # Updates the site license to match the latest Plain Unlicense
 site_description: |
   Plain License: Terms for Everyone. We make licenses readable, understandable, and accessible.
-
 nav:
   - home: index.md
   - about: about/index.md
@@ -45,7 +44,7 @@ nav:
 theme:
   name: material
   custom_dir: overrides
-  logo: assets/images/named_logo_color_transp.svg
+  logo: overrides/social/social_logo.png
   favicon: assets/images/favicon.png
   font:
     text: Noto Sans
@@ -137,7 +136,7 @@ plugins:
         font_family: Raleway
         color: "#FFFFFF"
         background_color: "#0d19a3"
-        image: assets/images/logo_only_color_transp.png
+        image: overrides/social/social_card.png
   - tags:
       tags: true
       enabled: true
@@ -217,7 +216,6 @@ markdown_extensions:
       permalink: true
 extra_javascript:
   #TO DO, integrate: - assets/javascripts/feedback.js
-  - path: assets/javascripts/bundle.js
   - path: >
       https://cdn.skypack.dev/pin/tablesort@v5.3.0-H3FmQXw8sIDAOcU4Sju8/mode=imports,min/optimized/tablesort.js
     async: true
@@ -228,10 +226,6 @@ extra_javascript:
   - path: assets/javascripts/pixel.js
     async: true
     defer: true
-extra_css:
-  - assets/stylesheets/colors.css
-  - assets/stylesheets/extra.css
-  - assets/stylesheets/license.css
 watch:
   - includes
   - overrides
@@ -242,6 +236,7 @@ not_in_nav: |
   tags
   shame*
 extra:
+  buildmeta: !include overrides/buildmeta.json
   tags: # maps the tags in the license front matter to the names above in theme.icon.tag. This allows us to replace the tag with an icon in the license template.
     can-share: canshare
     can-sell: cansell
