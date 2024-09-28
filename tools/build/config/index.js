@@ -4,8 +4,8 @@ exports.baseProject = exports.GHActions = exports.nodeConfig = exports.webConfig
 const esbuild_css_modules_plugin_1 = require("@asn.aeb/esbuild-css-modules-plugin");
 exports.paths = {
     "styleSheets": [
-        "external/mkdocs-material/material/templates/assets/stylesheets/palette.*.min.css",
-        "external/mkdocs-material/material/templates/assets/stylesheets/main.*.min.css",
+        "src/stylesheets/palette.scss",
+        "src/stylesheets/main.scss",
         "src/stylesheets/colors.css",
         "src/stylesheets/extra.css",
         "src/stylesheets/license.css",
@@ -13,7 +13,7 @@ exports.paths = {
         "src/stylesheets/heroimages.css"
     ],
     "scripts": [
-        //"external/mkdocs-material/material/templates/assets/javascripts/bundle.*.min.js",
+        "src/javascripts/bundle.ts",
         "src/javascripts/index.ts"
     ],
     "fonts": [
@@ -69,11 +69,14 @@ exports.webConfig = {
         ".ts": "ts",
         ".tsx": "tsx",
         ".css": "css",
+        ".scss": "css",
+        ".sass": "css",
         ".woff": "file",
         ".woff2": "file",
         ".png": "file",
         ".svg": "file",
         ".webp": "file",
+        ".avif": "file",
     },
     outExtension: { ".js": ".mjs" },
     allowOverwrite: true,
@@ -112,8 +115,12 @@ exports.GHActions = [
         platform: "node",
     },
 ];
+const baseConfigEntryPoints = [];
+for (const key in exports.paths) {
+    baseConfigEntryPoints.push(...exports.paths[key]);
+}
 exports.baseProject = {
-    entryPoints: ["src/javascripts/index.ts", "src/javascripts/bundle.js"],
+    entryPoints: baseConfigEntryPoints,
     tsconfig: "tsconfig.json",
     entryNames: "[dir]/[name].[hash]",
     platform: "browser",

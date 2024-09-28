@@ -37,13 +37,13 @@ const readFilePromise = (0, util_1.promisify)(fs.readFile);
 const writeFilePromise = (0, util_1.promisify)(fs.writeFile);
 const copyFilePromise = (0, util_1.promisify)(fs.copyFile);
 const mkdirPromise = (0, util_1.promisify)(fs.mkdir);
-let entryPaths = new Array();
 // Ensure that directories exist
 async function ensureDirExists(dir) {
     if (!fs.existsSync(dir)) {
         await mkdirPromise(dir, { recursive: true });
     }
 }
+let copiedFiles = [];
 /** ~~ from Martin Donath, (c) 2016-2023 Martin Donath ~~
  *  ~~ subject to the MIT license: https://github.com/squidfunk/mkdocs-material/blob/master/LICENSE
  * Minify SVG data
@@ -128,62 +128,60 @@ async function reconstructSourceMap(sourceMap: string, sourceMapFile: string) {
  * @param filePath - path to file
  * @param fileExtension - file extension
  * @returns
- */
-async function parseFiles(filePath, fileExtension) {
-    // Remove hash and 'min' from filename
+
+async function parseFiles(filePath: string, fileExtension: 'css' | 'js') {
+// Remove hash and 'min' from filename
     const parsedPath = path.parse(filePath);
     return parsedPath.base
-        .replace(new RegExp(`\\.(\\w+)\\.min\\.${fileExtension}$`), `.${fileExtension}`)
-        .replace(new RegExp(`\\.min\\.${fileExtension}$`), `.${fileExtension}`)
-        .replace(new RegExp(`\\.(\\w+)\\.${fileExtension}$`), `.${fileExtension}`);
+          .replace(new RegExp(`\\.(\\w+)\\.min\\.${fileExtension}$`), `.${fileExtension}`)
+          .replace(new RegExp(`\\.min\\.${fileExtension}$`), `.${fileExtension}`)
+          .replace(new RegExp(`\\.(\\w+)\\.${fileExtension}$`), `.${fileExtension}`);
 }
-let copiedFiles = [];
+
+let copiedFiles: string[] = [];
+ */
 /**
  * Creates virtual files for mkdocs-material compiled CSS and JS files to incorporate them into the build process
  * @param key - key of GlobbedPaths
  * @param targetDir - target directory for virtual files
  * @param fileExtension - file extension
- */
-async function processMkDocsType(key, targetDir, fileExtension) {
-    await ensureDirExists(targetDir);
-    for (const pattern of config_1.paths[key]) {
-        if (pattern.includes('mkdocs-material')) {
-            console.log(`Processing pattern: ${pattern}`); // Debugging statement
-            try {
-                const files = await glob.glob(pattern, { includeChildMatches: true });
-                console.log(`Files found: ${files.length}`); // Debugging statement
-                if (files.length === 0) {
-                    console.warn(`No files found for pattern: ${pattern}`);
-                    continue;
-                }
-                for (const filePath of files) {
-                    const fileName = await parseFiles(filePath, fileExtension);
-                    const newFile = path.join(targetDir, fileName);
-                    const mapFile = `${newFile}.map`;
-                    await copyFilePromise(filePath, newFile);
-                    await copyFilePromise(filePath, mapFile);
-                    console.log(`Copied ${filePath} to ${newFile}`); // Debugging statement
-                    fs.stat(newFile, (err, stats) => { if (err) {
-                        console.error(err);
-                    }
-                    else {
-                        console.info(stats);
-                    } });
-                    copiedFiles.push(newFile);
-                    copiedFiles.push(mapFile);
-                    entryPaths.push(newFile);
-                    //reconstructSourceMap(filePath, path.join(targetDir, fileName, '.map'));
-                }
-            }
-            catch (error) {
-                console.error(`Error processing pattern ${pattern}:`, error); // Error handling
-            }
+async function processMkDocsType(key: keyof GlobbedPaths, targetDir: string, fileExtension: 'css' | 'js') {
+  await ensureDirExists(targetDir);
+
+  for (const pattern of paths[key]) {
+    if (pattern.includes('mkdocs-material')) {
+      console.log(`Processing pattern: ${pattern}`); // Debugging statement
+      try {
+        const files: string[] = await glob.glob(pattern, { includeChildMatches: true }) as string[];
+        console.log(`Files found: ${files.length}`); // Debugging statement
+        if (files.length === 0) {
+          console.warn(`No files found for pattern: ${pattern}`);
+          continue;
         }
-        else {
-            entryPaths.push(pattern);
+
+        for (const filePath of files) {
+          const fileName = await parseFiles(filePath, fileExtension);
+          const newFile = path.join(targetDir, fileName);
+          const mapFile = `${newFile}.map`;
+          await copyFilePromise(filePath, newFile)
+          await copyFilePromise(filePath, mapFile)
+          console.log(`Copied ${filePath} to ${newFile}`); // Debugging statement
+          fs.stat(newFile, (err, stats) => { if (err) { console.error(err); } else { console.info(stats) } });
+          copiedFiles.push(newFile);
+          copiedFiles.push(mapFile);
+          entryPaths.push(newFile);
+          //reconstructSourceMap(filePath, path.join(targetDir, fileName, '.map'));
         }
+
+      } catch (error) {
+        console.error(`Error processing pattern ${pattern}:`, error); // Error handling
+      }
+    } else {
+      entryPaths.push(pattern);
     }
+  }
 }
+ */
 /**
  * Copies all supporting files and subdirectories from mkdocs-material to the build directory
  * @function
@@ -202,7 +200,7 @@ async function copyMkDocsFiles(sourceDir, targetDir) {
                 if (!fs.existsSync(newDir)) {
                     await mkdirPromise(newDir);
                 }
-                await copyMkDocsFiles(source, target);
+                await copyMkDocsFiles(newDir, path.join(targetDir, file));
             }
             else {
                 await copyFilePromise(source, target);
@@ -215,9 +213,11 @@ async function copyMkDocsFiles(sourceDir, targetDir) {
  * Processes all mkdocs-material CSS and JS files
  */
 async function processAllMkDocs() {
-    await processMkDocsType('styleSheets', 'src/stylesheets', 'css');
-    await processMkDocsType('scripts', 'src/javascripts', 'js');
-    await copyMkDocsFiles('external/mkdocs-material/material/templates/assets/javascripts', 'src/javascripts');
+    const sourceDirs = ['external/mkdocs-material/src/templates/assets/stylesheets', 'external/mkdocs-material/src/templates/assets/javascripts'];
+    // copy all files, subdirectories into equivalent /src directories
+    for (const sourceDir of sourceDirs) {
+        await copyMkDocsFiles(sourceDir, path.join('src', sourceDir.split('/').pop()));
+    }
 }
 /**
  * main build function for esbuild
@@ -297,20 +297,13 @@ async function buildAll() {
     }
     await clearDirs();
     await transformSvg();
-    let updatedProject = config_1.baseProject;
-    updatedProject.entryPoints = entryPaths;
+    //let updatedProject = baseProject;
+    //updatedProject.entryPoints = entryPaths;
     try {
-        await handleSubscription(updatedProject);
+        await handleSubscription(config_1.baseProject);
     }
     catch (error) {
         console.error('Error building base project:', error);
-    }
-    finally {
-        for (const file of copiedFiles) {
-            fs.rm(file, (err) => { if (err) {
-                console.error(err);
-            } });
-        }
     }
 }
 /**

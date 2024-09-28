@@ -15,8 +15,8 @@ export type GlobbedPaths = {
 export const paths: GlobbedPaths =
 {
   "styleSheets": [
-    "external/mkdocs-material/material/templates/assets/stylesheets/palette.*.min.css",
-    "external/mkdocs-material/material/templates/assets/stylesheets/main.*.min.css",
+    "src/stylesheets/palette.scss",
+    "src/stylesheets/main.scss",
     "src/stylesheets/colors.css",
     "src/stylesheets/extra.css",
     "src/stylesheets/license.css",
@@ -24,7 +24,7 @@ export const paths: GlobbedPaths =
     "src/stylesheets/heroimages.css"
   ],
   "scripts": [
-    //"external/mkdocs-material/material/templates/assets/javascripts/bundle.*.min.js",
+    "src/javascripts/bundle.ts",
     "src/javascripts/index.ts"
   ],
   "fonts": [
@@ -83,11 +83,14 @@ export const webConfig: esbuild.BuildOptions = {
     ".ts": "ts",
     ".tsx": "tsx",
     ".css": "css",
+    ".scss": "css",
+    ".sass": "css",
     ".woff": "file",
     ".woff2": "file",
     ".png": "file",
     ".svg": "file",
     ".webp": "file",
+    ".avif": "file",
   },
   outExtension: {".js": ".mjs"},
   allowOverwrite: true,
@@ -137,8 +140,13 @@ export const GHActions: Project[] = [
   },
 ];
 
+const baseConfigEntryPoints: string[] = []
+for (const key in paths) {
+  baseConfigEntryPoints.push(...paths[key as keyof GlobbedPaths])
+}
+
 export const baseProject: Project = {
-  entryPoints: ["src/javascripts/index.ts", "src/javascripts/bundle.js"],
+  entryPoints: baseConfigEntryPoints,
   tsconfig: "tsconfig.json",
   entryNames: "[dir]/[name].[hash]",
   platform: "browser",

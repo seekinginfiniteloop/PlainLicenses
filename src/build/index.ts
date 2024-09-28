@@ -6,7 +6,7 @@ import { Observable, from } from "rxjs";
 import { optimize } from "svgo";
 import { promisify } from 'util';
 //import { SourceMapConsumer } from 'source-map';
-import { GHActions, GlobbedPaths, Project, baseProject, nodeConfig, paths, webConfig } from "./config";
+import { GHActions, Project, baseProject, nodeConfig, webConfig } from "./config";
 //import * as prettier from 'prettier';
 
 const readFilePromise = promisify(fs.readFile);
@@ -14,15 +14,13 @@ const writeFilePromise = promisify(fs.writeFile);
 const copyFilePromise = promisify(fs.copyFile);
 const mkdirPromise = promisify(fs.mkdir);
 
-let entryPaths = new Array<string>();
-
 // Ensure that directories exist
 async function ensureDirExists(dir: string) {
   if (!fs.existsSync(dir)) {
     await mkdirPromise(dir, { recursive: true });
   }
 }
-
+let copiedFiles: string[] = [];
 /** ~~ from Martin Donath, (c) 2016-2023 Martin Donath ~~
  *  ~~ subject to the MIT license: https://github.com/squidfunk/mkdocs-material/blob/master/LICENSE
  * Minify SVG data
@@ -109,7 +107,7 @@ async function reconstructSourceMap(sourceMap: string, sourceMapFile: string) {
  * @param filePath - path to file
  * @param fileExtension - file extension
  * @returns
- */
+
 async function parseFiles(filePath: string, fileExtension: 'css' | 'js') {
 // Remove hash and 'min' from filename
     const parsedPath = path.parse(filePath);
@@ -120,13 +118,12 @@ async function parseFiles(filePath: string, fileExtension: 'css' | 'js') {
 }
 
 let copiedFiles: string[] = [];
-
+ */
 /**
  * Creates virtual files for mkdocs-material compiled CSS and JS files to incorporate them into the build process
  * @param key - key of GlobbedPaths
  * @param targetDir - target directory for virtual files
  * @param fileExtension - file extension
- */
 async function processMkDocsType(key: keyof GlobbedPaths, targetDir: string, fileExtension: 'css' | 'js') {
   await ensureDirExists(targetDir);
 
@@ -163,6 +160,7 @@ async function processMkDocsType(key: keyof GlobbedPaths, targetDir: string, fil
     }
   }
 }
+ */
 
 /**
  * Copies all supporting files and subdirectories from mkdocs-material to the build directory
@@ -172,34 +170,18 @@ async function processMkDocsType(key: keyof GlobbedPaths, targetDir: string, fil
  */
 async function copyMkDocsFiles(sourceDir: string, targetDir: string) {
   await ensureDirExists(targetDir);
-
-  const files = fs.readdirSync(sourceDir);
-  for (const file of files) {
-    const source = path.join(sourceDir, file);
-    const target = path.join(targetDir, file);
-    if (!copiedFiles.includes(target)) {
-      if (fs.lstatSync(source).isDirectory()) {
-        const newDir = path.join(targetDir, file);
-        if (!fs.existsSync(newDir)) {
-          await mkdirPromise(newDir);
-        }
-        await copyMkDocsFiles(source, target);
-      } else {
-        await copyFilePromise(source, target);
-        copiedFiles.push(target);
-      }
-    }
-  }
-}
+  fs.cp(sourceDir, targetDir, { recursive: true }, (err) => { if (err) { console.error(err); } }
+  )}
 
 /**
  * Processes all mkdocs-material CSS and JS files
  */
 async function processAllMkDocs() {
-  await processMkDocsType('styleSheets', 'src/stylesheets', 'css');
-  await processMkDocsType('scripts', 'src/javascripts', 'js');
-  await copyMkDocsFiles('external/mkdocs-material/material/templates/assets/javascripts', 'src/javascripts');
-
+  const sourceDirs = ['external/mkdocs-material/src/templates/assets/stylesheets', 'external/mkdocs-material/src/templates/assets/javascripts'];
+  // copy all files, subdirectories into equivalent /src directories
+  for (const sourceDir of sourceDirs) {
+    await copyMkDocsFiles(sourceDir, path.join('src', sourceDir.split('/').pop() as string));
+  }
 }
 
 /**
@@ -284,13 +266,9 @@ async function buildAll() {
 
   await clearDirs();
   await transformSvg();
-  let updatedProject = baseProject;
-  updatedProject.entryPoints = entryPaths;
-  try { await handleSubscription(updatedProject); } catch (error) { console.error('Error building base project:', error); } finally {
-    for (const file of copiedFiles) {
-      fs.rm(file, (err) => { if (err) { console.error(err); } });
-    }
-  }
+  //let updatedProject = baseProject;
+  //updatedProject.entryPoints = entryPaths;
+  try { await handleSubscription(baseProject); } catch (error) { console.error('Error building base project:', error); }
 }
 
 /**
