@@ -17,7 +17,7 @@ export interface TransformationSettings {
 
 /**
  * Settings for an image element.
-*/
+ */
 export interface ImageSettings {
 
   imageName: string

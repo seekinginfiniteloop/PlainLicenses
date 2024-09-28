@@ -1,5 +1,4 @@
-import { error } from "console"
-import { Observable, from, fromEvent, of, throwError, concatMap } from "rxjs"
+import { Observable, concatMap, from, fromEvent, of, throwError } from "rxjs"
 import { catchError, map, mergeMap, tap } from "rxjs/operators"
 
 import { logger } from "~/log"
@@ -41,10 +40,10 @@ const fetchAndCacheAsset = (url: string, cache: Cache): Observable<Response> =>
           logger.info(`Asset cached: ${url}`)
         })
         .catch(() => {})
-        logger.error(`Error caching asset: ${url}`, error);
+        logger.error(`Error caching asset: ${url}`)
       }),
     catchError((error: Error) => {
-      logger.error(`Error fetching asset: ${url}`, error)
+      logger.error(`Error fetching asset: ${url}`)
       return throwError(() => new Error(`Failed to fetch and cache asset: ${url}`))
 }))
 
@@ -90,65 +89,65 @@ export const getAsset = (url: string): Observable<Response> =>
  */
 export function cacheAssets(type: string, elements: NodeListOf<HTMLElement>): Observable<boolean> {
   const requests = Array.from(elements).map(el => {
-    const url = type === 'javascripts' ? (el as HTMLScriptElement).src : (el as HTMLLinkElement).href;
-    return new Request(url);
-  });
+    const url = type === "javascripts" ? (el as HTMLScriptElement).src : (el as HTMLLinkElement).href
+    return new Request(url)
+  })
 
   return from(requests).pipe(
     mergeMap(request =>
       from(fetch(request).then(response => {
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          throw new Error(`HTTP error! status: ${response.status}`)
         }
-        return caches.open(type).then(cache => cache.put(request, response)).then(() => true);
+        return caches.open(type).then(cache => cache.put(request, response)).then(() => true)
       }))
     )
-  );
+  )
 }
 
 const request = await fetch("hash_table.json")
 
 const hashTable = await request.json() as { [key: string]: string }
 
-const hashes = (hashTable: { [key: string]: string }): string[] => {
-  return Object.values(hashTable);
+const hashes = (): string[] => {
+  return Object.values(hashTable)
 }
 
 /**
  *  Cleans the cache by removing all requests that match the hash table.
  * @returns Observable of boolean
  */
- const cleanCache = (): Observable<boolean> => {
+const cleanCache = (): Observable<boolean> => {
   return openCache().pipe(
     mergeMap(cache =>
       from(cache.keys()).pipe(
         map(requests => requests.length > 0),
         mergeMap(hasRequests => {
           if (!hasRequests) {
-            return of(true);
+            return of(true)
           }
-          return from(hashes(hashTable)).pipe(
+          return from(hashes()).pipe(
             concatMap(hash =>
               from(cache.keys()).pipe(
                 mergeMap(requests =>
-                  requests.map(request =>
-                    request.url.includes(hash) ? of(true) : from(cache.delete(request))
+                  requests.map(req =>
+                    req.url.includes(hash) ? of(true) : from(cache.delete(req))
                   )
                 )
               )
             ),
             map(() => true)
-          );
+          )
         })
       )
     )
-  );
+  )
 }
-
 
 /**
  * A timer that cleans the cache after a specified time. Used to delay the cache cleanup process for after the page has loaded. And other delayed operations have completed.
  * @param timer - time in milliseconds
+ * @returns Observable of Event
  */
 export const cleanupCache = (timer: number): Observable<Event> => {
   return fromEvent(window, "load").pipe(
@@ -156,9 +155,9 @@ export const cleanupCache = (timer: number): Observable<Event> => {
       setTimeout(() => {
         cleanCache().subscribe({
           next: result => logger.info(result ? "Cache cleaned successfully." : "Cache is already clean."),
-          error: error => logger.error("Error cleaning cache.", error),
-        });
-      }, timer);
+          error: error => logger.error("Error cleaning cache.")
+        })
+      }, timer)
     })
-  );
-};
+  )
+}

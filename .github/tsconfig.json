@@ -10,5 +10,5 @@
     "outDir": "./scripts",
     "rootDir": "."
   },
-  "files": ["src/generate-changelog.ts", "src/index.ts"],
+  "files": ["src/generate-changelog.ts", "src/index.ts"]
 }

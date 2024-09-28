@@ -16,17 +16,16 @@ location$.subscribe({
   next: (url: URL) => {
     if (licensePattern.test(url.pathname)) {
       subscribeToAll()
-    }
-    else if (url.pathname === "/" || url.pathname === "/index.html") {
+    } else if (url.pathname === "/" || url.pathname === "/index.html") {
       initializeHero()
     }
   },
   error: (err: Error): void => logger.error("Error in location$ observable:", err)
 })
 
-const styleAssets = document.querySelectorAll("link[rel=stylesheet][href*=stylesheets]") as NodeListOf<HTMLLinkElement>;
-const scriptAssets = document.querySelectorAll("script[src*=javascripts]") as NodeListOf<HTMLScriptElement>;
-const fontAssets = document.querySelectorAll("link[rel=stylesheet][href*=fonts]") as NodeListOf<HTMLLinkElement>;
+const styleAssets = document.querySelectorAll("link[rel=stylesheet][href*=stylesheets]")
+const scriptAssets = document.querySelectorAll("script[src*=javascripts]")
+const fontAssets = document.querySelectorAll("link[rel=stylesheet][href*=fonts]")
 
 document$.subscribe({
   next: () => {
@@ -37,11 +36,11 @@ document$.subscribe({
         cacheAssets("fonts", fontAssets))
       )
     ).subscribe({
-      next: () => logger.info('Asset cached successfully'),
-      error: (err: Error) => logger.error('Error caching asset:', err),
-      complete: () => logger.info('All assets cached')
-    });
+      next: () => logger.info("Asset cached successfully"),
+      error: (err: Error) => logger.error("Error caching asset:", err),
+      complete: () => logger.info("All assets cached")
+    })
 
   }
 },
-    )
+)

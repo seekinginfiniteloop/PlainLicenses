@@ -17,4 +17,5 @@ license-list-data
 external
 vendor
 .git
+/usr/share/code/**/*
 """

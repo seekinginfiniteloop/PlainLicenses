@@ -68,9 +68,7 @@ const triangleInteraction$: Observable<InteractionEvent> = createInteractionObse
 
 /**
  * Handles the toggle action for the "how to use" license information"
- * It's a simple creature, and uses the usual on
- *
- * @returns This function does not return a value.
+ * It's a simple creature, toggling onClick/touchEnd/key events.
  */
 const toggleSection = (): void => {
     const content = document.querySelector<HTMLElement>(".section-content")
@@ -214,7 +212,7 @@ export const subscribeToAll = () => {
             }
           })
         },
-        error: (err: any) => logger.error("Error in viewport$ observable:", err)
+        error: (err: Error) => logger.error("Error in viewport$ observable:", err)
       }))
 
   document.addEventListener("beforeUnload", () => {

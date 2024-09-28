@@ -10,12 +10,12 @@ import {
   map,
   of,
   throwError
-} from "rxjs";
-import { catchError, distinctUntilChanged, filter, mergeMap, switchMap, tap } from "rxjs/operators";
+} from "rxjs"
+import { catchError, distinctUntilChanged, filter, mergeMap, switchMap, tap } from "rxjs/operators"
 
-import { getAsset } from "~/cache";
-import { logger } from "~/log";
-import { ImageSettings } from "./_types";
+import { getAsset } from "~/cache"
+import { logger } from "~/log"
+import { ImageSettings } from "./_types"
 
 const { document$, viewport$, location$ } = window
 
@@ -27,38 +27,37 @@ const subscriptions: Subscription[] = []
 
 const portraitMediaQuery = window.matchMedia("(orientation: portrait)")
 
-const imageNames = ['abstract', 'anime', 'artbrut', 'comic', 'fanciful', 'fantasy', 'farcical', 'fauvist', 'minimal', 'mystical', 'surreal']
+const imageNames = ["abstract", "anime", "artbrut", "comic", "fanciful", "fantasy", "farcical", "fauvist", "minimal", "mystical", "surreal"]
 
 const parallaxLayer = document.getElementById("parallax-hero-image-layer")
 
 const getHashTable = async () => {
   const tableJson = await fetch("hashTable.json")
-  return await tableJson.json();
+  return tableJson.json()
 }
 
 const hashTable = await getHashTable()
 
 /**
- * Retrieves the image settings object.
- * @param imageName - The name of the image for which settings are to be retrieved.
- * @returns The image settings object.
+ * Fetches the image URLs for the specified image name.
+ * @param imageName - image name; the name from the image settings object
+ * @returns Promise of the image URLs
  */
-
-async function getImageUrls(imageName: string, hashTable: { [key: string]: string }): Promise<void | string[]> {
+async function getImageUrls(imageName: string): Promise<void | string[]> {
   const baseUrl = `assets/images/hero/${imageName}/${imageName}`
   const widths = ["1280", "1920", "2560", "3840"]
   const urls: string[] = []
   widths.forEach(width => {
     const lookup = `${imageName}_${width}.avif`
-    const hash = hashTable[lookup] as string
+    const hash = hashTable[lookup]
     urls.push(`${baseUrl}_${width}.${hash}.avif`)
     return urls
-  })}
+  })
+}
 
 /**
  * Loads an image from the server.
- * @param imageName - image name; the name from the image settings object
- * @param version - image version
+ * @param imageUrl - image url
  * @returns Observable of the image blob
  */
 const loadImage = (imageUrl: string): Observable<Blob> => {
@@ -73,84 +72,90 @@ const loadImage = (imageUrl: string): Observable<Blob> => {
 
   // Determine the optimal width based on screen size
 const getOptimalWidth = () => {
-    const screenWidth = Math.max(window.innerWidth, window.innerHeight);
+    const screenWidth = Math.max(window.innerWidth, window.innerHeight)
     if (screenWidth <= 1280) {
-      return "1280";
+      return "1280"
     }
     if (screenWidth <= 1920) {
-      return "1920";
+      return "1920"
     }
     if (screenWidth <= 2560) {
-      return "2560";
+      return "2560"
     }
-    return "3840";
-  };
-
+    return "3840"
+  }
 
 /**
  * Fetches and sets an image element based on the specified image data.
- * @param imgSettings - image data for a single image
- * @param firstImage - flag indicating whether this is the first image to be fetched, which means we load it immediately and without a transition
+ * @param imgSettings - image settings for a single image
  * @returns Observable of the image element
  */
 const fetchAndSetImage = (imgSettings: ImageSettings): Observable<void> => {
-  const { imageName, srcset, src } = imgSettings;
+  const { imageName, srcset, src } = imgSettings
   return loadImage(src).pipe(
     mergeMap(imageBlob => {
-      const img = new Image();
-      const imageUrl = URL.createObjectURL(imageBlob);
-      img.src = src;
-      img.srcset = srcset;
-      img.sizes = "(max-width: 1280px) 1280px, (max-width: 1920px) 1920px, (max-width: 2560px) 2560px, 3840px";
-      img.alt = "";
-      img.classList.add("hero-parallax__image", `hero-parallax__image--${imageName}`);
-      img.draggable = false;
-      img.loading = "eager";
+      const img = new Image()
+      const imageUrl = URL.createObjectURL(imageBlob)
+      img.src = src
+      img.srcset = srcset
+      img.sizes = "(max-width: 1280px) 1280px, (max-width: 1920px) 1920px, (max-width: 2560px) 2560px, 3840px"
+      img.alt = ""
+      img.classList.add("hero-parallax__image", `hero-parallax__image--${imageName}`)
+      img.draggable = false
+      img.loading = "eager"
 
-      return from(new Promise<void>((resolve) => {
+      return from(new Promise<void>(resolve => {
         img.onload = () => {
-          URL.revokeObjectURL(imageUrl);
-          resolve();
-        };
+          URL.revokeObjectURL(imageUrl)
+          resolve()
+        }
       })).pipe(
         tap(() => {
           if (parallaxLayer) {
-            parallaxLayer.prepend(img);
+            parallaxLayer.prepend(img)
           }
         })
-      );
+      )
     }),
     catchError(error => {
-      logger.error("Error in fetchAndSetImage:", error);
-      return of(); // Return an empty observable on error
+      logger.error("Error in fetchAndSetImage:", error)
+      return of() // Return an empty observable on error
     })
-  );
-};
+  )
+}
 
-
+/**
+ * Generates image settings for the hero section
+ * @returns Promise of the image settings
+ */
 async function generateImageSettings(): Promise<ImageSettings[]> {
   const imageSettings: ImageSettings[] = []
   const optimalWidth = getOptimalWidth()
-  imageNames.forEach((imageName) => {
-    const urls = getImageUrls(imageName, hashTable).then(urls => urls).catch(error => {
+  imageNames.forEach(imageName => {
+    const urls = getImageUrls(imageName).then(urlList => urlList).catch(error => {
       logger.error(`Failed to generate image settings for ${imageName}: ${error}`)
       return undefined
     }
     )
     if (urls && urls instanceof Array && urls.length > 0) {
-      const srcset = urls?.map(url => `${url as string} ${optimalWidth}w`).join(", ")
+      const srcset = urls?.map(newUrl => `${newUrl as string} ${optimalWidth}w`).join(", ")
       const src = urls?.find(url => url.includes(optimalWidth))
       if (!src || !srcset) {
         throw new Error(`Failed to generate image settings for ${imageName}`)
       }
-      imageSettings.push({ "imageName": imageName, "srcset": srcset, "src": src })
+      imageSettings.push({ imageName, srcset, src })
     }
   })
   return imageSettings
 }
 
+/**
+ * Randomizes the order of the image settings to shuffle the images
+ * @param imageSettings - array of image settings
+ * @returns Promise of the shuffled image settings
+ */
 async function randomizeImageSettings(imageSettings: ImageSettings[]): Promise < ImageSettings[] > {
-  return imageSettings.sort(() => Math.random() - 0.5);
+  return imageSettings.sort(() => Math.random() - 0.5)
 }
 
 let imageSettings: ImageSettings[] = await randomizeImageSettings(await generateImageSettings())
@@ -209,16 +214,16 @@ const startImageCycling = (): Observable<void> => {
       .pipe(
         switchMap(() => cycleImages()),
         catchError(error => {
-          logger.error("Error cycling images:", error);
-          return EMPTY;
+          logger.error("Error cycling images:", error)
+          return EMPTY
         })
       )
       .subscribe({
         next: () => logger.info("Image cycled successfully"),
           error: (err: Error) => subscriber.error(err),
         complete: () => subscriber.complete()
-      });
-  });
+      })
+  })
 }
 
 /**
@@ -234,33 +239,31 @@ const handleVisibilityChange = (): Observable<void> =>
  */
 const cycleImages = (): Observable<void> => {
   if (!parallaxLayer) {
-    return EMPTY;
+    return EMPTY
   }
 
-  const images = parallaxLayer.getElementsByTagName("img");
-  const lastImage = images[0];
-  const nextImage = generatorExhausted ? undefined : imageSettingsGen();
+  const images = parallaxLayer.getElementsByTagName("img")
+  const lastImage = images[0]
+  const nextImage = generatorExhausted ? undefined : imageSettingsGen()
 
   if (nextImage !== undefined) {
     return fetchAndSetImage(nextImage).pipe(
       catchError((err: Error): Observable<void> => {
-        logger.error(`error fetching next image ${err}`);
-        return EMPTY;
+        logger.error(`error fetching next image ${err}`)
+        return EMPTY
       })
-    );
+    )
   }
 
   if (images.length > 1) {
-    const recycledImage = images[images.length - 1];
+    const recycledImage = images[images.length - 1]
     if (nextImage && lastImage) {
-      parallaxLayer.prepend(recycledImage);
+      parallaxLayer.prepend(recycledImage)
     }
   }
 
-  return EMPTY;
+  return EMPTY
 }
-
-
 
 /**
  * Shuffles the images in the hero section
@@ -284,6 +287,11 @@ const createOrientationObservable = (mediaQuery: MediaQueryList): Observable<boo
     (event: MediaQueryListEvent) => event.matches
   )
 
+/**
+ * Sets the new sources for the images in the hero section following a screen orientation change.
+ * @param img - the hero image
+ * @param optimalWidth - the optimal width for the image
+ */
 function setNewSrc(img: HTMLImageElement, optimalWidth: string) {
   const newSrc = img.srcset.split(",").find(url => url.includes(optimalWidth))?.split(" ")[0]
   if (newSrc) {
@@ -291,36 +299,32 @@ function setNewSrc(img: HTMLImageElement, optimalWidth: string) {
   }
   Array.from(parallaxLayer?.getElementsByTagName("img") || []).forEach((image, index) => {
     if (index !== 0) {
-      const newChildSrc = image.srcset.split(",").find(url => url.includes(optimalWidth))?.split(" ")[0];
+      const newChildSrc = image.srcset.split(",").find(url => url.includes(optimalWidth))?.split(" ")[0]
       if (newChildSrc) {
-        image.src = newChildSrc;
+        image.src = newChildSrc
       }
     }
   })
-;
+
   // we exhaust the generator and use the yielded settings to create a new generator with adjusted settings
   const nextSettings: ImageSettings[] = []
   while (imageSettingsGen()) {
     const nextValue = imageSettingsGen()
     if (nextValue !== undefined) {
       nextSettings.push(nextValue)
-    }
-    else {
+    } else {
       break
     }
   }
-  nextSettings.forEach((setting) => {
+  nextSettings.forEach(setting => {
     if (newSrc) {
       setting.src = newSrc
-    } else {
-      setting
     }
   })
   if (nextSettings && nextSettings instanceof Array && nextSettings.length > 0) {
     imageSettings = nextSettings
   }
 }
-
 
 /**
  * Handles visibility changes
@@ -335,11 +339,11 @@ const orientation$ = createOrientationObservable(portraitMediaQuery).pipe(
   distinctUntilChanged(),
   tap(() => {
     if (parallaxLayer) {
-      const currentImage = parallaxLayer.getElementsByTagName("img")[0] as HTMLImageElement
+      const currentImage = parallaxLayer.getElementsByTagName("img")[0]
       if (currentImage) {
         const currentWidth = currentImage.width
         const optimalWidth = getOptimalWidth()
-        if (currentWidth !== parseInt(optimalWidth)) {
+        if (currentWidth !== parseInt(optimalWidth, 10)) {
           setNewSrc(currentImage, optimalWidth)
         }
       }
@@ -368,7 +372,7 @@ const locationChange$ = location$.pipe(
  * Starts the image cycling subscription when the page is visible
  */
 const initSubscriptions = (): void => {
-  const subscribeWithErrorHandling = (observable: Observable<any>, name: string) =>
+  const subscribeWithErrorHandling = (observable: Observable<unknown>, name: string) =>
     observable.subscribe({
       next: () => logger.info(`${name} change processed`),
       error: err => logger.error(`Unhandled error in ${name} subscription:`, err),

@@ -25,3 +25,9 @@ ignore:
   - env
   - .env
   - /usr/*
+  - /usr/share/code/*
+  - /user/share/code/resources/app/extensions//node_modules/.*
+  - /usr/share/code/**/.*
+  - /tools/**/*.js
+  - /.github/**/*.js
+  - /docs/assets/**/*.js

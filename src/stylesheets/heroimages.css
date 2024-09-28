@@ -29,6 +29,7 @@
   object-position: center bottom;
   background: var(--gunmetal);
   opacity: 0;
+  /* stylelint-disable-next-line @stylistic/max-line-length */
   transition: transform 300ms ease, scale 300ms ease, translate 300ms ease, opacity 1000ms ease, perspective 300ms ease, perspective-origin 300ms ease;
   transform: translate(var(--translate-x), var(--translate-y));
   scale: var(--scale);
