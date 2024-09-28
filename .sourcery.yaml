@@ -4,7 +4,7 @@ rule_settings:
     - gpsg
   disable:
     - dont-self-assign-variables
-  python_version: '3.12'
+  python_version: "3.12"
   rule_types:
     - refactoring
     - suggestion
@@ -29,5 +29,6 @@ ignore:
   - /user/share/code/resources/app/extensions//node_modules/.*
   - /usr/share/code/**/.*
   - /tools/**/*.js
+  - /tools/build/*.js
   - /.github/**/*.js
   - /docs/assets/**/*.js

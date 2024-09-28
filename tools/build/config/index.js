@@ -13,7 +13,7 @@ exports.paths = {
         "src/stylesheets/heroimages.css"
     ],
     "scripts": [
-        "external/mkdocs-material/material/templates/assets/javascripts/bundle.*.min.js",
+        //"external/mkdocs-material/material/templates/assets/javascripts/bundle.*.min.js",
         "src/javascripts/index.ts"
     ],
     "fonts": [
@@ -113,7 +113,7 @@ exports.GHActions = [
     },
 ];
 exports.baseProject = {
-    entryPoints: ["src/javascripts/index.ts, src/javascripts/bundle.js"],
+    entryPoints: ["src/javascripts/index.ts", "src/javascripts/bundle.js"],
     tsconfig: "tsconfig.json",
     entryNames: "[dir]/[name].[hash]",
     platform: "browser",

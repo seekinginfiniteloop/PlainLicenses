@@ -6,6 +6,7 @@ import { shuffle } from "~/hero/imageshuffle"
 /**
  * Initiates the hero landing image shuffle process asynchronously.
  *
+ * @function
  * @returns A promise that resolves when the shuffle operation is complete.An Observable that initiates the hero shuffle.
  */
 function thereGoesMyHero(): Observable<void> {
@@ -14,7 +15,7 @@ function thereGoesMyHero(): Observable<void> {
 
 /**
  * Handles easter egg and other smaller actions on the hero landing image asynchronously.
- *
+ * @function
  * @returns An Observable that initiates the hero action.
  */
 function lastActionHero() {

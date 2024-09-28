@@ -30,11 +30,14 @@ const path = __importStar(require("path"));
 const rxjs_1 = require("rxjs");
 const svgo_1 = require("svgo");
 const util_1 = require("util");
+//import { SourceMapConsumer } from 'source-map';
 const config_1 = require("./config");
+//import * as prettier from 'prettier';
 const readFilePromise = (0, util_1.promisify)(fs.readFile);
 const writeFilePromise = (0, util_1.promisify)(fs.writeFile);
 const copyFilePromise = (0, util_1.promisify)(fs.copyFile);
 const mkdirPromise = (0, util_1.promisify)(fs.mkdir);
+let entryPaths = new Array();
 // Ensure that directories exist
 async function ensureDirExists(dir) {
     if (!fs.existsSync(dir)) {
@@ -71,6 +74,56 @@ function minsvg(data) {
     return result.data;
 }
 /**
+async function rebuildSource(lines: string[], consumer: SourceMapConsumer): Promise<{ source: string, content: string }[]> {
+  const assembledCode: { source: string, content: string }[] = [];
+  const rebuiltSource: { [key: string]: string[] } = {}
+
+  lines.forEach((line, lineIndex) => {
+    const lineNum = lineIndex + 1;
+    const segments = line.split(';');
+
+    segments.forEach((segment, segmentIndex) => {
+      const column = segment.length;
+      const pos = {line: lineNum, column: column};
+      const originalPosition = consumer.originalPositionFor(pos);
+
+      if (originalPosition.source === null || originalPosition.name === null) {
+        return;
+      }
+
+      rebuiltSource[originalPosition.source] = originalPosition.source ? [originalPosition.source] : [];
+
+      // Replace the obfuscated name with the original name
+      segments[segmentIndex] = segment.replace(/[_$][\w\d]+/g, originalPosition.name);
+    });
+
+    lines[lineIndex] = segments.join(';');
+  });
+
+  for (const source in rebuiltSource) {
+    let prettyCode = lines.join('\n');
+
+    const formattedCode = prettier.format(prettyCode, { parser: 'babel' });
+
+    console.log(`Source: ${source}`);
+    console.log('Content:', formattedCode);
+    assembledCode.push({ source, content: await formattedCode });
+  }
+  return assembledCode
+}
+
+async function reconstructSourceMap(sourceMap: string, sourceMapFile: string) {
+  const sourceMapData = await readFilePromise(sourceMap, 'utf8');
+  const sourceMapObject = JSON.parse(sourceMapData);
+  const consumer = await new SourceMapConsumer(sourceMapObject);
+  const lines = sourceMapFile.split("\n");
+  const rebuiltSource = await rebuildSource(lines, consumer);
+  console.log(rebuiltSource);
+
+  await writeFilePromise(sourceMapFile, JSON.stringify(sourceMapData, null, 2));
+}
+ */
+/**
  * Parses filepath to remove hash and 'min' from filename
  * @param filePath - path to file
  * @param fileExtension - file extension
@@ -84,6 +137,7 @@ async function parseFiles(filePath, fileExtension) {
         .replace(new RegExp(`\\.min\\.${fileExtension}$`), `.${fileExtension}`)
         .replace(new RegExp(`\\.(\\w+)\\.${fileExtension}$`), `.${fileExtension}`);
 }
+let copiedFiles = [];
 /**
  * Creates virtual files for mkdocs-material compiled CSS and JS files to incorporate them into the build process
  * @param key - key of GlobbedPaths
@@ -92,7 +146,6 @@ async function parseFiles(filePath, fileExtension) {
  */
 async function processMkDocsType(key, targetDir, fileExtension) {
     await ensureDirExists(targetDir);
-    const updatedPaths = [];
     for (const pattern of config_1.paths[key]) {
         if (pattern.includes('mkdocs-material')) {
             console.log(`Processing pattern: ${pattern}`); // Debugging statement
@@ -103,11 +156,12 @@ async function processMkDocsType(key, targetDir, fileExtension) {
                     console.warn(`No files found for pattern: ${pattern}`);
                     continue;
                 }
-                const virtualPaths = [];
                 for (const filePath of files) {
                     const fileName = await parseFiles(filePath, fileExtension);
                     const newFile = path.join(targetDir, fileName);
+                    const mapFile = `${newFile}.map`;
                     await copyFilePromise(filePath, newFile);
+                    await copyFilePromise(filePath, mapFile);
                     console.log(`Copied ${filePath} to ${newFile}`); // Debugging statement
                     fs.stat(newFile, (err, stats) => { if (err) {
                         console.error(err);
@@ -115,20 +169,47 @@ async function processMkDocsType(key, targetDir, fileExtension) {
                     else {
                         console.info(stats);
                     } });
-                    virtualPaths.push(newFile);
+                    copiedFiles.push(newFile);
+                    copiedFiles.push(mapFile);
+                    entryPaths.push(newFile);
+                    //reconstructSourceMap(filePath, path.join(targetDir, fileName, '.map'));
                 }
-                // Replace the original pattern with virtual paths
-                updatedPaths.push(...virtualPaths);
             }
             catch (error) {
                 console.error(`Error processing pattern ${pattern}:`, error); // Error handling
             }
         }
         else {
-            updatedPaths.push(pattern);
+            entryPaths.push(pattern);
         }
     }
-    config_1.paths[key] = updatedPaths;
+}
+/**
+ * Copies all supporting files and subdirectories from mkdocs-material to the build directory
+ * @function
+ * @param sourceDir - source directory
+ * @param targetDir - target directory
+ */
+async function copyMkDocsFiles(sourceDir, targetDir) {
+    await ensureDirExists(targetDir);
+    const files = fs.readdirSync(sourceDir);
+    for (const file of files) {
+        const source = path.join(sourceDir, file);
+        const target = path.join(targetDir, file);
+        if (!copiedFiles.includes(target)) {
+            if (fs.lstatSync(source).isDirectory()) {
+                const newDir = path.join(targetDir, file);
+                if (!fs.existsSync(newDir)) {
+                    await mkdirPromise(newDir);
+                }
+                await copyMkDocsFiles(source, target);
+            }
+            else {
+                await copyFilePromise(source, target);
+                copiedFiles.push(target);
+            }
+        }
+    }
 }
 /**
  * Processes all mkdocs-material CSS and JS files
@@ -136,7 +217,7 @@ async function processMkDocsType(key, targetDir, fileExtension) {
 async function processAllMkDocs() {
     await processMkDocsType('styleSheets', 'src/stylesheets', 'css');
     await processMkDocsType('scripts', 'src/javascripts', 'js');
-    console.log('Updated paths:', config_1.paths);
+    await copyMkDocsFiles('external/mkdocs-material/material/templates/assets/javascripts', 'src/javascripts');
 }
 /**
  * main build function for esbuild
@@ -204,11 +285,6 @@ async function buildAll() {
     catch (error) {
         console.error('Error processing files:', error);
     }
-    finally {
-        fs.rmSync('src/stylesheets/palette.css');
-        fs.rmSync('src/stylesheets/main.css');
-        fs.rmSync('src/javascripts/bundle.js');
-    }
     const handleSubscription = async (project) => {
         (await build(project)).subscribe({
             next: () => console.log(`Build for ${project.platform} completed successfully`),
@@ -221,7 +297,21 @@ async function buildAll() {
     }
     await clearDirs();
     await transformSvg();
-    await handleSubscription(config_1.baseProject);
+    let updatedProject = config_1.baseProject;
+    updatedProject.entryPoints = entryPaths;
+    try {
+        await handleSubscription(updatedProject);
+    }
+    catch (error) {
+        console.error('Error building base project:', error);
+    }
+    finally {
+        for (const file of copiedFiles) {
+            fs.rm(file, (err) => { if (err) {
+                console.error(err);
+            } });
+        }
+    }
 }
 /**
  * Separates the metafile output from the esbuild result

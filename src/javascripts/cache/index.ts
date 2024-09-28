@@ -43,7 +43,7 @@ const fetchAndCacheAsset = (url: string, cache: Cache): Observable<Response> =>
         logger.error(`Error caching asset: ${url}`)
       }),
     catchError((error: Error) => {
-      logger.error(`Error fetching asset: ${url}`)
+      logger.error(`Error fetching asset: ${url}, error: ${error}`)
       return throwError(() => new Error(`Failed to fetch and cache asset: ${url}`))
 }))
 
@@ -105,9 +105,9 @@ export function cacheAssets(type: string, elements: NodeListOf<HTMLElement>): Ob
   )
 }
 
-const request = await fetch("hash_table.json")
+const request = fetch("hash_table.json").then(response => { return response.json() }).catch(error => { logger.error("Error fetching hash table.", error) })
 
-const hashTable = await request.json() as { [key: string]: string }
+const hashTable = request.then(req => { return req.json() as { [key: string]: string } }).catch(error => { logger.error("Error parsing hash table.", error) })
 
 const hashes = (): string[] => {
   return Object.values(hashTable)
@@ -155,7 +155,7 @@ export const cleanupCache = (timer: number): Observable<Event> => {
       setTimeout(() => {
         cleanCache().subscribe({
           next: result => logger.info(result ? "Cache cleaned successfully." : "Cache is already clean."),
-          error: error => logger.error("Error cleaning cache.")
+          error: () => logger.error("Error cleaning cache.")
         })
       }, timer)
     })

@@ -8,28 +8,13 @@ const subscriptions = Array<Subscription>()
 const { document$, viewport$ } = window
 
 const hoverTabs = document.querySelectorAll<HTMLAnchorElement>(".md-typeset .tabbed-labels>label>[href]:first-child:hover a")
-
-/**
- * Creates an observable that merges various user interaction events.
- *
- * This function generates an observable that listens for 'click', 'touchend', and
- * 'keydown' events on the document. It allows for optional operators to be applied
- * to the observable chain, enabling customization of the event handling behavior.
- * If no operators are provided, it returns the merged events observable directly.
- *
- * @template T - The type of events emitted by the observable, defaulting to Event.
- * @param operators - An array of RxJS operator functions
- *          to be applied to the merged events observable.
- * @returns An observable that emits user interaction events, potentially
- *          transformed by the provided operators.
- */
-
 type InteractionEvent = MouseEvent | TouchEvent | KeyboardEvent
 
 /**
  * Creates an observable that merges mouse click, touch end, and keydown events.
  * It accepts an array of operator functions to apply to the observable chain.
  * This function allows us to listen for any type of selection-related event.
+ * @function
  * @template T - The type of events emitted by the observable, constrained to InteractionEvent.
  * @param  operators - An array of operator functions to apply to the observable, transforming the emitted events.
  * @returns An observable that emits interaction events, potentially transformed by the provided operators.
@@ -69,6 +54,7 @@ const triangleInteraction$: Observable<InteractionEvent> = createInteractionObse
 /**
  * Handles the toggle action for the "how to use" license information"
  * It's a simple creature, toggling onClick/touchEnd/key events.
+ * @function
  */
 const toggleSection = (): void => {
     const content = document.querySelector<HTMLElement>(".section-content")
@@ -86,7 +72,7 @@ const toggleSection = (): void => {
  * This function constructs an icon ID based on the hash of the URL
  * derived from the tab's href attribute and returns the corresponding
  * HTML element from the document.
- *
+ * @function
  * @param tab - The anchor element representing the tab.
  * @returns The icon element if found, otherwise null.
  */
@@ -96,6 +82,12 @@ const getIconElement = (tab: HTMLAnchorElement) => {
   return document.getElementById(iconId)
 }
 
+/**
+ * Updates the fill color of an SVG icon.
+ *
+ * @param icon - The icon element to update.
+ * @param color - The color to apply to the icon.
+ */
 const updateSvgFill = (icon: HTMLElement | null, color: string): void => {
   if (icon) {
     const svgPath = icon.querySelector<SVGPathElement>("svg path")
@@ -105,6 +97,11 @@ const updateSvgFill = (icon: HTMLElement | null, color: string): void => {
   }
 }
 
+/**
+ * Creates an observable that listens for mouseover and mouseout events.
+ * @param eventName - The name of the event to listen for.
+ * @returns An observable that emits mouse events.
+ */
 const createMouseEventObservable = (eventName: string): Observable<MouseEvent> =>
   document$.pipe(switchMap(() =>
     fromEventPattern<MouseEvent>(
@@ -116,6 +113,7 @@ const createMouseEventObservable = (eventName: string): Observable<MouseEvent> =
 const mouseOver$ = createMouseEventObservable("mouseover")
 const mouseOut$ = createMouseEventObservable("mouseout")
 
+// Handle tab hover effect
 const hoverEffect$ = merge(
   mouseOver$.pipe(map(event => ({ event, isOver: true }))),
   mouseOut$.pipe(map(event => ({ event, isOver: false })))
@@ -133,6 +131,11 @@ const hoverEffect$ = merge(
 // To handle icon hover, we need to create a separate observable
 const icons = Array.from(document.querySelectorAll('[id^="icon-"]'))
 
+/**
+ * Creates an observable that listens for mouseover and mouseout events on icons.
+ * @param eventName - The name of the event to listen for.
+ * @returns An observable that emits mouse events.
+ */
 const createIconMouseEventObservable = (eventName: string): Observable<MouseEvent> =>
   document$.pipe(switchMap(() =>
     fromEventPattern<MouseEvent>(
@@ -144,6 +147,7 @@ const createIconMouseEventObservable = (eventName: string): Observable<MouseEven
 const iconMouseOver$ = createIconMouseEventObservable("mouseover")
 const iconMouseOut$ = createIconMouseEventObservable("mouseout")
 
+// Handle icon hover effect
 const iconHoverEffect$ = merge(
   iconMouseOver$.pipe(map(event => ({ event, isOver: true }))),
   iconMouseOut$.pipe(map(event => ({ event, isOver: false })))
@@ -157,6 +161,7 @@ const iconHoverEffect$ = merge(
   })
 )
 
+// Handle section header click
 const headers = document.querySelectorAll<HTMLElement>(".section-header")
 const headerClicks$: Observable<MouseEvent> = fromEventPattern<MouseEvent>(
   (handler: (e: MouseEvent) => void) =>
@@ -165,7 +170,10 @@ const headerClicks$: Observable<MouseEvent> = fromEventPattern<MouseEvent>(
         headers.forEach(header => header.removeEventListener("click", handler))
 )
 
-export const subscribeToAll = () => {
+/**
+ * Subscribes to all observables.
+ */
+export const subscribeToAll = (): void => {
   subscriptions.push(triangleInteraction$.subscribe({
     next: () => {
       toggleSection()

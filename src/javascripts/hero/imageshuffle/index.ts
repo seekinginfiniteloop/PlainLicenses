@@ -1,8 +1,18 @@
+/**
+ * @license Plain Unlicense (Public Domain)
+ * @copyright No rights reserved. Created by and for Plain License www.plainlicense.org
+ * @module This module contains the logic for the hero image shuffling on the home page.
+ * It fetches the image URLs, randomizes their order, caches and loads the images on
+ * the hero landing page.
+ * It also handles visibility changes and screen orientation changes.
+ */
 import {
   EMPTY,
   Observable,
+  ReplaySubject,
   Subscription,
   combineLatest,
+  forkJoin,
   from,
   fromEvent,
   fromEventPattern,
@@ -31,15 +41,35 @@ const imageNames = ["abstract", "anime", "artbrut", "comic", "fanciful", "fantas
 
 const parallaxLayer = document.getElementById("parallax-hero-image-layer")
 
-const getHashTable = async () => {
-  const tableJson = await fetch("hashTable.json")
-  return tableJson.json()
-}
+const hashTableSubject = new ReplaySubject<{ [key: string]: string }>(1)
 
-const hashTable = await getHashTable()
+/**
+ * Fetches the hash table containing the image URLs.
+ * @function
+ * @returns Observable of the hash table
+ */
+const getHashTable = (): Observable<{ [key: string]: string }> =>
+  from(fetch("hashTable.json")).pipe(
+    mergeMap(response => from(response.json())),
+    tap(hTable => {
+      logger.info("Hash table fetched")
+      hashTableSubject.next(hTable) // Emit the fetched hash table
+    }),
+    catchError(error => {
+      logger.error(`Failed to fetch hash table: ${error}`)
+      return throwError(() => new Error("Failed to fetch hash table"))
+    })
+  )
+
+// Fetch the hash table and subscribe to handle errors
+subscriptions.push(
+  getHashTable().subscribe({
+  error: (err: Error) => logger.error("Error fetching hash table:", err)
+  }))
 
 /**
  * Fetches the image URLs for the specified image name.
+ * @function
  * @param imageName - image name; the name from the image settings object
  * @returns Promise of the image URLs
  */
@@ -47,12 +77,22 @@ async function getImageUrls(imageName: string): Promise<void | string[]> {
   const baseUrl = `assets/images/hero/${imageName}/${imageName}`
   const widths = ["1280", "1920", "2560", "3840"]
   const urls: string[] = []
+
+  // Wait for the hash table to be available
+  const hashTable = await new Promise<{ [key: string]: string }>((resolve, reject) => {
+    hashTableSubject.subscribe({
+      next: resolve,
+      error: reject
+    })
+  })
+
   widths.forEach(width => {
     const lookup = `${imageName}_${width}.avif`
     const hash = hashTable[lookup]
     urls.push(`${baseUrl}_${width}.${hash}.avif`)
-    return urls
   })
+
+  return urls
 }
 
 /**
@@ -70,7 +110,11 @@ const loadImage = (imageUrl: string): Observable<Blob> => {
   )
 }
 
-  // Determine the optimal width based on screen size
+/**
+ * Determine the optimal width based on screen size
+ * @function
+ * @returns the optimal width for the image
+ */
 const getOptimalWidth = () => {
     const screenWidth = Math.max(window.innerWidth, window.innerHeight)
     if (screenWidth <= 1280) {
@@ -87,6 +131,7 @@ const getOptimalWidth = () => {
 
 /**
  * Fetches and sets an image element based on the specified image data.
+ * @function
  * @param imgSettings - image settings for a single image
  * @returns Observable of the image element
  */
@@ -125,66 +170,97 @@ const fetchAndSetImage = (imgSettings: ImageSettings): Observable<void> => {
 }
 
 /**
- * Generates image settings for the hero section
- * @returns Promise of the image settings
+ * Assembles image settings for all images.
+ * @function
+ * @returns Observable of the image settings
  */
-async function generateImageSettings(): Promise<ImageSettings[]> {
-  const imageSettings: ImageSettings[] = []
+function assembleImageSettings(): Observable<ImageSettings[]> {
   const optimalWidth = getOptimalWidth()
-  imageNames.forEach(imageName => {
-    const urls = getImageUrls(imageName).then(urlList => urlList).catch(error => {
-      logger.error(`Failed to generate image settings for ${imageName}: ${error}`)
-      return undefined
-    }
+  const imageSettings$: Observable<ImageSettings>[] = imageNames.map(imageName => {
+    return from(getImageUrls(imageName)).pipe(
+      map(urls => {
+        if (Array.isArray(urls) && urls.length > 0) {
+          const srcset = urls.map(newUrl => `${newUrl} ${optimalWidth}w`).join(", ")
+          const src = urls.find(url => url.includes(optimalWidth))
+          if (!src || !srcset) {
+            throw new Error(`Failed to generate image settings for ${imageName}`)
+          }
+          return { imageName, srcset, src }
+        } else {
+          throw new Error(`Failed to generate image settings for ${imageName}`)
+        }
+      }),
+      catchError(error => {
+        logger.error(`Failed to generate image settings for ${imageName}: ${error}`)
+        return of(undefined) // Return an observable of undefined on error
+      }),
+      filter(setting => setting !== undefined) // Filter out undefined values
     )
-    if (urls && urls instanceof Array && urls.length > 0) {
-      const srcset = urls?.map(newUrl => `${newUrl as string} ${optimalWidth}w`).join(", ")
-      const src = urls?.find(url => url.includes(optimalWidth))
-      if (!src || !srcset) {
-        throw new Error(`Failed to generate image settings for ${imageName}`)
-      }
-      imageSettings.push({ imageName, srcset, src })
-    }
   })
-  return imageSettings
+
+  return forkJoin(imageSettings$).pipe(
+    map(settings => settings.filter((setting): setting is ImageSettings => setting !== undefined)) // Filter out undefined values
+  )
 }
 
 /**
  * Randomizes the order of the image settings to shuffle the images
+ * @function
  * @param imageSettings - array of image settings
- * @returns Promise of the shuffled image settings
+ * @returns array of the shuffled image settings
  */
-async function randomizeImageSettings(imageSettings: ImageSettings[]): Promise < ImageSettings[] > {
+function randomizeImageSettings(imageSettings: ImageSettings[]): ImageSettings[] {
   return imageSettings.sort(() => Math.random() - 0.5)
 }
 
-let imageSettings: ImageSettings[] = await randomizeImageSettings(await generateImageSettings())
+let imageGenerator: Generator<ImageSettings>
 
 /**
- * generates an image data type generator
+ * Generates an image data type generator
+ *
+ * @generator
+ * @function
+ * @param imageSettings - array of image settings
  * @yields image datum objects
  */
-function* imageRetrievalGenerator(): Generator<ImageSettings> {
-  imageSettings.forEach(_imageSetting =>
-    yield _imageSetting
-  )
+function* imageRetrievalGenerator(imageSettings: ImageSettings[]): Generator<ImageSettings> {
+  for (const setting of imageSettings) {
+    yield setting
+  }
 }
 
-  // Variables for image cycling
+/**
+ * Initializes the image generator
+ *
+ * @function
+ */
+function initializeImageGenerator() {
+  assembleImageSettings().subscribe({
+    next: settings => {
+      const imageSettings = randomizeImageSettings(settings) // Shuffle and store the settings
+      imageGenerator = imageRetrievalGenerator(imageSettings) // Create the generator
+    },
+    error: err => {
+      logger.error("Error processing image settings:", err)
+    }
+  })
+}
+// Variables for image cycling
+initializeImageGenerator()
 let generatorExhausted = false // turns true when the generator is exhausted
 const isPageVisible = true
 let cycleImagesSubscription: Subscription | undefined
-const imageGen = imageRetrievalGenerator()
 
 /**
  * Returns the next image data type from the generator
+ * @function
  * @returns image data type or undefined if the generator is exhausted
  */
 const imageSettingsGen = (): ImageSettings | undefined => {
   if (generatorExhausted) {
     return undefined
   }
-  const nextImageSettings = imageGen.next()
+  const nextImageSettings = imageGenerator.next()
   if (nextImageSettings.done) {
     generatorExhausted = true
     return undefined
@@ -194,6 +270,7 @@ const imageSettingsGen = (): ImageSettings | undefined => {
 
 /**
  * Stops the image cycling subscription
+ * @function
  */
 const stopImageCycling = (): void => {
   if (cycleImagesSubscription) {
@@ -204,6 +281,7 @@ const stopImageCycling = (): void => {
 
 /**
  * Starts the image cycling subscription
+ * @function
  * @returns Observable of void
  * @throws {Error} if the first image is not found
  * @throws {Error} if the image cycling subscription fails
@@ -228,6 +306,7 @@ const startImageCycling = (): Observable<void> => {
 
 /**
  * Handles visibility change events
+ * @function
  * @returns Observable of void
  */
 const handleVisibilityChange = (): Observable<void> =>
@@ -235,6 +314,7 @@ const handleVisibilityChange = (): Observable<void> =>
 
 /**
  * Cycles the images in the hero section
+ * @function
  * @returns Observable of void
  */
 const cycleImages = (): Observable<void> => {
@@ -267,6 +347,7 @@ const cycleImages = (): Observable<void> => {
 
 /**
  * Shuffles the images in the hero section
+ * @function
  * @returns Observable of void
  */
 export const shuffle = (): Observable<void> => {
@@ -276,10 +357,9 @@ export const shuffle = (): Observable<void> => {
 
 /**
  * Creates an observable for screen orientation changes.
- * @param the - media query list for the orientation
+ * @param mediaQuery - media query list for the orientation
  * @returns boolean observable for orientation changes
  */
-
 const createOrientationObservable = (mediaQuery: MediaQueryList): Observable<boolean> =>
   fromEventPattern<boolean>(
     handler => mediaQuery.addEventListener("change", handler),
@@ -288,51 +368,72 @@ const createOrientationObservable = (mediaQuery: MediaQueryList): Observable<boo
   )
 
 /**
- * Sets the new sources for the images in the hero section following a screen orientation change.
- * @param img - the hero image
+ * Regenerates the sources for the images in the hero section following a screen orientation change.
+ * @function
+ * @param srcsetString - the srcset string for the image
+ * @param optimalWidth - the optimal width for the image
+ * @returns the new source for the image
+ */
+function findNewSrc(srcsetString: string, optimalWidth: string): string | undefined {
+  return srcsetString.split(",").find(url => url.includes(optimalWidth))?.split(" ")[0]
+}
+
+/**
+ * Regenerates the sources for the images in the hero section following a screen orientation change.
+ * @function
  * @param optimalWidth - the optimal width for the image
  */
-function setNewSrc(img: HTMLImageElement, optimalWidth: string) {
-  const newSrc = img.srcset.split(",").find(url => url.includes(optimalWidth))?.split(" ")[0]
-  if (newSrc) {
-    img.src = newSrc
-  }
+function regenerateSources(optimalWidth: string) {
   Array.from(parallaxLayer?.getElementsByTagName("img") || []).forEach((image, index) => {
     if (index !== 0) {
-      const newChildSrc = image.srcset.split(",").find(url => url.includes(optimalWidth))?.split(" ")[0]
+      const newChildSrc = findNewSrc(image.srcset, optimalWidth)
       if (newChildSrc) {
         image.src = newChildSrc
       }
     }
   })
 
-  // we exhaust the generator and use the yielded settings to create a new generator with adjusted settings
   const nextSettings: ImageSettings[] = []
-  while (imageSettingsGen()) {
-    const nextValue = imageSettingsGen()
-    if (nextValue !== undefined) {
-      nextSettings.push(nextValue)
-    } else {
-      break
+  let result = imageGenerator.next()
+  while (!result.done) {
+    if (result.value !== undefined) {
+      nextSettings.push(result.value)
     }
+    result = imageGenerator.next()
   }
+  generatorExhausted = nextSettings.length === 0
   nextSettings.forEach(setting => {
+    const newSrc = findNewSrc(setting.srcset, optimalWidth)
     if (newSrc) {
       setting.src = newSrc
     }
   })
-  if (nextSettings && nextSettings instanceof Array && nextSettings.length > 0) {
-    imageSettings = nextSettings
+  if (nextSettings.length > 0) {
+    imageGenerator = imageRetrievalGenerator(nextSettings)
+  }
+}
+
+/**
+ * Sets the new source for the current image in the hero section following a screen orientation change, and starts regeneration of sources for the remaining images.
+ * @function
+ * @param img - the hero image
+ * @param optimalWidth - the optimal width for the image
+ */
+function setNewSrc(img: HTMLImageElement, optimalWidth: string) {
+  const newSrc = findNewSrc(img.srcset, optimalWidth)
+  if (newSrc) {
+    img.src = newSrc
+    regenerateSources(optimalWidth)
   }
 }
 
 /**
  * Handles visibility changes
+ * @function
  * @returns Observable of void
  * @throws {Error} if the first image is not found
  * @throws {Error} if the image cycling subscription fails
  * @throws {Error} if the visibility change subscription fails
- *
  */
 const orientation$ = createOrientationObservable(portraitMediaQuery).pipe(
   filter(() => isPageVisible),
@@ -370,6 +471,7 @@ const locationChange$ = location$.pipe(
 
 /**
  * Starts the image cycling subscription when the page is visible
+ * @function
  */
 const initSubscriptions = (): void => {
   const subscribeWithErrorHandling = (observable: Observable<unknown>, name: string) =>
@@ -394,7 +496,10 @@ const initSubscriptions = (): void => {
 
 initSubscriptions()
 
-// Unsubscribes from all subscriptions when the user leaves the page
+/**
+ * Unsubscribes from all subscriptions when the page is closed or refreshed
+ * @event beforeunload
+ */
 window.addEventListener("beforeunload", () => {
   stopImageCycling()
   subscriptions.forEach(sub => sub.unsubscribe())

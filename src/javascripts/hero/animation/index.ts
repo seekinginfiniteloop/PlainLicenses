@@ -37,7 +37,11 @@ if (!easterEgg || !infoBox) {
   easterEgg.style.display = "block"
 }
 
-// returns true if the info box is visible
+/**
+ * Function to check if the info box overlay is visible.
+ * @function
+ * @returns boolean
+ */
 const infoBoxIsVisible = () => infoBox?.style.display !== "none"
 
 /**
@@ -52,7 +56,7 @@ type InteractionEvent = MouseEvent | TouchEvent | KeyboardEvent
  * 'keydown' events on the document. It allows for optional operators to be applied
  * to the observable chain, enabling customization of the event handling behavior.
  * If no operators are provided, it returns the merged events observable directly.
- *
+ * @function
  * @template T - The type of events emitted by the observable, defaulting to Event.
  * @param  operators - An array of RxJS operator functions
  *          to be applied to the merged events observable.
@@ -90,7 +94,7 @@ function createInteractionObservable<
  * info box modal, sets its display to 'none', and adjusts its z-index to ensure
  * it is not visible above other elements. This effectively removes the overlay
  * from the user's view.
- *
+ * @function
  */
 const hideOverlay = (): void => {
   if (infoBox) {
@@ -107,7 +111,7 @@ const hideOverlay = (): void => {
  * info box as a modal, sets its display to 'block', and adjusts its z-index to
  * ensure it appears above other elements on the page. This effectively makes the
  * overlay visible to the user.
- *
+ * @function
  */
 const showOverlay = (): void => {
   if (infoBox) {
@@ -120,16 +124,10 @@ const showOverlay = (): void => {
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
 
 /**
- * Retrieves scrolling target information and associated attributes from a given HTML element.
- *
- * This function extracts the target element's ID from the `data-element-target` attribute and calculates
- * its vertical position relative to the viewport. It also retrieves the duration and pause duration for
- * scrolling from the respective attributes, returning an object containing the target position, duration,
- * pause target attribute, pause duration, and the target attribute.
- *
+ * Retrieves scrolling target information and associated attributes from a given HTML element using data attributes. Data attributes data-element-target, data-duration, data-scroll-pause-id, and data-scroll-pause-duration are used to determine the target position, duration, pause target, and pause duration, respectively. The pause target is the element to scroll to before pausing, and the pause duration is the time to wait before scrolling to the final target. Pause targets are optional, and if not specified, the function scrolls directly to the final target.
+ * @function
  * @param el - The HTML element from which to retrieve scrolling target information.
  * @returns An object containing the target position, duration, pause target attribute, pause duration, and the target attribute.
- * An object containing the target position, duration, pause target attribute, pause duration, and the target attribute.
  */
 const getScrollTargets = (
   el: HTMLElement
@@ -156,7 +154,7 @@ const getScrollTargets = (
 /**
  * Smoothly scrolls the window to a specified target position over a given duration.
  * Optionally, applies an offset. Also applies autokill to allow for immediate scroll interruption.
- *
+ * @function
  * @param target - The target scroll position, which can be a pixel value or a selector string.
  * @param duration - The duration of the scroll animation in seconds.
  * @param offsetY - The vertical offset to apply to the scroll position.
@@ -189,13 +187,7 @@ const scrollTo = (
 
 /**
  * Creates an observable that handles smooth scrolling behavior for a specified HTML element.
- *
- * This function retrieves scrolling target information from the provided element and determines
- * whether to perform a pause during the scroll. If a pause target and duration are specified,
- * it first scrolls to the pause target, waits for the specified duration, and then scrolls to
- * the final target. If no pause is specified, it scrolls directly to the target. The function
- * returns an observable that completes when the scrolling actions are finished.
- *
+ * @function
  * @param el - The HTML element from which to retrieve scrolling target information.
  * @returns An observable that completes when the scrolling actions are finished.
  */
@@ -224,11 +216,7 @@ const smoothScroll$ = (el: HTMLElement): Observable<void> => {
 
 /**
  * Retrieves and parses a numeric attribute value from a given HTML element.
- *
- * This function attempts to get the value of a specified attribute from the provided HTML element.
- * If the attribute exists and is a valid number, it is parsed and returned. If the attribute is not found
- * or is not a valid number, the function returns a specified default value, which defaults to 0.
- *
+ * @function
  * @param el - The HTML element from which to retrieve the attribute value.
  * @param attr - The name of the attribute to retrieve from the element.
  * @param defaultValue - The default value to return if the attribute is not found or is invalid.
@@ -243,6 +231,10 @@ const parseAttribute = (
   return attrValue ? parseInt(attrValue, 10) : defaultValue
 }
 
+/**
+ * Subscribes to all user interaction observables and handles the corresponding actions.
+ * @function
+ */
 const allSubscriptions = (): void => {
 
   // Observable that emits when the user interacts with the easter egg element
@@ -303,7 +295,6 @@ const allSubscriptions = (): void => {
   )
 
   // Observable that emits when the user interacts with the hero primary button or arrow down element
-
   const heroButtonInteraction$ = createInteractionObservable<InteractionEvent>(
     filter((event: InteractionEvent) => {
       if (event instanceof Event) {
@@ -357,7 +348,12 @@ const allSubscriptions = (): void => {
       complete: () => logger.info("Path observable completed")
     })
   )
-  // we clean up the subscriptions when the user leaves the page
+
+/**
+ * Unsubscribes from all subscriptions when the window is about to unload.
+ * @function
+ * @listens beforeunload
+ */
   window.addEventListener("beforeunload", () => {
     subscriptions.forEach(sub => sub.unsubscribe())
   })
