@@ -18,9 +18,12 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "paths": {
-      "~/*": ["./src/javascripts/*"],
+      "~/*": [
+        "./src/javascripts/*",
+        "./external/mkdocs-material/src/templates/assets/javascripts/*"
+      ],
       "~external/*": ["./typings"],
-      "_/*": ["./external/mkdocs-material/overrides/assets/javascripts/*"]
+      "_/*": ["./external/mkdocs-material/src/overrides/assets/javascripts/*"]
     },
     "removeComments": false,
     "sourceMap": true,

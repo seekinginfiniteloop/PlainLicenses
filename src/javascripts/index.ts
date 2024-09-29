@@ -6,6 +6,8 @@ import { initializeHero } from "./hero"
 import { cacheAssets, cleanupCache } from "./cache"
 import { merge } from "rxjs"
 import { mergeMap } from "rxjs/operators"
+// @ts-ignore
+import * as material from "~/bundle"
 
 const licensePattern = /\/licenses\/(source-available|proprietary|permissive|public-domain|copyleft)\/\w+-?\d?\.?\d?\/index.html$/
 

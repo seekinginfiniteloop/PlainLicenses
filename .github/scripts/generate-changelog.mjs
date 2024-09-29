@@ -4,7 +4,7 @@
   * instead edit the source file
   *
   * sources are in .github/src directory
-  **
+  */
   
 
 // .github/src/generate-changelog.ts
@@ -87,13 +87,14 @@ async function generateChangelog() {
 
 - ${breakingChange}
 
-` + changelogSections.minor;
+${changelogSections.minor}`;
       }
     }
   });
   Object.values(changelogSections).forEach((section) => {
     if (section.split("\n").length > 2) {
-      projectChangelog += section + "\n";
+      projectChangelog += `${section}
+`;
     }
   });
   writeChangelogFile(projectChangelogPath, projectChangelog);
@@ -105,4 +106,4 @@ async function generateChangelog() {
   });
   console.log("Changelogs generated successfully.");
 }
-generateChangelog();
+await generateChangelog();

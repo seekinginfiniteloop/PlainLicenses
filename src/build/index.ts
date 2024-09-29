@@ -1,38 +1,47 @@
 import * as esbuild from "esbuild";
-import * as fs from 'fs';
+import * as fs from 'fs/promises';
 import * as glob from 'glob';
 import * as path from 'path';
 import { Observable, from } from "rxjs";
 import { optimize } from "svgo";
-import { promisify } from 'util';
-//import { SourceMapConsumer } from 'source-map';
 import { GHActions, Project, baseProject, nodeConfig, webConfig } from "./config";
-//import * as prettier from 'prettier';
 
-const readFilePromise = promisify(fs.readFile);
-const writeFilePromise = promisify(fs.writeFile);
-const copyFilePromise = promisify(fs.copyFile);
-const mkdirPromise = promisify(fs.mkdir);
-
-// Ensure that directories exist
-async function ensureDirExists(dir: string) {
-  if (!fs.existsSync(dir)) {
-    await mkdirPromise(dir, { recursive: true });
+/**
+ * Strips a file hash from a full path to a file.
+ * Handles the format: filename.hash.ext or filename.hash.min.ext
+ * @function
+ * @param fullPath - the full path to the file
+ * @returns the file hash
+ */
+async function getFileHash(fullPath: string): Promise<string> {
+  if (!fullPath || typeof fullPath !== 'string' || !fullPath.includes('.')) {
+    return '';
   }
+
+  const parts = fullPath.split('/');
+  const fileName = parts[parts.length - 1];
+  const fileNameParts = fileName.split('.');
+
+  if (fileNameParts.length < 3) {
+    return '';
+  }
+
+  return fileNameParts[fileNameParts.length - 2] === 'min'
+    ? fileNameParts[fileNameParts.length - 3]
+    : fileNameParts[fileNameParts.length - 2];
 }
-let copiedFiles: string[] = [];
-/** ~~ from Martin Donath, (c) 2016-2023 Martin Donath ~~
- *  ~~ subject to the MIT license: https://github.com/squidfunk/mkdocs-material/blob/master/LICENSE
- * Minify SVG data
- * @param data: string
- * @returns optimized SVG string
+
+/**
+ * minifies an SVG file
+ * @function
+ * @param data - SVG data
+ * @returns the minified SVG data
  */
 function minsvg(data: string): string {
   if (!data.startsWith("<")) {
-    return data
+    return data;
   }
 
-  /* Optimize SVG */
   const result = optimize(data, {
     plugins: [
       {
@@ -47,147 +56,16 @@ function minsvg(data: string): string {
         name: "removeDimensions"
       }
     ]
-  })
-
-  /* Return minified SVG */
-  return result.data
-}
-/**
-async function rebuildSource(lines: string[], consumer: SourceMapConsumer): Promise<{ source: string, content: string }[]> {
-  const assembledCode: { source: string, content: string }[] = [];
-  const rebuiltSource: { [key: string]: string[] } = {}
-
-  lines.forEach((line, lineIndex) => {
-    const lineNum = lineIndex + 1;
-    const segments = line.split(';');
-
-    segments.forEach((segment, segmentIndex) => {
-      const column = segment.length;
-      const pos = {line: lineNum, column: column};
-      const originalPosition = consumer.originalPositionFor(pos);
-
-      if (originalPosition.source === null || originalPosition.name === null) {
-        return;
-      }
-
-      rebuiltSource[originalPosition.source] = originalPosition.source ? [originalPosition.source] : [];
-
-      // Replace the obfuscated name with the original name
-      segments[segmentIndex] = segment.replace(/[_$][\w\d]+/g, originalPosition.name);
-    });
-
-    lines[lineIndex] = segments.join(';');
   });
 
-  for (const source in rebuiltSource) {
-    let prettyCode = lines.join('\n');
-
-    const formattedCode = prettier.format(prettyCode, { parser: 'babel' });
-
-    console.log(`Source: ${source}`);
-    console.log('Content:', formattedCode);
-    assembledCode.push({ source, content: await formattedCode });
-  }
-  return assembledCode
+  return result.data;
 }
-
-async function reconstructSourceMap(sourceMap: string, sourceMapFile: string) {
-  const sourceMapData = await readFilePromise(sourceMap, 'utf8');
-  const sourceMapObject = JSON.parse(sourceMapData);
-  const consumer = await new SourceMapConsumer(sourceMapObject);
-  const lines = sourceMapFile.split("\n");
-  const rebuiltSource = await rebuildSource(lines, consumer);
-  console.log(rebuiltSource);
-
-  await writeFilePromise(sourceMapFile, JSON.stringify(sourceMapData, null, 2));
-}
- */
-/**
- * Parses filepath to remove hash and 'min' from filename
- * @param filePath - path to file
- * @param fileExtension - file extension
- * @returns
-
-async function parseFiles(filePath: string, fileExtension: 'css' | 'js') {
-// Remove hash and 'min' from filename
-    const parsedPath = path.parse(filePath);
-    return parsedPath.base
-          .replace(new RegExp(`\\.(\\w+)\\.min\\.${fileExtension}$`), `.${fileExtension}`)
-          .replace(new RegExp(`\\.min\\.${fileExtension}$`), `.${fileExtension}`)
-          .replace(new RegExp(`\\.(\\w+)\\.${fileExtension}$`), `.${fileExtension}`);
-}
-
-let copiedFiles: string[] = [];
- */
-/**
- * Creates virtual files for mkdocs-material compiled CSS and JS files to incorporate them into the build process
- * @param key - key of GlobbedPaths
- * @param targetDir - target directory for virtual files
- * @param fileExtension - file extension
-async function processMkDocsType(key: keyof GlobbedPaths, targetDir: string, fileExtension: 'css' | 'js') {
-  await ensureDirExists(targetDir);
-
-  for (const pattern of paths[key]) {
-    if (pattern.includes('mkdocs-material')) {
-      console.log(`Processing pattern: ${pattern}`); // Debugging statement
-      try {
-        const files: string[] = await glob.glob(pattern, { includeChildMatches: true }) as string[];
-        console.log(`Files found: ${files.length}`); // Debugging statement
-        if (files.length === 0) {
-          console.warn(`No files found for pattern: ${pattern}`);
-          continue;
-        }
-
-        for (const filePath of files) {
-          const fileName = await parseFiles(filePath, fileExtension);
-          const newFile = path.join(targetDir, fileName);
-          const mapFile = `${newFile}.map`;
-          await copyFilePromise(filePath, newFile)
-          await copyFilePromise(filePath, mapFile)
-          console.log(`Copied ${filePath} to ${newFile}`); // Debugging statement
-          fs.stat(newFile, (err, stats) => { if (err) { console.error(err); } else { console.info(stats) } });
-          copiedFiles.push(newFile);
-          copiedFiles.push(mapFile);
-          entryPaths.push(newFile);
-          //reconstructSourceMap(filePath, path.join(targetDir, fileName, '.map'));
-        }
-
-      } catch (error) {
-        console.error(`Error processing pattern ${pattern}:`, error); // Error handling
-      }
-    } else {
-      entryPaths.push(pattern);
-    }
-  }
-}
- */
 
 /**
- * Copies all supporting files and subdirectories from mkdocs-material to the build directory
+ * main esbuild build function
  * @function
- * @param sourceDir - source directory
- * @param targetDir - target directory
- */
-async function copyMkDocsFiles(sourceDir: string, targetDir: string) {
-  await ensureDirExists(targetDir);
-  fs.cp(sourceDir, targetDir, { recursive: true }, (err) => { if (err) { console.error(err); } }
-  )}
-
-/**
- * Processes all mkdocs-material CSS and JS files
- */
-async function processAllMkDocs() {
-  const sourceDirs = ['external/mkdocs-material/src/templates/assets/stylesheets', 'external/mkdocs-material/src/templates/assets/javascripts'];
-  // copy all files, subdirectories into equivalent /src directories
-  for (const sourceDir of sourceDirs) {
-    await copyMkDocsFiles(sourceDir, path.join('src', sourceDir.split('/').pop() as string));
-  }
-}
-
-/**
- * main build function for esbuild
  * @param project - the project to build
- * @returns - an observable that emits when the build is complete
+ * @returns an observable
  */
 async function build(project: Project): Promise<Observable<unknown>> {
   console.log(`Building ${project.platform}...`);
@@ -202,7 +80,7 @@ async function build(project: Project): Promise<Observable<unknown>> {
       if (output) {
         await writeMeta(output);
         const table = await hashTable(output);
-        await writeFilePromise(path.join('docs/assets/javascripts', 'hashTable.json'), JSON.stringify(table, null, 2));
+        await fs.writeFile(path.join('docs/assets/javascripts', 'hashTable.json'), table);
         await metaOutputMap(result);
       }
     }
@@ -212,46 +90,81 @@ async function build(project: Project): Promise<Observable<unknown>> {
 }
 
 /**
- * Clears directories of files that are not needed; prevents stale files from being included in the build
- * @returns - a promise that resolves when the directories are cleared
+ * clears assets directories of all files except for tablesort.js, feedback.js, and pixel.js
+ * @function
  */
 async function clearDirs() {
-  const dirs = ['docs/assets/stylesheets', 'docs/assets/javascripts', 'docs/assets/fonts', 'docs/assets/images'];
+  const dirs = ['docs/assets/stylesheets', 'docs/assets/javascripts'];
   for (const dir of dirs) {
-    for (const file of fs.readdirSync(dir)) {
+    for (const file of await fs.readdir(dir)) {
       if (!dir.includes('javascripts') && !file.match(/tablesort\.js|feedback\.js|pixel\.js/)) {
         const filePath = path.join(dir, file);
-        if (!fs.lstatSync(filePath).isDirectory()) {
-          fs.rm(filePath, (err) => { console.error(err); });
+        if (!(await fs.lstat(filePath)).isDirectory()) {
+          try {
+            await fs.rm(filePath);
+          } catch (err) {
+            console.error(err);
+          }
         }
       }
     }
   }
 }
+
 /**
- * Transforms SVG files to minified SVG
- * @returns - a promise that resolves when all SVG files are minified
+ * transforms SVG files in src/images directory
+ * @function
  */
 async function transformSvg(): Promise<void> {
-  const svgFiles = await glob.glob('src/images/*.svg', { includeChildMatches: true }) as string[];
+  const svgFiles = await glob.glob('src/images/*.svg', { includeChildMatches: true });
   for (const file of svgFiles) {
-    const content = await readFilePromise(file, 'utf8');
+    const content = await fs.readFile(file, 'utf8');
     const minified = minsvg(content);
-    await writeFilePromise(file, minified);
+    await fs.writeFile(file, minified);
   }
 }
+
+interface FileHashes {
+  palette: string;
+  main: string;
+}
+
 /**
- * Builds all projects
- * @returns - a promise that resolves when all projects are built
- * @throws - an error if any project fails to build
+ *  gets the file hashes for Material for MKDocs palette and main CSS files
+ * @function
+ * @returns the file hashes for palette and main CSS files
+ */
+async function getFileHashes(): Promise<FileHashes> {
+  const paletteCSS = await glob.glob('external/mkdocs-material/src/overrides/assets/stylesheets/palette.*.min.css', { includeChildMatches: true });
+  const mainCSS = await glob.glob('external/mkdocs-material/src/overrides/assets/stylesheets/main.*.min.css', { includeChildMatches: true });
+  const paletteHash = await getFileHash(paletteCSS[0]);
+  const mainHash = await getFileHash(mainCSS[0]);
+  return { palette: paletteHash || '', main: mainHash || '' };
+}
+
+/**
+ * Replaces placeholders in bundle.css with file hashes for Material for MKDocs palette and main CSS files
+ * @function
+ */
+async function replacePlaceholders(): Promise<void> {
+  const { palette, main } = await getFileHashes();
+  if (!palette || !main) {
+    return;
+  }
+  try {
+    let bundleCssContent = await fs.readFile('src/stylesheets/bundle.css', 'utf8');
+    bundleCssContent = bundleCssContent.replace('{{ palette-hash }}', palette).replace("{{ main-hash }}", main);
+    await fs.cp('src/stylesheets/bundle.css', 'src/stylesheets/bundle.css.bak');
+    await fs.writeFile('src/stylesheets/bundle.css', bundleCssContent);
+  } catch (error) {
+    console.error('Error replacing placeholders:', error);
+  }
+}
+
+/**
+ * builds all projects, main pipeline function
  */
 async function buildAll() {
-  try {
-    await processAllMkDocs();
-  } catch (error) {
-    console.error('Error processing files:', error);
-  }
-
   const handleSubscription = async (project: any) => {
     (await build(project)).subscribe({
       next: () => console.log(`Build for ${project.platform} completed successfully`),
@@ -266,15 +179,26 @@ async function buildAll() {
 
   await clearDirs();
   await transformSvg();
-  //let updatedProject = baseProject;
-  //updatedProject.entryPoints = entryPaths;
-  try { await handleSubscription(baseProject); } catch (error) { console.error('Error building base project:', error); }
+  await replacePlaceholders();
+  try {
+    await handleSubscription(baseProject);
+  } catch (error) {
+    console.error('Error building base project:', error);
+  } finally {
+    try {
+      await fs.unlink('src/stylesheets/bundle.css');
+      await fs.rename('src/stylesheets/bundle.css.bak', 'src/stylesheets/bundle.css');
+    } catch (err) {
+      console.error(`Error removing temporary bundle.css or renaming it: ${err}`);
+    }
+  }
 }
 
 /**
- * Separates the metafile output from the esbuild result
- * @param result
- * @returns
+ * Get the 'outputs' section of the esbuild metafile
+ * @function
+ * @param result - the esbuild build result
+ * @returns the 'outputs' section of the esbuild metafile
  */
 const metaOutput = async (result: esbuild.BuildResult) => {
   if (!result.metafile) {
@@ -293,24 +217,13 @@ const metaOutput = async (result: esbuild.BuildResult) => {
   );
 }
 
+const jsSrc = "src/javascripts/index.ts";
+const cssSrc = "src/stylesheets/bundle.css";
+
 /**
- * Creates a mapping of the bundle files to their output paths
- * @param mapping - mapping of original file names to their output paths
- */
-async function handleBundle(mapping: Map<string, string>): Promise<void> {
-  const outputFile = mapping.keys().next().value;
-;
-  const relativePath = outputFile.replace('docs/', '');
-  const extension = relativePath.split('.').pop();
-if (extension === 'css') {
-  mapping.set('CSSBUNDLE', relativePath);
-} else if (extension === 'js') {
-  mapping.set('SCRIPTBUNDLE', relativePath);
-}
-}
-/**
- * Creates a mapping of original file names to their output paths
- * @param result - esbuild build result
+ * Create a mapping of original file names to hashed file names
+ * @function
+ * @param result - the esbuild build result
  */
 const metaOutputMap = async (result: esbuild.BuildResult) => {
   const mapping: Map<string, string> = new Map();
@@ -320,52 +233,64 @@ const metaOutputMap = async (result: esbuild.BuildResult) => {
         continue;
       }
 
-      if (output.entryPoint?.endsWith(".css") || output.entryPoint?.endsWith(".js")) {
-        handleBundle(mapping);
+      if ((output.entryPoint?.endsWith(".css") && output.entryPoint === cssSrc) || (output.entryPoint?.endsWith(".js") && output.entryPoint === jsSrc)) {
+        const newKey = output.entryPoint?.endsWith(".css") ? "CSSBUNDLE" : "SCRIPTBUNDLE";
+        mapping.set(newKey, await getFileHash(key));
         continue;
       }
 
       const relativePath = path.relative('assets', key);
-      const originalName = path.basename(output.entryPoint || Object.keys(output.inputs)[0]);
+      let originalName = path.basename(Object.keys(output.inputs)[0]);
+
+      if (output.entryPoint) {
+        originalName = path.basename(output.entryPoint || Object.keys(output.inputs)[0]);
+      }
       mapping.set(originalName, relativePath);
     }
 
     const outputMetaPath = path.join('overrides', 'buildmeta.json');
-    await writeFilePromise(outputMetaPath, JSON.stringify(mapping, null, 2));
+    await fs.writeFile(outputMetaPath, JSON.stringify(mapping, null, 2));
   }
 }
 
 /**
- * Writes the metafile output to a JSON file
- * @param metaOutput - metafile output from esbuild
+ * Write the meta.json file
+ * @function
+ * @param metaOutput - the metafile outputs
  */
 const writeMeta = async (metaOutput: {}) => {
   const metaJson = JSON.stringify({ metaOutput }, null, 2);
-  await writeFilePromise(path.join('docs', 'meta.json'), metaJson);
+  await fs.writeFile(path.join('docs', 'meta.json'), metaJson);
 }
 
-type HashTable = Map<string, string>;
-
 /**
- * Creates a hash table from the meta output for lookups
- * @param metaOutput - metafile output from esbuild
- * @returns
+ * Create a table of file names (stem + extension) to their hashes
+ * @function
+ * @param metaOutput - the metafile outputs
+ * @returns the hash table
  */
-const hashTable = async (metaOutput: {}): Promise<HashTable> => {
+const hashTable = async (metaOutput: { [key: string]: any }): Promise<string> => {
+  const outputFiles = Object.entries(metaOutput).map(([key, output]) => ({
+    destination: key,
+    origin: output.entryPoint || undefined,
+  }));
+
   const table = new Map<string, string>();
-  for (const [key] of Object.entries(metaOutput)) {
-    const parts = key.split('.');
-    const baseFileName = parts.slice(0, -1).join('.');
-    const hash = parts.pop();
-    if (baseFileName && hash) {
-      table.set(baseFileName, hash);
+  for (const { destination, origin } of outputFiles) {
+    if (origin && (origin !== jsSrc && origin !== cssSrc)) {
+      const baseFileName = origin.split('/').pop();
+      const hash = await getFileHash(destination);
+      if (baseFileName && hash) {
+        table.set(baseFileName, hash);
+      }
     }
   }
-  return table;
+  // return minified JSON string
+  return JSON.stringify(table, null).replace(/ /, '').replace(/\n/,'').replace(/\t/,'');
 };
 
-// Execute the file processing
 buildAll().then(() => console.log('Build completed')).catch((error) => console.error('Error building:', error));
+
 
 /** For MinSVG function:
  *

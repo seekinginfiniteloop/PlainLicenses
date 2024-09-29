@@ -1,11 +1,11 @@
-import * as fs from "fs";
-import * as path from "path";
-import { execSync } from "child_process";
+import * as fs from "fs"
+import * as path from "path"
+import { execSync } from "child_process"
 
-import { Commit, CommitScope, CommitType } from "./";
+import { Commit, CommitType } from "./"
 
-const licensesDir = path.join("docs", "licenses");
-const projectChangelogPath = "docs/CHANGELOG.md";
+const licensesDir = path.join("docs", "licenses")
+const projectChangelogPath = "docs/CHANGELOG.md"
 
 /**
  * Retrieves the most recent Git tag.
@@ -14,9 +14,9 @@ const projectChangelogPath = "docs/CHANGELOG.md";
  */
 function getLastTag(): string {
   try {
-    return execSync("git describe --tags --abbrev=0").toString().trim();
+    return execSync("git describe --tags --abbrev=0").toString().trim()
   } catch (error) {
-    return ""; // If no tags exist yet
+    return "" // If no tags exist yet
   }
 }
 
@@ -29,8 +29,8 @@ function getLastTag(): string {
 function getCommitsSince(tag: string): string[] {
   const command = tag
     ? `git log ${tag}..HEAD --format="%h|%s|%b"`
-    : 'git log --format="%h|%s|%b"';
-  return execSync(command).toString().trim().split("\n\n").filter(Boolean);
+    : 'git log --format="%h|%s|%b"'
+  return execSync(command).toString().trim().split("\n\n").filter(Boolean)
 }
 
 /**
@@ -40,20 +40,21 @@ function getCommitsSince(tag: string): string[] {
  * @returns The parsed Commit object or null if parsing fails.
  */
 function parseCommit(commitString: string): Commit | undefined {
-  const [hash, subject, body] = commitString.split("|");
-  const match = subject.match(/^(\w+)(?:\(([^)]+)\))?: (.+)$/);
+  const [hash, subject, body] = commitString.split("|")
+  const match = subject.match(/^(\w+)(?:\(([^)]+)\))?: (.+)$/)
   if (match) {
-    const [, type, scope, description] = match;
+    const [, type, scope, description] = match
     return {
       hash,
       type: type as CommitType, // Explicitly cast to CommitType
-      scope: scope as CommitScope || undefined,
+      scope: scope || undefined,
       description,
       body
-    };
+    }
   }
-  return undefined;
+  return undefined
 }
+
 /**
  * Maps commit types to changelog categories.
  */
@@ -63,8 +64,8 @@ const changeCategoryMap = new Map<string, "minor" | "patch" | "other">([
   ["script", "minor"],
   ["admin", "patch"],
   ["fix", "patch"],
-  ["content", "patch"],
-]);
+  ["content", "patch"]
+])
 
 /**
  * Categorizes a commit type into changelog categories.
@@ -73,7 +74,7 @@ const changeCategoryMap = new Map<string, "minor" | "patch" | "other">([
  * @returns The category of the change.
  */
 function categorizeChange(type: string): "minor" | "patch" | "other" {
-  return changeCategoryMap.get(type) || "other";
+  return changeCategoryMap.get(type) || "other"
 }
 
 /**
@@ -88,7 +89,7 @@ function appendToChangelogSections(
   category: string,
   entry: string
 ) {
-  changelogSections[category] += entry;
+  changelogSections[category] += entry
 }
 
 /**
@@ -98,68 +99,70 @@ function appendToChangelogSections(
  * @param content - The content to write to the file.
  */
 function writeChangelogFile(filePath: string, content: string) {
-  fs.writeFileSync(filePath, content);
+  fs.writeFileSync(filePath, content)
 }
 
 /**
  * Generates an overall changelog for the project *and* changelogs for each license.
+ * @returns Promise<void>
  */
 async function generateChangelog(): Promise<void> {
-  const lastTag = getLastTag();
-  let projectChangelog = "# Changelog\n\n";
-  const licenseChangelogs: { [key: string]: string } = {};
+  const lastTag = getLastTag()
+  let projectChangelog = "# Changelog\n\n"
+  const licenseChangelogs: { [key: string]: string } = {}
 
-  const commits = getCommitsSince(lastTag);
+  const commits = getCommitsSince(lastTag)
 
   const changelogSections: { [key: string]: string } = {
     minor: "## Minor Changes\n\n",
     patch: "## Patch Changes\n\n",
-    other: "## Other Changes\n\n",
-  };
+    other: "## Other Changes\n\n"
+  }
 
-  commits.forEach((commit) => {
-    const parsedCommit = parseCommit(commit);
+  commits.forEach(commit => {
+    const parsedCommit = parseCommit(commit)
     if (parsedCommit) {
-      const { hash, type, scope, description, body } = parsedCommit;
-      const changeCategory = categorizeChange(type);
+      const { hash, type, scope, description, body } = parsedCommit
+      const changeCategory = categorizeChange(type)
       const changeEntry = `- ${type}${
         scope ? `(${scope})` : ""
-      }: ${description} (${hash})\n`;
+      }: ${description} (${hash})\n`
 
-      appendToChangelogSections(changelogSections, changeCategory, changeEntry);
+      appendToChangelogSections(changelogSections, changeCategory, changeEntry)
 
       if (scope && scope.includes("-")) {
         if (!licenseChangelogs[scope]) {
-          licenseChangelogs[scope] = "# Changelog\n\n";
+          licenseChangelogs[scope] = "# Changelog\n\n"
         }
-        licenseChangelogs[scope] += changeEntry;
+        licenseChangelogs[scope] += changeEntry
       }
 
       if (body.includes("BREAKING CHANGE:")) {
-        const breakingChange = body.split("BREAKING CHANGE:")[1].trim();
+        const breakingChange = body.split("BREAKING CHANGE:")[1].trim()
         changelogSections.minor =
-          `## Breaking Changes\n\n- ${breakingChange}\n\n` +
-          changelogSections.minor;
+          `## Breaking Changes\n\n- ${breakingChange}\n\n${
+            changelogSections.minor}`
       }
     }
-  });
+  })
 
-  Object.values(changelogSections).forEach((section) => {
+  Object.values(changelogSections).forEach(section => {
     if (section.split("\n").length > 2) {
-      projectChangelog += section + "\n";
+      projectChangelog += `${section  }\n`
     }
-  });
+  })
 
-  writeChangelogFile(projectChangelogPath, projectChangelog);
+  writeChangelogFile(projectChangelogPath, projectChangelog)
 
   Object.entries(licenseChangelogs).forEach(([license, changelog]) => {
-    const [category, name] = license.split("-");
-    const licenseDir = path.join(licensesDir, category, name);
-    const licenseChangelogPath = path.join(licenseDir, "CHANGELOG.md");
-    writeChangelogFile(licenseChangelogPath, changelog);
-  });
+    const [category, name] = license.split("-")
+    const licenseDir = path.join(licensesDir, category, name)
+    const licenseChangelogPath = path.join(licenseDir, "CHANGELOG.md")
+    writeChangelogFile(licenseChangelogPath, changelog)
+  })
 
-  console.log("Changelogs generated successfully.");
+  // eslint-disable-next-line no-console
+  console.log("Changelogs generated successfully.")
 }
 
-generateChangelog();
+await generateChangelog()
