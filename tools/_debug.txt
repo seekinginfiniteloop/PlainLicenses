@@ -1,0 +1,29 @@
+/run/user/1000/fnm_multishells/20459_1727485397161/bin/node -r ts-node/register tools/build/index.js
+Building node...
+current working directory: /home/username/dev/DevProjects/PlainLicense
+Build for node completed successfully
+Build for node completed
+Temporary bundle.css removed
+Building browser...
+current working directory: /home/username/dev/DevProjects/PlainLicense
+i Resolve assert pair to path from: /home/username/dev/DevProjects/PlainLicense
+i Watching mode enabled for all asset pairs, you can disable it by set watch to false in specified asset pairs
+i Watching mode disabled. You need to enable build.watch option for watch mode to work.
+Build completed
+i The from path ./src/images/*.+(svg|png|webp) of current asset pair doesnot ends with /**/*(.ext),
+i File copied: /home/username/dev/DevProjects/PlainLicense/src/images/favicon.png -> /home/username/dev/DevProjects/PlainLicense/docs/assets/images/favicon.png
+i The from path ./src/images/*.+(svg|png|webp) of current asset pair doesnot ends with /**/*(.ext),
+i File copied: /home/username/dev/DevProjects/PlainLicense/src/images/logo_named.svg -> /home/username/dev/DevProjects/PlainLicense/docs/assets/images/logo_named.svg
+Error building browser: Error: Build failed with 35 errors:
+node_modules/@nodelib/fs.scandir/out/adapters/fs.js:4:19: ERROR: Could not resolve "fs"
+node_modules/@nodelib/fs.scandir/out/settings.js:3:21: ERROR: Could not resolve "path"
+node_modules/@nodelib/fs.stat/out/adapters/fs.js:4:19: ERROR: Could not resolve "fs"
+node_modules/@nodelib/fs.walk/out/providers/stream.js:3:25: ERROR: Could not resolve "stream"
+node_modules/@nodelib/fs.walk/out/readers/async.js:3:25: ERROR: Could not resolve "events"
+...
+    at failureErrorWithLog (/home/username/dev/DevProjects/PlainLicense/node_modules/esbuild/lib/main.js:1476:15)
+    at /home/username/dev/DevProjects/PlainLicense/node_modules/esbuild/lib/main.js:945:25
+    at /home/username/dev/DevProjects/PlainLicense/node_modules/esbuild/lib/main.js:1354:9 {errors: <accessor>, warnings: <accessor>, stack: 'Error: Build failed with 35 errors:
+node_modu…cense/node_modules/esbuild/lib/main.js:1354:9', message: 'Build failed with 35 errors:
+node_modules/@n…:3:25: ERROR: Could not resolve "events"
+...'}

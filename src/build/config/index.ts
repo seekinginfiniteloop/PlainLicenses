@@ -10,7 +10,7 @@ import { globby } from "globby";
  * @returns A promise that resolves to the first file that matches the glob.
  */
 async function getHeroParents(): Promise<string[]> {
-  const fastGlobSettings = { onlyDirectories: true};
+  const fastGlobSettings = { onlyDirectories: true, unique: true };
   return await globby("src/images/hero/*", fastGlobSettings);
 }
 
@@ -96,9 +96,9 @@ export const webConfig: esbuild.BuildOptions = {
       watch: true,
       verbose: true,
       resolveFrom: "cwd",
+      globbyOptions: { gitignore: true, extglob: true, unique: true },
       assets: [
-        { from: "./src/images/*.svg", to: "./docs/assets/images/*.svg" },
-        { from: "./src/images/*.png", to: "./docs/assets/images/*.png" },
+        { from: "./src/images/*.+(svg|png|webp)", to: "./docs/assets/images" },
       ],
     }),
   ],

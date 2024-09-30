@@ -3,6 +3,7 @@
   "version": "0.0.0-development",
   "description": "Plain language versions of popular licenses",
   "main": "docs/assets/javascripts/",
+  "type":"module",
   "scripts": {
     "release": "semantic-release",
     "generate-changelog": "node .github/scripts/generate-changelog.js",

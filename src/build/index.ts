@@ -93,7 +93,7 @@ async function handleHeroImages() {
   for (const parent of parents) {
     const parentName = parent.split('/').pop();
     const filePattern = `${parentName}_{1280,1920,2560,3840}.avif`;
-    const children = await globby(`${parent}/${filePattern}`, { onlyFiles: true });
+    const children = await globby(`${parent}/${filePattern}`, { onlyFiles: true, unique: true });
     const heroImages: { [key: string]: string[] } = { [parent]: children };
 
     const hashedFileNames = await Promise.all(
@@ -147,27 +147,31 @@ async function clearDirs() {
   const destParents = parents.map((parent) => parent.replace('src/', 'docs/assets/'));
   const dirs = ['docs/assets/stylesheets', 'docs/assets/javascripts', 'docs/assets/images', 'docs/assets/fonts', ...(destParents)];
   for (const dir of dirs) {
+    if (!(await fs.stat(dir).catch(() => false))) {
+      continue
+    }
     for (const file of await fs.readdir(dir)) {
       if (!dir.includes('javascripts') && !file.match(/tablesort\.js|feedback\.js|pixel\.js/)) {
         const filePath = path.join(dir, file);
-        if (!(await fs.lstat(filePath)).isDirectory()) {
-          try {
-            await fs.rm(filePath);
-          } catch (err) {
-            console.error(err);
+        if ((await fs.access(filePath).catch(() => false)) && !(await fs.stat(filePath)).isDirectory()) {
+          {
+            try {
+              await fs.rm(filePath);
+            } catch (err) {
+              console.error(err);
+            }
           }
         }
       }
     }
   }
 }
-
 /**
  * transforms SVG files in src/images directory
  * @function
  */
 async function transformSvg(): Promise<void> {
-  const svgFiles = await globby('src/images/*.svg', { onlyFiles: true });
+  const svgFiles = await globby('src/images/*.svg', { onlyFiles: true, unique: true });
   for (const file of svgFiles) {
     const content = await fs.readFile(file, 'utf8');
     const minified = minsvg(content);
@@ -186,7 +190,7 @@ interface FileHashes {
  * @returns the file hashes for palette and main CSS files
  */
 async function getFileHashes(): Promise<FileHashes> {
-  const fastGlobSettings = { onlyFiles: true };
+  const fastGlobSettings = { onlyFiles: true, unique: true };
   const paletteCSS = await globby('external/mkdocs-material/material/templates/assets/stylesheets/palette.*.min.css', fastGlobSettings);
   const mainCSS = await globby('external/mkdocs-material/material/templates/assets/stylesheets/main.*.min.css', fastGlobSettings);
   const paletteHash = await getFileHash(paletteCSS[0]);
@@ -204,6 +208,12 @@ async function replacePlaceholders(): Promise<void> {
     return;
   }
   try {
+    if (await fs.access(cssSrc).catch(() => false)) {
+      const cssContent = await fs.readFile(cssSrc, 'utf8');
+      if (cssContent.includes(palette) && cssContent.includes(main)) {
+        return;
+      }
+    }
     let bundleCssContent = await fs.readFile('src/stylesheets/_bundle_template.css', 'utf8');
     bundleCssContent = bundleCssContent.replace('{{ palette-hash }}', palette).replace("{{ main-hash }}", main);
     await fs.writeFile(cssSrc, bundleCssContent);

@@ -50,7 +50,7 @@ async function resolveGlob(glob: string, fastGlobOptions?: {}): Promise<string[]
 async function generateSrcset(image: HeroImageBase): Promise<string> {
   const entries = await Promise.all(
     Object.entries(image.widths).map(async ([width, src]) => {
-      return `${await resolveGlob(src, { onlyFiles: true})} ${width}w`
+      return `${await resolveGlob(src, { onlyFiles: true, unique: true })} ${width}w`
     })
   )
   return entries.join(", ")
@@ -62,8 +62,8 @@ export const heroImages: { [key: string]: HeroImage } = Object.fromEntries(
   await Promise.all(
     parents.map(async (parent: string) => {
       const key = parent.split("/").pop()
-      const children = await resolveGlob(`${parent}/${key}_*.*.avif`, { onlyFiles: true, cwd: "./PlainLicense/docs" })
-
+      const filePattern = `${key}_{1280,1920,2560,3840}.avif`
+      const children = await globby(`${parent}/${filePattern}`, { onlyFiles: true, unique: true })
       const flattenedWidths: WidthMap = children.reduce<WidthMap>((acc, child) => {
         const width: number | undefined = [1280, 1920, 2560, 3840].find((w: number) => child.includes(w.toString()))
         if (width) {

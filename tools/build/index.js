@@ -66,7 +66,7 @@ async function handleHeroImages() {
     for (const parent of parents) {
         const parentName = parent.split('/').pop();
         const filePattern = `${parentName}_{1280,1920,2560,3840}.avif`;
-        const children = await globby(`${parent}/*.avif`, { cwd: './PlainLicense', onlyFiles: true });
+        const children = await globby(`${parent}/${filePattern}`, { onlyFiles: true, unique: true });
         const heroImages = { [parent]: children };
         const hashedFileNames = await Promise.all(heroImages[parent].map(async (image) => {
             const hashedName = await getmd5Hash(image);
@@ -109,17 +109,23 @@ async function build(project) {
  */
 async function clearDirs() {
     const parents = await heroParents;
-    const dirs = ['docs/assets/stylesheets', 'docs/assets/javascripts', 'docs/assets/images', 'docs/assets/fonts', ...(parents)];
+    const destParents = parents.map((parent) => parent.replace('src/', 'docs/assets/'));
+    const dirs = ['docs/assets/stylesheets', 'docs/assets/javascripts', 'docs/assets/images', 'docs/assets/fonts', ...(destParents)];
     for (const dir of dirs) {
+        if (!(await fs.stat(dir).catch(() => false))) {
+            continue;
+        }
         for (const file of await fs.readdir(dir)) {
             if (!dir.includes('javascripts') && !file.match(/tablesort\.js|feedback\.js|pixel\.js/)) {
                 const filePath = path.join(dir, file);
-                if (!(await fs.lstat(filePath)).isDirectory()) {
-                    try {
-                        await fs.rm(filePath);
-                    }
-                    catch (err) {
-                        console.error(err);
+                if ((await fs.access(filePath).catch(() => false)) && !(await fs.stat(filePath)).isDirectory()) {
+                    {
+                        try {
+                            await fs.rm(filePath);
+                        }
+                        catch (err) {
+                            console.error(err);
+                        }
                     }
                 }
             }
@@ -131,7 +137,7 @@ async function clearDirs() {
  * @function
  */
 async function transformSvg() {
-    const svgFiles = await globby('src/images/*.svg', { onlyFiles: true });
+    const svgFiles = await globby('src/images/*.svg', { onlyFiles: true, unique: true });
     for (const file of svgFiles) {
         const content = await fs.readFile(file, 'utf8');
         const minified = minsvg(content);
@@ -144,7 +150,7 @@ async function transformSvg() {
  * @returns the file hashes for palette and main CSS files
  */
 async function getFileHashes() {
-    const fastGlobSettings = { onlyFiles: true };
+    const fastGlobSettings = { onlyFiles: true, unique: true };
     const paletteCSS = await globby('external/mkdocs-material/material/templates/assets/stylesheets/palette.*.min.css', fastGlobSettings);
     const mainCSS = await globby('external/mkdocs-material/material/templates/assets/stylesheets/main.*.min.css', fastGlobSettings);
     const paletteHash = await getFileHash(paletteCSS[0]);
@@ -161,6 +167,12 @@ async function replacePlaceholders() {
         return;
     }
     try {
+        if (await fs.access(cssSrc).catch(() => false)) {
+            const cssContent = await fs.readFile(cssSrc, 'utf8');
+            if (cssContent.includes(palette) && cssContent.includes(main)) {
+                return;
+            }
+        }
         let bundleCssContent = await fs.readFile('src/stylesheets/_bundle_template.css', 'utf8');
         bundleCssContent = bundleCssContent.replace('{{ palette-hash }}', palette).replace("{{ main-hash }}", main);
         await fs.writeFile(cssSrc, bundleCssContent);
