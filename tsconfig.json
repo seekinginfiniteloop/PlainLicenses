@@ -8,7 +8,7 @@
     "allowSyntheticDefaultImports": true,
     "jsx": "react",
     "jsxFactory": "h",
-    "lib": ["dom", "esnext", "webworker"],
+    "lib": ["dom", "esnext", "webworker", "es2020", "es2018"],
     "module": "esnext",
     "moduleResolution": "Bundler",
     "noFallthroughCasesInSwitch": true,
