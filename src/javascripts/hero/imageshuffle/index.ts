@@ -12,7 +12,6 @@ import {
   ReplaySubject,
   Subscription,
   combineLatest,
-  forkJoin,
   from,
   fromEvent,
   fromEventPattern,
@@ -26,6 +25,7 @@ import { catchError, distinctUntilChanged, filter, mergeMap, switchMap, tap } fr
 import { getAsset } from "~/cache"
 import { logger } from "~/log"
 import { ImageSettings } from "./_types"
+import { heroImages } from "./config"
 
 const { document$, viewport$, location$ } = window
 
@@ -37,9 +37,52 @@ const subscriptions: Subscription[] = []
 
 const portraitMediaQuery = window.matchMedia("(orientation: portrait)")
 
-const imageNames = ["abstract", "anime", "artbrut", "comic", "fanciful", "fantasy", "farcical", "fauvist", "minimal", "mystical", "surreal"]
+const imageNames = Object.keys(heroImages)
 
 const parallaxLayer = document.getElementById("parallax-hero-image-layer")
+
+/**
+ * Determine the optimal width based on screen size
+ * @function
+ * @returns the optimal width for the image
+ */
+const getOptimalWidth = () => {
+    const screenWidth = Math.max(window.innerWidth, window.innerHeight)
+    if (screenWidth <= 1280) {
+      return 1280
+    }
+    if (screenWidth <= 1920) {
+      return 1920
+    }
+    if (screenWidth <= 2560) {
+      return 2560
+    }
+    return 2840
+  }
+
+/**
+ * Creates an array of ImageSettings objects from the heroImages object.
+ * @function
+ * @returns an array of ImageSettings objects
+ */
+const getImageSettings = (): ImageSettings[] => {
+  const optimalWidth = getOptimalWidth()
+  return imageNames.map(imageName => {
+    const urls = heroImages.imageName
+    if (Array.isArray(urls) && urls.length > 0) {
+      const srcset = heroImages.imageName.srcset as unknown as string
+      const src = urls.find(url => url.includes(optimalWidth))
+      if (!src || !srcset) {
+        throw new Error(`Failed to generate image settings for ${imageName}`)
+      }
+      return { imageName, srcset, src }
+    } else {
+      throw new Error(`Failed to generate image settings for ${imageName}`)
+    }
+  })
+}
+
+const allImageSettings = getImageSettings()
 
 const hashTableSubject = new ReplaySubject<{ [key: string]: string }>(1)
 
@@ -68,34 +111,6 @@ subscriptions.push(
   }))
 
 /**
- * Fetches the image URLs for the specified image name.
- * @function
- * @param imageName - image name; the name from the image settings object
- * @returns Promise of the image URLs
- */
-async function getImageUrls(imageName: string): Promise<void | string[]> {
-  const baseUrl = `assets/images/hero/${imageName}/${imageName}`
-  const widths = ["1280", "1920", "2560", "3840"]
-  const urls: string[] = []
-
-  // Wait for the hash table to be available
-  const hashTable = await new Promise<{ [key: string]: string }>((resolve, reject) => {
-    hashTableSubject.subscribe({
-      next: resolve,
-      error: reject
-    })
-  })
-
-  widths.forEach(width => {
-    const lookup = `${imageName}_${width}.avif`
-    const hash = hashTable[lookup]
-    urls.push(`${baseUrl}_${width}.${hash}.avif`)
-  })
-
-  return urls
-}
-
-/**
  * Loads an image from the server.
  * @param imageUrl - image url
  * @returns Observable of the image blob
@@ -109,25 +124,6 @@ const loadImage = (imageUrl: string): Observable<Blob> => {
     })
   )
 }
-
-/**
- * Determine the optimal width based on screen size
- * @function
- * @returns the optimal width for the image
- */
-const getOptimalWidth = () => {
-    const screenWidth = Math.max(window.innerWidth, window.innerHeight)
-    if (screenWidth <= 1280) {
-      return "1280"
-    }
-    if (screenWidth <= 1920) {
-      return "1920"
-    }
-    if (screenWidth <= 2560) {
-      return "2560"
-    }
-    return "3840"
-  }
 
 /**
  * Fetches and sets an image element based on the specified image data.
@@ -170,47 +166,12 @@ const fetchAndSetImage = (imgSettings: ImageSettings): Observable<void> => {
 }
 
 /**
- * Assembles image settings for all images.
- * @function
- * @returns Observable of the image settings
- */
-function assembleImageSettings(): Observable<ImageSettings[]> {
-  const optimalWidth = getOptimalWidth()
-  const imageSettings$: Observable<ImageSettings>[] = imageNames.map(imageName => {
-    return from(getImageUrls(imageName)).pipe(
-      map(urls => {
-        if (Array.isArray(urls) && urls.length > 0) {
-          const srcset = urls.map(newUrl => `${newUrl} ${optimalWidth}w`).join(", ")
-          const src = urls.find(url => url.includes(optimalWidth))
-          if (!src || !srcset) {
-            throw new Error(`Failed to generate image settings for ${imageName}`)
-          }
-          return { imageName, srcset, src }
-        } else {
-          throw new Error(`Failed to generate image settings for ${imageName}`)
-        }
-      }),
-      catchError(error => {
-        logger.error(`Failed to generate image settings for ${imageName}: ${error}`)
-        return of(undefined) // Return an observable of undefined on error
-      }),
-      filter(setting => setting !== undefined) // Filter out undefined values
-    )
-  })
-
-  return forkJoin(imageSettings$).pipe(
-    map(settings => settings.filter((setting): setting is ImageSettings => setting !== undefined)) // Filter out undefined values
-  )
-}
-
-/**
  * Randomizes the order of the image settings to shuffle the images
  * @function
- * @param imageSettings - array of image settings
  * @returns array of the shuffled image settings
  */
-function randomizeImageSettings(imageSettings: ImageSettings[]): ImageSettings[] {
-  return imageSettings.sort(() => Math.random() - 0.5)
+function randomizeImageSettings(): ImageSettings[] {
+  return allImageSettings.sort(() => Math.random() - 0.5)
 }
 
 let imageGenerator: Generator<ImageSettings>
@@ -220,11 +181,11 @@ let imageGenerator: Generator<ImageSettings>
  *
  * @generator
  * @function
- * @param imageSettings - array of image settings
+ * @param imgSettings - array of image settings
  * @yields image datum objects
  */
-function* imageRetrievalGenerator(imageSettings: ImageSettings[]): Generator<ImageSettings> {
-  for (const setting of imageSettings) {
+function* imageRetrievalGenerator(imgSettings: ImageSettings[]): Generator<ImageSettings> {
+  for (const setting of imgSettings) {
     yield setting
   }
 }
@@ -235,16 +196,10 @@ function* imageRetrievalGenerator(imageSettings: ImageSettings[]): Generator<Ima
  * @function
  */
 function initializeImageGenerator() {
-  assembleImageSettings().subscribe({
-    next: settings => {
-      const imageSettings = randomizeImageSettings(settings) // Shuffle and store the settings
-      imageGenerator = imageRetrievalGenerator(imageSettings) // Create the generator
-    },
-    error: err => {
-      logger.error("Error processing image settings:", err)
-    }
-  })
+  const randomSettings = randomizeImageSettings() // Shuffle and store the settings
+  imageGenerator = imageRetrievalGenerator(randomSettings) // Create the generator
 }
+
 // Variables for image cycling
 initializeImageGenerator()
 let generatorExhausted = false // turns true when the generator is exhausted
@@ -370,23 +325,13 @@ const createOrientationObservable = (mediaQuery: MediaQueryList): Observable<boo
 /**
  * Regenerates the sources for the images in the hero section following a screen orientation change.
  * @function
- * @param srcsetString - the srcset string for the image
- * @param optimalWidth - the optimal width for the image
- * @returns the new source for the image
- */
-function findNewSrc(srcsetString: string, optimalWidth: string): string | undefined {
-  return srcsetString.split(",").find(url => url.includes(optimalWidth))?.split(" ")[0]
-}
-
-/**
- * Regenerates the sources for the images in the hero section following a screen orientation change.
- * @function
  * @param optimalWidth - the optimal width for the image
  */
-function regenerateSources(optimalWidth: string) {
+function regenerateSources(optimalWidth: number) {
   Array.from(parallaxLayer?.getElementsByTagName("img") || []).forEach((image, index) => {
     if (index !== 0) {
-      const newChildSrc = findNewSrc(image.srcset, optimalWidth)
+      const imageName = image.classList[1].split("--")[1]
+      const newChildSrc = heroImages[imageName].widths[optimalWidth]
       if (newChildSrc) {
         image.src = newChildSrc
       }
@@ -403,27 +348,11 @@ function regenerateSources(optimalWidth: string) {
   }
   generatorExhausted = nextSettings.length === 0
   nextSettings.forEach(setting => {
-    const newSrc = findNewSrc(setting.srcset, optimalWidth)
-    if (newSrc) {
-      setting.src = newSrc
-    }
+    const newSrc = heroImages[setting.imageName].widths[optimalWidth]
+    setting.src = newSrc
   })
   if (nextSettings.length > 0) {
     imageGenerator = imageRetrievalGenerator(nextSettings)
-  }
-}
-
-/**
- * Sets the new source for the current image in the hero section following a screen orientation change, and starts regeneration of sources for the remaining images.
- * @function
- * @param img - the hero image
- * @param optimalWidth - the optimal width for the image
- */
-function setNewSrc(img: HTMLImageElement, optimalWidth: string) {
-  const newSrc = findNewSrc(img.srcset, optimalWidth)
-  if (newSrc) {
-    img.src = newSrc
-    regenerateSources(optimalWidth)
   }
 }
 
@@ -444,8 +373,8 @@ const orientation$ = createOrientationObservable(portraitMediaQuery).pipe(
       if (currentImage) {
         const currentWidth = currentImage.width
         const optimalWidth = getOptimalWidth()
-        if (currentWidth !== parseInt(optimalWidth, 10)) {
-          setNewSrc(currentImage, optimalWidth)
+        if (currentWidth !== optimalWidth) {
+          regenerateSources(optimalWidth)
         }
       }
     }

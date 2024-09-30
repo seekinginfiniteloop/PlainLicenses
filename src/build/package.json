@@ -1,7 +1,7 @@
 {
+  "name": "plain-license-build-tools",
   "description": "Build tools for PlainLicense",
-  "name": "plain-license-build",
-  "main": "build/index.js",
+  "main": "build/index.ts",
   "type": "module",
   "scripts": {
     "build": "tsc -p ../tsconfig.build.json"

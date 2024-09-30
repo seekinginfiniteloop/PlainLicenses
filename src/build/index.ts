@@ -1,10 +1,13 @@
+import * as crypto from "crypto";
 import * as esbuild from "esbuild";
 import * as fs from 'fs/promises';
-import * as glob from 'glob';
+import { globby } from "globby";
 import * as path from 'path';
 import { Observable, from } from "rxjs";
 import { optimize } from "svgo";
-import { GHActions, Project, baseProject, nodeConfig, webConfig } from "./config";
+import { GHActions, Project, baseProject, heroParents, nodeConfig, webConfig } from "./config/index.js";
+
+const cssSrc = "src/stylesheets/bundle.css";
 
 /**
  * Strips a file hash from a full path to a file.
@@ -13,6 +16,17 @@ import { GHActions, Project, baseProject, nodeConfig, webConfig } from "./config
  * @param fullPath - the full path to the file
  * @returns the file hash
  */
+
+interface esbuildOutputs {
+      [k: string]:
+      {
+        bytes: number,
+        inputs: string[] | [],
+        exports: string[] | [],
+        entryPoint?: string,
+      },
+};
+
 async function getFileHash(fullPath: string): Promise<string> {
   if (!fullPath || typeof fullPath !== 'string' || !fullPath.includes('.')) {
     return '';
@@ -62,6 +76,43 @@ function minsvg(data: string): string {
 }
 
 /**
+ * Generates an MD5 hash for a file and appends it to the file name
+ * @param filePath - the path to the file
+ * @returns new filename with the hash appended
+ */
+async function getmd5Hash(filePath: string): Promise<string> {
+  const content = await fs.readFile(filePath, 'utf8');
+  const hash = crypto.createHash('md5').update(content).digest('hex').slice(0, 8);
+  const parts = filePath.split('.');
+  const ext = parts.pop();
+  return parts.join('.') + '.' + hash + '.' + ext;
+}
+
+async function handleHeroImages() {
+  const parents = await heroParents;
+  for (const parent of parents) {
+    const parentName = parent.split('/').pop();
+    const filePattern = `${parentName}_{1280,1920,2560,3840}.avif`;
+    const children = await globby(`${parent}/${filePattern}`, { onlyFiles: true });
+    const heroImages: { [key: string]: string[] } = { [parent]: children };
+
+    const hashedFileNames = await Promise.all(
+      heroImages[parent].map(async (image: string) => {
+        const hashedName = await getmd5Hash(image);
+        return [image, hashedName.replace('src/', 'docs/assets/')];
+      })
+    ).then(entries => Object.fromEntries(entries)); // Convert array of entries to an object
+
+    for (const [src, dest] of Object.entries(hashedFileNames)) {
+      if (src && dest && !(await fs.stat(dest as string).catch(() => false))) { // Check if the file doesn't exist
+        await fs.cp(src, dest as string);
+      }
+    }
+  }
+}
+
+
+/**
  * main esbuild build function
  * @function
  * @param project - the project to build
@@ -79,9 +130,7 @@ async function build(project: Project): Promise<Observable<unknown>> {
       const output = await metaOutput(result);
       if (output) {
         await writeMeta(output);
-        const table = await hashTable(output);
-        await fs.writeFile(path.join('docs/assets/javascripts', 'hashTable.json'), table);
-        await metaOutputMap(result);
+        await metaOutputMap(output);
       }
     }
   });
@@ -94,7 +143,9 @@ async function build(project: Project): Promise<Observable<unknown>> {
  * @function
  */
 async function clearDirs() {
-  const dirs = ['docs/assets/stylesheets', 'docs/assets/javascripts'];
+  const parents = await heroParents;
+  const destParents = parents.map((parent) => parent.replace('src/', 'docs/assets/'));
+  const dirs = ['docs/assets/stylesheets', 'docs/assets/javascripts', 'docs/assets/images', 'docs/assets/fonts', ...(destParents)];
   for (const dir of dirs) {
     for (const file of await fs.readdir(dir)) {
       if (!dir.includes('javascripts') && !file.match(/tablesort\.js|feedback\.js|pixel\.js/)) {
@@ -116,7 +167,7 @@ async function clearDirs() {
  * @function
  */
 async function transformSvg(): Promise<void> {
-  const svgFiles = await glob.glob('src/images/*.svg', { includeChildMatches: true });
+  const svgFiles = await globby('src/images/*.svg', { onlyFiles: true });
   for (const file of svgFiles) {
     const content = await fs.readFile(file, 'utf8');
     const minified = minsvg(content);
@@ -135,8 +186,9 @@ interface FileHashes {
  * @returns the file hashes for palette and main CSS files
  */
 async function getFileHashes(): Promise<FileHashes> {
-  const paletteCSS = await glob.glob('external/mkdocs-material/src/overrides/assets/stylesheets/palette.*.min.css', { includeChildMatches: true });
-  const mainCSS = await glob.glob('external/mkdocs-material/src/overrides/assets/stylesheets/main.*.min.css', { includeChildMatches: true });
+  const fastGlobSettings = { onlyFiles: true };
+  const paletteCSS = await globby('external/mkdocs-material/material/templates/assets/stylesheets/palette.*.min.css', fastGlobSettings);
+  const mainCSS = await globby('external/mkdocs-material/material/templates/assets/stylesheets/main.*.min.css', fastGlobSettings);
   const paletteHash = await getFileHash(paletteCSS[0]);
   const mainHash = await getFileHash(mainCSS[0]);
   return { palette: paletteHash || '', main: mainHash || '' };
@@ -152,10 +204,9 @@ async function replacePlaceholders(): Promise<void> {
     return;
   }
   try {
-    let bundleCssContent = await fs.readFile('src/stylesheets/bundle.css', 'utf8');
+    let bundleCssContent = await fs.readFile('src/stylesheets/_bundle_template.css', 'utf8');
     bundleCssContent = bundleCssContent.replace('{{ palette-hash }}', palette).replace("{{ main-hash }}", main);
-    await fs.cp('src/stylesheets/bundle.css', 'src/stylesheets/bundle.css.bak');
-    await fs.writeFile('src/stylesheets/bundle.css', bundleCssContent);
+    await fs.writeFile(cssSrc, bundleCssContent);
   } catch (error) {
     console.error('Error replacing placeholders:', error);
   }
@@ -184,14 +235,8 @@ async function buildAll() {
     await handleSubscription(baseProject);
   } catch (error) {
     console.error('Error building base project:', error);
-  } finally {
-    try {
-      await fs.unlink('src/stylesheets/bundle.css');
-      await fs.rename('src/stylesheets/bundle.css.bak', 'src/stylesheets/bundle.css');
-    } catch (err) {
-      console.error(`Error removing temporary bundle.css or renaming it: ${err}`);
-    }
   }
+  await handleHeroImages();
 }
 
 /**
@@ -217,41 +262,37 @@ const metaOutput = async (result: esbuild.BuildResult) => {
   );
 }
 
-const jsSrc = "src/javascripts/index.ts";
-const cssSrc = "src/stylesheets/bundle.css";
-
 /**
  * Create a mapping of original file names to hashed file names
  * @function
- * @param result - the esbuild build result
+ * @param output - the metaOutput object
  */
-const metaOutputMap = async (result: esbuild.BuildResult) => {
-  const mapping: Map<string, string> = new Map();
-  if (result && result.metafile) {
-    for (const [key, output] of Object.entries(result.metafile.outputs)) {
-      if (!output) {
-        continue;
+const metaOutputMap = async (output: esbuildOutputs): Promise<{ [key: string]: string }> => {
+  const keys = Object.keys(output);
+  const jsSrcKey = keys.find((key) => key.endsWith('.js'));
+  const cssSrcKey = keys.find((key) => key.endsWith('.css'));
+
+  const mapping = Object.fromEntries(
+    Object.entries(output).map(([key, value]) => {
+      if (key.endsWith(".map")) {
+        return; // Skip map files
       }
-
-      if ((output.entryPoint?.endsWith(".css") && output.entryPoint === cssSrc) || (output.entryPoint?.endsWith(".js") && output.entryPoint === jsSrc)) {
-        const newKey = output.entryPoint?.endsWith(".css") ? "CSSBUNDLE" : "SCRIPTBUNDLE";
-        mapping.set(newKey, await getFileHash(key));
-        continue;
+      if (key === (jsSrcKey)) {
+        return ['SCRIPTBUNDLE', key.replace('docs/', '')];
       }
-
-      const relativePath = path.relative('assets', key);
-      let originalName = path.basename(Object.keys(output.inputs)[0]);
-
-      if (output.entryPoint) {
-        originalName = path.basename(output.entryPoint || Object.keys(output.inputs)[0]);
+      if (key === (cssSrcKey)) {
+        return ["CSSBUNDLE", key.replace('docs/', '')];
       }
-      mapping.set(originalName, relativePath);
-    }
+      return [key, (value).entryPoint?.replace('docs/', '') || key];
+    }).filter(entry => entry !== undefined) // Filter out undefined entries
+  );
 
-    const outputMetaPath = path.join('overrides', 'buildmeta.json');
-    await fs.writeFile(outputMetaPath, JSON.stringify(mapping, null, 2));
-  }
+  const outputMetaPath = path.join('overrides', 'buildmeta.json');
+  await fs.writeFile(outputMetaPath, JSON.stringify(mapping, null, 2));
+
+  return mapping; // Return the mapping object
 }
+
 
 /**
  * Write the meta.json file
@@ -263,33 +304,13 @@ const writeMeta = async (metaOutput: {}) => {
   await fs.writeFile(path.join('docs', 'meta.json'), metaJson);
 }
 
-/**
- * Create a table of file names (stem + extension) to their hashes
- * @function
- * @param metaOutput - the metafile outputs
- * @returns the hash table
- */
-const hashTable = async (metaOutput: { [key: string]: any }): Promise<string> => {
-  const outputFiles = Object.entries(metaOutput).map(([key, output]) => ({
-    destination: key,
-    origin: output.entryPoint || undefined,
-  }));
-
-  const table = new Map<string, string>();
-  for (const { destination, origin } of outputFiles) {
-    if (origin && (origin !== jsSrc && origin !== cssSrc)) {
-      const baseFileName = origin.split('/').pop();
-      const hash = await getFileHash(destination);
-      if (baseFileName && hash) {
-        table.set(baseFileName, hash);
-      }
-    }
-  }
-  // return minified JSON string
-  return JSON.stringify(table, null).replace(/ /, '').replace(/\n/,'').replace(/\t/,'');
-};
-
 buildAll().then(() => console.log('Build completed')).catch((error) => console.error('Error building:', error));
+
+try {
+      fs.rm(cssSrc).then(() => console.log('Temporary bundle.css removed')).catch((err) => console.error(`Error removing temporary bundle.css: ${err}`));
+    } catch (err) {
+      console.error(`Error removing temporary bundle.css: ${err}`);
+    }
 
 
 /** For MinSVG function:

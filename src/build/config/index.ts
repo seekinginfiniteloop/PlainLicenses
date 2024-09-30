@@ -1,6 +1,26 @@
 import { cssModulesPlugin } from "@asn.aeb/esbuild-css-modules-plugin";
-import copy from 'esbuild-plugin-copy';
 import * as esbuild from "esbuild";
+import { copy } from 'esbuild-plugin-copy';
+import { globby } from "globby";
+
+/**
+ * Resolves a glob to a single file.
+ * @function
+ * @param glob - The glob to resolve.
+ * @returns A promise that resolves to the first file that matches the glob.
+ */
+async function getHeroParents(): Promise<string[]> {
+  const fastGlobSettings = { onlyDirectories: true};
+  return await globby("src/images/hero/*", fastGlobSettings);
+}
+
+/**
+ * Resolves a glob to a single file.
+ * @function
+ * @param glob - The glob to resolve.
+ * @returns An array of files that match the glob.
+ */
+export const heroParents: Promise<string[]> = getHeroParents();
 
 export interface MetaFileOutputs {
   bytes: number;
@@ -77,8 +97,8 @@ export const webConfig: esbuild.BuildOptions = {
       verbose: true,
       resolveFrom: "cwd",
       assets: [
-        {from: "./src/images/**/*", to: "./docs/assets/images"},
-        {from: "./src/fonts", to: "./docs/assets/fonts"},
+        { from: "./src/images/*.svg", to: "./docs/assets/images/*.svg" },
+        { from: "./src/images/*.png", to: "./docs/assets/images/*.png" },
       ],
     }),
   ],
