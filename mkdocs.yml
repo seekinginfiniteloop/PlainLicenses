@@ -44,11 +44,8 @@ nav:
 theme:
   name: material
   custom_dir: overrides
-  logo: overrides/social/social_logo.png
-  favicon: assets/images/favicon.png
-  font:
-    text: Noto Sans
-    code: Noto Sans Mono
+  logo: assets/images/logo_named.svg
+  favicon: favicon.ico
   features:
     - content.action.edit
     - content.code.annotate
@@ -136,7 +133,7 @@ plugins:
         font_family: Raleway
         color: "#FFFFFF"
         background_color: "#0d19a3"
-        image: overrides/social/social_card.png
+        image: overrides/images/social_logo.png
   - tags:
       tags: true
       enabled: true
@@ -236,7 +233,6 @@ not_in_nav: |
   tags
   shame*
 extra:
-  buildmeta: !include overrides/buildmeta.json
   tags: # maps the tags in the license front matter to the names above in theme.icon.tag. This allows us to replace the tag with an icon in the license template.
     can-share: canshare
     can-sell: cansell

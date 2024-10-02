@@ -1,12 +1,12 @@
 {
   "metaOutput": {
-    "docs/assets/javascripts/index.LYXEJNZK.js.map": {
-      "bytes": 758460,
+    "docs/assets/javascripts/index.7CAD3U5R.js.map": {
+      "bytes": 760136,
       "inputs": [],
       "exports": []
     },
-    "docs/assets/javascripts/index.LYXEJNZK.js": {
-      "bytes": 118081,
+    "docs/assets/javascripts/index.7CAD3U5R.js": {
+      "bytes": 121340,
       "inputs": [
         "node_modules/tslib/tslib.es6.mjs",
         "node_modules/rxjs/dist/esm5/internal/util/isFunction.js",
@@ -94,13 +94,41 @@
         "node_modules/gsap/ScrollToPlugin.js",
         "src/javascripts/hero/animation/index.ts",
         "src/javascripts/cache/index.ts",
-        "src/javascripts/hero/imageshuffle/config.ts",
+        "src/javascripts/hero/imageshuffle/data/index.ts",
         "src/javascripts/hero/imageshuffle/index.ts",
         "src/javascripts/hero/index.ts",
         "src/javascripts/index.ts"
       ],
       "exports": [],
       "entryPoint": "src/javascripts/index.ts"
+    },
+    "docs/assets/fonts/inter-v.5HMTI5F7.woff2": {
+      "bytes": 16588,
+      "inputs": [
+        "src/fonts/inter-v.woff2"
+      ],
+      "exports": []
+    },
+    "docs/assets/fonts/inter-v.7SVEWXQR.woff": {
+      "bytes": 21912,
+      "inputs": [
+        "src/fonts/inter-v.woff"
+      ],
+      "exports": []
+    },
+    "docs/assets/fonts/sourcecodepro-regular.CK7SPIOU.woff2": {
+      "bytes": 10076,
+      "inputs": [
+        "src/fonts/sourcecodepro-regular.woff2"
+      ],
+      "exports": []
+    },
+    "docs/assets/fonts/sourcecodepro-regular.RMOD3HU7.woff": {
+      "bytes": 13900,
+      "inputs": [
+        "src/fonts/sourcecodepro-regular.woff"
+      ],
+      "exports": []
     },
     "docs/assets/fonts/bangers-regular.BIV5PPSH.woff2": {
       "bytes": 10856,
@@ -116,16 +144,17 @@
       ],
       "exports": []
     },
-    "docs/assets/stylesheets/bundle.M63CG3BZ.css.map": {
-      "bytes": 323938,
+    "docs/assets/stylesheets/bundle.TWM522YI.css.map": {
+      "bytes": 326903,
       "inputs": [],
       "exports": []
     },
-    "docs/assets/stylesheets/bundle.M63CG3BZ.css": {
-      "bytes": 177400,
+    "docs/assets/stylesheets/bundle.TWM522YI.css": {
+      "bytes": 178750,
       "inputs": [
         "external/mkdocs-material/material/templates/assets/stylesheets/palette.06af60db.min.css",
         "external/mkdocs-material/material/templates/assets/stylesheets/main.8c3ca2c6.min.css",
+        "src/stylesheets/bodyfont.css",
         "src/stylesheets/colors.css",
         "src/stylesheets/extra.css",
         "src/stylesheets/license.css",

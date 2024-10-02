@@ -1,5 +1,4 @@
 {% extends "main.html" %}
-{% import "buildmeta.html as hashed" %}
 {% block hero %}
 
 <div class="hero" data-component="hero">
@@ -7,12 +6,7 @@
         <div data-md-color-scheme="slate" class="hero-parallax__layer"
             id="parallax-hero-image-layer">
             <noscript>
-                    <img srcset="{{ hashed.asset_url('minimal_1280.avif') 1280w, {{ hashed.asset_url('minimal_1920.avif') }} 1920w, {{ hashed.asset_url('minimal_2560.avif') }} 2560w, {{ hashed.asset_url('minimal_3840.avif') }} 3840w"
-                        src="{{ hashed.asset_url('minimal_1280.avif') | url }}" alt="hero image" class="hero-parallax__image"
-                        class="hero-parallax__image"
-                        sizes="(max-width: 1280px) 1280px, (max-width: 1920px) 1920px, (max-width: 2560px) 2560px, 3840px"
-                        loading="eager" fetchpriority="high" draggable="false"
-                        style="align-content:flex-start;align-self:flex-start">
+                    {{ no_script_image }}
                     <style>
                         html {
                             scroll-behavior: smooth;

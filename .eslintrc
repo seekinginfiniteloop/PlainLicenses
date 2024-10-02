@@ -9,6 +9,33 @@
       "package.json"
     ]
   },
+  "ignores": [
+    "*.js",
+    "*.jsx",
+    "*.mjs",
+    "node_modules",
+    "__pycache__",
+    "venv",
+    ".venv",
+    ".vscode",
+    "docs",
+    "build",
+    "MANIFEST",
+    "manifest.json",
+    "site",
+    "typings",
+    "webpack.config.ts",
+    "dist",
+    "mkdocs_material.egg-info",
+    "*.cpuprofile",
+    "*.log",
+    "*.tsbuildinfo",
+    ".eslintcache",
+    "tmp",
+    ".testbuild",
+    ".workbench",
+    ".cache"
+  ],
   "plugins": [
     "@typescript-eslint",
     "@stylistic/ts",

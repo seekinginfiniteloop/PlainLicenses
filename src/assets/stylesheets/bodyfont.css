@@ -1,0 +1,31 @@
+@font-face {
+  font-family: "Inter", "Noto Sans", "Open Sans", Lato, Helvetica, Arial, system-ui, sans-serif;
+  font-style: normal;
+  font-weight: 500;
+  src:
+    local("Inter"),
+    local("inter-regular")
+    local("inter-v"),
+    local("interv"),
+    local("inter-regular"),
+    local("inter_v"),
+    url("../fonts/inter-v.woff2") format("woff2"),
+    url("../fonts/inter-v.woff") format("woff");
+  /* stylelint-disable-next-line @stylistic/max-line-length */
+}
+
+@font-face {
+  font-family: "Source Code Pro", "Fira Code", "Inconsolata", "Monaco", "Consolas", "Courier New", monospace;
+  font-style: normal;
+  font-weight: 500;
+  src:
+    local("sourcecodepro-regular"),
+    local("sourcecodepro"),
+    local("source-code-pro"),
+    local("source-code-pro-regular"),
+    local("Source Code Pro"),
+    local("SourceCodePro-Regular"),
+    url("../fonts/sourcecodepro-regular.woff2") format("woff2"),
+    url("../fonts/sourcecodepro-regular.woff") format("woff");
+  /* stylelint-disable-next-line @stylistic/max-line-length */
+}

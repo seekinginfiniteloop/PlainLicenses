@@ -105,6 +105,31 @@ export const nodeConfig = {
     allowOverwrite: true,
     outExtension: { '.js': '.mjs' }
 };
+/**
+export const mkMaterialConfig: esbuild.BuildOptions = {
+  bundle: true,
+  minify: true,
+  sourcemap: true,
+  metafile: false,
+  format: "esm",
+  platform: "browser",
+  target: "es2018",
+  outdir: "docs/assets",
+  chunkNames: "chunks/[name].[hash]",
+  assetNames: "[dir]/[name].[hash]",
+  loader: {
+    ".js": "js",
+    ".ts": "ts",
+    ".tsx": "tsx",
+    ".css": "css",
+  },
+  outExtension: {".js": ".js", ".css": ".css"},
+  allowOverwrite: true,
+  splitting: true,
+  plugins: [
+  ],
+};
+*/
 export const GHActions = [
     {
         // Build GitHub actions
@@ -125,4 +150,60 @@ export const baseProject = {
     platform: "browser",
     outdir: "docs/assets",
 };
+/**
+export const mkMaterialProject: Project = {
+  entryPoints: ["./external/mkdocs-material/src/templates/assets/javascripts/bundle.ts"],
+  tsconfig: "external/mkdocs-material/tsconfig.json",
+  platform: "browser",
+  outdir: "external/mkdocs-material/src/templates/assets",
+}
+*/
+/**
+ * Resolves a glob to a single file.
+ * @function
+ * @param glob - The glob to resolve.
+ * @returns A promise that resolves to the first file that matches the glob.
+ */
+async function resolveGlob(glob, fastGlobOptions) {
+    try {
+        const result = await globby(glob, fastGlobOptions);
+        if (result.length === 0) {
+            throw new Error(`Glob "${glob}" did not match any files`);
+        }
+        else {
+            return result;
+        }
+    }
+    catch (error) {
+        console.error("Error resolving glob:", error);
+        throw error;
+    }
+}
+/**
+ * Generates the Srcset for a given image.
+ * @function
+ * @param image - The image to generate the Srcset for.
+ * @returns A promise that resolves to the Srcset for the image.
+ */
+export async function generateSrcset(image) {
+    const entries = await Promise.all(Object.entries(image.widths).map(async ([width, src]) => {
+        return `${await resolveGlob(src, { onlyFiles: true, unique: true })} ${width}w`;
+    }));
+    return entries.join(", ");
+}
+const parents = await resolveGlob("src/images/hero/*", { onlyDirectories: true });
+export const heroImages = Object.fromEntries(await Promise.all(parents.map(async (parent) => {
+    const key = parent.split("/").pop();
+    const heroFilePattern = `${key}_{1280,1920,2560,3840}.avif`;
+    const children = await globby(`${parent}/${heroFilePattern}`, { onlyFiles: true, unique: true });
+    const flattenedWidths = children.reduce((acc, child) => {
+        const width = [1280, 1920, 2560, 3840].find((w) => child.includes(w.toString()));
+        if (width) {
+            acc[width] = child;
+        }
+        return acc;
+    }, {}); // Initialize acc as an empty WidthMap
+    const srcset = await generateSrcset({ parent, widths: flattenedWidths });
+    return [key, { parent, widths: flattenedWidths, srcset }];
+})));
 //# sourceMappingURL=index.js.map

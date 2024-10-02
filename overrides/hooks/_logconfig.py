@@ -17,10 +17,7 @@ from mkdocs.structure.nav import Navigation
 from jinja2 import Environment
 
 LOG_LEVEL_OVERRIDE = int(os.environ.get("LOG_LEVEL_OVERRIDE", 50))
-LOG_SAVE_PATH: str = (
-    os.environ.get("LOG_SAVE_PATH", datetime.now(timezone.utc).isoformat())
-    or ".workbench/logs/pl_build_log_timestamp.log"
-).replace("timestamp", datetime.now(timezone.utc).isoformat())
+LOG_SAVE_PATH: str = (f".workbench/logs/pl_build_log_{datetime.now(timezone.utc).isoformat(timespec="seconds")}.log")
 
 LOG_FILE: Path | None = None
 # add `timestamp` to the LOG_SAVE_PATH environment variable to have the current timestamp added to the log file name

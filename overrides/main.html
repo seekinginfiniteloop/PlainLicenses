@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-{% import "buildmeta.html" as hashed %}
 <!-- Meta tags -->
 {% block site_meta %}
 <meta charset="utf-8" />
@@ -43,8 +42,10 @@
 {% endif %}
 
 <!-- Favicon -->
-<link rel="icon" href="{{ config.theme.favicon | url }}" />
-
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
 <!-- Generator banner -->
 <meta name="generator" content="mkdocs-{{ mkdocs_version }}, $md-name$-$md-version$" />
 {% endblock %}
@@ -53,20 +54,15 @@
 <!-- Extra color palette -->
 {% if config.theme.palette %}
 {% set palette = config.theme.palette %}
-<link rel="stylesheet" href="{{ 'assets/stylesheets/palette.css' | url }}" />
-<link rel="stylesheet" href="{{ hashed.css_bundle() | url }}" />
+<link rel="stylesheet" href="{{ css_bundle | url }}" />
 {% endif %}
 
 <!-- Custom icons -->
 {% include "partials/icons.html" %}
 {% endblock %}
 
-    <!-- Theme-related JavaScript -->
-    {% block scripts %}
-    <script src="{{ hashed.js_bundle() | url }}"></script>
-
-    <!-- Custom JavaScript -->
-    {% for script in config.extra_javascript %}
-    {{ script | script_tag }}
-    {% endfor %}
-    {% endblock %}
+<!-- Theme-related JavaScript -->
+{% block scripts %}
+{{ super() }}
+<script src="{{ js_bundle | url }}"></script>
+{% endblock %}

@@ -1,4 +1,6 @@
+import json
 import logging
+from pathlib import Path
 from typing import Any
 
 import markdown
@@ -29,6 +31,13 @@ def md_filter(text: str, config: MkDocsConfig, **kwargs) -> Any:
     )
     return Markup(md.convert(text))
 
+def get_updates()-> dict[str, str]:
+    """
+    Get the latest updates from the updates.md file.
+    """
+    path = Path("overrides/buildmeta.json")
+    return json.loads(path.read_text())
+
 
 @event_priority(100)  # run first
 def on_env(env: Environment, config: MkDocsConfig, files: Files) -> Environment:
@@ -40,6 +49,10 @@ def on_env(env: Environment, config: MkDocsConfig, files: Files) -> Environment:
     env.filters["markdown"] = rpartial(md_filter, config)
     env.add_extension("jinja2.ext.do")
     env.add_extension("jinja2.ext.loopcontrols")
+    updates = get_updates()
+    env.globals["no_script_image"] = updates["noScriptImage"]
+    env.globals["css_bundle"] = updates["CSSBUNDLE"]
+    env.globals["js_bundle"] = updates["SCRIPTBUNDLE"]
     ENV_LOGGER.info(
         "Added Jinja extensions: do, loopcontrols and filters: markdown to jinja environment."
     )

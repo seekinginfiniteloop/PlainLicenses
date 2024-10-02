@@ -30,11 +30,6 @@
 
 <!-- Header -->
 <header class="{{ class }}" id="header-target" data-md-component="header">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
-        rel="stylesheet">
     <nav class="md-header__inner md-grid" aria-label="{{ lang.t('header') }}">
         <!-- Link to home -->
         <a href="{{ config.extra.homepage | d(nav.homepage.url, true) | url }}"
@@ -57,7 +52,6 @@
                 </div>
             </div>
         </div>
-
 
         <!-- Color palette toggle -->
         {% if config.theme.palette %}
