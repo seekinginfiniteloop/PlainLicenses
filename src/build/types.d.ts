@@ -3,6 +3,7 @@ export interface WidthMap {
   [key: number]: string
 }
 export interface HeroImage {
+  imageName: string
   parent: string
   widths: {
     [key: number]: string

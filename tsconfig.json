@@ -19,8 +19,11 @@
     "noUnusedParameters": true,
     "paths": {
       "~/*": [
-        "./src/assets/javascripts/*"],
+        "./src/assets/javascripts/*",
+      ],
+      "@/*": ["./external/mkdocs-material/src/templates/assets/javascripts/*"],
       "~external/*": ["./typings"],
+      "_/*": ["./external/mkdocs-material/material/overrides/assets/javascripts/*"]
     },
     "removeComments": false,
     "sourceMap": true,

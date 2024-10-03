@@ -1,5 +1,9 @@
 import { cssModulesPlugin } from "@asn.aeb/esbuild-css-modules-plugin";
+// @ts-ignore
+import { tsconfigPathsPlugin } from "esbuild-plugin-tsconfig-paths";
 import * as esbuild from "esbuild";
+//import { readFileSync } from "node:fs";
+//import path from "path";
 import { copy } from 'esbuild-plugin-copy';
 import { globby } from "globby";
 
@@ -61,9 +65,8 @@ export const webConfig: esbuild.BuildOptions = {
   platform: "browser",
   target: "es2018",
   outbase: "src",
-  chunkNames: "chunks/[name].[hash]",
+  chunkNames: "[dir]/assets/javascripts/chunks/[name].[hash]",
   assetNames: "[dir]/[name].[hash]",
-  outdir: "docs/assets",
   loader: {
     ".js": "js",
     ".ts": "ts",
@@ -79,9 +82,13 @@ export const webConfig: esbuild.BuildOptions = {
     ".avif": "file",
   },
   outExtension: {".js": ".js", ".css": ".css"},
-  allowOverwrite: true,
-  splitting: true,
+  splitting: false,
   plugins: [
+    tsconfigPathsPlugin({
+      cwd: process.cwd(),
+      tsconfig: "tsconfig.json",
+      filter: /src\/assets\/javascripts\/index.ts/
+    }),
     cssModulesPlugin({
       emitCssBundle: {
         filename: "bundle.css",
@@ -127,14 +134,12 @@ export const GHActions: Project[] = [
 ];
 
 export const baseProject: Project = {
-  entryPoints: [
-    "./src/assets/javascripts/index.ts",
-    "./src/assets/stylesheets/bundle.css",
+  entryPoints: ["src/assets/javascripts/index.ts", "src/assets/stylesheets/bundle.css"
   ],
   tsconfig: "tsconfig.json",
   entryNames: "[dir]/[name].[hash]",
   platform: "browser",
-  outdir: "docs/assets",
+  outdir: "docs",
 };
 
 /**

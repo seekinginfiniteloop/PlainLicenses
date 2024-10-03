@@ -3,7 +3,7 @@
   "version": "0.0.0-development",
   "description": "Plain language versions of popular licenses",
   "main": "docs/assets/javascripts/",
-  "type":"module",
+  "type": "module",
   "scripts": {
     "release": "semantic-release",
     "generate-changelog": "node .github/scripts/generate-changelog.js",
@@ -41,6 +41,7 @@
   "license": "Plain Unlicense",
   "dependencies": {
     "clipboard": "^2.0.11",
+    "esbuild-plugin-tsconfig-paths": "^1.0.1",
     "escape-html": "^1.0.3",
     "focus-visible": "^5.2.1",
     "fuzzaldrin-plus": "^0.6.0",
@@ -79,6 +80,7 @@
     "cssnano": "7.0.6",
     "esbuild": "^0.24.0",
     "esbuild-plugin-copy": "^2.1.1",
+    "esbuild-plugin-path-alias": "^1.0.7",
     "eslint": "9.10.0",
     "eslint-plugin-eslint-comments": "^3.2.0",
     "eslint-plugin-jsdoc": "^50.3.1",

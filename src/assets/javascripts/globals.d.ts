@@ -21,31 +21,6 @@ declare global {
     claim(): void
   }
 
-  export type ComponentType =
-    | "announce" /* Announcement bar */
-    | "container" /* Container */
-    | "consent" /* Consent */
-    | "content" /* Content */
-    | "dialog" /* Dialog */
-    | "header" /* Header */
-    | "header-title" /* Header title */
-    | "header-topic" /* Header topic */
-    | "main" /* Main area */
-    | "outdated" /* Version warning */
-    | "palette" /* Color palette */
-    | "progress" /* Progress indicator */
-    | "search" /* Search */
-    | "search-query" /* Search input */
-    | "search-result" /* Search results */
-    | "search-share" /* Search sharing */
-    | "search-suggest" /* Search suggestions */
-    | "sidebar" /* Sidebar */
-    | "skip" /* Skip link */
-    | "source" /* Repository information */
-    | "tabs" /* Navigation tabs */
-    | "toc" /* Table of contents */
-    | "top" /* Back-to-top button */
-
   /**
    * Component
    *
@@ -113,33 +88,5 @@ declare global {
     alert$: Subject<string> // clipboard.js integration
     progress$: Subject<number> // progress indicator
     component$: Observable<CustomEvent>
-  }
-
-  interface ScriptOptions {
-    src: string
-    type?:
-      | "module"
-      | "importmap"
-      | "speculationrules"
-      | "text/javascript"
-      | string
-    fetchPriority?: "high" | "low" | "auto"
-    async?: boolean
-    blocking?: boolean
-    crossorigin?: "" | "anonymous" | "use-credentials"
-    defer?: boolean
-    integrity?: string
-    noModule?: boolean
-    attributionSource?: string
-    referrerPolicy?:
-      | ""
-      | "no-referrer"
-      | "no-referrer-when-downgrade"
-      | "origin"
-      | "origin-when-cross-origin"
-      | "same-origin"
-      | "strict-origin"
-      | "strict-origin-when-cross-origin"
-      | "unsafe-url"
   }
 }

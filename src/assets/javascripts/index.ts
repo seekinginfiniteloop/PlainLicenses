@@ -1,3 +1,6 @@
+// we import mkdocs-material's scripts as a side effect
+import "@/bundle"
+
 import { subscribeToAll } from "~/licenses"
 import { logger } from "~/log"
 

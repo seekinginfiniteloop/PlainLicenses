@@ -24,7 +24,7 @@ import { catchError, distinctUntilChanged, filter, mergeMap, switchMap, tap } fr
 
 import { getAsset } from "~/cache"
 import { logger } from "~/log"
-import { ImageSettings } from "./_types"
+import { ImageSettings } from "~/hero/imageshuffle/types"
 import { heroImages } from "./data"
 
 const { document$, viewport$, location$ } = window
