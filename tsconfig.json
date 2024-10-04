@@ -20,6 +20,7 @@
     "paths": {
       "~/*": [
         "./src/assets/javascripts/*",
+        "./external/mkdocs-material/src/templates/assets/javascripts/*"
       ],
       "@/*": ["./external/mkdocs-material/src/templates/assets/javascripts/*"],
       "~external/*": ["./typings"],

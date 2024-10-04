@@ -1,12 +1,12 @@
+import { exec } from 'child_process';
 import * as crypto from "crypto";
 import * as esbuild from "esbuild";
 import * as fs from 'fs/promises';
-import * as path from 'path';
-import { exec } from 'child_process';
-import { baseProject, generateSrcset, GHActions, heroImages, heroParents, nodeConfig, webConfig } from "./config/index.js";
-import { from } from "rxjs";
 import { globby } from "globby";
+import * as path from 'path';
+import { from } from "rxjs";
 import { optimize } from "svgo";
+import { baseProject, generateSrcset, GHActions, heroImages, heroParents, nodeConfig, webConfig } from "./config/index.js";
 const cssSrc = "src/assets/stylesheets/bundle.css";
 //TODO: Refactor to use esbuild's transform API and reduce the number of file reads and writes
 let noScriptImage = {
@@ -90,6 +90,7 @@ export interface HeroImage {
     [key: number]: string;
   };
   srcset: string;
+  src?: string;
 }
 
 export const heroImages: HeroImage[] = ${JSON.stringify(images, null, 2)} as const;
@@ -291,7 +292,7 @@ const metaOutput = async (result) => {
 const metaOutputMap = async (output) => {
     const keys = Object.keys(output);
     const jsSrcKey = keys.find((key) => key.endsWith('.js'));
-    const cssSrcKey = keys.find((key) => key.endsWith('.css'));
+    const cssSrcKey = keys.find((key) => key.endsWith('.css') && key.includes("bundle") && !key.includes("javascripts"));
     let noScriptImageContent = `
   <img srcset="${noScriptImage.srcset}" alt="hero image" class="hero-parallax__image hero-parallax__image--minimal" src="${noScriptImage.widths[1280]}" alt="hero image"
   sizes="(max-width: 1280px) 1280px, (max-width: 1920px) 1920px, (max-width: 2560px) 2560px, 3840px" loading="eager" fetchpriority="high" draggable="false"

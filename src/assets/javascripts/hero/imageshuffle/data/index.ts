@@ -7,6 +7,7 @@ export interface HeroImage {
     [key: number]: string
   }
   srcset: string
+  src?: string
 }
 
 export const heroImages: HeroImage[] = [

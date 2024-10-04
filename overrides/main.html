@@ -63,6 +63,9 @@
 
 <!-- Theme-related JavaScript -->
 {% block scripts %}
-<!-- {{ super() }} -->
-<script src="{{ js_bundle | url }}"></script>
+<script async fetch-priority="high" src="{{ js_bundle | url }}"></script>
+<!-- Custom JavaScript -->
+{% for script in config.extra_javascript %}
+{{ script | script_tag }}
+{% endfor %}
 {% endblock %}

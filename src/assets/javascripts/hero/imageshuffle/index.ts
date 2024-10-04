@@ -23,9 +23,10 @@ import {
 import { catchError, distinctUntilChanged, filter, mergeMap, switchMap, tap } from "rxjs/operators"
 
 import { getAsset } from "~/cache"
+import { heroImages } from "~/hero/imageshuffle/data"
 import { logger } from "~/log"
-import { ImageSettings } from "~/hero/imageshuffle/types"
-import { heroImages } from "./data"
+// eslint-disable-next-line no-duplicate-imports
+import type { HeroImage } from "~/hero/imageshuffle/data"
 
 const { document$, viewport$, location$ } = window
 
@@ -36,8 +37,6 @@ const CONFIG = {
 const subscriptions: Subscription[] = []
 
 const portraitMediaQuery = window.matchMedia("(orientation: portrait)")
-
-const imageNames = Object.keys(heroImages)
 
 const parallaxLayer = document.getElementById("parallax-hero-image-layer")
 
@@ -58,31 +57,34 @@ const getOptimalWidth = () => {
       return 2560
     }
     return 2840
-  }
-
-/**
- * Creates an array of ImageSettings objects from the heroImages object.
- * @function
- * @returns an array of ImageSettings objects
- */
-const getImageSettings = (): ImageSettings[] => {
-  const optimalWidth = getOptimalWidth()
-  return imageNames.map(imageName => {
-    const urls = heroImages.imageName
-    if (Array.isArray(urls) && urls.length > 0) {
-      const srcset = heroImages.imageName.srcset as unknown as string
-      const src = urls.find(url => url.includes(optimalWidth))
-      if (!src || !srcset) {
-        throw new Error(`Failed to generate image settings for ${imageName}`)
-      }
-      return { imageName, srcset, src }
-    } else {
-      throw new Error(`Failed to generate image settings for ${imageName}`)
-    }
-  })
 }
 
-const allImageSettings = getImageSettings()
+/**
+ * Retrieves an image from the heroImages array based on the image name.
+ * @function
+ * @param imageName - the name of the image
+ * @returns the HeroImage object or undefined if the image is not found
+ */
+function retrieveImage(imageName: string): HeroImage | undefined {
+  return heroImages.find(image => image.imageName === imageName)
+}
+
+/**
+ * Creates an array of HeroImage objects from the heroImages object.
+ * @function
+ * @returns an array of HeroImage objects
+ */
+const getHeroes = (): HeroImage[] => {
+  const optimalWidth = getOptimalWidth()
+  const heroes: HeroImage[] = []
+  heroImages.forEach(image => {
+    image.src = image.widths[optimalWidth]
+    heroes.push(image)
+  })
+  return heroes
+}
+
+const allHeroes = getHeroes()
 
 const hashTableSubject = new ReplaySubject<{ [key: string]: string }>(1)
 
@@ -131,38 +133,42 @@ const loadImage = (imageUrl: string): Observable<Blob> => {
  * @param imgSettings - image settings for a single image
  * @returns Observable of the image element
  */
-const fetchAndSetImage = (imgSettings: ImageSettings): Observable<void> => {
+const fetchAndSetImage = (imgSettings: HeroImage): Observable<void> => {
   const { imageName, srcset, src } = imgSettings
-  return loadImage(src).pipe(
-    mergeMap(imageBlob => {
-      const img = new Image()
-      const imageUrl = URL.createObjectURL(imageBlob)
-      img.src = src
-      img.srcset = srcset
-      img.sizes = "(max-width: 1280px) 1280px, (max-width: 1920px) 1920px, (max-width: 2560px) 2560px, 3840px"
-      img.alt = ""
-      img.classList.add("hero-parallax__image", `hero-parallax__image--${imageName}`)
-      img.draggable = false
-      img.loading = "eager"
+  if (src === undefined) {
+    return EMPTY
+  } else {
+    return loadImage(src).pipe(
+      mergeMap(imageBlob => {
+        const img = new Image()
+        const imageUrl = URL.createObjectURL(imageBlob)
+        img.src = src
+        img.srcset = srcset
+        img.sizes = "(max-width: 1280px) 1280px, (max-width: 1920px) 1920px, (max-width: 2560px) 2560px, 3840px"
+        img.alt = ""
+        img.classList.add("hero-parallax__image", `hero-parallax__image--${imageName}`)
+        img.draggable = false
+        img.loading = "eager"
 
-      return from(new Promise<void>(resolve => {
-        img.onload = () => {
-          URL.revokeObjectURL(imageUrl)
-          resolve()
-        }
-      })).pipe(
-        tap(() => {
-          if (parallaxLayer) {
-            parallaxLayer.prepend(img)
+        return from(new Promise<void>(resolve => {
+          img.onload = () => {
+            URL.revokeObjectURL(imageUrl)
+            resolve()
           }
-        })
-      )
-    }),
-    catchError(error => {
-      logger.error("Error in fetchAndSetImage:", error)
-      return of() // Return an empty observable on error
-    })
-  )
+        })).pipe(
+          tap(() => {
+            if (parallaxLayer) {
+              parallaxLayer.prepend(img)
+            }
+          })
+        )
+      }),
+      catchError(error => {
+        logger.error("Error in fetchAndSetImage:", error)
+        return of() // Return an empty observable on error
+      })
+    )
+  }
 }
 
 /**
@@ -170,21 +176,21 @@ const fetchAndSetImage = (imgSettings: ImageSettings): Observable<void> => {
  * @function
  * @returns array of the shuffled image settings
  */
-function randomizeImageSettings(): ImageSettings[] {
-  return allImageSettings.sort(() => Math.random() - 0.5)
+function randomizeHeroes(): HeroImage[] {
+  return allHeroes.sort(() => Math.random() - 0.5)
 }
 
-let imageGenerator: Generator<ImageSettings>
+let imageGenerator: Generator<HeroImage>
 
 /**
  * Generates an image data type generator
  *
  * @generator
  * @function
- * @param imgSettings - array of image settings
+ * @param imgSettings - array of HeroImage objects
  * @yields image datum objects
  */
-function* imageRetrievalGenerator(imgSettings: ImageSettings[]): Generator<ImageSettings> {
+function* imageRetrievalGenerator(imgSettings: HeroImage[]): Generator<HeroImage> {
   for (const setting of imgSettings) {
     yield setting
   }
@@ -196,7 +202,7 @@ function* imageRetrievalGenerator(imgSettings: ImageSettings[]): Generator<Image
  * @function
  */
 function initializeImageGenerator() {
-  const randomSettings = randomizeImageSettings() // Shuffle and store the settings
+  const randomSettings = randomizeHeroes() // Shuffle and store the settings
   imageGenerator = imageRetrievalGenerator(randomSettings) // Create the generator
 }
 
@@ -211,16 +217,16 @@ let cycleImagesSubscription: Subscription | undefined
  * @function
  * @returns image data type or undefined if the generator is exhausted
  */
-const imageSettingsGen = (): ImageSettings | undefined => {
+const heroesGen = (): HeroImage | undefined => {
   if (generatorExhausted) {
     return undefined
   }
-  const nextImageSettings = imageGenerator.next()
-  if (nextImageSettings.done) {
+  const nextHeroes = imageGenerator.next()
+  if (nextHeroes.done) {
     generatorExhausted = true
     return undefined
   }
-  return nextImageSettings.value
+  return nextHeroes.value
 }
 
 /**
@@ -279,7 +285,7 @@ const cycleImages = (): Observable<void> => {
 
   const images = parallaxLayer.getElementsByTagName("img")
   const lastImage = images[0]
-  const nextImage = generatorExhausted ? undefined : imageSettingsGen()
+  const nextImage = generatorExhausted ? undefined : heroesGen()
 
   if (nextImage !== undefined) {
     return fetchAndSetImage(nextImage).pipe(
@@ -306,7 +312,7 @@ const cycleImages = (): Observable<void> => {
  * @returns Observable of void
  */
 export const shuffle = (): Observable<void> => {
-  const settings = imageSettingsGen()
+  const settings = heroesGen()
   return settings ? fetchAndSetImage(settings).pipe(map(() => {})) : EMPTY
 }
 
@@ -331,14 +337,15 @@ function regenerateSources(optimalWidth: number) {
   Array.from(parallaxLayer?.getElementsByTagName("img") || []).forEach((image, index) => {
     if (index !== 0) {
       const imageName = image.classList[1].split("--")[1]
-      const newChildSrc = heroImages[imageName].widths[optimalWidth]
+      const foundImage = retrieveImage(imageName)
+      const newChildSrc = foundImage ? foundImage.widths[optimalWidth] : undefined
       if (newChildSrc) {
         image.src = newChildSrc
       }
     }
   })
 
-  const nextSettings: ImageSettings[] = []
+  const nextSettings: HeroImage[] = []
   let result = imageGenerator.next()
   while (!result.done) {
     if (result.value !== undefined) {
@@ -348,7 +355,7 @@ function regenerateSources(optimalWidth: number) {
   }
   generatorExhausted = nextSettings.length === 0
   nextSettings.forEach(setting => {
-    const newSrc = heroImages[setting.imageName].widths[optimalWidth]
+    const newSrc = setting.widths[optimalWidth]
     setting.src = newSrc
   })
   if (nextSettings.length > 0) {

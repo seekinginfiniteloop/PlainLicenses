@@ -19,10 +19,7 @@ export interface TransformationSettings {
  * Settings for an image element.
  */
 export interface ImageSettings {
-
-  imageName: string
-  srcset: string
-  src: string
+  [imageName: string]: HeroImage
 }
 
 export interface HeroImageBase {

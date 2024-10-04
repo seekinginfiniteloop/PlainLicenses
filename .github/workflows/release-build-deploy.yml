@@ -126,7 +126,7 @@ jobs:
           path: .cache/npm
 
       - name: Install npm dependencies
-        run: npm ci --include dev --force
+        run: npm ci --include dev
 
       - name: Build Scripts
         run: npm run build

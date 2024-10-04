@@ -1,12 +1,12 @@
+import { exec } from 'child_process';
 import * as crypto from "crypto";
 import * as esbuild from "esbuild";
 import * as fs from 'fs/promises';
-import * as path from 'path';
-import { exec } from 'child_process';
-import { baseProject, generateSrcset, GHActions, heroImages, heroParents, nodeConfig, webConfig } from "./config/index.js";
-import { from, Observable } from "rxjs";
 import { globby } from "globby";
+import * as path from 'path';
+import { from, Observable } from "rxjs";
 import { optimize } from "svgo";
+import { baseProject, generateSrcset, GHActions, heroImages, heroParents, nodeConfig, webConfig } from "./config/index.js";
 import type { buildJson, esbuildOutputs, FileHashes, HeroImage, Project } from "./types.ts";
 
 const cssSrc = "src/assets/stylesheets/bundle.css";
@@ -104,6 +104,7 @@ export interface HeroImage {
     [key: number]: string;
   };
   srcset: string;
+  src?: string;
 }
 
 export const heroImages: HeroImage[] = ${JSON.stringify(images, null, 2)} as const;
@@ -320,7 +321,7 @@ const metaOutput = async (result: esbuild.BuildResult) => {
 const metaOutputMap = async (output: esbuildOutputs): Promise<buildJson> => {
   const keys = Object.keys(output);
   const jsSrcKey = keys.find((key) => key.endsWith('.js'));
-  const cssSrcKey = keys.find((key) => key.endsWith('.css'));
+  const cssSrcKey = keys.find((key) => key.endsWith('.css') && key.includes("bundle") && !key.includes("javascripts"));
 
   let noScriptImageContent =`
   <img srcset="${noScriptImage.srcset}" alt="hero image" class="hero-parallax__image hero-parallax__image--minimal" src="${noScriptImage.widths[1280]}" alt="hero image"
