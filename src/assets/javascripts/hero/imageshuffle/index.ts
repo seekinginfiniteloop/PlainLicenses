@@ -9,7 +9,6 @@
 import {
   EMPTY,
   Observable,
-  ReplaySubject,
   Subscription,
   combineLatest,
   from,
@@ -85,32 +84,6 @@ const getHeroes = (): HeroImage[] => {
 }
 
 const allHeroes = getHeroes()
-
-const hashTableSubject = new ReplaySubject<{ [key: string]: string }>(1)
-
-/**
- * Fetches the hash table containing the image URLs.
- * @function
- * @returns Observable of the hash table
- */
-const getHashTable = (): Observable<{ [key: string]: string }> =>
-  from(fetch("hashTable.json")).pipe(
-    mergeMap(response => from(response.json())),
-    tap(hTable => {
-      logger.info("Hash table fetched")
-      hashTableSubject.next(hTable) // Emit the fetched hash table
-    }),
-    catchError(error => {
-      logger.error(`Failed to fetch hash table: ${error}`)
-      return throwError(() => new Error("Failed to fetch hash table"))
-    })
-  )
-
-// Fetch the hash table and subscribe to handle errors
-subscriptions.push(
-  getHashTable().subscribe({
-  error: (err: Error) => logger.error("Error fetching hash table:", err)
-  }))
 
 /**
  * Loads an image from the server.
@@ -207,7 +180,6 @@ function initializeImageGenerator() {
 }
 
 // Variables for image cycling
-initializeImageGenerator()
 let generatorExhausted = false // turns true when the generator is exhausted
 const isPageVisible = true
 let cycleImagesSubscription: Subscription | undefined
@@ -241,39 +213,6 @@ const stopImageCycling = (): void => {
 }
 
 /**
- * Starts the image cycling subscription
- * @function
- * @returns Observable of void
- * @throws {Error} if the first image is not found
- * @throws {Error} if the image cycling subscription fails
- */
-const startImageCycling = (): Observable<void> => {
-  return new Observable(subscriber => {
-    combineLatest([interval(CONFIG.INTERVAL_TIME), viewport$, location$])
-      .pipe(
-        switchMap(() => cycleImages()),
-        catchError(error => {
-          logger.error("Error cycling images:", error)
-          return EMPTY
-        })
-      )
-      .subscribe({
-        next: () => logger.info("Image cycled successfully"),
-          error: (err: Error) => subscriber.error(err),
-        complete: () => subscriber.complete()
-      })
-  })
-}
-
-/**
- * Handles visibility change events
- * @function
- * @returns Observable of void
- */
-const handleVisibilityChange = (): Observable<void> =>
-  isPageVisible ? startImageCycling() : of(stopImageCycling())
-
-/**
  * Cycles the images in the hero section
  * @function
  * @returns Observable of void
@@ -305,6 +244,43 @@ const cycleImages = (): Observable<void> => {
 
   return EMPTY
 }
+
+/**
+ * Starts the image cycling subscription
+ * @function
+ * @returns Observable of void
+ * @throws {Error} if the first image is not found
+ * @throws {Error} if the image cycling subscription fails
+ */
+const startImageCycling = (): Observable<void> => {
+  return new Observable(subscriber => {
+    logger.info("Starting image cycling")
+    combineLatest([interval(CONFIG.INTERVAL_TIME), viewport$, location$])
+      .pipe(
+        switchMap(() => cycleImages()),
+        catchError(error => {
+          logger.error("Error cycling images:", error)
+          return EMPTY
+        })
+      )
+      .subscribe({
+        next: () => {
+          logger.info("Image cycled successfully")
+          subscriber.next()
+        },
+        error: (err: Error) => subscriber.error(err),
+        complete: () => subscriber.complete()
+      })
+  })
+}
+
+/**
+ * Handles visibility change events
+ * @function
+ * @returns Observable of void
+ */
+const handleVisibilityChange = (): Observable<void> =>
+  isPageVisible ? startImageCycling() : of(stopImageCycling())
 
 /**
  * Shuffles the images in the hero section
@@ -410,6 +386,7 @@ const locationChange$ = location$.pipe(
  * @function
  */
 const initSubscriptions = (): void => {
+  logger.info("Initializing subscriptions")
   const subscribeWithErrorHandling = (observable: Observable<unknown>, name: string) =>
     observable.subscribe({
       next: () => logger.info(`${name} change processed`),
@@ -429,7 +406,12 @@ const initSubscriptions = (): void => {
     subscribeWithErrorHandling(locationChange$, "Location")
   )
 }
-
+initializeImageGenerator()
+startImageCycling().subscribe({
+  next: () => logger.info("Image cycling started"),
+  error: (err: Error) => logger.error("Error starting image cycling:", err),
+  complete: () => logger.info("Image cycling completed")
+})
 initSubscriptions()
 
 /**

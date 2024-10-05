@@ -349,6 +349,8 @@ const allSubscriptions = (): void => {
     })
   )
 
+allSubscriptions()
+
 /**
  * Unsubscribes from all subscriptions when the window is about to unload.
  * @function
@@ -356,14 +358,5 @@ const allSubscriptions = (): void => {
  */
   window.addEventListener("beforeunload", () => {
     subscriptions.forEach(sub => sub.unsubscribe())
-  })
-}
-
-// we create and return an observable for the allSubscriptions function
-export const action$ = () => {
-  return new Observable<void>(subscriber => {
-    allSubscriptions()
-    subscriber.next()
-    subscriber.complete()
   })
 }

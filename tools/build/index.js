@@ -174,17 +174,13 @@ async function clearDirs() {
             continue;
         }
         for (const file of await fs.readdir(dir)) {
-            if (!dir.includes('javascripts') && !file.match(/tablesort\.js|feedback\.js|pixel\.js/)) {
-                const filePath = path.join(dir, file);
-                if ((await fs.access(filePath).catch(() => false)) && !(await fs.stat(filePath)).isDirectory()) {
-                    {
-                        try {
-                            await fs.rm(filePath);
-                        }
-                        catch (err) {
-                            console.error(err);
-                        }
-                    }
+            const filePath = path.join(dir, file);
+            if ((await fs.access(filePath).catch(() => false)) && !(await fs.stat(filePath)).isDirectory()) {
+                try {
+                    await fs.rm(filePath);
+                }
+                catch (err) {
+                    console.error(err);
                 }
             }
         }

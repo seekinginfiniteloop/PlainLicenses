@@ -211,18 +211,6 @@ markdown_extensions:
       toc_depth: 3
       permalink_title: An anchor link you can use to share this section
       permalink: true
-extra_javascript:
-  #TO DO, integrate: - assets/javascripts/feedback.js
-  - path: >
-      https://cdn.skypack.dev/pin/tablesort@v5.3.0-H3FmQXw8sIDAOcU4Sju8/mode=imports,min/optimized/tablesort.js
-    async: true
-    defer: true
-  - path: assets/javascripts/tablesort.js
-    async: true
-    defer: true
-  - path: assets/javascripts/pixel.js
-    async: true
-    defer: true
 watch:
   - includes
   - overrides

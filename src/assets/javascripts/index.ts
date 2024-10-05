@@ -1,14 +1,19 @@
-// we import mkdocs-material's scripts as a side effect
-import "@/bundle"
+import "@/bundle" // we import mkdocs-material's scripts as a side effect
+
+import {cleanupCache} from "~/cache"
 
 import { subscribeToAll } from "~/licenses"
 import { logger } from "~/log"
 
 import { initializeHero } from "./hero"
 
-import { cacheAssets, cleanupCache } from "./cache"
+import { cacheAssets } from "./cache"
 import { merge } from "rxjs"
 import { mergeMap } from "rxjs/operators"
+// @ts-ignore
+import Tablesort from "tablesort"
+
+import "~/feedback"
 
 const licensePattern = /\/licenses\/(source-available|proprietary|permissive|public-domain|copyleft)\/\w+-?\d?\.?\d?\/index.html$/
 
@@ -47,3 +52,17 @@ document$.subscribe({
   }
 },
 )
+
+document$.subscribe(function () {
+  const script = document.createElement("script")
+  script.type = "text/javascript"
+  script.src = "https://app.tinyanalytics.io/pixel/ei74pg7dZSNOtFvI"
+  document.head.appendChild(script)
+})
+
+document$.subscribe(function () {
+  const tables = document.querySelectorAll("article table:not([class])")
+  tables.forEach(function (table) {
+    new Tablesort(table)
+  })
+})

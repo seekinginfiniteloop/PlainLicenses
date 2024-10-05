@@ -940,6 +940,10 @@ section#pt3-hero-content-section.hero-content-section svg.hlticon {
   background: linear-gradient(180deg, rgba(var(--zaffre-adj), 1) 10%, rgba(var(--zaffre-adj), 1) 20%, rgba(var(--zaffre-adj), 0.5) 100%) !important;
 }
 
+nav.md-tabs {
+  position: top;
+}
+
 footer.md-footer {
   position: absolute;
   top: 380vh;

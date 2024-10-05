@@ -1,16 +1,17 @@
 {
   "metaOutput": {
-    "docs/assets/javascripts/index.NXSFIIYW.js.map": {
-      "bytes": 1462089,
+    "docs/assets/javascripts/index.EK2BMHRD.js.map": {
+      "bytes": 1466008,
       "inputs": [],
       "exports": []
     },
-    "docs/assets/javascripts/index.NXSFIIYW.js": {
-      "bytes": 195802,
+    "docs/assets/javascripts/index.EK2BMHRD.js": {
+      "bytes": 196195,
       "inputs": [
         "node_modules/focus-visible/dist/focus-visible.js",
         "node_modules/escape-html/index.js",
         "node_modules/clipboard/dist/clipboard.js",
+        "node_modules/tablesort/src/tablesort.js",
         "external/mkdocs-material/src/templates/assets/javascripts/bundle.ts",
         "node_modules/tslib/tslib.es6.mjs",
         "node_modules/rxjs/dist/esm5/internal/util/isFunction.js",
@@ -104,7 +105,6 @@
         "node_modules/rxjs/dist/esm5/internal/operators/scanInternals.js",
         "node_modules/rxjs/dist/esm5/internal/operators/combineLatest.js",
         "node_modules/rxjs/dist/esm5/internal/operators/combineLatestWith.js",
-        "node_modules/rxjs/dist/esm5/internal/operators/concatMap.js",
         "node_modules/rxjs/dist/esm5/internal/operators/debounce.js",
         "node_modules/rxjs/dist/esm5/internal/operators/debounceTime.js",
         "node_modules/rxjs/dist/esm5/internal/operators/defaultIfEmpty.js",
@@ -243,17 +243,18 @@
         "external/mkdocs-material/src/templates/assets/javascripts/polyfills/index.ts",
         "node_modules/rxjs/dist/esm5/operators/index.js",
         "src/assets/javascripts/log/index.ts",
+        "src/assets/javascripts/cache/index.ts",
         "src/assets/javascripts/licenses/index.ts",
         "node_modules/gsap/gsap-core.js",
         "node_modules/gsap/CSSPlugin.js",
         "node_modules/gsap/index.js",
         "node_modules/gsap/ScrollToPlugin.js",
         "src/assets/javascripts/hero/animation/index.ts",
-        "src/assets/javascripts/cache/index.ts",
         "src/assets/javascripts/hero/imageshuffle/data/index.ts",
         "src/assets/javascripts/hero/imageshuffle/index.ts",
         "src/assets/javascripts/hero/index.ts",
-        "src/assets/javascripts/index.ts"
+        "src/assets/javascripts/index.ts",
+        "src/assets/javascripts/feedback/index.ts"
       ],
       "exports": [],
       "entryPoint": "src/assets/javascripts/index.ts"
@@ -311,13 +312,13 @@
       ],
       "exports": []
     },
-    "docs/assets/stylesheets/bundle.CTGMAABR.css.map": {
-      "bytes": 326945,
+    "docs/assets/stylesheets/bundle.XIYCMOJW.css.map": {
+      "bytes": 327013,
       "inputs": [],
       "exports": []
     },
-    "docs/assets/stylesheets/bundle.CTGMAABR.css": {
-      "bytes": 178757,
+    "docs/assets/stylesheets/bundle.XIYCMOJW.css": {
+      "bytes": 178782,
       "inputs": [
         "external/mkdocs-material/material/templates/assets/stylesheets/palette.06af60db.min.css",
         "external/mkdocs-material/material/templates/assets/stylesheets/main.8c3ca2c6.min.css",

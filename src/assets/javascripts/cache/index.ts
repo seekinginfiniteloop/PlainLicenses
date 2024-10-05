@@ -1,5 +1,5 @@
-import { Observable, concatMap, from, fromEvent, of, throwError } from "rxjs"
-import { catchError, map, mergeMap, tap } from "rxjs/operators"
+import { Observable, from, fromEvent, of, throwError } from "rxjs"
+import { catchError, mergeMap, tap } from "rxjs/operators"
 
 import { logger } from "~/log"
 
@@ -105,18 +105,10 @@ export function cacheAssets(type: string, elements: NodeListOf<HTMLElement>): Ob
   )
 }
 
-const request = fetch("hash_table.json").then(response => { return response.json() }).catch(error => { logger.error("Error fetching hash table.", error) })
-
-const hashTable = request.then(req => { return req.json() as { [key: string]: string } }).catch(error => { logger.error("Error parsing hash table.", error) })
-
-const hashes = (): string[] => {
-  return Object.values(hashTable)
-}
-
 /**
  *  Cleans the cache by removing all requests that match the hash table.
  * @returns Observable of boolean
- */
+ *
 const cleanCache = (): Observable<boolean> => {
   return openCache().pipe(
     mergeMap(cache =>
@@ -144,11 +136,10 @@ const cleanCache = (): Observable<boolean> => {
   )
 }
 
-/**
  * A timer that cleans the cache after a specified time. Used to delay the cache cleanup process for after the page has loaded. And other delayed operations have completed.
  * @param timer - time in milliseconds
  * @returns Observable of Event
- */
+
 export const cleanupCache = (timer: number): Observable<Event> => {
   return fromEvent(window, "load").pipe(
     tap(() => {
@@ -161,3 +152,13 @@ export const cleanupCache = (timer: number): Observable<Event> => {
     })
   )
 }
+ */
+
+export const cleanupCache = (timer: number): Observable<Event> => {
+  return fromEvent(window, "load").pipe(
+    tap(() => {
+      setTimeout(() => {
+        logger.info("Until we implement the cache cleaning logic, we will just log a message.")
+      }, timer)
+    }))
+        }
