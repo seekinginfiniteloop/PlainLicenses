@@ -186,8 +186,6 @@ function initializeImageGenerator() {
 // Variables for image cycling
 let generatorExhausted = false // turns true when the generator is exhausted
 
-let cycleImagesSubscription: Subscription | undefined
-
 /**
  * Returns the next image data type from the generator
  * @function
@@ -196,17 +194,6 @@ let cycleImagesSubscription: Subscription | undefined
 const heroesGen = (): HeroImage | undefined => {
   const nextHeroes = imageGenerator.next()
   return nextHeroes.done ? (generatorExhausted = true, undefined) : nextHeroes.value
-}
-
-/**
- * Stops the image cycling subscription
- * @function
- */
-const stopImageCycling = (): void => {
-  if (cycleImagesSubscription) {
-    cycleImagesSubscription.unsubscribe()
-    cycleImagesSubscription = undefined
-  }
 }
 
 /**
@@ -243,6 +230,19 @@ const cycleImages = (): Observable<void> => {
 }
 
 // ============================== IMAGE CYCLING ==============================
+
+let cycleImagesSubscription: Subscription | undefined
+
+/**
+ * Stops the image cycling subscription
+ * @function
+ */
+const stopImageCycling = (): void => {
+  if (cycleImagesSubscription) {
+    cycleImagesSubscription.unsubscribe()
+    cycleImagesSubscription = undefined
+  }
+}
 
 /**
  * Starts the image cycling subscription
@@ -383,7 +383,9 @@ const initSubscriptions = (): void => {
 }
 
 /**
- *
+ * Loads the first image on the page
+ * @function
+ * @returns Observable of void
  */
 function loadFirstImage() {
   const firstImage = heroesGen() || initializeImageGenerator()
@@ -406,19 +408,23 @@ document$.pipe(
     if (images && images[0]) {
       return of(undefined).pipe(
         delay(CONFIG.INTERVAL_TIME),
-        switchMap(() => startImageCycling())
-      )
+        switchMap(() => {
+          cycleImagesSubscription = startImageCycling().subscribe()
+          return of(true)
+        }))
     } else {
-      return startImageCycling()
+      cycleImagesSubscription = startImageCycling().subscribe({
+        next: () => logger.info("Image cycling started"),
+        error: (err: Error) => logger.error("Error starting image cycling:", err)
+      })
+      return of(true)
     }
   })
 ).subscribe({
-  next: () => logger.info("Image cycling started"),
+  next: () => initSubscriptions(),
   error: (err: Error) => logger.error("Error starting image cycling:", err),
   complete: () => logger.info("Image cycling completed")
 })
-
-initSubscriptions()
 
   /**
    * Unsubscribes from all subscriptions when the page is closed or refreshed
