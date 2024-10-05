@@ -11,6 +11,7 @@ import {
   Observable,
   Subscription,
   combineLatest,
+  delay,
   from,
   fromEvent,
   fromEventPattern,
@@ -381,12 +382,42 @@ const initSubscriptions = (): void => {
   )
 }
 
+/**
+ *
+ */
+function loadFirstImage() {
+  const firstImage = heroesGen() || initializeImageGenerator()
+  if (firstImage) {
+    logger.info(`First image's settings loaded: ${firstImage.imageName}`)
+    firstImage.src = firstImage.widths[getOptimalWidth()]
+    logger.info(`First image's src: ${firstImage.src}`)
+    return fetchAndSetImage(firstImage).subscribe({ next: () => logger.info("First image loaded successfully") })
+  } else {
+    return throwError(() => new Error("First image not found"))
+  }
+}
+
 initializeImageGenerator()
-startImageCycling().subscribe({
-    next: () => logger.info("Image cycling started"),
-    error: (err: Error) => logger.error("Error starting image cycling:", err),
-    complete: () => logger.info("Image cycling completed")
+loadFirstImage()
+
+document$.pipe(
+  switchMap(() => {
+    const images = parallaxLayer?.getElementsByTagName("img")
+    if (images && images[0]) {
+      return of(undefined).pipe(
+        delay(CONFIG.INTERVAL_TIME),
+        switchMap(() => startImageCycling())
+      )
+    } else {
+      return startImageCycling()
+    }
   })
+).subscribe({
+  next: () => logger.info("Image cycling started"),
+  error: (err: Error) => logger.error("Error starting image cycling:", err),
+  complete: () => logger.info("Image cycling completed")
+})
+
 initSubscriptions()
 
   /**
