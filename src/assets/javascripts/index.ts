@@ -1,11 +1,10 @@
 import "@/bundle" // we import mkdocs-material's scripts as a side effect
+import "~/hero"
 
 import {cleanupCache} from "~/cache"
 
 import { subscribeToAll } from "~/licenses"
 import { logger } from "~/log"
-
-import { initializeHero } from "./hero"
 
 import { cacheAssets } from "./cache"
 import { merge } from "rxjs"
@@ -24,11 +23,8 @@ location$.subscribe({
   next: (url: URL) => {
     if (licensePattern.test(url.pathname)) {
       subscribeToAll()
-    } else if (url.pathname === "/" || url.pathname === "/index.html") {
-      initializeHero()
     }
-  },
-  error: (err: Error): void => logger.error("Error in location$ observable:", err)
+  }
 })
 
 // Assets to cache

@@ -8,6 +8,7 @@ typings
 .testbuild
 .testbuild/*
 .testbuild/**/*
+.history
 
 # mkdocs
 .cache

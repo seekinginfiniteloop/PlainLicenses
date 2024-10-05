@@ -15,7 +15,6 @@ import {
   fromEvent,
   fromEventPattern,
   interval,
-  map,
   of,
   throwError
 } from "rxjs"
@@ -39,23 +38,40 @@ const portraitMediaQuery = window.matchMedia("(orientation: portrait)")
 
 const parallaxLayer = document.getElementById("parallax-hero-image-layer")
 
+// ===================================== UTILITIES =====================================
+
 /**
  * Determine the optimal width based on screen size
  * @function
  * @returns the optimal width for the image
  */
 const getOptimalWidth = () => {
-    const screenWidth = Math.max(window.innerWidth, window.innerHeight)
-    if (screenWidth <= 1280) {
-      return 1280
+  const screenWidth = Math.max(window.innerWidth, window.innerHeight)
+  return screenWidth <= 1280 ? 1280 : screenWidth <= 1920 ? 1920 : screenWidth <= 2560 ? 2560 : 2840
+}
+
+/**
+ * Updates the image sources based on the optimal width
+ * @param images - an array of image elements
+ * @param optimalWidth - the optimal width for the image
+ */
+const updateImageSources = (images: HTMLImageElement[], optimalWidth: number) => {
+  images.forEach(image => {
+    const imageName = image.classList[1].split("--")[1]
+    const foundImage = retrieveImage(imageName)
+    if (foundImage) {
+      image.src = foundImage.widths[optimalWidth]
     }
-    if (screenWidth <= 1920) {
-      return 1920
-    }
-    if (screenWidth <= 2560) {
-      return 2560
-    }
-    return 2840
+  })
+}
+
+/**
+ * true if the page is visible, false otherwise
+ * @function
+ * @returns boolean
+ */
+function isPageVisible() {
+  return !document.hidden
 }
 
 /**
@@ -144,30 +160,17 @@ const fetchAndSetImage = (imgSettings: HeroImage): Observable<void> => {
   }
 }
 
+// ============================== IMAGE GENERATOR ==============================
 /**
- * Randomizes the order of the image settings to shuffle the images
+ * randomizes the order of the hero images
  * @function
- * @returns array of the shuffled image settings
+ * @returns an array of HeroImage objects
  */
 function randomizeHeroes(): HeroImage[] {
   return allHeroes.sort(() => Math.random() - 0.5)
 }
 
-let imageGenerator: Generator<HeroImage>
-
-/**
- * Generates an image data type generator
- *
- * @generator
- * @function
- * @param imgSettings - array of HeroImage objects
- * @yields image datum objects
- */
-function* imageRetrievalGenerator(imgSettings: HeroImage[]): Generator<HeroImage> {
-  for (const setting of imgSettings) {
-    yield setting
-  }
-}
+let imageGenerator: Iterator<HeroImage>
 
 /**
  * Initializes the image generator
@@ -176,12 +179,12 @@ function* imageRetrievalGenerator(imgSettings: HeroImage[]): Generator<HeroImage
  */
 function initializeImageGenerator() {
   const randomSettings = randomizeHeroes() // Shuffle and store the settings
-  imageGenerator = imageRetrievalGenerator(randomSettings) // Create the generator
+  imageGenerator = randomSettings.values() // Use the built-in iterator
 }
 
 // Variables for image cycling
 let generatorExhausted = false // turns true when the generator is exhausted
-const isPageVisible = true
+
 let cycleImagesSubscription: Subscription | undefined
 
 /**
@@ -190,15 +193,8 @@ let cycleImagesSubscription: Subscription | undefined
  * @returns image data type or undefined if the generator is exhausted
  */
 const heroesGen = (): HeroImage | undefined => {
-  if (generatorExhausted) {
-    return undefined
-  }
   const nextHeroes = imageGenerator.next()
-  if (nextHeroes.done) {
-    generatorExhausted = true
-    return undefined
-  }
-  return nextHeroes.value
+  return nextHeroes.done ? (generatorExhausted = true, undefined) : nextHeroes.value
 }
 
 /**
@@ -245,6 +241,8 @@ const cycleImages = (): Observable<void> => {
   return EMPTY
 }
 
+// ============================== IMAGE CYCLING ==============================
+
 /**
  * Starts the image cycling subscription
  * @function
@@ -253,25 +251,15 @@ const cycleImages = (): Observable<void> => {
  * @throws {Error} if the image cycling subscription fails
  */
 const startImageCycling = (): Observable<void> => {
-  return new Observable(subscriber => {
-    logger.info("Starting image cycling")
-    combineLatest([interval(CONFIG.INTERVAL_TIME), viewport$, location$])
-      .pipe(
-        switchMap(() => cycleImages()),
-        catchError(error => {
-          logger.error("Error cycling images:", error)
-          return EMPTY
-        })
-      )
-      .subscribe({
-        next: () => {
-          logger.info("Image cycled successfully")
-          subscriber.next()
-        },
-        error: (err: Error) => subscriber.error(err),
-        complete: () => subscriber.complete()
-      })
-  })
+  return combineLatest([interval(CONFIG.INTERVAL_TIME), viewport$, location$])
+    .pipe(
+      switchMap(() => cycleImages()),
+      tap({
+        next: () => logger.info("Image cycled successfully"),
+        error: (error: Error) => logger.error("Error cycling images:", error)
+      }),
+      catchError(() => EMPTY)
+    )
 }
 
 /**
@@ -280,17 +268,7 @@ const startImageCycling = (): Observable<void> => {
  * @returns Observable of void
  */
 const handleVisibilityChange = (): Observable<void> =>
-  isPageVisible ? startImageCycling() : of(stopImageCycling())
-
-/**
- * Shuffles the images in the hero section
- * @function
- * @returns Observable of void
- */
-export const shuffle = (): Observable<void> => {
-  const settings = heroesGen()
-  return settings ? fetchAndSetImage(settings).pipe(map(() => {})) : EMPTY
-}
+  isPageVisible() ? startImageCycling() : of(stopImageCycling())
 
 /**
  * Creates an observable for screen orientation changes.
@@ -310,90 +288,86 @@ const createOrientationObservable = (mediaQuery: MediaQueryList): Observable<boo
  * @param optimalWidth - the optimal width for the image
  */
 function regenerateSources(optimalWidth: number) {
-  Array.from(parallaxLayer?.getElementsByTagName("img") || []).forEach((image, index) => {
-    if (index !== 0) {
-      const imageName = image.classList[1].split("--")[1]
-      const foundImage = retrieveImage(imageName)
-      const newChildSrc = foundImage ? foundImage.widths[optimalWidth] : undefined
-      if (newChildSrc) {
-        image.src = newChildSrc
-      }
-    }
-  })
+  const imageLayers = Array.from(parallaxLayer?.getElementsByTagName("img") || [])
+  updateImageSources(imageLayers, optimalWidth)
 
-  const nextSettings: HeroImage[] = []
-  let result = imageGenerator.next()
-  while (!result.done) {
-    if (result.value !== undefined) {
-      nextSettings.push(result.value)
+  if (imageLayers.length === 0 && !generatorExhausted) {
+    const firstImage = heroesGen() || initializeImageGenerator()
+    if (firstImage) {
+      firstImage.src = firstImage.widths[optimalWidth]
+      fetchAndSetImage(firstImage).subscribe({
+        next: () => logger.info("First image loaded successfully"),
+        error: (err: Error) => logger.error("Error loading first image:", err)
+      })
     }
-    result = imageGenerator.next()
-  }
-  generatorExhausted = nextSettings.length === 0
-  nextSettings.forEach(setting => {
-    const newSrc = setting.widths[optimalWidth]
-    setting.src = newSrc
-  })
-  if (nextSettings.length > 0) {
-    imageGenerator = imageRetrievalGenerator(nextSettings)
+  } else if (!generatorExhausted && imageGenerator) {
+    const nextSettings = []
+    let result = heroesGen()
+    while (result) {
+      nextSettings.push(result)
+      result = heroesGen()
+    }
+    nextSettings.forEach(hero => hero.src = hero.widths[optimalWidth])
+    imageGenerator = nextSettings.values()
   }
 }
 
-/**
- * Handles visibility changes
- * @function
- * @returns Observable of void
- * @throws {Error} if the first image is not found
- * @throws {Error} if the image cycling subscription fails
- * @throws {Error} if the visibility change subscription fails
- */
+  /**
+   * Handles visibility changes
+   * @function
+   * @returns Observable of void
+   * @throws {Error} if the first image is not found
+   * @throws {Error} if the image cycling subscription fails
+   * @throws {Error} if the visibility change subscription fails
+   */
 const orientation$ = createOrientationObservable(portraitMediaQuery).pipe(
-  filter(() => isPageVisible),
+  filter(() => isPageVisible()),
   distinctUntilChanged(),
   tap(() => {
-    if (parallaxLayer) {
-      const currentImage = parallaxLayer.getElementsByTagName("img")[0]
-      if (currentImage) {
-        const currentWidth = currentImage.width
-        const optimalWidth = getOptimalWidth()
-        if (currentWidth !== optimalWidth) {
-          regenerateSources(optimalWidth)
+      if (parallaxLayer) {
+        const currentImage = parallaxLayer.getElementsByTagName("img")[0]
+        if (currentImage) {
+          const currentWidth = currentImage.width
+          const optimalWidth = getOptimalWidth()
+          if (currentWidth !== optimalWidth) {
+            regenerateSources(optimalWidth)
+          }
         }
       }
-    }
-}),
+    }),
   catchError(error => {
-    logger.error("Error in orientation observable:", error)
-    return EMPTY
-  })
+      logger.error("Error in orientation observable:", error)
+      return EMPTY
+    })
 )
 
-/**
- * Creates an observable for visibility changes (e.g. navigating to a different tab or window). We use this to trigger the start and stop of image cycling.
- */
+  /**
+   * Creates an observable for visibility changes (e.g. navigating to a different tab or window). We use this to trigger the start and stop of image cycling.
+   */
 const locationChange$ = location$.pipe(
   distinctUntilChanged((a: URL, b: URL) => a.pathname === b.pathname),
   filter(loc => loc.pathname === "/" || loc.pathname === "/index.html"),
   tap(() => stopImageCycling()),
   catchError(error => {
-    logger.error("Error in location change observable:", error)
-    return EMPTY
-  })
+      logger.error("Error in location change observable:", error)
+      return EMPTY
+    })
 )
 
-/**
- * Starts the image cycling subscription when the page is visible
- * @function
- */
+const subscribeWithErrorHandling = (observable: Observable<unknown>, name: string) => {
+  return observable.subscribe({
+    next: () => logger.info(`${name} change processed`),
+    error: err => logger.error(`Unhandled error in ${name} subscription:`, err),
+    complete: () => logger.info(`${name} subscription completed`)
+  })
+}
+
+  /**
+   * Starts the image cycling subscription when the page is visible
+   * @function
+   */
 const initSubscriptions = (): void => {
   logger.info("Initializing subscriptions")
-  const subscribeWithErrorHandling = (observable: Observable<unknown>, name: string) =>
-    observable.subscribe({
-      next: () => logger.info(`${name} change processed`),
-      error: err => logger.error(`Unhandled error in ${name} subscription:`, err),
-      complete: () => logger.info(`${name} subscription completed`)
-    })
-
   subscriptions.push(
     subscribeWithErrorHandling(orientation$, "Orientation"),
     subscribeWithErrorHandling(
@@ -406,19 +380,20 @@ const initSubscriptions = (): void => {
     subscribeWithErrorHandling(locationChange$, "Location")
   )
 }
+
 initializeImageGenerator()
 startImageCycling().subscribe({
-  next: () => logger.info("Image cycling started"),
-  error: (err: Error) => logger.error("Error starting image cycling:", err),
-  complete: () => logger.info("Image cycling completed")
-})
+    next: () => logger.info("Image cycling started"),
+    error: (err: Error) => logger.error("Error starting image cycling:", err),
+    complete: () => logger.info("Image cycling completed")
+  })
 initSubscriptions()
 
-/**
- * Unsubscribes from all subscriptions when the page is closed or refreshed
- * @event beforeunload
- */
+  /**
+   * Unsubscribes from all subscriptions when the page is closed or refreshed
+   * @event beforeunload
+   */
 window.addEventListener("beforeunload", () => {
-  stopImageCycling()
-  subscriptions.forEach(sub => sub.unsubscribe())
-})
+    stopImageCycling()
+    subscriptions.forEach(sub => sub.unsubscribe())
+  })
