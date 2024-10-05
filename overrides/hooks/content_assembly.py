@@ -1,3 +1,9 @@
+# sourcery skip: avoid-global-variables, do-not-use-staticmethod
+"""
+Assembles license content for all license pages.
+
+TODO: We can probably make more use of pyMarkdown to handle the processing of the license text; need to investigate further.
+"""
 import json
 import logging
 import re
@@ -27,7 +33,7 @@ placeholders = re.compile(r"\{\{\s(.*?)\s\}\}")
 if not hasattr(__name__, "ASSEMBLER_LOGGER"):
     ASSEMBLER_LOGGER = get_logger(
         __name__,
-        logging.INFO,
+        logging.WARNING,
     )
 
 def clean_content(content: dict[str, Any]) -> dict[str, Any] | None:
@@ -50,7 +56,7 @@ def clean_content(content: dict[str, Any]) -> dict[str, Any] | None:
         return (
             {key.strip(): value.strip()}
             if isinstance(value, str)
-            else {key: [item.strip() for item in value]}
+            else {key: [str(item).strip() for item in value]}
             if isinstance(value, list) and all(isinstance(item, str) for item in value)
             else {key: value}
         )
@@ -102,6 +108,8 @@ def on_page_markdown(
 
 
 def on_post_page(output: str, page: Page, config: MkDocsConfig) -> Any:
+    """Replaces year placeholders in the license pages with the current year.
+    This was simpler than running a render on the page again, and it's a small change."""
     if re.match(
         r"licenses/(permissive|copyleft|public-domain/source-available|proprietary)/(.+?)/index.html",
         page.url,
@@ -113,10 +121,14 @@ def on_post_page(output: str, page: Page, config: MkDocsConfig) -> Any:
 
 
 def load_json(path: Path) -> dict[str, Any]:
+    """Loads a JSON"""
     return json.loads(path.read_text())
 
 
 class LicenseContent:
+    """
+    Represents a license's content and metadata, including the license text and associated attributes. All license text processing happens here."""
+
     def __init__(self, page: Page) -> None:
         """
         Initializes a new instance of the class with the provided page object.

@@ -1,3 +1,8 @@
+# sourcery skip: avoid-global-variables
+"""
+Centralized logging configuration for all hooks.
+"""
+
 import logging
 import os
 import shutil
@@ -5,21 +10,20 @@ import sys
 import textwrap
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 import click
-
-from mkdocs.plugins import event_priority
+from jinja2 import Environment
 from mkdocs.config.base import Config as MkDocsConfig
+from mkdocs.plugins import event_priority
 from mkdocs.structure.files import Files
 from mkdocs.structure.nav import Navigation
 
-from jinja2 import Environment
-
+# You can override the hooks' global log level by setting the LOG_LEVEL_OVERRIDE environment variable as an integer: [Python logging levels](https://docs.python.org/3/library/logging.html#logging-levels).
 LOG_LEVEL_OVERRIDE = int(os.environ.get("LOG_LEVEL_OVERRIDE", 50))
-LOG_SAVE_PATH: str = (f".workbench/logs/pl_build_log_{datetime.now(timezone.utc).isoformat(timespec="seconds")}.log")
+LOG_SAVE_PATH: str = f".workbench/logs/pl_build_log_{datetime.now(timezone.utc).isoformat(timespec="seconds")}.log"
 
-LOG_FILE: Path | None = None
+log_file: Path | None = None
 # add `timestamp` to the LOG_SAVE_PATH environment variable to have the current timestamp added to the log file name
 FILEHANDLER_ENABLED = os.environ.get("FILEHANDLER_ENABLED", "True") == "True"
 STREAMHANDLER_ENABLED = os.environ.get("STREAMHANDLER_ENABLED", "True") == "True"
@@ -30,50 +34,76 @@ LOGGING_LOGGER: logging.Logger | None = None
 
 LOGGERS = {}
 
-def create_log_file() -> None:
-    LOG_FILE = Path(LOG_SAVE_PATH)
-    if not LOG_FILE.exists():
-        LOG_FILE.parent.mkdir(parents=True, exist_ok=True)
-        LOG_FILE.touch()
 
-if not LOG_FILE:
-    LOG_FILE = create_log_file()
+def create_log_file() -> None:
+    """Create the log file if it does not exist."""
+    log_file = Path(LOG_SAVE_PATH)
+    if not log_file.exists():
+        log_file.parent.mkdir(parents=True, exist_ok=True)
+        log_file.touch()
+
+
+if not log_file:
+    log_file = create_log_file()
+
 
 def initialize_logging() -> None:
+    """Initialize the logging logger, which logs logging."""
     LOGGING_LOGGER: logging.Logger = get_logger(__name__, logging.INFO)
     LOGGING_LOGGER.info("Initialized logging logger.")
     LOGGERS[__name__] = LOGGING_LOGGER
 
+
 @event_priority(100)
-def on_startup(command: Literal["build", "serve", "gh-deploy"], config: MkDocsConfig) -> None:
+def on_startup(
+    command: Literal["build", "serve", "gh-deploy"], config: MkDocsConfig
+) -> None:
+    """Initialize the logging logger. This is the first hook to run."""
     initialize_logging()
-    LOGGING_LOGGER.info(f"Starting {command} command.")
+    LOGGING_LOGGER.debug(f"Starting {command} command.")
+
 
 @event_priority(100)
 def on_config(config: MkDocsConfig) -> MkDocsConfig:
-    LOGGING_LOGGER.info("starting on_config")
+    """Log the configuration."""
+    LOGGING_LOGGER.debug("starting on_config")
+
 
 @event_priority(100)
 def on_pre_build(config: MkDocsConfig) -> None:
-    LOGGING_LOGGER.info("starting on_prebuild")
+    """Log the pre-build event."""
+    LOGGING_LOGGER.debug("starting on_prebuild")
+
 
 @event_priority(100)
 def on_files(files: Files, config: MkDocsConfig) -> Files:
-    LOGGING_LOGGER.info("starting on_files")
+    """Log the files event."""
+    LOGGING_LOGGER.debug("starting on_files")
+
 
 @event_priority(100)
 def on_nav(nav: Navigation, config: MkDocsConfig) -> Navigation:
-    LOGGING_LOGGER.info("starting on_nav")
+    """Log the navigation event."""
+    LOGGING_LOGGER.debug("starting on_nav")
+
 
 @event_priority(100)
 def on_env(env: Environment, config: MkDocsConfig, files: Files) -> Environment:
-    LOGGING_LOGGER.info("starting on_env")
+    """Log the environment event."""
+    LOGGING_LOGGER.debug("starting on_env")
+
 
 @event_priority(100)
 def on_post_build(config: MkDocsConfig) -> None:
-    LOGGING_LOGGER.info("starting on_post_build")
+    """Log the post-build event."""
+    LOGGING_LOGGER.debug("starting on_post_build")
+
 
 class ColorFormatter(logging.Formatter):
+    """
+    A logging formatter that adds color to the log level name.
+    """
+
     colors = {
         "CRITICAL": "red",
         "ERROR": "orange",
@@ -90,7 +120,8 @@ class ColorFormatter(logging.Formatter):
         subsequent_indent=" " * 11,
     )
 
-    def format(self, record: logging.LogRecord):
+    def format(self, record: logging.LogRecord) -> Any | str:
+        """Format the log record."""
         message = super().format(record)
         prefix = f"{record.levelname:<8}-  "
         if record.levelname in self.colors:
@@ -106,6 +137,7 @@ class ColorFormatter(logging.Formatter):
 
 
 def _add_logger(name: str, logger: logging.Logger) -> None:
+    """Adds a logger to the LOGGERS dictionary and logs the addition."""
     LOGGERS[name] = logger
     if LOGGING_LOGGER:
         LOGGING_LOGGER.info(f"Added logger: {name}")
@@ -116,6 +148,7 @@ def _add_logger(name: str, logger: logging.Logger) -> None:
 def set_handler(
     handler: logging.Handler, level: int, formatter: logging.Formatter
 ) -> logging.Handler:
+    """Sets the handler's level and formatter."""
     handler.setLevel(level)
     handler.setFormatter(formatter)
     return handler
@@ -141,7 +174,7 @@ def get_logger(
         "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
 
-    handlers = []
+    handlers: list[logging.Handler | None] = []
     if FILEHANDLER_ENABLED:
         save_location = LOG_SAVE_PATH
         file_handler = logging.FileHandler(save_location)
@@ -156,7 +189,8 @@ def get_logger(
     handlers.append(logging.lastResort)
 
     for handler in handlers:
-        logger.addHandler(handler)
+        if handler:
+            logger.addHandler(handler)
 
     _add_logger(name, logger)
 

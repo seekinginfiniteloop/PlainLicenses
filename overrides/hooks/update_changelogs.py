@@ -1,3 +1,4 @@
+"""Updates the changelog for each license page and checks for tags in the frontmatter."""
 import json
 import logging
 import re
@@ -10,7 +11,7 @@ from mkdocs.config.base import Config as MkDocsConfig
 from mkdocs.structure.files import File, Files
 
 if not hasattr(__name__, "CHANGELOG_LOGGER"):
-    CHANGELOG_LOGGER = get_logger(__name__, logging.INFO)
+    CHANGELOG_LOGGER = get_logger(__name__, logging.WARNING)
 
 include = re.compile(
     r"^licenses/(copyleft|proprietary|public-domain|permissive|source-available)/.+?/index\..*$"

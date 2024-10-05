@@ -167,7 +167,9 @@ const parents = await resolveGlob("src/assets/images/hero/*", { onlyDirectories:
 export const heroImages = Object.fromEntries(await Promise.all(parents.map(async (parent) => {
     const key = parent.split("/").pop();
     const heroFilePattern = `${key}_{1280,1920,2560,3840}.avif`;
+    console.log(`parent: ${parent}, key: ${key}, heroFilePattern: ${heroFilePattern}`);
     const children = await globby(`${parent}/${heroFilePattern}`, { onlyFiles: true, unique: true });
+    console.log(`children: ${children}`);
     const flattenedWidths = children.reduce((acc, child) => {
         const width = [1280, 1920, 2560, 3840].find((w) => child.includes(w.toString()));
         if (width) {

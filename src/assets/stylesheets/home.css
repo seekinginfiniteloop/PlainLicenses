@@ -933,16 +933,15 @@ section#pt3-hero-content-section.hero-content-section svg.hlticon {
   display: none;
 }
 
-.md-tabs {
+nav.md-tabs {
   z-index: 1000;
   margin-top: -0.35rem;
+  position: absolute;
+  align-self: flex-start;
   /* stylelint-disable-next-line @stylistic/max-line-length */
   background: linear-gradient(180deg, rgba(var(--zaffre-adj), 1) 10%, rgba(var(--zaffre-adj), 1) 20%, rgba(var(--zaffre-adj), 0.5) 100%) !important;
 }
 
-nav.md-tabs {
-  position: top;
-}
 
 footer.md-footer {
   position: absolute;

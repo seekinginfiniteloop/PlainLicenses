@@ -1,3 +1,4 @@
+"""Adds social media buttons to the bottom of each blog and license page."""
 import logging
 import re
 import urllib.parse
@@ -17,7 +18,7 @@ include = re.compile(
 )
 
 if not hasattr(__name__, "SOCIAL_LOGGER"):
-    SOCIAL_LOGGER = get_logger(__name__, logging.INFO)
+    SOCIAL_LOGGER = get_logger(__name__, logging.WARNING)
 
 @event_priority(-100)  # run last
 def on_page_markdown(

@@ -1,3 +1,4 @@
+"""Sets jinja2 environment settings for the mkdocs project."""
 import json
 import logging
 from pathlib import Path
@@ -18,7 +19,7 @@ Image.MAX_IMAGE_PIXELS = 300000000
 # We're a static site, so we don't need to worry about decompression bombs.
 
 if not hasattr(__name__, "ENV_LOGGER"):
-    ENV_LOGGER = get_logger(__name__, logging.INFO)
+    ENV_LOGGER = get_logger(__name__, logging.WARNING)
 
 def md_filter(text: str, config: MkDocsConfig, **kwargs) -> Any:
     """

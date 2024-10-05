@@ -13,7 +13,7 @@ from mkdocs.structure.pages import Page
 from mkdocs.utils.templates import TemplateContext
 
 if not hasattr(__name__, "SITE_LICENSE_LOGGER"):
-    SITE_LICENSE_LOGGER = get_logger(__name__, logging.INFO)
+    SITE_LICENSE_LOGGER = get_logger(__name__, logging.WARNING)
 
 
 def on_page_context(

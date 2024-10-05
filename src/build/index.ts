@@ -6,7 +6,7 @@ import { globby } from "globby";
 import * as path from 'path';
 import { from, Observable } from "rxjs";
 import { optimize } from "svgo";
-import { baseProject, generateSrcset, GHActions, heroImages, heroParents, nodeConfig, webConfig } from "./config/index.js";
+import { baseProject, GHActions, heroImages, heroParents, nodeConfig, webConfig } from "./config/index.js";
 import type { buildJson, esbuildOutputs, FileHashes, HeroImage, Project } from "./types.ts";
 
 const cssSrc = "src/assets/stylesheets/bundle.css";
@@ -85,8 +85,9 @@ async function getmd5Hash(filePath: string): Promise<string> {
   const content = await fs.readFile(filePath, 'utf8');
   const hash = crypto.createHash('md5').update(content).digest('hex').slice(0, 8);
   const parts = filePath.split('.');
-  const ext = parts.pop();
-  return parts.join('.') + '.' + hash + '.' + ext;
+  const replacedParts = [parts[0].replace('src', 'docs'), ...parts.slice(1)];
+  const ext = replacedParts.pop();
+  return replacedParts.join('.') + '.' + hash + '.' + ext;
 }
 
 /**
@@ -137,27 +138,27 @@ async function handleHeroImages() {
 
   for (const [parentName, image] of Object.entries<HeroImage>(heroes)) {
     // Update the parent path
-    image.imageName = parentName;
-    const dest = image.parent.replace('src', 'docs');
-    image.parent = dest;
-
-    // Process each width
-    for (const [width, src] of Object.entries(image.widths)) {
-      const newDest = await getmd5Hash(src);
-      await fs.cp(src, newDest);
-      // Update the path to the hashed file
-      image.widths[Number(width)] = newDest.replace('src', 'docs');
+    const imageName = parentName
+    const parent = image.parent.replace('src', 'docs');
+    if (!(await fs.access(parent).catch(() => false))) {
+      await fs.mkdir(parent, { recursive: true });
     }
-    const srcset = await generateSrcset(image);
-    image.srcset = srcset;
-
-    images.push(image);
+    const newWidths: { [key: number]: string } = {};
+    // Process each width
+    let newSrcSet: string[] = []
+    for (const [width, src] of Object.entries(image.widths)) {
+      const newPath = (await getmd5Hash(src)).replace('src', 'docs');
+      newWidths[Number(width)] = newPath;
+      newSrcSet.push(`${newPath} ${width}w`);
+      await fs.copyFile(src, newPath);
+    }
+    const srcset = newSrcSet.join(', ');
+    images.push({ imageName, parent, widths: newWidths, srcset });
+    }
+    noScriptImage = images.find((image) => image.parent.includes('minimal')) || images.find((image) => image.widths[1280].includes('minimal')) || images[8];
+    // Export the images array to a TypeScript file
+    await exportImagesToTS(images);
   }
-  noScriptImage = images.find((image) => image.parent.includes('minimal')) || images.find((image) => image.widths[1280].includes('minimal')) || images[8];
-  // Export the images array to a TypeScript file
-  await exportImagesToTS(images);
-}
-
 /**
  * main esbuild build function
  * @function
@@ -184,21 +185,36 @@ async function build(project: Project): Promise<Observable<unknown>> {
   return from(buildPromise);
 }
 
+async function removeHashedFilesInSrc() {
+  const hashedFiles = await globby('src/**/*.{js,css,avif}', { onlyFiles: true, unique: true });
+  const hashRegex = new RegExp(/^.+(\.[a-fA-F0-9]{8})\.(avif|js|css)/)
+  for (const file of hashedFiles) {
+    if (hashRegex.test(file)) {
+      try {
+        await fs.rm(file);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  }
+}
+
 /**
  * clears assets directories of all files except for tablesort.js, feedback.js, and pixel.js
  * @function
  */
 async function clearDirs() {
   const parents = await heroParents;
+  await removeHashedFilesInSrc();
   const destParents = parents.map((parent) => parent.replace('src/assets/', 'docs/assets/'));
   const dirs = ['docs/assets/stylesheets', 'docs/assets/javascripts', 'docs/assets/images', 'docs/assets/fonts', ...(destParents)];
   for (const dir of dirs) {
-    if (!(await fs.stat(dir).catch(() => false))) {
+    if (!((await fs.stat(dir).catch(() => false)))) {
       continue;
     }
-    for (const file of await fs.readdir(dir)) {
+    for (const file of (await fs.readdir(dir))) {
       const filePath = path.join(dir, file);
-      if ((await fs.access(filePath).catch(() => false)) && !(await fs.stat(filePath)).isDirectory()) {
+      if ((await fs.stat(filePath)).isFile()) {
         try {
           await fs.rm(filePath);
         } catch (err) {
@@ -206,8 +222,8 @@ async function clearDirs() {
         }
       }
     }
+    }
   }
-}
 
 /**
  * transforms SVG files in src/assets/images directory
@@ -277,6 +293,7 @@ async function buildAll() {
   }
 
   await clearDirs();
+  console.log('Directories cleared');
   await handleHeroImages();
   await transformSvg();
   await replacePlaceholders();
