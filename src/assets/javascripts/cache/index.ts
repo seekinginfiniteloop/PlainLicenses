@@ -40,7 +40,6 @@ const fetchAndCacheAsset = (url: string, cache: Cache): Observable<Response> =>
           logger.info(`Asset cached: ${url}`)
         })
         .catch(() => {})
-        logger.error(`Error caching asset: ${url}`)
       }),
     catchError((error: Error) => {
       logger.error(`Error fetching asset: ${url}, error: ${error}`)

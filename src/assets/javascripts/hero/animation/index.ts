@@ -3,7 +3,6 @@ import { ScrollToPlugin } from "gsap/ScrollToPlugin"
 import {
   EMPTY,
   Observable,
-  OperatorFunction,
   Subscription,
   fromEvent,
   merge,
@@ -11,11 +10,9 @@ import {
   timer
 } from "rxjs"
 import {
-  debounceTime,
   distinctUntilKeyChanged,
   filter,
   map,
-  switchMap,
   tap
 } from "rxjs/operators"
 
@@ -28,74 +25,51 @@ const subscriptions: Subscription[] = []
 const easterEgg = document.getElementById("the-egg")
 const infoBox = document.getElementById("egg-box") as HTMLDialogElement
 
-const { location$} = window
+const { location$ } = window
 
-if (!easterEgg || !infoBox) {
-  // We don't have the necessary elements, so we don't need to do anything
-} else {
-  // We have JavaScript, so we make easterEgg visible
+if (easterEgg && infoBox) {
   easterEgg.style.display = "block"
 }
 
 /**
- * Function to check if the info box overlay is visible.
+ * Checks if the info box overlay is visible.
  * @function
- * @returns boolean
+ * @returns boolean - true if the info box is visible, false otherwise
  */
 const infoBoxIsVisible = () => infoBox?.style.display !== "none"
 
-/**
- * Type representing user interaction events.
- */
+/** Type representing user interaction events. */
 type InteractionEvent = MouseEvent | TouchEvent | KeyboardEvent
 
-/**
- * Creates an observable that merges various user interaction events.
- *
- * This function generates an observable that listens for 'click', 'touchend', and
- * 'keydown' events on the document. It allows for optional operators to be applied
- * to the observable chain, enabling customization of the event handling behavior.
- * If no operators are provided, it returns the merged events observable directly.
- * @function
- * @template T - The type of events emitted by the observable, defaulting to Event.
- * @param  operators - An array of RxJS operator functions
- *          to be applied to the merged events observable.
- * @returns An observable that emits user interaction events, potentially
- *          transformed by the provided operators.
- */
-function createInteractionObservable<
-  T extends InteractionEvent = InteractionEvent
->(...operators: OperatorFunction<InteractionEvent, T>[]): Observable<T> {
-  const mergedEvents$ = merge(
-    fromEvent<MouseEvent>(document, "click"),
-    fromEvent<TouchEvent>(document, "touchend"),
-    fromEvent<KeyboardEvent>(document, "keydown")
-  ) as Observable<InteractionEvent>
+/** Type representing an interaction handler function. */
+type InteractionHandler<T, R> = (event: Observable<T>) => Observable<R>
 
-  if (operators.length === 0) {
-    return mergedEvents$ as Observable<T>
+/**
+ * Creates an observable from a specified event target and event type.
+ * @function
+ * @param evt - The event target or targets to observe.
+ * @param handler - An optional interaction handler function to apply to the observable. The handler must receive and return an observable.
+ * @returns Observable<R | InteractionEvent> - An observable of the specified event type.
+ * @template R - The type of the observable result.
+ */
+export function createInteractionObservable<R>(
+  evt: EventTarget | EventTarget[],
+  handler?: InteractionHandler<InteractionEvent, R>
+): Observable<R | InteractionEvent> {
+  const events$ = merge(
+    fromEvent<InteractionEvent>(evt, "click"),
+    fromEvent<InteractionEvent>(evt, "touchend"),
+    fromEvent<InteractionEvent>(evt, "keydown")
+  )
+
+  if (handler) {
+    return handler(events$)
   } else {
-    return operators.reduce(
-      (
-        prev$: Observable<InteractionEvent>,
-        op: OperatorFunction<InteractionEvent, T>
-      ): Observable<T> => {
-        return prev$.pipe(op)
-      },
-      mergedEvents$
-    ) as Observable<T>
+    return events$
   }
 }
 
-/**
- * Hides the info box overlay and resets its display properties.
- *
- * This function checks if the `infoBox` element exists. If it does, it closes the
- * info box modal, sets its display to 'none', and adjusts its z-index to ensure
- * it is not visible above other elements. This effectively removes the overlay
- * from the user's view.
- * @function
- */
+/** Hides the info box overlay and resets its display properties. */
 const hideOverlay = (): void => {
   if (infoBox) {
     infoBox.close()
@@ -104,15 +78,7 @@ const hideOverlay = (): void => {
   }
 }
 
-/**
- * Displays the info box overlay and sets its visibility properties.
- *
- * This function checks if the `infoBox` element exists. If it does, it shows the
- * info box as a modal, sets its display to 'block', and adjusts its z-index to
- * ensure it appears above other elements on the page. This effectively makes the
- * overlay visible to the user.
- * @function
- */
+/** Displays the info box overlay and sets its visibility properties. */
 const showOverlay = (): void => {
   if (infoBox) {
     infoBox.showModal()
@@ -124,13 +90,13 @@ const showOverlay = (): void => {
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
 
 /**
- * Retrieves scrolling target information and associated attributes from a given HTML element using data attributes. Data attributes data-element-target, data-duration, data-scroll-pause-id, and data-scroll-pause-duration are used to determine the target position, duration, pause target, and pause duration, respectively. The pause target is the element to scroll to before pausing, and the pause duration is the time to wait before scrolling to the final target. Pause targets are optional, and if not specified, the function scrolls directly to the final target.
+ * Gets scroll target values from data attributes on a specified element.
  * @function
- * @param el - The HTML element from which to retrieve scrolling target information.
- * @returns An object containing the target position, duration, pause target attribute, pause duration, and the target attribute.
+ * @param el - The element to retrieve scroll target values from.
+ * @returns object - An object containing the target, duration, pause target, pause duration, and target attributes.
  */
 const getScrollTargets = (
-  el: HTMLElement
+  el: Element
 ): {
   target: number
   duration: number
@@ -139,66 +105,64 @@ const getScrollTargets = (
   targetAttr: string | null
 } => {
   const targetAttr = el.getAttribute("data-element-target")
-  const targetElement = targetAttr
-    ? document.getElementById(targetAttr)
-    : undefined
-  const target = targetElement ? targetElement.getBoundingClientRect().top : 0
-  const duration = parseAttribute(el, "data-duration", 5000) / 1000
+  let target = 0
+  if (targetAttr) {
+    const targetElement = document.getElementById(targetAttr)
+    if (targetElement) {
+      target = targetElement.getBoundingClientRect().top + window.scrollY
+    }
+  }
+  const durationString = el.getAttribute("data-duration")
+  const pauseDurationString = el.getAttribute("data-scroll-pause-duration")
   const pauseTargetAttr = el.getAttribute("data-scroll-pause-id")
-  const pauseDuration =
-    parseAttribute(el, "data-scroll-pause-duration", 1500) / 1000
-
+  const duration = durationString ? parseInt(durationString, 10) / 1000 : 1
+  const pauseDuration = pauseDurationString ? parseInt(pauseDurationString, 10) / 1000 : 0
   return { target, duration, pauseTargetAttr, pauseDuration, targetAttr }
 }
 
 /**
- * Smoothly scrolls the window to a specified target position over a given duration.
- * Optionally, applies an offset. Also applies autokill to allow for immediate scroll interruption.
+ * Scrolls to a specified target value with a specified duration.
  * @function
- * @param target - The target scroll position, which can be a pixel value or a selector string.
- * @param duration - The duration of the scroll animation in seconds.
- * @param offsetY - The vertical offset to apply to the scroll position.
+ * @param target - The target value to scroll to.
+ * @param duration - The duration of the scroll animation.
+ * @param offsetY - The offset value to apply to the scroll target.
  */
 const scrollTo = (
-     target: string | number,
-     duration: number,
-     offsetY: number = 0
+  target: string | number,
+  duration: number,
+  offsetY: number = 0
 ): void => {
-  // we check if the user has preferred reduced motion
   if (typeof gsap !== "undefined" && gsap.to) {
-       // Use GSAP if available
     gsap.to(window, {
-         duration,
-         scrollTo: {
-           y: target,
-           offsetY
-         },
-         ease: "power3",
-         autoKill: true
-       })
+      duration,
+      scrollTo: {
+        y: target,
+        offsetY
+      },
+      ease: "power3",
+      autoKill: true
+    })
   } else if ("scrollTo" in window) {
-       // Fallback to native or polyfilled scrollTo
     window.scrollTo({
-         top: typeof target === "number" ? target : 0,
-         behavior: "smooth"
-       })
+      top: typeof target === "number" ? target : 0,
+      behavior: "smooth"
+    })
   }
-   }
+}
 
 /**
- * Creates an observable that handles smooth scrolling behavior for a specified HTML element.
- * @function
- * @param el - The HTML element from which to retrieve scrolling target information.
- * @returns An observable that completes when the scrolling actions are finished.
+ * Creates an observable that scrolls to a specified element with a smooth animation.
+ * @param el - The element to scroll to.
+ * @returns Observable<void> - An observable of void.
  */
-const smoothScroll$ = (el: HTMLElement): Observable<void> => {
+const smoothScroll$ = (el: Element): Observable<void> => {
   const { target, duration, pauseTargetAttr, pauseDuration, targetAttr } =
     getScrollTargets(el)
 
   if (prefersReducedMotion) {
-    // we skip animation and jump to the target
-
-    window.location.hash = targetAttr?.replace("#", "") || ""
+    if (targetAttr) {
+      window.location.hash = targetAttr.replace("#", "")
+    }
     return of(void 0)
   }
 
@@ -208,133 +172,130 @@ const smoothScroll$ = (el: HTMLElement): Observable<void> => {
       tap(() => scrollTo(parseInt(targetAttr, 10), duration / 2)),
       map(() => void 0)
     )
-  } else {
+  } else if (targetAttr) {
     scrollTo(target, duration)
     return of(void 0)
+  } else {
+    return EMPTY
   }
 }
 
-/**
- * Retrieves and parses a numeric attribute value from a given HTML element.
- * @function
- * @param el - The HTML element from which to retrieve the attribute value.
- * @param attr - The name of the attribute to retrieve from the element.
- * @param defaultValue - The default value to return if the attribute is not found or is invalid.
- * @returns the parsed numeric value of the attribute or the default value if the attribute is not present or invalid.
- */
-const parseAttribute = (
-  el: HTMLElement,
-  attr: string,
-  defaultValue: number = 0
-): number => {
-  const attrValue = el.getAttribute(attr)
-  return attrValue ? parseInt(attrValue, 10) : defaultValue
-}
-
-/**
- * Subscribes to all user interaction observables and handles the corresponding actions.
- * @function
- */
+/** Subscribes to all user interaction observables and handles the corresponding actions. */
 const allSubscriptions = (): void => {
+  // Observable for easter egg interactions
+  const eggFunction = (event$: Observable<InteractionEvent>): Observable<void> => {
+    return event$.pipe(
+      filter(() => !infoBoxIsVisible()),
+      filter(ev => {
+        const target = ev.target as Element | null
+        // eslint-disable-next-line no-null/no-null
+        return target?.closest("#the-egg") !== null
+      }),
+      tap(() => showOverlay()),
+      tap(() => {
+        logger.info("Easter egg triggered, overlay shown")
+      }),
+      map(() => void 0)
+    )
+  }
 
-  // Observable that emits when the user interacts with the easter egg element
-  const eggInteraction$ = createInteractionObservable<InteractionEvent>(
-    filter(
-      event =>
-        !infoBoxIsVisible() &&
-        !!event &&
-        (event instanceof MouseEvent ||
-          event instanceof TouchEvent ||
-          event instanceof KeyboardEvent)
-    ),
-    filter(event => {
-      const target = event.target as HTMLElement | null
-      return target?.closest("#the-egg") === target
-    }),
-    debounceTime(100)
-  ).pipe(
-    tap(() => showOverlay()),
-    // Complete the observable after showing the overlay
-    tap(() => {
-      logger.info("Easter egg clicked, overlay shown")
-    })
+  const eggInteraction$ = createInteractionObservable<void>(
+    document,
+    eggFunction
   )
 
   subscriptions.push(
     eggInteraction$.subscribe({
-      next: () => { }, // The action is handled in the tap operator
+      next: () => logger.info("Egg interaction observed"),
       error: err => logger.error("Error in egg interaction:", err),
       complete: () => logger.info("Egg interaction observable completed")
     })
   )
 
-  // Observable that emits when the user interacts with the info box overlay
-  const leaveInfoBoxInteraction$ = createInteractionObservable<InteractionEvent>(
-    filter(() => infoBoxIsVisible()),
-    filter(event => {
-      const target = event.target as HTMLElement | null
-      return (
-        target?.closest("#egg-box-close") !== undefined ||
-        target?.closest("#egg-box") === undefined
-      )
-    }),
-    debounceTime(100)
-  ).pipe(
-    tap(() => hideOverlay()),
-    tap(() => {
-      logger.info("Info box closed")
-    })
+  // Observable for info box interactions (closing the overlay)
+  const eggBoxCloseFunc = (event$: Observable<InteractionEvent>): Observable<void> => {
+    return event$.pipe(
+      filter(() => infoBoxIsVisible()),
+      filter(ev => {
+        const target = ev.target as Element | null
+        return (
+          !infoBox.contains(target) ||
+          // eslint-disable-next-line no-null/no-null
+          target?.closest("#egg-box-close") !== null
+        )
+      }),
+      tap(() => hideOverlay()),
+      tap(() => {
+        logger.info("Easter egg box closed")
+      }),
+      map(() => void 0)
+    )
+  }
+
+  const leaveInfoBoxInteraction$ = createInteractionObservable<void>(
+    document,
+    eggBoxCloseFunc
   )
 
   subscriptions.push(
     leaveInfoBoxInteraction$.subscribe({
-      next: () => { }, // The action is handled in the tap operator
+      next: () => {},
       error: err => logger.error("Error in leaving info box:", err),
       complete: () => logger.info("Leave info box observable completed")
     })
   )
 
-  // Observable that emits when the user interacts with the hero primary button or arrow down element
-  const heroButtonInteraction$ = createInteractionObservable<InteractionEvent>(
-    filter((event: InteractionEvent) => {
-      if (event instanceof Event) {
-        event.preventDefault()
-      }
-      const target = event.target as HTMLElement | null
-      return (
-        target?.closest("#hero-primary-button") !== undefined ||
-        target?.closest("#arrowdown") !== undefined
-      )
-    }),
-    debounceTime(100)
-  ).pipe(
-    switchMap(event => {
-      const target = event.target as HTMLElement | null
-      if (target) {
-        return smoothScroll$(target)
-      }
-      return EMPTY
-    }),
-    tap(() => {
-      logger.info("Smooth scroll completed")
-    })
+  const primaryButton = document.getElementById("hero-primary-button")
+  const arrowDown = document.getElementById("arrowdown")
+
+  // Observable for hero button interactions
+  const heroButtonFunc = (event$: Observable<InteractionEvent>): Observable<void> => {
+    return event$.pipe(
+      filter(ev => {
+        const target = ev.target as Element | null
+        return (
+          // eslint-disable-next-line no-null/no-null
+          target?.closest("#hero-primary-button") !== null ||
+          // eslint-disable-next-line no-null/no-null
+          target?.closest("#arrowdown") !== null
+        )
+      }),
+      tap(ev => {
+        logger.info("Hero button interaction observed")
+        if (infoBoxIsVisible()) {
+          hideOverlay()
+        }
+        const target = ev.target as Element | null
+        if (target?.closest("#arrowdown")) {
+          smoothScroll$(arrowDown!).subscribe()
+        } else {
+          smoothScroll$(primaryButton!).subscribe()
+        }
+      }),
+      map(() => void 0)
+    )
+  }
+
+  const heroInteraction$ = createInteractionObservable<void>(
+    document,
+    heroButtonFunc
   )
 
   subscriptions.push(
-    heroButtonInteraction$.subscribe({
-      next: () => { }, // The action is handled in the switchMap and tap operators
+    heroInteraction$.subscribe({
+      next: () => {},
       error: err => logger.error("Error in hero button interaction:", err),
       complete: () => logger.info("Hero button interaction observable completed")
     })
   )
 
+  // Observable for path changes
   const pathObservable$ = location$.pipe(
     distinctUntilKeyChanged("pathname"),
-    map(
+    filter(
       (location: { pathname: string }) =>
         location.pathname !== "index.html" && location.pathname !== "/"
     ),
-    filter(location => location !== undefined),
     tap(() => hideOverlay()),
     tap(() => {
       logger.info("Path changed, overlay hidden")
@@ -343,20 +304,15 @@ const allSubscriptions = (): void => {
 
   subscriptions.push(
     pathObservable$.subscribe({
-      next: () => { }, // The action is handled in the tap operator
+      next: () => {},
       error: err => logger.error("Error in path change:", err),
       complete: () => logger.info("Path observable completed")
     })
   )
+}
 
 allSubscriptions()
 
-/**
- * Unsubscribes from all subscriptions when the window is about to unload.
- * @function
- * @listens beforeunload
- */
-  window.addEventListener("beforeunload", () => {
-    subscriptions.forEach(sub => sub.unsubscribe())
-  })
-}
+window.addEventListener("beforeunload", () => {
+  subscriptions.forEach(sub => sub.unsubscribe())
+})

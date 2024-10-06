@@ -33,3 +33,8 @@ export interface WidthMap {
   [key: string]: string
   [key: number]: string
 }
+
+declare global {
+  export type T = Type["T"]
+  export type R = Type["R"]
+}
