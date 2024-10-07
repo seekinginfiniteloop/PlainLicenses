@@ -1,13 +1,12 @@
+import { log } from "console"
 import { gsap } from "gsap"
 import { ScrollToPlugin } from "gsap/ScrollToPlugin"
 import {
-  EMPTY,
   Observable,
   Subscription,
   fromEvent,
   merge,
-  of,
-  timer
+  of
 } from "rxjs"
 import {
   distinctUntilKeyChanged,
@@ -98,56 +97,23 @@ const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)
 const getScrollTargets = (
   el: Element
 ): {
-  target: number
+  target: string
+  wayPoint: string
+  wayPointPause: number
   duration: number
-  pauseTargetAttr: string | null
-  pauseDuration: number
-  targetAttr: string | null
 } => {
-  const targetAttr = el.getAttribute("data-element-target")
-  let target = 0
-  if (targetAttr) {
-    const targetElement = document.getElementById(targetAttr)
-    if (targetElement) {
-      target = targetElement.getBoundingClientRect().top + window.scrollY
-    }
+  const target = el.getAttribute("data-anchor-target")
+  if (!target) {
+    throw new Error("Target attribute not found")
   }
-  const durationString = el.getAttribute("data-duration")
-  const pauseDurationString = el.getAttribute("data-scroll-pause-duration")
-  const pauseTargetAttr = el.getAttribute("data-scroll-pause-id")
-  const duration = durationString ? parseInt(durationString, 10) / 1000 : 1
-  const pauseDuration = pauseDurationString ? parseInt(pauseDurationString, 10) / 1000 : 0
-  return { target, duration, pauseTargetAttr, pauseDuration, targetAttr }
+  const wayPoint = el.getAttribute("data-scroll-pause-id") || target
+  const wayPointPause = (parseInt(el.getAttribute("data-scroll-pause-duration") || "0", 10) / 1000)
+  const duration = parseInt(el.getAttribute("data-scroll-duration") || "2", 10) / 1000
+  return { target, wayPoint, wayPointPause, duration }
 }
 
-/**
- * Scrolls to a specified target value with a specified duration.
- * @function
- * @param target - The target value to scroll to.
- * @param duration - The duration of the scroll animation.
- * @param offsetY - The offset value to apply to the scroll target.
- */
-const scrollTo = (
-  target: string | number,
-  duration: number,
-  offsetY: number = 0
-): void => {
-  if (typeof gsap !== "undefined" && gsap.to) {
-    gsap.to(window, {
-      duration,
-      scrollTo: {
-        y: target,
-        offsetY
-      },
-      ease: "power3",
-      autoKill: true
-    })
-  } else if ("scrollTo" in window) {
-    window.scrollTo({
-      top: typeof target === "number" ? target : 0,
-      behavior: "smooth"
-    })
-  }
+const gsapTimeline = (repeatVal: number, delayVal: number): gsap.core.Timeline => {
+  return gsap.timeline({ repeat: repeatVal, repeatDelay: delayVal })
 }
 
 /**
@@ -156,28 +122,21 @@ const scrollTo = (
  * @returns Observable<void> - An observable of void.
  */
 const smoothScroll$ = (el: Element): Observable<void> => {
-  const { target, duration, pauseTargetAttr, pauseDuration, targetAttr } =
+  const { target, wayPoint, wayPointPause, duration } =
     getScrollTargets(el)
-
+  logger.info(`setting scroll parameters: target: ${target}, wayPoint: ${wayPoint}, wayPointPause: ${wayPointPause}, duration: ${duration}`)
   if (prefersReducedMotion) {
-    if (targetAttr) {
-      window.location.hash = targetAttr.replace("#", "")
-    }
+    window.location.hash = target.replace("#", "")
     return of(void 0)
   }
-
-  if (pauseTargetAttr && pauseDuration && targetAttr) {
-    scrollTo(parseInt(pauseTargetAttr, 10), duration / 2)
-    return timer(pauseDuration * 1000).pipe(
-      tap(() => scrollTo(parseInt(targetAttr, 10), duration / 2)),
-      map(() => void 0)
-    )
-  } else if (targetAttr) {
-    scrollTo(target, duration)
-    return of(void 0)
-  } else {
-    return EMPTY
-  }
+  const tl = gsapTimeline(0, 0)
+  tl.totalDuration(duration)
+  tl.to(window, { scrollTo: { y: wayPoint || target, offsetY: 0 }, ease: "power3" })
+  tl.to(window, { scrollTo: { y: target, offsetY: 0 }, ease: "power3" }, `>+${wayPointPause}`)
+  logger.info(`Scrolling to ${target} with a duration of ${duration} seconds`)
+  tl.play()
+  logger.info("Scroll animation started")
+  return of(void 0)
 }
 
 /** Subscribes to all user interaction observables and handles the corresponding actions. */
@@ -245,8 +204,8 @@ const allSubscriptions = (): void => {
     })
   )
 
-  const primaryButton = document.getElementById("hero-primary-button")
-  const arrowDown = document.getElementById("arrowdown")
+  const primaryButton = document.querySelector(".hero-cta-button")
+  const arrowDown = document.querySelector(".hero__scroll-down")
 
   // Observable for hero button interactions
   const heroButtonFunc = (event$: Observable<InteractionEvent>): Observable<void> => {
@@ -255,18 +214,18 @@ const allSubscriptions = (): void => {
         const target = ev.target as Element | null
         return (
           // eslint-disable-next-line no-null/no-null
-          target?.closest("#hero-primary-button") !== null ||
+          target?.closest(".hero-cta-button") !== null ||
           // eslint-disable-next-line no-null/no-null
-          target?.closest("#arrowdown") !== null
+          target?.closest(".hero__scroll-down") !== null
         )
       }),
       tap(ev => {
-        logger.info("Hero button interaction observed")
+        logger.info(`Hero button interaction observed on ${ev.target}`)
         if (infoBoxIsVisible()) {
           hideOverlay()
         }
         const target = ev.target as Element | null
-        if (target?.closest("#arrowdown")) {
+        if (target?.closest(".hero__scroll-down")) {
           smoothScroll$(arrowDown!).subscribe()
         } else {
           smoothScroll$(primaryButton!).subscribe()

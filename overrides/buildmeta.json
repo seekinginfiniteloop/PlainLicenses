@@ -1,5 +1,5 @@
 {
   "noScriptImage": "\n  <img srcset=\"\" alt=\"hero image\" class=\"hero-parallax__image hero-parallax__image--minimal\" src=\"docs/assets/images/hero/minimal/minimal_1280.42dcf0b0.avif\" alt=\"hero image\"\n  sizes=\"(max-width: 1280px) 1280px, (max-width: 1920px) 1920px, (max-width: 2560px) 2560px, 3840px\" loading=\"eager\" fetchpriority=\"high\" draggable=\"false\"\n  style=\"align-content:flex-start;align-self:flex-start\">\n  ",
-  "SCRIPTBUNDLE": "assets/javascripts/index.V7O345B5.js",
-  "CSSBUNDLE": "assets/stylesheets/bundle.TLHEMWLC.css"
+  "SCRIPTBUNDLE": "assets/javascripts/index.A3JSDM4S.js",
+  "CSSBUNDLE": "assets/stylesheets/bundle.JOAPMN74.css"
 }

@@ -18,7 +18,7 @@ import {
   of,
   throwError
 } from "rxjs"
-import { catchError, distinctUntilChanged, filter, first, mergeMap, switchMap, takeUntil, tap} from "rxjs/operators"
+import { catchError, distinctUntilChanged, filter, first, mergeMap, switchMap, takeUntil, tap } from "rxjs/operators"
 
 import { getAsset } from "~/cache"
 import { heroImages } from "~/hero/imageshuffle/data"
@@ -84,6 +84,13 @@ const loadImage = (imageUrl: string): Observable<Blob> => {
   )
 }
 
+const setText = async (imgName: string) => {
+  const headerEl = document.getElementById("CTA_header")
+  const textEl = document.getElementById("CTA_paragraph")
+  headerEl?.setAttribute("class", `hero-parallax__image--${imgName}`)
+  textEl?.setAttribute("class", `hero-parallax__image--${imgName}`)
+  }
+
 const fetchAndSetImage = (imgSettings: HeroImage): Observable<void> => {
   const { imageName, srcset, src } = imgSettings
   if (!src) {
@@ -101,6 +108,7 @@ const fetchAndSetImage = (imgSettings: HeroImage): Observable<void> => {
       img.classList.add("hero-parallax__image", `hero-parallax__image--${imageName}`)
       img.draggable = false
       img.loading = "eager"
+      void setText(imageName)
 
       return from(new Promise<void>(resolve => {
         img.onload = () => {
@@ -165,9 +173,9 @@ const cycleImages = (): Observable<void> => {
   }
 
   if (images.length > 1 && nextImage === undefined) {
-    const currentImage = structuredClone(images[0])
-    parallaxLayer.removeChild(images[0])
+    const currentImage = images[0]
     parallaxLayer.append(currentImage)
+    parallaxLayer.firstChild?.remove()
   }
   return EMPTY
 }

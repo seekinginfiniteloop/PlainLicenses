@@ -38,6 +38,7 @@ html {
   height: 100%;
   overflow: hidden;
   scroll-behavior: auto;
+  content-editable: false;
 }
 
 body {
@@ -62,7 +63,7 @@ body {
 
 header.md-header:not(.md-header--shadow) {
   z-index: 21;
-  background: linear-gradient(180deg, rgba(var(--zaffre-adj), 1) 60%, rgba(var(--zaffre-adj), 0.9) 100%) !important;
+  background: linear-gradient(180deg, rgba(var(--zaffre-adj), 1) 60%, rgba(var(--zaffre-adj), 1) 100%) !important;
   background-color: rgb(var(--zaffre));
 }
 
@@ -117,8 +118,8 @@ header.md-header:not(.md-header--shadow) {
   overflow-x: hidden;
   overflow-y: scroll;
   overscroll-behavior-y: auto;
-  scroll-snap-type: y proximity;
-  scroll-snap-align: start;
+ /* scroll-snap-type: y proximity;
+  scroll-snap-align: start;*/
   background: rgb(var(--gunmetal));
   background-repeat: no-repeat;
   background-attachment: fixed;
@@ -168,34 +169,6 @@ header.md-header:not(.md-header--shadow) {
   overflow-y: scroll;
 }
 
-#CTA_header {
-  margin: 0.5rem;
-  font-family: Bangers, Impact, Haettenschweiler, Charcoal, "Arial Narrow Bold", Gadget, sans-serif;
-  font-size: clamp(4em, 8em, 12em);
-  color: --atomic-tangerine;
-  text-align: left;
-  text-transform: uppercase;
-  font-display: swap;
-  object-position: bottom left;
-  animation: glow 4000ms ease-in-out infinite alternate;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-#CTA_paragraph {
-  margin: 0 1rem 1rem 1rem;
-  font-family: Bangers, Impact, Haettenschweiler, Charcoal, "Arial Narrow Bold", Gadget, sans-serif;
-  font-size: clamp(1.5em, 3em, 4em);
-  color: #ffffff;
-  text-align: left;
-  text-shadow: 0.05em 0.05em 0 var(--turkey-red);
-  text-transform: uppercase;
-  font-display: swap;
-  object-position: bottom left;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
 @media screen and (orientation: portrait) {
   .md-hero__teaser {
     position: absolute;
@@ -214,21 +187,6 @@ header.md-header:not(.md-header--shadow) {
   to {
     text-decoration: underline 0.2rem rgba(var(--emerald-adj), 1);
     transform: scaleX(1);
-  }
-}
-
-@keyframes glow {
-  from {
-    text-shadow:
-      0 0 0.2em var(--emerald),
-      0.03em 0.03em 0 var(--ecru);
-  }
-
-  to {
-    text-shadow:
-      0 0 0.3em var(--emerald),
-      0 0 0.35em var(--emerald),
-      0.03em 0.03em 0 var(--ecru);
   }
 }
 
@@ -268,7 +226,7 @@ div#hero-primary-button:focus {
   color: rgba(var(--zaffre), 1);
   text-shadow: 0 0 0.1em var(--gunmetal);
   background-color: rgba(var(--emerald-adj), 1);
-  scale: 1.1;
+  scale: 1.05;
 }
 
 div#hero-primary-button:active {
@@ -360,7 +318,7 @@ svg#the-egg:active {
   background: var(--ecru);
 }
 
-html.js-focus-visible.js body main.md-main div.md-main__inner.md-grid #hero-dialog-position dialog#egg-box.info-box {
+#hero-dialog-position dialog#egg-box.info-box {
   position: relative;
   z-index: 10000;
   width: 80%;
@@ -380,7 +338,7 @@ html.js-focus-visible.js body main.md-main div.md-main__inner.md-grid #hero-dial
   box-shadow: 0 0 1rem rgba(0, 0, 0, 0.4);
 }
 
-div.md-main__inner.md-grid div#hero-dialog-position dialog#egg-box.info-box::backdrop {
+div#hero-dialog-position dialog#egg-box.info-box::backdrop {
   z-index: 1000;
   object-fit: cover;
   background: rgba((var(--ecru-adj)), 0.8);
@@ -423,17 +381,17 @@ dialog#egg-box.info-box form button#egg-box-close.md-button:hover {
   background-color: var(--emerald);
 }
 
-html.js-focus-visible a#yoshimi-link,
-html.js-focus-visible a#yoshimi-link:visited {
+a#yoshimi-link,
+a#yoshimi-link:visited {
   color: var(--emerald);
   text-decoration: none;
 }
 
-html.js-focus-visible a#yoshimi-link:focus {
+a#yoshimi-link:focus {
   color: var(--emerald);
 }
 
-html.js-focus-visible a#yoshimi-link:hover {
+a#yoshimi-link:hover {
   color: var(--zaffre);
 }
 
@@ -451,8 +409,8 @@ html.js-focus-visible a#yoshimi-link:hover {
   width: 100vw;
   height: 100vh;
   padding-top: 0.01rem;
-  scroll-snap-type: y mandatory;
-  scroll-snap-align: start;
+  /*scroll-snap-type: y mandatory;
+  scroll-snap-align: start;*/
 
   scroll-margin-block-start: 10vh;
   background: var(--air-superiority-blue);
@@ -470,7 +428,7 @@ html.js-focus-visible a#yoshimi-link:hover {
   height: 100%;
   padding: 0.5em;
   margin-top: 5rem;
-  scroll-snap-align: start;
+ /* scroll-snap-align: start;*/
 }
 
 #revolutionanchor {
@@ -530,10 +488,10 @@ h1#pt2-hero-content-section-header {
   height: 100vh;
   padding-top: 1px;
   scroll-snap-type: y mandatory;
-  scroll-snap-align: start;
+ /* scroll-snap-align: start;
   scroll-snap-stop: always;
   scroll-margin-block-start: 10vh;
-  scroll-margin-block-end: 7vh;
+  scroll-margin-block-end: 7vh;*/
   background: var(--gunmetal);
   background-repeat: no-repeat;
   background-attachment: fixed;
@@ -551,7 +509,7 @@ h1#pt3-hero-content-section-header.hero-content-section {
   color: var(--emerald);
   text-align: center;
   text-transform: uppercase;
-  scroll-snap-align: start;
+ /* scroll-snap-align: start;*/
 }
 
 h2.hlt-header {
@@ -942,7 +900,6 @@ nav.md-tabs {
   background: linear-gradient(180deg, rgba(var(--zaffre-adj), 1) 10%, rgba(var(--zaffre-adj), 1) 20%, rgba(var(--zaffre-adj), 0.5) 100%) !important;
 }
 
-
 footer.md-footer {
   position: absolute;
   top: 380vh;
@@ -978,7 +935,7 @@ header#header-target {
   background: transparent;
 }
 
-body div.md-container main.md-main div.md-main__inner.md-grid div.md-sidebar.md-sidebar--primary {
+div.md-main__inner.md-grid div.md-sidebar.md-sidebar--primary {
   z-index: 1100;
   margin-top: 2rem;
   object-fit: cover;
@@ -991,7 +948,7 @@ body div.md-container main.md-main div.md-main__inner.md-grid div.md-sidebar.md-
     background: none;
   }
 
-  body div.md-container main.md-main div.md-main__inner.md-grid div.md-sidebar.md-sidebar--primary {
+  div.md-main__inner.md-grid div.md-sidebar.md-sidebar--primary {
     z-index: 1100;
     margin-top: 2rem;
     object-fit: cover;

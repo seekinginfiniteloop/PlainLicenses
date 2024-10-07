@@ -37,6 +37,49 @@
   perspective-origin: center bottom;
 }
 
+@keyframes glow {
+  from {
+    text-shadow:
+      0 0 0.16em var(--emerald),
+      0.03em 0.03em 0 var(--ecru);
+  }
+
+  to {
+    text-shadow:
+      0 0 0.25em var(--emerald),
+      0 0 0.27em var(--emerald),
+      0.04em 0.04em 0 var(--ecru);
+  }
+}
+
+#CTA_header {
+  margin: 0.5rem;
+  font-family: Bangers, Impact, Haettenschweiler, Charcoal, "Arial Narrow Bold", Gadget, sans-serif;
+  font-size: clamp(4em, 8em, 12em);
+  color: var(--h1-color);
+  text-align: left;
+  text-transform: uppercase;
+  font-display: swap;
+  object-position: bottom left;
+  animation: glow 4000ms ease-in-out infinite alternate;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#CTA_paragraph {
+  margin: 0 1rem 1rem 1rem;
+  font-family: Bangers, Impact, Haettenschweiler, Charcoal, "Arial Narrow Bold", Gadget, sans-serif;
+  font-size: clamp(1.5em, 3em, 4em);
+  color: var(--p-color);
+  text-align: left;
+  text-shadow: 0.05em 0.05em 0 var(--turkey-red);
+  text-transform: uppercase;
+  font-display: swap;
+  object-position: bottom left;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 .hero-parallax__image--anime {
   --h1-color: var(--atomic-tangerine);
   --p-color: var(--emerald);
@@ -152,12 +195,10 @@
 
 /* Apply colors to text elements */
 #CTA_header {
-  color: var(--h1-color, var(--emerald));
   transition: color 300ms ease;
 }
 
 #CTA_paragraph {
-  color: var(--p-color, var(--emerald));
   transition: color 300ms ease;
 }
 
