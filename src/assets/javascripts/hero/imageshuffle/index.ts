@@ -332,7 +332,7 @@ subscriptions.push(loadFirstImage().pipe(
   tap(() => initSubscriptions()),
   switchMap(() => startImageCycling())
 ).subscribe({
-    next: () => logger.info("Image cycling started"),
+    next: () => {},
     error: (err: Error) => logger.error("Error during image cycling:", err)
   }))
 

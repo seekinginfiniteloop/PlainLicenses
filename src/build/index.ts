@@ -115,7 +115,7 @@ export interface HeroImage {
  */
 function replaceDocs(src: string): string {
   const protocol = location.protocol === 'http:' ? 'http:' : 'https:'
-  const host = location.host
+  const { host } = location
   return src.replace(/docs/g, \`\${protocol}//\${host}\`)
 }
 
@@ -127,7 +127,7 @@ export const heroImages = rawHeroImages.map(image => ({
   widths: Object.fromEntries(Object.entries(image.widths).map(([key, value]) => [key, replaceDocs(value)])),
   srcset: replaceDocs(image.srcset),
   parent: replaceDocs(image.parent)
-})) as const
+}))
 `;
 
   const outputPath = path.join('src', 'assets', 'javascripts', 'hero', 'imageshuffle', 'data', 'index.ts');
@@ -168,6 +168,7 @@ async function handleHeroImages() {
     for (const [width, src] of Object.entries(image.widths)) {
       const newPath = (await getmd5Hash(src)).replace('src', 'docs');
       newWidths[Number(width)] = newPath;
+      newSrcSet.push(`${newPath} ${width}w`);
       await fs.copyFile(src, newPath);
     }
     const srcset = newSrcSet.join(', ');
@@ -185,7 +186,6 @@ async function handleHeroImages() {
  */
 async function build(project: Project): Promise<Observable<unknown>> {
   console.log(`Building ${project.platform}...`);
-  console.log(`current working directory: ${process.cwd()}`);
   const config = project.platform === "node" ? nodeConfig : webConfig;
   const buildPromise = esbuild.build({
     ...config,
@@ -290,7 +290,7 @@ async function replacePlaceholders(): Promise<void> {
     bundleCssContent = bundleCssContent.replace('{{ palette-hash }}', palette).replace("{{ main-hash }}", main);
     await fs.writeFile(cssSrc, bundleCssContent);
   } catch (error) {
-    console.error('Error replacing placeholders:', error);
+    console.error('Error replacing CSS placeholders:', error);
   }
 }
 
@@ -359,7 +359,7 @@ const metaOutputMap = async (output: esbuildOutputs): Promise<buildJson> => {
   <img srcset="${noScriptImage.srcset}" alt="hero image" class="hero-parallax__image hero-parallax__image--minimal" src="${noScriptImage.widths[1280]}" alt="hero image"
   sizes="(max-width: 1280px) 1280px, (max-width: 1920px) 1920px, (max-width: 2560px) 2560px, 3840px" loading="eager" fetchpriority="high" draggable="false"
   style="align-content:flex-start;align-self:flex-start">
-  `;
+  `.replaceAll('docs/', '');
 
   const mapping = {
     noScriptImage: noScriptImageContent,

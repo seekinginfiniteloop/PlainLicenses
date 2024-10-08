@@ -1,32 +1,36 @@
 {% extends "main.html" %}
 {% block hero %}
 
-<div class="hero" data-component="hero">
-    <div class="hero__parallax" data-mdx-component="parallax" data-md-color-scheme="slate">
+<div class="hero" data-component="hero" contenteditable="false">
+    <div class="hero__parallax" data-mdx-component="parallax" data-md-color-scheme="slate"
+        contenteditable="false">
         <div data-md-color-scheme="slate" class="hero-parallax__layer"
-            id="parallax-hero-image-layer">
+            id="parallax-hero-image-layer" contenteditable="false">
             <noscript>
-                    {{ no_script_image }}
-                    <style>
+                {{ no_script_image }}
+                <style>
+                    html {
+                        scroll-behavior: smooth;
+                    }
+
+                    @media screen and (prefers-reduced-motion: reduce) {
                         html {
-                            scroll-behavior: smooth;
+                            scroll-behavior: auto;
                         }
-                        @media screen and (prefers-reduced-motion: reduce) {
-                            html {
-                                scroll-behavior: auto;
-                            }
-                        }
-                    </style>
+                    }
+                </style>
             </noscript>
+            <div class="fade-overlay" contenteditable="false"></div>
 
             <div class="mdx-hero__teaser md-typeset">
-                <h1 id="CTA_header">join the fight!</h1>
-                <p id="CTA_paragraph">Against Legal Confusion!</p>
-                <div class="hero-cta-button" data-smooth-scroll
-                        data-duration="5000" data-scroll-pause-duration="1500"
-                        data-anchor-target="#pt3-hero-content-section"
-                        data-scroll-pause-id="#pt2-hero-content-section">
-                    <div id="hero-primary-button" class="md-button md-button" >Get
+                <h1 contenteditable="false" id="CTA_header">join the fight!</h1>
+                <p id="CTA_paragraph" contenteditable="false">Against Legal Confusion!</p>
+                <div class="hero-cta-button" data-smooth-scroll data-scroll-duration="5"
+                    data-scroll-pause-duration="1.5" data-anchor-target="#pt3-hero-content-section"
+                    data-scroll-pause-id="#pt2-hero-content-section" contenteditable="false"
+                    role="button" tabindex="0">
+                    <div contenteditable="false" id="hero-primary-button"
+                        class="md-button md-button">Get
                         Clear
                         Terms
                     </div>
@@ -36,8 +40,8 @@
             </div>
         </div>
         <svg xmlns="http://www.w3.org/2000/svg"
-            aria-label="click to learn more about the hero in our landing page images" tabindex="-1"
-            role="button"
+            aria-label="click to learn more about the hero in our landing page images" tabindex="0"
+            role="button" data-toggle="modal" data-target="#egg-box" class=".md-typeset"
             viewBox="0 0 24 24" id="the-egg">
             <path
                 d="M10.97 8.27a1.45 1.45 0 0 0-.49.57.75.75 0 0 1-1.34-.67c.2-.4.52-.83 1-1.15.49-.33 1.1-.52 1.86-.52.66 0 1.37.2 1.93.62a2.45 2.45 0 0 1 1 2c0 1.04-.5 1.73-1.02 2.22-.19.18-.4.36-.58.5l-.15.13a4.33 4.33 0 0 0-.43.41v1.37a.75.75 0 1 1-1.5 0v-1.47c0-.24.07-.5.25-.74.22-.28.48-.52.71-.71l.19-.16.47-.4c.37-.36.57-.69.57-1.15a.95.95 0 0 0-.4-.8C12.76 8.12 12.37 8 12 8c-.5 0-.81.12-1.03.27ZM13 17a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" />
@@ -46,114 +50,114 @@
         </svg>
 
         <svg id="arrow-down" title="scroll down for more" xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24" class="hero__scroll-down" data-smooth-scroll data-duration="5000"
-            data-scroll-pause-duration="1500" data-anchor-target="#pt3-hero-content-section"
-            data-scroll-pause-id="#pt2-hero-content-section"
-            role="button">
+            viewBox="0 0 24 24" class="hero__scroll-down" data-smooth-scroll
+            data-scroll-duration="5" data-scroll-pause-duration="1.5"
+            data-anchor-target="pt3-hero-content-section"
+            data-scroll-pause-id="pt2-hero-content-section" role="button" contenteditable="false"
+            tabindex="0">
             <path d="M11 4h2v12l5.5-5.5 1.42 1.42L12 19.84l-7.92-7.92L5.5 10.5 11 16z">
             </path>
         </svg>
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% block container %}
+{% include "partials/easter.html" %}
+
+{{ super() }}
+
+{% block content %}
+
+<section data-md-color-scheme="slate" class="hero-content-section" id="pt2-hero-content-section">
+    <h1 class="hero-content-section .header" id="pt2-hero-content-section-header">get<br />
+        license terms<br /><span
+            style="text-decoration:underline var(--emerald) .1em;">anyone</span><br />can<br />understand
+    </h1>
+</section>
+<div id="pt2-3-buffer"></div>
+<section class="hero-content-section" id="pt3-hero-content-section">
+    <h1 class="hero-content-section .header" id="pt3-hero-content-section-header">welcome to the
+        plain language revolution</h1>
+    <div class="hlt1" id="pt3-hero-content-section-hlt1">
+        <div class="icn1" id="pt3-hero-content-section-icn1">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200" class="hlticon">
+                <path fill="#e4c580"
+                    d="M920.16 562.56v-72.84c0-1.92 0-3.84-.12-5.76 0-1.92.12-3.84.12-5.76 0-204-165.36-369.36-369.36-369.36S181.44 274.08 181.44 478.08c0 103.08 42.24 196.32 110.4 263.28v349.92h417.12V948.24h129.72c45 0 81.6-36.48 81.6-81.6V734.98l98.4-16.07-98.4-156.48zM552 669.84c-109.56 0-198.36-88.8-198.36-198.36 0-109.56 88.8-198.36 198.36-198.36s198.36 88.8 198.36 198.36c0 109.56-88.8 198.36-198.36 198.36zM524.52 544.2a18.1 18.1 0 0 1-12.72-5.28L440.88 468a17.9 17.9 0 0 1 0-25.44c7.08-6.97 18.48-7.08 25.44 0l58.2 58.2L637.8 387.46a17.9 17.9 0 0 1 25.44 0 17.9 17.9 0 0 1 0 25.45l-126 126a18.1 18.1 0 0 1-12.72 5.28z" />
+            </svg>
+
+        </div>
+        <div class="hlb1" id="pt3-hero-content-section-hlb1">
+            <h2 class="hlt-header">Get Clear Terms</h2>
+            <p class="hlt-paragraph">We offer a growing selection of plain language licenses for
+                any need. <a href="/licenses/permissive/mit/index.html">Get started today with
+                    our version of the MIT license</a>. The MIT license is the most popular open
+                source license, and now anyone can quickly read and understand it.</p>
         </div>
     </div>
-
-    {% endblock %}
-
-
-    {% block container %}
-    {% include "partials/easter.html" %}
-
-    {{ super() }}
-
-    {% block content %}
-
-    <section data-md-color-scheme="slate" class="hero-content-section"
-        id="pt2-hero-content-section">
-        <h1 class="hero-content-section .header" id="pt2-hero-content-section-header">get<br />
-            license terms<br /><span
-                style="text-decoration:underline var(--emerald) .1em;">anyone</span><br />can<br />understand
-        </h1>
-    </section>
-    <div id="pt2-3-buffer"></div>
-    <section class="hero-content-section" id="pt3-hero-content-section">
-        <h1 class="hero-content-section .header" id="pt3-hero-content-section-header">welcome to the
-            plain language revolution</h1>
-        <div class="hlt1" id="pt3-hero-content-section-hlt1">
-            <div class="icn1" id="pt3-hero-content-section-icn1">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200" class="hlticon">
-                    <path fill="#e4c580"
-                        d="M920.16 562.56v-72.84c0-1.92 0-3.84-.12-5.76 0-1.92.12-3.84.12-5.76 0-204-165.36-369.36-369.36-369.36S181.44 274.08 181.44 478.08c0 103.08 42.24 196.32 110.4 263.28v349.92h417.12V948.24h129.72c45 0 81.6-36.48 81.6-81.6V734.98l98.4-16.07-98.4-156.48zM552 669.84c-109.56 0-198.36-88.8-198.36-198.36 0-109.56 88.8-198.36 198.36-198.36s198.36 88.8 198.36 198.36c0 109.56-88.8 198.36-198.36 198.36zM524.52 544.2a18.1 18.1 0 0 1-12.72-5.28L440.88 468a17.9 17.9 0 0 1 0-25.44c7.08-6.97 18.48-7.08 25.44 0l58.2 58.2L637.8 387.46a17.9 17.9 0 0 1 25.44 0 17.9 17.9 0 0 1 0 25.45l-126 126a18.1 18.1 0 0 1-12.72 5.28z" />
-                </svg>
-
-            </div>
-            <div class="hlb1" id="pt3-hero-content-section-hlb1">
-                <h2 class="hlt-header">Get Clear Terms</h2>
-                <p class="hlt-paragraph">We offer a growing selection of plain language licenses for
-                    any need. <a href="/licenses/permissive/mit/index.html">Get started today with
-                        our version of the MIT license</a>. The MIT license is the most popular open
-                    source license, and now anyone can quickly read and understand it.</p>
-            </div>
+    <div class="hlt2" id="pt3-hero-content-section-hlt2">
+        <div class="icn2" id="pt3-hero-content-section-icn2">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200" class="hlticon">
+                <path
+                    d="M286.8 123.6C145.2 123.6 30 238.8 30 380.4 30 522 145.2 637.2 286.8 637.2c141.6 0 256.8-115.2 256.8-256.8 0-141.6-115.2-256.8-256.8-256.8zm0 451.2c-106.8 0-193.2-86.4-193.2-193.2 0-106.8 86.4-194.4 193.2-194.4S480 273.6 480 380.4c0 106.8-86.4 194.4-193.2 194.4z" />
+                <path
+                    d="m346.8 308.4-91.2 91.2-34.8-34.8c-12-12-32.4-12-44.4 0s-12 32.4 0 44.4l56.4 56.4c6 6 14.4 9.6 22.8 9.6s16.8-3.6 22.8-9.6l114-114c12-12 12-32.4 0-44.4-13.2-12-33.6-12-45.6 1.2zM913.2 637.2c141.6 0 256.8-115.2 256.8-256.8 0-141.6-115.2-256.8-256.8-256.8-141.6 0-256.8 115.2-256.8 256.8 0 141.6 115.2 256.8 256.8 256.8zm0-450c106.8 0 193.2 86.4 193.2 193.2 0 106.8-86.4 194.4-193.2 194.4S720 488.4 720 381.6c0-106.8 86.4-194.4 193.2-194.4z" />
+                <path
+                    d="M829.2 464.4c6 6 14.4 9.6 22.8 9.6s16.8-3.6 22.8-9.6l39.6-39.6 39.6 39.6c6 6 14.4 9.6 22.8 9.6s16.8-3.6 22.8-9.6c12-12 12-32.4 0-44.4L960 380.4l39.6-39.6c12-12 12-32.4 0-44.4s-32.39-12-44.39 0l-42 39.6-39.61-39.6c-12-12-32.4-12-44.4 0s-12 32.4 0 44.4l39.6 39.6-39.6 39.6c-12 12-12 32.4 0 44.4zM1118.4 721.2H708c-18 0-31.2 14.4-31.2 31.2 0 18 14.4 31.2 31.2 31.2h410.4c18 0 31.2-14.4 31.2-31.2 0-16.8-14.4-31.2-31.2-31.2zM1118.4 867.6H708c-18 0-31.2 14.4-31.2 31.2S691.2 930 708 930h410.4c18 0 31.2-14.4 31.2-31.2 0-16.8-14.4-31.2-31.2-31.2zM1118.4 1012.8H708c-18 0-31.2 14.4-31.2 31.2s14.4 31.2 31.2 31.2h410.4c18 0 31.2-14.4 31.2-31.2 0-16.8-14.4-31.2-31.2-31.2zM492 721.2H81.6c-18 0-31.2 14.4-31.2 31.2 0 18 14.4 31.2 31.2 31.2H492c18 0 31.2-14.4 31.2-31.2 0-16.8-13.2-31.2-31.2-31.2zM492 867.6H81.6c-18 0-31.2 14.4-31.2 31.2S64.8 930 81.6 930H492c18 0 31.2-14.4 31.2-31.2S510 867.6 492 867.6zM492 1012.8H81.6c-18 0-31.2 14.4-31.2 31.2s14.4 31.2 31.2 31.2H492c18 0 31.2-14.4 31.2-31.2s-13.2-31.2-31.2-31.2z" />
+            </svg>
         </div>
-        <div class="hlt2" id="pt3-hero-content-section-hlt2">
-            <div class="icn2" id="pt3-hero-content-section-icn2">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200" class="hlticon">
-                    <path
-                        d="M286.8 123.6C145.2 123.6 30 238.8 30 380.4 30 522 145.2 637.2 286.8 637.2c141.6 0 256.8-115.2 256.8-256.8 0-141.6-115.2-256.8-256.8-256.8zm0 451.2c-106.8 0-193.2-86.4-193.2-193.2 0-106.8 86.4-194.4 193.2-194.4S480 273.6 480 380.4c0 106.8-86.4 194.4-193.2 194.4z" />
-                    <path
-                        d="m346.8 308.4-91.2 91.2-34.8-34.8c-12-12-32.4-12-44.4 0s-12 32.4 0 44.4l56.4 56.4c6 6 14.4 9.6 22.8 9.6s16.8-3.6 22.8-9.6l114-114c12-12 12-32.4 0-44.4-13.2-12-33.6-12-45.6 1.2zM913.2 637.2c141.6 0 256.8-115.2 256.8-256.8 0-141.6-115.2-256.8-256.8-256.8-141.6 0-256.8 115.2-256.8 256.8 0 141.6 115.2 256.8 256.8 256.8zm0-450c106.8 0 193.2 86.4 193.2 193.2 0 106.8-86.4 194.4-193.2 194.4S720 488.4 720 381.6c0-106.8 86.4-194.4 193.2-194.4z" />
-                    <path
-                        d="M829.2 464.4c6 6 14.4 9.6 22.8 9.6s16.8-3.6 22.8-9.6l39.6-39.6 39.6 39.6c6 6 14.4 9.6 22.8 9.6s16.8-3.6 22.8-9.6c12-12 12-32.4 0-44.4L960 380.4l39.6-39.6c12-12 12-32.4 0-44.4s-32.39-12-44.39 0l-42 39.6-39.61-39.6c-12-12-32.4-12-44.4 0s-12 32.4 0 44.4l39.6 39.6-39.6 39.6c-12 12-12 32.4 0 44.4zM1118.4 721.2H708c-18 0-31.2 14.4-31.2 31.2 0 18 14.4 31.2 31.2 31.2h410.4c18 0 31.2-14.4 31.2-31.2 0-16.8-14.4-31.2-31.2-31.2zM1118.4 867.6H708c-18 0-31.2 14.4-31.2 31.2S691.2 930 708 930h410.4c18 0 31.2-14.4 31.2-31.2 0-16.8-14.4-31.2-31.2-31.2zM1118.4 1012.8H708c-18 0-31.2 14.4-31.2 31.2s14.4 31.2 31.2 31.2h410.4c18 0 31.2-14.4 31.2-31.2 0-16.8-14.4-31.2-31.2-31.2zM492 721.2H81.6c-18 0-31.2 14.4-31.2 31.2 0 18 14.4 31.2 31.2 31.2H492c18 0 31.2-14.4 31.2-31.2 0-16.8-13.2-31.2-31.2-31.2zM492 867.6H81.6c-18 0-31.2 14.4-31.2 31.2S64.8 930 81.6 930H492c18 0 31.2-14.4 31.2-31.2S510 867.6 492 867.6zM492 1012.8H81.6c-18 0-31.2 14.4-31.2 31.2s14.4 31.2 31.2 31.2H492c18 0 31.2-14.4 31.2-31.2s-13.2-31.2-31.2-31.2z" />
-                </svg>
-            </div>
-            <div class="hlb2" id="pt3-hero-content-section-hlb2">
-                <h2 class="hlt-header">Find the Right License</h2>
-                <p class="hlt-paragraph">We love open source, but </p>
-            </div>
+        <div class="hlb2" id="pt3-hero-content-section-hlb2">
+            <h2 class="hlt-header">Find the Right License</h2>
+            <p class="hlt-paragraph">We love open source, but </p>
         </div>
-        <div class="hlt3" id="pt3-hero-content-section-hlt3">
-            <div class="icn3" id="pt3-hero-content-section-icn3"></div>
-            <div class="hlb3" id="pt3-hero-content-section-hlb3">
-                <h2 class="hlt-header">In Your Format</h2>
-                <p class="hlt-paragraph">Placeholder</p>
-            </div>
+    </div>
+    <div class="hlt3" id="pt3-hero-content-section-hlt3">
+        <div class="icn3" id="pt3-hero-content-section-icn3"></div>
+        <div class="hlb3" id="pt3-hero-content-section-hlb3">
+            <h2 class="hlt-header">In Your Format</h2>
+            <p class="hlt-paragraph">Placeholder</p>
         </div>
-        <div class="hlt4" id="pt3-hero-content-section-hlt4">
-            <div class="icn4" id="pt3-hero-content-section-icn4">
+    </div>
+    <div class="hlt4" id="pt3-hero-content-section-hlt4">
+        <div class="icn4" id="pt3-hero-content-section-icn4">
 
-                <svg class="hlticon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200">
-                    <path
-                        d="M793.87 450h68.63v-75h-75V226.5l56.9 31.36 36.19-65.72-280.6-154.55-280.6 154.55 36.19 65.72 56.9-31.36V375h-75v75h68.63l-100.7 637.5h-80.43v75h750v-75h-80.44zM487.5 185.21 600 123.24l112.5 61.97V375h-225zM482.06 450h235.92l100.64 637.5H712.5v-150c0-62.1-50.39-112.5-112.5-112.5s-112.5 50.4-112.5 112.5v150H381.38zm155.44 637.5h-75v-150c0-20.72 16.78-37.5 37.5-37.5s37.5 16.78 37.5 37.5zm373.03-866.44-33.56-67.08 150-75 33.56 67.08zm0 157.92 150 75-33.56 67.08-150-75zm-937.5-300 150 75-33.56 67.08-150-75zm116.44 300 33.56 67.08-150 75-33.56-67.08z" />
-                </svg>
-            </div>
-            <div class="hlb4" id="pt3-hero-content-section-hlb4">
-                <h2 class="hlt-header">Our Mission</h2>
-                <p class="hlt-paragraph">Placeholder</p>
-            </div>
+            <svg class="hlticon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200">
+                <path
+                    d="M793.87 450h68.63v-75h-75V226.5l56.9 31.36 36.19-65.72-280.6-154.55-280.6 154.55 36.19 65.72 56.9-31.36V375h-75v75h68.63l-100.7 637.5h-80.43v75h750v-75h-80.44zM487.5 185.21 600 123.24l112.5 61.97V375h-225zM482.06 450h235.92l100.64 637.5H712.5v-150c0-62.1-50.39-112.5-112.5-112.5s-112.5 50.4-112.5 112.5v150H381.38zm155.44 637.5h-75v-150c0-20.72 16.78-37.5 37.5-37.5s37.5 16.78 37.5 37.5zm373.03-866.44-33.56-67.08 150-75 33.56 67.08zm0 157.92 150 75-33.56 67.08-150-75zm-937.5-300 150 75-33.56 67.08-150-75zm116.44 300 33.56 67.08-150 75-33.56-67.08z" />
+            </svg>
         </div>
-        <div class="hlt5" id="pt3-hero-content-section-hlt5">
-            <div class="icn5" id="pt3-hero-content-section-icn5">
-                <svg class="hlticon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200">
-                    <path
-                        d="m478.8 674.4-92.4-129.6c-22.8-31.2-24-75.6-2.4-108 2.4-3.6 28.8-42 81.6-80.4-198 88.8-414 256.8-432 285.6-30 48 138 67.2 168 230.4 25.2 142.8 216 211.2 244.8 142.8 27.6-67.2 60-129.6 94.8-184.8l9.6-116.4c-30-2.4-55.2-16.8-72-39.6z" />
-                    <path
-                        d="M1117.2 319.2H720c-204 0-297.6 135.6-301.2 141.6-12 18-12 42 1.2 60l92.4 129.6c10.8 14.4 26.4 21.6 43.2 21.6 10.8 0 21.6-3.6 30-9.6l7.2-7.2v37.2l-32.4 391.2c-2.4 32.4 21.6 60 54 63.6 32.4 2.4 60-21.6 63.6-54l31.2-375.6H732l31.2 374.4c2.4 30 27.6 54 58.8 54h4.8c32.4-2.4 56.4-31.2 54-63.6l-32.4-391.2-2.4-267.6h272.4c28.8 0 52.8-24 52.8-52.8-1.2-28.8-25.2-51.6-54-51.6zM594 583.2l-63.6-88.8c14.4-13.2 36-28.8 64.8-43.2zM837.6 170.4c0 64.95-52.65 117.6-117.6 117.6s-117.6-52.65-117.6-117.6c0-64.94 52.65-117.6 117.6-117.6s117.6 52.65 117.6 117.6" />
-                </svg>
-            </div>
-            <div class="hlb5" id="pt3-hero-content-section-hlb5">
-                <h2 class="hlt-header">Be A Plain Language Hero</h2>
-                <p class="hlt-paragraph">Placeholder</p>
-            </div>
+        <div class="hlb4" id="pt3-hero-content-section-hlb4">
+            <h2 class="hlt-header">Our Mission</h2>
+            <p class="hlt-paragraph">Placeholder</p>
         </div>
-        <div class="hlt6" id="pt3-hero-content-section-hlt6">
-            <div class="icn6" id="pt3-hero-content-section-icn6"><svg class="hlticon"
-                    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200">
-                    <path
-                        d="M600 127.12A472.89 472.89 0 1 0 1072.88 600a473.23 473.23 0 0 0-472.87-472.87zM673.5 900a23.45 23.45 0 0 1-23.44 23.44H549.94A23.45 23.45 0 0 1 526.51 900V500.06a23.45 23.45 0 0 1 23.43-23.44h100.12a23.45 23.45 0 0 1 23.44 23.44zM600 423.38a73.51 73.51 0 1 1 .13-147 73.5 73.5 0 0 1-.13 147z" />
-                </svg></div>
-            <div class="hlb6" id="pt3-hero-content-section-hlb6">
-                <h2 class="hlt-header">Get Answers</h2>
-                <p class="hlt-paragraph">Placeholder</p>
-            </div>
+    </div>
+    <div class="hlt5" id="pt3-hero-content-section-hlt5">
+        <div class="icn5" id="pt3-hero-content-section-icn5">
+            <svg class="hlticon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200">
+                <path
+                    d="m478.8 674.4-92.4-129.6c-22.8-31.2-24-75.6-2.4-108 2.4-3.6 28.8-42 81.6-80.4-198 88.8-414 256.8-432 285.6-30 48 138 67.2 168 230.4 25.2 142.8 216 211.2 244.8 142.8 27.6-67.2 60-129.6 94.8-184.8l9.6-116.4c-30-2.4-55.2-16.8-72-39.6z" />
+                <path
+                    d="M1117.2 319.2H720c-204 0-297.6 135.6-301.2 141.6-12 18-12 42 1.2 60l92.4 129.6c10.8 14.4 26.4 21.6 43.2 21.6 10.8 0 21.6-3.6 30-9.6l7.2-7.2v37.2l-32.4 391.2c-2.4 32.4 21.6 60 54 63.6 32.4 2.4 60-21.6 63.6-54l31.2-375.6H732l31.2 374.4c2.4 30 27.6 54 58.8 54h4.8c32.4-2.4 56.4-31.2 54-63.6l-32.4-391.2-2.4-267.6h272.4c28.8 0 52.8-24 52.8-52.8-1.2-28.8-25.2-51.6-54-51.6zM594 583.2l-63.6-88.8c14.4-13.2 36-28.8 64.8-43.2zM837.6 170.4c0 64.95-52.65 117.6-117.6 117.6s-117.6-52.65-117.6-117.6c0-64.94 52.65-117.6 117.6-117.6s117.6 52.65 117.6 117.6" />
+            </svg>
         </div>
-    </section>
-    {% endblock %}
-    {% endblock %}
+        <div class="hlb5" id="pt3-hero-content-section-hlb5">
+            <h2 class="hlt-header">Be A Plain Language Hero</h2>
+            <p class="hlt-paragraph">Placeholder</p>
+        </div>
+    </div>
+    <div class="hlt6" id="pt3-hero-content-section-hlt6">
+        <div class="icn6" id="pt3-hero-content-section-icn6"><svg class="hlticon"
+                xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200">
+                <path
+                    d="M600 127.12A472.89 472.89 0 1 0 1072.88 600a473.23 473.23 0 0 0-472.87-472.87zM673.5 900a23.45 23.45 0 0 1-23.44 23.44H549.94A23.45 23.45 0 0 1 526.51 900V500.06a23.45 23.45 0 0 1 23.43-23.44h100.12a23.45 23.45 0 0 1 23.44 23.44zM600 423.38a73.51 73.51 0 1 1 .13-147 73.5 73.5 0 0 1-.13 147z" />
+            </svg></div>
+        <div class="hlb6" id="pt3-hero-content-section-hlb6">
+            <h2 class="hlt-header">Get Answers</h2>
+            <p class="hlt-paragraph">Placeholder</p>
+        </div>
+    </div>
+</section>
+{% endblock %}
+{% endblock %}

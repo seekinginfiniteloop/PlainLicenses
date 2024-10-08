@@ -184,9 +184,7 @@ export const heroImages: { [key: string]: HeroImage } = Object.fromEntries(
     parents.map(async (parent: string) => {
       const key = parent.split("/").pop()
       const heroFilePattern = `${key}_{1280,1920,2560,3840}.avif`
-      console.log(`parent: ${parent}, key: ${key}, heroFilePattern: ${heroFilePattern}`)
       const children = await globby(`${parent}/${heroFilePattern}`, { onlyFiles: true, unique: true })
-      console.log(`children: ${children}`)
       const flattenedWidths: WidthMap = children.reduce<WidthMap>((acc, child) => {
         const width: number | undefined = [1280, 1920, 2560, 3840].find((w: number) => child.includes(w.toString()))
         if (width) {
@@ -195,7 +193,7 @@ export const heroImages: { [key: string]: HeroImage } = Object.fromEntries(
         return acc
       }, {} as WidthMap) // Initialize acc as an empty WidthMap
 
-      const srcset = await generateSrcset({ parent, widths: flattenedWidths })
+      const srcset = generateSrcset({ parent, widths: flattenedWidths })
       return [key, { parent, widths: flattenedWidths, srcset }]
     })
   )

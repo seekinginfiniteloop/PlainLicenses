@@ -31,14 +31,12 @@ These are basic customizations for the home page.
 html.js-focus-visible {
   z-index: auto;
   background-color: transparent;
-  border: none;
 }
 
 html {
   height: 100%;
   overflow: hidden;
   scroll-behavior: auto;
-  content-editable: false;
 }
 
 body {
@@ -63,7 +61,7 @@ body {
 
 header.md-header:not(.md-header--shadow) {
   z-index: 21;
-  background: linear-gradient(180deg, rgba(var(--zaffre-adj), 1) 60%, rgba(var(--zaffre-adj), 1) 100%) !important;
+  background: linear-gradient(180deg, rgba(var(--zaffre-adj), 1) 80%, rgba(var(--zaffre-adj), 1) 100%) !important;
   background-color: rgb(var(--zaffre));
 }
 
@@ -71,7 +69,7 @@ header.md-header:not(.md-header--shadow) {
   z-index: 1000 !important;
   pointer-events: visible;
   object-fit: cover;
-  background: linear-gradient(180deg, rgba(var(--zaffre-adj), 1) 60%, rgba(var(--zaffre-adj), 0.9) 100%) !important;
+  background: linear-gradient(180deg, rgba(var(--zaffre-adj), 1) 80%, rgba(var(--zaffre-adj), 0.9) 100%) !important;
 }
 
 .md_main {
@@ -80,6 +78,10 @@ header.md-header:not(.md-header--shadow) {
 
 .md-main__inner {
   margin: 0;
+}
+
+.md-container {
+  overflow-y: scroll;
 }
 
 /** Hero section */
@@ -95,7 +97,7 @@ header.md-header:not(.md-header--shadow) {
   align-self: flex-start;
   justify-content: flex-start;
   width: 100vw;
-  height: max-content;
+  height: 380vh;
   object-fit: cover;
   background: rgb(var(--gunmetal));
   background: linear-gradient(180deg, rgba(var(--gunmetal-adj), 0) 75%, rgba(var(--gunmetal-adj), 1) 100%) !important;
@@ -116,7 +118,6 @@ header.md-header:not(.md-header--shadow) {
   height: 140vh;
   margin-top: -2.4rem;
   overflow-x: hidden;
-  overflow-y: scroll;
   overscroll-behavior-y: auto;
  /* scroll-snap-type: y proximity;
   scroll-snap-align: start;*/
@@ -166,7 +167,6 @@ header.md-header:not(.md-header--shadow) {
   width: 80%;
   padding-bottom: 5rem;
   overflow-x: auto;
-  overflow-y: scroll;
 }
 
 @media screen and (orientation: portrait) {
@@ -203,6 +203,7 @@ header.md-header:not(.md-header--shadow) {
   margin: 0.3rem;
   text-align: center;
   object-fit: cover;
+  user-select: none;
 }
 
 div#hero-primary-button {
@@ -246,6 +247,8 @@ svg#arrow-down {
   cursor: pointer;
   fill: #ffffff;
   animation: blink 5000ms infinite;
+  pointer-events: all;
+  user-select: none;
 }
 
 svg#arrow-down:hover {
@@ -278,7 +281,7 @@ svg#the-egg {
   width: 1rem;
   height: 1rem;
   overflow: hidden;
-  pointer-events: fill;
+  pointer-events: all;
   cursor: pointer;
   opacity: 0.55;
   fill: #cccccc;
