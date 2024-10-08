@@ -35,7 +35,7 @@ def on_page_context(
     """
     globals()["SITE_LICENSE_LOGGER"] = get_logger(
         __name__,
-        logging.INFO,
+        logging.WARNING,
     )
     meta = page.meta
     if "original_name" not in meta:

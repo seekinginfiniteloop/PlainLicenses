@@ -172,11 +172,13 @@ const cycleImages = (): Observable<void> => {
     parallaxLayer.prepend(recycledImage)
   }
 
-  if (images.length > 1 && nextImage === undefined) {
-    const currentImage = images[0]
-    parallaxLayer.append(currentImage)
-    parallaxLayer.firstChild?.remove()
+if (images.length > 1 && nextImage === undefined) {
+  const currentImage = images[0]
+  parallaxLayer.appendChild(currentImage)
+  if (parallaxLayer?.firstChild) {
+    parallaxLayer.removeChild(parallaxLayer.firstChild)
   }
+}
   return EMPTY
 }
 const startImageCycling = (): Observable<void> => {
