@@ -21,7 +21,7 @@
 }
 
 .md-typeset dl p {
-  font-family: "Inter", "Noto Sans", "Open Sans", Lato, Helvetica, Arial, system-ui, sans-serif;
+  font-family: Inter, "Noto Sans", "Open Sans", Lato, Helvetica, Arial, system-ui, sans-serif;
   font-size: 0.95rem;
   line-height: 1.6em;
 }
@@ -37,7 +37,7 @@
 .md-typeset h4,
 .md-typeset h5,
 .md-typeset h6 {
-  font-family: "Inter", "Noto Sans", "Open Sans", Lato, Helvetica, Arial, system-ui, sans-serif;
+  font-family: Inter, "Noto Sans", "Open Sans", Lato, Helvetica, Arial, system-ui, sans-serif;
 }
 
 .md-typeset {
@@ -50,7 +50,7 @@ body {
 }
 
 .md-typeset h1 {
-  margin: 0.6em 0 1em 0;
+  margin: 0.6em 0 1em;
   font-size: 1.75em;
   line-height: 1.2;
 }
@@ -89,8 +89,7 @@ body {
 }
 
 .md-typeset .md-typeset__table {
-  margin-inline-start: 5%;
-  margin-inline-end: 5%;
+  margin-inline: 5%;
   text-align: center;
 }
 
@@ -119,7 +118,6 @@ body {
 }
 
 [data-md-color-scheme="default"] {
-
   .md-typeset h1,
   .md-typeset h2,
   .md-typeset h3,
@@ -161,7 +159,6 @@ li.md-tabs__item a.md-tabs__link:hover {
 
 .md-nav__container a.md-nav__link {
   margin: 0.02em 0;
-
   font-size: 1.2em;
   font-weight: 500;
 }
@@ -172,6 +169,7 @@ li.md-nav__item--active:nth-child(4)> div:nth-child(2)> a:nth-child(1)> span:nth
   color: var(--md-default-fg-color--light) !important;
   border-bottom: 0.03em dotted var(--ecru);
 }
+
 div.md-nav__link.md-nav__container a.md-nav__link span#nav-item-main.md-ellipsis::before {
   margin: 0;
   font-size: 0.7em;

@@ -9,6 +9,7 @@ These are basic customizations for the home page.
   html {
     scroll-behavior: auto;
   }
+
   #pt3-hero-content-section {
     scroll-behavior: auto;
   }
@@ -53,8 +54,8 @@ body {
 header#header-target.md-header,
 header.md-header,
 header.md-header--shadow {
+  z-index: 998 !important;
   display: block;
-  z-index: 1000 !important;
   pointer-events: visible;
   object-fit: cover;
   background: var(--zaffre);
@@ -77,10 +78,9 @@ header.md-header--shadow {
   display: flex;
   flex-direction: column;
   gap: 0;
-  align-content: flex-start;
+  place-content: flex-start flex-start;
   align-items: flex-start;
   align-self: flex-start;
-  justify-content: flex-start;
   width: var(--vw);
   height: calc(var(--vh) * 3.8);
   object-fit: cover;
@@ -93,15 +93,14 @@ header.md-header--shadow {
   display: flex;
   flex-direction: column;
   gap: 0;
-  align-content: flex-start;
+  place-content: flex-start flex-start;
   align-items: flex-start;
   align-self: flex-start;
-  justify-content: flex-start;
   order: -1;
   width: var(--vw);
-  height: calc(var(--vh) * 1.4);
+  min-height: calc(var(--vh) * 1.4);
   margin-top: -2.4rem;
-  overflow-x: hidden;
+  overflow: hidden visible;
   background: rgb(var(--gunmetal));
   background-repeat: no-repeat;
   background-attachment: fixed;
@@ -111,21 +110,17 @@ header.md-header--shadow {
 
 .hero-parallax__layer {
   position: absolute;
-  top: 2rem;
-  right: 0;
-  bottom: 0;
-  left: 0;
+  inset: 2rem 0 0;
   z-index: 2;
-  padding-bottom: 1px;
   display: grid;
   grid-template-rows: 1fr;
   grid-template-columns: 1fr;
-  align-content: start;
-  justify-content: center;
+  place-content: start center;
   order: -1;
   width: var(--vw);
-  overflow-y: visible;
   height: var(--vh);
+  padding-bottom: 1px;
+  overflow-y: visible;
   pointer-events: auto;
 }
 
@@ -140,10 +135,9 @@ header.md-header--shadow {
   z-index: 40;
   display: flex;
   flex-direction: column;
+  place-self: flex-end center;
   align-items: center;
-  align-self: flex-end;
   justify-content: center;
-  justify-self: center;
   width: 80%;
   padding-bottom: 7rem;
 }
@@ -162,24 +156,25 @@ header.md-header--shadow {
   z-index: 1000;
   display: flex;
   flex-direction: row;
+  place-content: center center;
   align-items: center;
-  align-content: center;
   align-self: center;
-  justify-content: center;
   width: max-content;
   padding: 0.3rem;
   margin: 0.4rem;
   text-align: center;
-  object-fit: cover;
   user-select: none;
+  object-fit: cover;
 }
 
 #hero-primary-button {
   z-index: 3000;
-  font-family: "Inter", "Noto Sans", "Open Sans", Lato, Helvetica, Arial, system-ui, sans-serif;
+  font-family: Inter, "Noto Sans", "Open Sans", Lato, Helvetica, Arial, system-ui, sans-serif;
   font-size: 0.9em;
   color: var(--emerald);
   font-display: swap;
+  cursor: pointer;
+  user-select: none;
   object-fit: cover;
   background: rgba(var(--zaffre-adj), 0.6);
   transition:
@@ -187,8 +182,6 @@ header.md-header--shadow {
     color 300ms ease-in-out,
     scale 350ms ease-in;
   scale: 1;
-  cursor: pointer;
-  user-select: none;
 }
 
 #hero-primary-button:hover,
@@ -196,8 +189,8 @@ header.md-header--shadow {
   z-index: 100;
   color: var(--zaffre);
   background: var(--emerald);
-  scale: 1.05;
   transition: linear scale 300ms, linear background-color 300ms, linear color 300ms;
+  scale: 1.05;
 }
 
 #hero-primary-button:active {
@@ -211,18 +204,18 @@ svg#arrow-down {
   position: absolute;
   top: calc((var(--vh) * 0.9));
   left: calc((var(--vw) * 0.5));
+  z-index: 200;
   width: 1.5rem;
   height: 1.5rem;
   overflow: hidden;
-  cursor: pointer;
-  fill: var(--white);
-  stroke-width: .4rem;
-  border: .2rem solid var(--white);
-  border-radius: 100%;
-  animation: blink 5000ms infinite;
   pointer-events: all;
+  cursor: pointer;
   user-select: none;
-  z-index: 200;
+  border: 0.2rem solid var(--white);
+  border-radius: 100%;
+  fill: var(--white);
+  stroke-width: 0.4rem;
+  animation: blink 5000ms infinite;
 }
 
 svg#arrow-down:hover {
@@ -250,62 +243,58 @@ svg#arrow-down:hover {
   --dynamic-font-min: 14px;
   --dynamic-font-mid: calc(var(--vh) / 7);
   --dynamic-font-max: 40em;
-  container-name: hero-message;
+
   position: absolute;
-  contain: content;
   top: calc(var(--vh) * 1.4);
   z-index: 10;
   display: flex;
-  align-items: center;
-  align-self: center;
+  flex-flow: column nowrap;
+  place-items: center center;
+  place-self: center center;
   justify-content: space-evenly;
-  justify-items: center;
-  justify-self: center;
-  flex-direction: column;
-  flex-wrap: nowrap;
   width: var(--vw);
   height: var(--vh);
   padding-top: 0.01rem;
   padding-bottom: 0.01rem;
+  overflow: contain;
   scroll-snap-type: y mandatory;
   scroll-snap-align: start;
   scroll-margin-block-start: 10vh;
   background: var(--air-superiority-blue);
   background-repeat: no-repeat;
   background-attachment: fixed;
-  overflow: contain;
+  container-name: hero-message;
+  contain: content;
 }
 
 h1.hero-content-section.header-mid {
-  margin: .1em;
-  padding: 2em;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  width: var(--vw);
-  text-align: center;
   z-index: 50;
   display: block;
-  padding: .3em;
+  width: var(--vw);
+  padding: 0.3em;
+  margin: 0.1em;
+  overflow: hidden;
   font-size: clamp(var(--dynamic-font-min), var(--dynamic-font-mid), var(--dynamic-font-max));
   text-align: center;
+  text-overflow: ellipsis;
   white-space: nowrap;
   opacity: 1;
 }
 
 h1.hero-content-section.header-mid.line {
+  display: inline-block;
   max-width: var(--vw);
   max-height: var(--vh);
-  user-select: none;
+  padding: 0.3em;
   font-family: Bangers, Impact, Haettenschweiler, Charcoal, "Arial Narrow Bold", Gadget, sans-serif;
   color: var(--atomic-tangerine);
-  padding: 0.3em;
-  text-transform: uppercase;
   text-shadow:
-  0.04em 0.04em 0 var(--blue-blue),
-  0.05em 0.05em 0.01em var(--aquamarine),
-  0.06em 0.06em 0em var(--night);
+    0.04em 0.04em 0 var(--blue-blue),
+    0.05em 0.05em 0.01em var(--aquamarine),
+    0.06em 0.06em 0 var(--night);
+  text-transform: uppercase;
   white-space: nowrap;
-  display: inline-block
+  user-select: none;
 }
 
 .ul {
@@ -317,11 +306,9 @@ h1.hero-content-section.header-mid.line {
   top: calc(var(--vh) * 2.4);
   z-index: 10;
   display: block;
-  align-items: center;
-  align-self: center;
+  place-items: center center;
+  place-self: center center;
   justify-content: center;
-  justify-items: center;
-  justify-self: center;
   width: var(--vw);
   height: calc(var(--vh) * 0.4);
   padding-top: 0.1px;
@@ -336,19 +323,12 @@ h1.hero-content-section.header-mid.line {
   top: calc(var(--vh) * 2.8);
   z-index: 10;
   display: grid;
-  grid-template-areas:
-    ". . . ."
-    ". head head ."
-    ". hlt1 hlt2 ."
-    ". hlt3 hlt4 ."
-    ". hlt5 hlt6 ."
-    ". . . .";
-  grid-template-rows: 1fr 1.5fr 2fr 2fr 2fr 1fr;
-  grid-template-columns: 0.5fr 2.5fr 2.5fr 0.5fr;
+  grid-template:
+    ". . . ." 1fr ". head head ." 1.5fr ". hlt1 hlt2 ." 2fr ". hlt3 hlt4 ." 2fr /
+    ". hlt5  hlt6 ." 2fr ". . . ." 1fr / 0.5fr 2.5fr 2.5fr 0.5fr;
   grid-auto-flow: row;
-  gap: 1em 1em;
-  align-items: stretch;
-  justify-items: stretch;
+  gap: 1em;
+  place-items: stretch stretch;
   width: var(--vw);
   height: var(--vh);
   padding-top: 1px;
@@ -356,8 +336,7 @@ h1.hero-content-section.header-mid.line {
   scroll-snap-type: y mandatory;
   scroll-snap-align: start;
   scroll-snap-stop: always;
-  scroll-margin-block-start: 10vh;
-  scroll-margin-block-end: 7vh;
+  scroll-margin-block: 10vh 7vh;
   background: var(--gunmetal);
   background-repeat: no-repeat;
   background-attachment: fixed;
@@ -367,34 +346,34 @@ h1#pt3-hero-content-section-header.hero-content-section {
   z-index: 50;
   display: grid;
   grid-area: head;
-  justify-self: center;
+  place-self: first baseline center;
   width: 100%;
   margin-top: 0.3rem;
-  font-family: Bangers, Impact, Haettenschweiler, Charcoal, "Arial Narrow Bold", Gadget, sans-serif;
-  white-space: nowrap;
-  font-size: clamp(10px, calc(var(--vw)/26), 16em);
+  font-family:
+    Bangers, Impact, Haettenschweiler, Charcoal, "Arial Narrow Bold" /
+    Gadget, sans-serif;
+  font-size: clamp(10px, calc(var(--vw) / 26), 16em);
   color: var(--emerald);
-  align-self: first baseline;
   text-align: center;
-  text-transform: uppercase;
   text-shadow: 0.01em 0.01em 0 var(--oxford-blue);
-  scroll-snap-align: start;
+  text-transform: uppercase;
   white-space: nowrap;
+  scroll-snap-align: start;
 }
 
 h2.hlt-header {
   margin-left: 0.2em;
-  font-family: "Inter", "Noto Sans", "Open Sans", Lato, Helvetica, Arial, system-ui, sans-serif;
+  font-family: Inter, "Noto Sans", "Open Sans", Lato, Helvetica, Arial, system-ui, sans-serif;
   font-size: clamp(10px, 1.75em, 4em);
   text-align: left;
 }
 
 p.hlt-paragraph {
   width: 100%;
-  padding: .75em 0;
+  padding: 0.75em 0;
   padding: 0;
   margin-left: 0.2em;
-  font-family: "Inter", "Noto Sans", "Open Sans", Lato, Helvetica, Arial, system-ui, sans-serif;
+  font-family: Inter, "Noto Sans", "Open Sans", Lato, Helvetica, Arial, system-ui, sans-serif;
   font-size: clamp(8px, 1.25em, 2em);
   text-align: start;
   text-wrap: balance;
@@ -427,32 +406,24 @@ section#pt3-hero-content-section.hero-content-section svg.hlticon {
 .hlt1 {
   display: grid;
   grid-area: hlt1;
-  grid-template-areas:
-    "icn1 hlb1 hlb1"
-    "icn1 hlb1 hlb1"
-    "icn1 hlb1 hlb1";
-  grid-template-rows: 1fr 1fr 1fr;
-  grid-template-columns: 0.5fr 1.5fr 1.5fr;
+  grid-template:
+    "icn1 hlb1 hlb1" 1fr "icn1 hlb1 hlb1" 1fr "icn1 hlb1 hlb1" 1fr / 0.5fr 1.5fr 1.5fr;
   grid-auto-flow: row;
-  gap: 0 0;
-  align-items: stretch;
-  justify-items: stretch;
+  gap: 0;
+  place-items: stretch stretch;
 }
 
 .hlb1 {
   display: grid;
   grid-area: hlb1;
-  align-content: start;
-  justify-content: start;
+  place-content: start start;
 }
 
 .icn1 {
   display: grid;
   grid-area: icn1;
-  align-content: start;
-  align-self: stretch;
-  justify-content: center;
-  justify-self: stretch;
+  place-content: start center;
+  place-self: stretch stretch;
   padding: 0;
   margin: 0;
 }
@@ -460,23 +431,17 @@ section#pt3-hero-content-section.hero-content-section svg.hlticon {
 .hlt2 {
   display: grid;
   grid-area: hlt2;
-  grid-template-areas:
-    "icn2 hlb2 hlb2"
-    "icn2 hlb2 hlb2"
-    "icn2 hlb2 hlb2";
-  grid-template-rows: 1fr 1fr 1fr;
-  grid-template-columns: 0.5fr 1.5fr 1.5fr;
+  grid-template:
+    "icn2 hlb2 hlb2" 1fr "icn2 hlb2 hlb2" 1fr "icn2 hlb2 hlb2" 1fr / 0.5fr 1.5fr 1.5fr;
   grid-auto-flow: row;
-  gap: 0 0;
-  align-items: stretch;
-  justify-items: stretch;
+  gap: 0;
+  place-items: stretch stretch;
 }
 
 .hlb2 {
   display: grid;
   grid-area: hlb2;
-  align-content: start;
-  justify-content: start;
+  place-content: start start;
 }
 
 .icn2 {
@@ -487,23 +452,17 @@ section#pt3-hero-content-section.hero-content-section svg.hlticon {
 .hlt3 {
   display: grid;
   grid-area: hlt3;
-  grid-template-areas:
-    "icn3 hlb3 hlb3"
-    "icn3 hlb3 hlb3"
-    "icn3 hlb3 hlb3";
-  grid-template-rows: 1fr 1fr 1fr;
-  grid-template-columns: 0.5fr 1.5fr 1.5fr;
+  grid-template:
+    "icn3 hlb3 hlb3" 1fr "icn3 hlb3 hlb3" 1fr "icn3 hlb3 hlb3" 1fr / 0.5fr 1.5fr 1.5fr;
   grid-auto-flow: row;
-  gap: 0 0;
-  align-items: stretch;
-  justify-items: stretch;
+  gap: 0;
+  place-items: stretch stretch;
 }
 
 .hlb3 {
   display: grid;
   grid-area: hlb3;
-  align-content: start;
-  justify-content: start;
+  place-content: start start;
 }
 
 .icn3 {
@@ -514,23 +473,17 @@ section#pt3-hero-content-section.hero-content-section svg.hlticon {
 .hlt4 {
   display: grid;
   grid-area: hlt4;
-  grid-template-areas:
-    "icn4 hlb4 hlb4"
-    "icn4 hlb4 hlb4"
-    "icn4 hlb4 hlb4";
-  grid-template-rows: 1fr 1fr 1fr;
-  grid-template-columns: 0.5fr 1.5fr 1.5fr;
+  grid-template:
+    "icn4 hlb4 hlb4" 1fr "icn4 hlb4 hlb4" 1fr "icn4 hlb4 hlb4" 1fr / 0.5fr 1.5fr 1.5fr;
   grid-auto-flow: row;
-  gap: 0 0;
-  align-items: stretch;
-  justify-items: stretch;
+  gap: 0;
+  place-items: stretch stretch;
 }
 
 .hlb4 {
   display: grid;
   grid-area: hlb4;
-  align-content: start;
-  justify-content: start;
+  place-content: start start;
 }
 
 .icn4 {
@@ -541,23 +494,17 @@ section#pt3-hero-content-section.hero-content-section svg.hlticon {
 .hlt5 {
   display: grid;
   grid-area: hlt5;
-  grid-template-areas:
-    "icn5 hlb5 hlb5"
-    "icn5 hlb5 hlb5"
-    "icn5 hlb5 hlb5";
-  grid-template-rows: 0.5fr 1fr 1fr;
-  grid-template-columns: 0.5fr 1.5fr 1.5fr;
+  grid-template:
+    "icn5 hlb5 hlb5" 0.5fr "icn5 hlb5 hlb5" 1fr "icn5 hlb5 hlb5" 1fr / 0.5fr 1.5fr 1.5fr;
   grid-auto-flow: row;
-  gap: 0 0;
-  align-items: stretch;
-  justify-items: stretch;
+  gap: 0;
+  place-items: stretch stretch;
 }
 
 .hlb5 {
   display: grid;
   grid-area: hlb5;
-  align-content: start;
-  justify-content: start;
+  place-content: start start;
 }
 
 .icn5 {
@@ -568,23 +515,17 @@ section#pt3-hero-content-section.hero-content-section svg.hlticon {
 .hlt6 {
   display: grid;
   grid-area: hlt6;
-  grid-template-areas:
-    "icn6 hlb6 hlb6"
-    "icn6 hlb6 hlb6"
-    "icn6 hlb6 hlb6";
-  grid-template-rows: 1fr 1fr 1fr;
-  grid-template-columns: 0.5fr 1.5fr 1.5fr;
+  grid-template:
+    "icn6 hlb6 hlb6" 1fr "icn6 hlb6 hlb6" 1fr "icn6 hlb6 hlb6" 1fr / 0.5fr 1.5fr 1.5fr;
   grid-auto-flow: row;
-  gap: 0 0;
-  align-items: stretch;
-  justify-items: stretch;
+  gap: 0;
+  place-items: stretch stretch;
 }
 
 .hlb6 {
   display: grid;
   grid-area: hlb6;
-  align-content: start;
-  justify-content: start;
+  place-content: start start;
 }
 
 .icn6 {
@@ -609,18 +550,11 @@ section#pt3-hero-content-section.hero-content-section svg.hlticon {
 
   #pt3-hero-content-section {
     display: grid;
-    grid-template-areas:
-      "head head head"
-      ". hlb1 ."
-      ". hlb2 ."
-      ". hlb3 ."
-      ". hlb4 ."
-      ". hlb5 ."
-      ". hlb6 .";
-    grid-template-rows: 0.6fr 1fr 1fr 1fr 1fr 1fr 1fr;
-    grid-template-columns: 0.7fr 7.6fr 0.7fr;
+    grid-template:
+      "head head head" 0.6fr ". hlb1 ." 1fr ". hlb2 ." 1fr ". hlb3 ." 1fr ". hlb4 ." /
+      auto ". hlb5 ." 1fr ". hlb6 ." 1fr / 0.7fr 7.6fr 0.7fr;
     grid-auto-flow: row;
-    gap: 2em 2em;
+    gap: 2em;
   }
 
   h1#pt3-hero-content-section-header.hero-content-section {
@@ -631,14 +565,10 @@ section#pt3-hero-content-section.hero-content-section svg.hlticon {
   .hlb1 {
     display: grid;
     grid-area: hlb1;
-    grid-template-areas:
-      "icn1 hlt1 hlt1"
-      "icn1 hlt1 hlt1"
-      "icn1 hlt1 hlt1";
-    grid-template-rows: 1fr 1fr 1fr;
-    grid-template-columns: 01fr 1fr 1fr;
+    grid-template:
+      "icn1 hlt1 hlt1" 1fr "icn1 hlt1 hlt1" 1fr "icn1 hlt1 hlt1" 1fr / 01fr 1fr 1fr;
     grid-auto-flow: row;
-    gap: 0 0;
+    gap: 0;
   }
 
   .hlt1 {
@@ -652,14 +582,10 @@ section#pt3-hero-content-section.hero-content-section svg.hlticon {
   .hlb2 {
     display: grid;
     grid-area: hlb2;
-    grid-template-areas:
-      "icn2 hlt2 hlt2"
-      "icn2 hlt2 hlt2"
-      "icn2 hlt2 hlt2";
-    grid-template-rows: 1fr 1fr 1fr;
-    grid-template-columns: 01fr 1fr 1fr;
+    grid-template:
+      "icn2 hlt2 hlt2" 1fr "icn2 hlt2 hlt2" 1fr "icn2 hlt2 hlt2" 1fr / 01fr 1fr 1fr;
     grid-auto-flow: row;
-    gap: 0 0;
+    gap: 0;
   }
 
   .hlt2 {
@@ -673,14 +599,10 @@ section#pt3-hero-content-section.hero-content-section svg.hlticon {
   .hlb3 {
     display: grid;
     grid-area: hlb3;
-    grid-template-areas:
-      "icn3 hlt3 hlt3"
-      "icn3 hlt3 hlt3"
-      "icn3 hlt3 hlt3";
-    grid-template-rows: 1fr 1fr 1fr;
-    grid-template-columns: 01fr 1fr 1fr;
+    grid-template:
+      "icn3 hlt3 hlt3" 1fr "icn3 hlt3 hlt3" 1fr "icn3 hlt3 hlt3" 1fr / 01fr 1fr 1fr;
     grid-auto-flow: row;
-    gap: 0 0;
+    gap: 0;
   }
 
   .hlt3 {
@@ -694,14 +616,10 @@ section#pt3-hero-content-section.hero-content-section svg.hlticon {
   .hlb4 {
     display: grid;
     grid-area: hlb4;
-    grid-template-areas:
-      "icn4 hlt4 hlt4"
-      "icn4 hlt4 hlt4"
-      "icn4 hlt4 hlt4";
-    grid-template-rows: 1fr 1fr 1fr;
-    grid-template-columns: 01fr 1fr 1fr;
+    grid-template:
+      "icn4 hlt4 hlt4" 1fr "icn4 hlt4 hlt4" 1fr "icn4 hlt4 hlt4" 1fr / 01fr 1fr 1fr;
     grid-auto-flow: row;
-    gap: 0 0;
+    gap: 0;
   }
 
   .hlt4 {
@@ -715,14 +633,10 @@ section#pt3-hero-content-section.hero-content-section svg.hlticon {
   .hlb5 {
     display: grid;
     grid-area: hlb5;
-    grid-template-areas:
-      "icn5 hlt5 hlt5"
-      "icn5 hlt5 hlt5"
-      "icn5 hlt5 hlt5";
-    grid-template-rows: 1fr 1fr 1fr;
-    grid-template-columns: 01fr 1fr 1fr;
+    grid-template:
+      "icn5 hlt5 hlt5" 1fr "icn5 hlt5 hlt5" 1fr "icn5 hlt5 hlt5" 1fr / 01fr 1fr 1fr;
     grid-auto-flow: row;
-    gap: 0 0;
+    gap: 0;
   }
 
   .icn5 {
@@ -736,14 +650,10 @@ section#pt3-hero-content-section.hero-content-section svg.hlticon {
   .hlb6 {
     display: grid;
     grid-area: hlb6;
-    grid-template-areas:
-      "icn6 hlt6 hlt6"
-      "icn6 hlt6 hlt6"
-      "icn6 hlt6 hlt6";
-    grid-template-rows: 1fr 1fr 1fr;
-    grid-template-columns: 01fr 1fr 1fr;
+    grid-template:
+      "icn6 hlt6 hlt6" 1fr "icn6 hlt6 hlt6" 1fr "icn6 hlt6 hlt6" 1fr / 01fr 1fr 1fr;
     grid-auto-flow: row;
-    gap: 0 0;
+    gap: 0;
   }
 
   .icn6 {
@@ -762,10 +672,10 @@ section#pt3-hero-content-section.hero-content-section svg.hlticon {
 }
 
 nav.md-tabs {
+  position: fixed;
   z-index: 1000;
-  margin-top: -0.35rem;
-  position: absolute;
   align-self: flex-start;
+  margin-top: -0.35rem;
   background: var(--zaffre);
 }
 
@@ -778,7 +688,6 @@ footer.md-footer {
   margin-top: 2%;
   object-fit: cover;
 }
-
 
 /** Easter egg section */
 
@@ -834,13 +743,11 @@ svg#the-egg:active {
   position: relative;
   z-index: 10000;
   width: 80%;
-  max-width: 50em;
   min-width: 10em;
+  max-width: 50em;
   padding: 1rem;
-
-  overscroll-behavior-x: contain;
-  overscroll-behavior-y: scroll;
-  font-family: "Inter", "Noto Sans", "Open Sans", Lato, Helvetica, Arial, system-ui, sans-serif;
+  overscroll-behavior: contain scroll;
+  font-family: Inter, "Noto Sans", "Open Sans", Lato, Helvetica, Arial, system-ui, sans-serif;
   font-size: clamp(8px, 1.1em, 1.4em);
   line-height: 1.8;
   color: #ffffff;
@@ -869,7 +776,7 @@ div#hero-dialog-position dialog#egg-box.info-box form p {
 
 div#hero-dialog-position dialog#egg-box.info-box form h1 {
   padding: 0.5em;
-  margin: 1em 1em 0 1em;
+  margin: 1em 1em 0;
   font-size: clamp(12px, 3em, 6em);
   color: var(--emerald);
   white-space: nowrap;

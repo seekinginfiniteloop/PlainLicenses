@@ -19,17 +19,18 @@
 # IN THE SOFTWARE.
 
 # Distribution files
-docs
-material
+docs/
+material/
 src/**/*.html
+/**/*.html
 
 # Prevent stylelint from constantly complaining
 *.ts
 
-.workbench
-.vscode
-node_modules
-.testbuild
-.venv
-typings
-.cache
+.workbench/
+.vscode/
+node_modules/
+.testbuild/
+.venv/
+typings/
+.cache/

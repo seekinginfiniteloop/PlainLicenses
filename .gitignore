@@ -9,6 +9,7 @@ typings
 .testbuild/*
 .testbuild/**/*
 .history
+.eslintcache
 
 # mkdocs
 .cache

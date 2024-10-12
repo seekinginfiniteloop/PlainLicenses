@@ -11,21 +11,20 @@
   --object-position: center bottom;
   --translate-x: 0%;
   --translate-y: 0%;
-  position: relative;
 
+  position: relative;
   top: 0;
   z-index: -5;
   display: block;
   flex-grow: 2;
   grid-column-start: 1;
-  align-self: start;
-  justify-self: start;
+  place-self: start start;
   min-width: 100%;
-  padding: 0;
+  min-height: calc(var(--vh) * 0.3);
   max-height: calc(var(--vh) * 1.4);
-  min-height: 40vh;
+  padding: 0;
   margin-top: 0;
-  overflow-x: hidden;
+  overflow: hidden visible;
   object-fit: var(--object-fit);
   object-position: center bottom;
   background: var(--gunmetal);
@@ -53,6 +52,8 @@
 }
 
 #CTA_header {
+  position: relative;
+  display: inline-block;
   margin: 0.5rem;
   font-family: Bangers, Impact, Haettenschweiler, Charcoal, "Arial Narrow Bold", Gadget, sans-serif;
   font-size: clamp(3em, 8em, 13em);
@@ -61,43 +62,44 @@
   text-transform: uppercase;
   font-display: swap;
   object-position: bottom left;
+  transition: 300ms color ease;
   animation: glow 4000ms ease-in-out infinite alternate;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  position: relative;
 }
 
 #CTA_paragraph {
-  margin: 0 1rem 1rem 1rem;
+  position: relative;
+  display: inline-block;
+  margin: 0 1rem 1rem;
   font-family: Bangers, Impact, Haettenschweiler, Charcoal, "Arial Narrow Bold", Gadget, sans-serif;
   font-size: clamp(1em, 3em, 5em);
   color: var(--p-color);
   text-align: left;
   text-shadow:
-  0.01em 0.01em 0 var(--oxford-blue),
-  0.05em 0.05em 0 var(--turkey-red);
+    0.01em 0.01em 0 var(--oxford-blue),
+    0.05em 0.05em 0 var(--turkey-red);
   text-transform: uppercase;
   font-display: swap;
   object-position: bottom left;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  position: relative;
-  display: inline-block;
+  transition: 300ms color ease;
 }
 
 .cta-ul {
-  display: inline-block;
   position: relative;
+  display: inline-block;
 }
 
 .special-ul {
-  display: inline-block;
   position: relative;
+  display: inline-block;
 }
 
 .special-highlight {
-  display: inline-block;
   position: relative;
+  display: inline-block;
 }
 
 .hero-parallax__image--anime {
@@ -114,6 +116,7 @@
   --h1-color: var(--aquamarine);
   --p-color: var(--white);
 }
+
 .hero-parallax__image--fanciful {
   --h1-color: var(--mindaro);
   --p-color: var(--aqua);
@@ -121,22 +124,26 @@
   --scale: 1;
   --translate-y: -30%;
 }
+
 .hero-parallax__image--fantasy {
   --h1-color: var(--white);
   --p-color: var(--mindaro);
   --scale: 1;
   --translate-y: -20%;
 }
+
 .hero-parallax__image--farcical {
   --h1-color: var(--atomic-tangerine);
   --p-color: var(--aqua);
   --sccale: 1;
   --translate-y: -35%;
 }
+
 .hero-parallax__image--fauvist {
   --h1-color: var(--mindaro);
   --p-color: var(--white);
 }
+
 .hero-parallax__image--minimal {
   --h1-color: var(--atomic-tangerine);
   --p-color: var(--white);
@@ -144,6 +151,7 @@
   --perspective: 50rem;
   --translate-y: -25%;
 }
+
 .hero-parallax__image--mystical {
   --h1-color: var(--blue-blue);
   --p-color: var(--white);
@@ -151,6 +159,7 @@
   --perspective: 40rem;
   --translate-y: -25%;
 }
+
 .hero-parallax__image--surreal {
   --h1-color: var(--white);
   --p-color: var(--atomic-tangerine);
@@ -165,6 +174,7 @@
     --object-fit: cover;
     --translate-y: 20%;
   }
+
   .hero-parallax__image--anime {
     --h1-color: var(--atomic-tangerine);
     --p-color: var(--white);
@@ -172,82 +182,86 @@
     --scale: 1.8;
     --translate-y: 40%;
   }
+
   .hero-parallax__image--artbrut {
     --h1-color: var(--atomic-tangerine);
     --p-color: var(--aqua);
   }
+
   .hero-parallax__image--comic {
     --h1-color: var(--aquamarine);
     --p-color: var(--white);
     --scale: 1.2;
   }
+
   .hero-parallax__image--fanciful {
     --h1-color: var(--mindaro);
     --p-color: var(--atomic-tangerine);
   }
+
   .hero-parallax__image--fantasy {
     --h1-color: var(--atomic-tangerine);
     --p-color: var(--mindaro);
   }
+
   .hero-parallax__image--farcical {
     --h1-color: var(--mindaro);
     --p-color: var(--aqua);
     --translate-y: 16%;
   }
+
   .hero-parallax__image--fauvist {
     --h1-color: var(--mindaro);
     --p-color: var(--white);
     --translate-y: 18%;
   }
+
   .hero-parallax__image--minimal {
     --h1-color: var(--atomic-tangerine);
     --p-color: var(--white);
   }
+
   .hero-parallax__image--mystical {
     --h1-color: var(--white);
     --p-color: var(--aquamarine);
   }
+
   .hero-parallax__image--surreal {
     --h1-color: var(--white);
     --p-color: var(--atomic-tangerine);
   }
 }
 
-/* Apply colors to text elements */
-#CTA_header {
-  transition: color 300ms ease;
-}
-
-#CTA_paragraph {
-  transition: color 300ms ease;
-}
-
 .hero-parallax__layer .hero-parallax__image:not(:first-child) {
-  opacity: 0;
   z-index: -300;
-  transition: opacity 600ms ease-out, perspective 500ms ease
+  opacity: 0;
+  transition: opacity 600ms ease-out, perspective 500ms ease;
 }
 
 .hero-parallax__layer .hero-parallax__image:first-child {
   align-content: flex-start;
   align-self: flex-start;
   opacity: 1;
-  transition: transform 500ms ease, scale 500ms ease, translate 500ms ease, opacity 1500ms ease-in, perspective 500ms ease, perspective-origin 500ms ease;
-  transform: translate(var(--translate-x), var(--translate-y));}
+  transition:
+    transform 500ms ease, scale 500ms ease, translate 500ms ease, opacity /
+    1500ms ease-in, perspective 500ms ease, perspective-origin 500ms ease;
+  transform: translate(var(--translate-x), var(--translate-y));
+}
 
 .fade-overlay {
   position: relative;
-  object-fit: cover;
-  z-index: -4;
   top: 2rem;
   left: 0;
+  z-index: -4;
   width: var(--vw);
   height: calc(var(--vh) * 1.4);
   pointer-events: none; /* So that it doesn't interfere with image clicks */
-  background: linear-gradient(
-    to bottom,
-    rgba(var(--gunmetal-adj), 0) calc(var(--vh) * 0.8),
-    rgba(var(--gunmetal-adj), 0.3) var(--vh),
-    rgba(var(--gunmetal-adj), 1) calc(var(--vh) * 1.4)
-  );
+  object-fit: cover;
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(var(--gunmetal-adj), 0) calc(var(--vh) * 0.8),
+      rgba(var(--gunmetal-adj), 0.3) var(--vh),
+      rgba(var(--gunmetal-adj), 1) calc(var(--vh) * 1.4)
+    );
 }

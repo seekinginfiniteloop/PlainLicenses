@@ -1,3 +1,4 @@
+import { logger } from "~/log"
 const feedback = document.forms.namedItem("feedback")
 
 if (feedback) {
@@ -9,7 +10,7 @@ if (feedback) {
     const page = document.location.pathname
     const data = ev.submitter?.getAttribute("data-md-value")
 
-    console.log(page, data)
+    logger.info(page, data)
 
     if (feedback.firstElementChild && feedback.firstElementChild instanceof HTMLButtonElement) {
       feedback.firstElementChild.disabled = true

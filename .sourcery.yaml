@@ -24,11 +24,11 @@ ignore:
   - .venv
   - env
   - .env
-  - /usr/*
-  - /usr/share/code/*
-  - /user/share/code/resources/app/extensions//node_modules/.*
-  - /usr/share/code/**/.*
-  - /tools/**/*.js
-  - /tools/build/*.js
+  - /usr/
+  - /usr/share/code/
+  - /user/share/code/resources/app/extensions//node_modules/
+  - /usr/share/code/**/
+  - /tools/**/
+  - /tools/build/
   - /.github/**/*.js
   - /docs/assets/**/*.js

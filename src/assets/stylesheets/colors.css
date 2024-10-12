@@ -166,7 +166,6 @@
   --md-shadow-z3: 0 0.2rem 0.5rem #00000033, 0 0 0.05rem #00000059;
 }
 
-/* stylelint-disable-next-line selector-max-id */
 #md-copyright-make {
   color: var(--md-footer-fg-color--light);
 }
