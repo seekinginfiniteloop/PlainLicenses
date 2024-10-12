@@ -23,20 +23,17 @@
             <div class="fade-overlay" contenteditable="false"></div>
 
             <div class="mdx-hero__teaser md-typeset">
-                <h1 contenteditable="false" id="CTA_header">join the fight!</h1>
-                <p id="CTA_paragraph" contenteditable="false">Against Legal Confusion!</p>
-                <div class="hero-cta-button" data-smooth-scroll data-scroll-duration="5"
-                    data-scroll-pause-duration="1.5" data-anchor-target="#pt3-hero-content-section"
-                    data-scroll-pause-id="#pt2-hero-content-section" contenteditable="false"
-                    role="button" tabindex="0">
-                    <div contenteditable="false" id="hero-primary-button"
+                <h1 contenteditable="false" id="CTA_header" class="cta-ul">Join the Fight!</h1>
+                <p id="CTA_paragraph" contenteditable="false">Against Confusing Licenses!</p>
+               <div class="hero-cta-button"><a class="hero-target-selector" href="#pt3-hero-content-section" data-smooth-scroll data-scroll-duration="5"
+                data-scroll-pause-duration="1.7" data-anchor-target="#pt3-hero-content-section"
+                data-scroll-pause-id="#pt2-hero-content-section" contenteditable="false">
+                    <div contenteditable="false" role="button" id="hero-primary-button"
                         class="md-button md-button">Get
                         Clear
                         Terms
-                    </div>
+                    </div></a>
                 </div>
-
-
             </div>
         </div>
         <svg xmlns="http://www.w3.org/2000/svg"
@@ -49,15 +46,13 @@
                 d="M12 1a11 11 0 1 1 0 22 11 11 0 0 1 0-22ZM2.5 12a9.5 9.5 0 0 0 9.5 9.5 9.5 9.5 0 0 0 9.5-9.5A9.5 9.5 0 0 0 12 2.5 9.5 9.5 0 0 0 2.5 12Z" />
         </svg>
 
-        <svg id="arrow-down" title="scroll down for more" xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24" class="hero__scroll-down" data-smooth-scroll
+        <a href="#pt3-hero-content-section" class="hero-target-selector"  data-smooth-scroll
             data-scroll-duration="5" data-scroll-pause-duration="1.5"
-            data-anchor-target="pt3-hero-content-section"
-            data-scroll-pause-id="pt2-hero-content-section" role="button" contenteditable="false"
-            tabindex="0">
+            data-anchor-target="#pt3-hero-content-section"
+            data-scroll-pause-id="#pt2-hero-content-section"><svg viewBox="0 0 24 24"class="hero__scroll-down" id="arrow-down" title="scroll down for more" xmlns="http://www.w3.org/2000/svg" role="button" contenteditable="false">
             <path d="M11 4h2v12l5.5-5.5 1.42 1.42L12 19.84l-7.92-7.92L5.5 10.5 11 16z">
             </path>
-        </svg>
+        </svg></a>
     </div>
 </div>
 
@@ -72,16 +67,16 @@
 {% block content %}
 
 <section data-md-color-scheme="slate" class="hero-content-section" id="pt2-hero-content-section">
-    <h1 class="hero-content-section .header" id="pt2-hero-content-section-header">get<br />
-        license terms<br /><span
-            style="text-decoration:underline var(--emerald) .1em;">anyone</span><br />can<br />understand
-    </h1>
+    <div id="pt2-hero-content-section-header">
+    <h1 class="hero-content-section header-mid line hero-content-emphasis fade-in">use a<br/>license<br/>that<br/>
+    people can<br/><span class="special-ul fade-in underline">actually understand</span></h1>
+    </div>
 </section>
 <div id="pt2-3-buffer"></div>
 <section class="hero-content-section" id="pt3-hero-content-section">
-    <h1 class="hero-content-section .header" id="pt3-hero-content-section-header">welcome to the
-        plain language revolution</h1>
-    <div class="hlt1" id="pt3-hero-content-section-hlt1">
+    <h1 class="hero-content-section header fade-in" id="pt3-hero-content-section-header">welcome to the
+        plain language <span class="special-highlight fade-in">revolution</span></h1>
+    <div class="hlt1 fade-in" id="pt3-hero-content-section-hlt1">
         <div class="icn1" id="pt3-hero-content-section-icn1">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200" class="hlticon">
                 <path fill="#e4c580"
@@ -97,7 +92,7 @@
                 source license, and now anyone can quickly read and understand it.</p>
         </div>
     </div>
-    <div class="hlt2" id="pt3-hero-content-section-hlt2">
+    <div class="hlt2 fade-in" id="pt3-hero-content-section-hlt2">
         <div class="icn2" id="pt3-hero-content-section-icn2">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200" class="hlticon">
                 <path
@@ -113,14 +108,14 @@
             <p class="hlt-paragraph">We love open source, but </p>
         </div>
     </div>
-    <div class="hlt3" id="pt3-hero-content-section-hlt3">
+    <div class="hlt3 fade-in" id="pt3-hero-content-section-hlt3">
         <div class="icn3" id="pt3-hero-content-section-icn3"></div>
         <div class="hlb3" id="pt3-hero-content-section-hlb3">
             <h2 class="hlt-header">In Your Format</h2>
             <p class="hlt-paragraph">Placeholder</p>
         </div>
     </div>
-    <div class="hlt4" id="pt3-hero-content-section-hlt4">
+    <div class="hlt4 fade-in" id="pt3-hero-content-section-hlt4">
         <div class="icn4" id="pt3-hero-content-section-icn4">
 
             <svg class="hlticon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200">
@@ -133,7 +128,7 @@
             <p class="hlt-paragraph">Placeholder</p>
         </div>
     </div>
-    <div class="hlt5" id="pt3-hero-content-section-hlt5">
+    <div class="hlt5 fade-in" id="pt3-hero-content-section-hlt5">
         <div class="icn5" id="pt3-hero-content-section-icn5">
             <svg class="hlticon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200">
                 <path
@@ -147,7 +142,7 @@
             <p class="hlt-paragraph">Placeholder</p>
         </div>
     </div>
-    <div class="hlt6" id="pt3-hero-content-section-hlt6">
+    <div class="hlt6 fade-in" id="pt3-hero-content-section-hlt6">
         <div class="icn6" id="pt3-hero-content-section-icn6"><svg class="hlticon"
                 xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200">
                 <path

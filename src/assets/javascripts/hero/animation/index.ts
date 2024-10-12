@@ -1,5 +1,6 @@
 import { gsap } from "gsap"
 import { ScrollToPlugin } from "gsap/ScrollToPlugin"
+import { ScrollTrigger } from "gsap/ScrollTrigger"
 import {
   BehaviorSubject,
   Observable,
@@ -19,16 +20,14 @@ import {
 import { logger } from "~/log"
 
 gsap.registerPlugin(ScrollToPlugin)
+gsap.registerPlugin(ScrollTrigger)
+
 const subscriptions: Subscription[] = []
 
 const easterEgg = document.getElementById("the-egg")
 
 const infoBox = document.getElementById("egg-box") as HTMLDialogElement
-const heroElement = document.querySelector(".hero") as HTMLElement
-const children: string[] = []
-Array.from(heroElement.children).forEach(child => { children.push(child.id) })
-logger.info(`Hero element: ${heroElement.id}`)
-logger.info(`Hero children: ${children.join(", ")}`)
+const storedLocationState = history.state
 
 const { location$ } = window
 
@@ -46,7 +45,7 @@ const infoBoxVisibleSubject = new BehaviorSubject<boolean>(infoBoxIsVisible())
 const infoBoxVisible$ = infoBoxVisibleSubject.asObservable()
 
 /** Type representing user interaction events. */
-type InteractionEvent = MouseEvent | TouchEvent | KeyboardEvent
+export type InteractionEvent = MouseEvent | TouchEvent | KeyboardEvent
 
 /** Type representing an interaction handler function. */
 type InteractionHandler<T, R> = (event: Observable<T>) => Observable<R>
@@ -79,6 +78,7 @@ export function createInteractionObservable<R>(
 const hideOverlay = (): void => {
   if (infoBox) {
     infoBox.close()
+    infoBox.style.zIndex = "-1"
     infoBoxVisibleSubject.next(false)
   }
 }
@@ -86,6 +86,7 @@ const hideOverlay = (): void => {
 const showOverlay = (): void => {
   if (infoBox) {
     infoBox.showModal()
+    infoBox.style.zIndex = "1000"
     infoBoxVisibleSubject.next(true)
   }
 }
@@ -102,16 +103,21 @@ logger.info(`Prefers reduced motion: ${prefersReducedMotion}`)
 const getScrollTargets = (
   el: Element
 ): {
-  target: string
-  wayPoint: string
+  target: Element
+  wayPoint: Element
   wayPointPause: number
   duration: number
 } => {
-  const target = el.getAttribute("data-anchor-target")
-  if (!target) {
+  const targetData = el.getAttribute("data-anchor-target")
+  if (!targetData) {
     throw new Error("Target attribute not found")
   }
-  const wayPoint = el.getAttribute("data-scroll-pause-id") || target
+  const target = document.querySelector(targetData)
+  if (!target) {
+    throw new Error(`Target element ${targetData} not found within heroElement`)
+  }
+  const wayPointData = el.getAttribute("data-scroll-pause-id") || ""
+  const wayPoint = document.querySelector(wayPointData) || target
   const wayPointPause = parseFloat(el.getAttribute("data-scroll-pause-duration") || "0")
   const duration = parseFloat(el.getAttribute("data-scroll-duration") || "2")
   return { target, wayPoint, wayPointPause, duration }
@@ -124,75 +130,72 @@ const getScrollTargets = (
  */
 const smoothScroll$ = (el: Element): Observable<void> => {
   const { target, wayPoint, wayPointPause, duration } = getScrollTargets(el)
-  logger.info(`Setting scroll parameters: target: ${target}, wayPoint: ${wayPoint}, wayPointPause: ${wayPointPause}, duration: ${duration}`)
-
+  logger.info(`Setting scroll parameters: target: ${target.id}, wayPoint: ${wayPoint.id}, wayPointPause: ${wayPointPause}, duration: ${duration}`)
+  const targetElement = target as HTMLElement
+  const wayPointElement = wayPoint as HTMLElement
   if (prefersReducedMotion) {
-    const targetElement = heroElement.querySelector(target) as HTMLElement
-    if (targetElement) {
-      heroElement.scrollTop = targetElement.offsetTop
-    }
+    const anchorTarget = targetElement.offsetTop
+    document.body.scrollTo({ top: anchorTarget, behavior: "auto" })
     return of(void 0)
   }
 
   const tl = gsap.timeline()
-  const firstScrollDuration = duration * (2 / 5)
-  const secondScrollDuration = duration * (3 / 5)
-
-  const wayPointElement = heroElement.querySelector(wayPoint) as HTMLElement
-  const targetElement = heroElement.querySelector(target) as HTMLElement
+  let firstScrollDuration = duration * 0.4
+  let secondScrollDuration = duration * 0.6
+  const pause = wayPointPause || 0
 
   if (!targetElement) {
-    logger.error(`Target element ${target} not found within heroElement.`)
+    logger.error(`Target element ${target} not found within document.`)
     return of(void 0)
   }
-
-  const scrollPositions = {
-    wayPoint: wayPointElement ? wayPointElement.offsetTop : targetElement.offsetTop,
-    target: targetElement.offsetTop
+    const scrollPositions = {
+      wayPoint: wayPointElement ? wayPointElement.offsetTop : targetElement.offsetTop,
+      target: targetElement.offsetTop
+    }
+  if (scrollPositions && !(scrollPositions.wayPoint)) {
+    scrollPositions.wayPoint = scrollPositions.target
+    firstScrollDuration = duration
+    secondScrollDuration = 0
   }
-
-  tl.to(heroElement, {
+  tl.add(gsap.to(document.body, {
     duration: firstScrollDuration,
     scrollTo: { y: scrollPositions.wayPoint, autoKill: false },
     ease: "power3"
-  })
-
-  if (wayPointPause > 0) {
-    tl.addPause(`+=${wayPointPause}`)
   }
-
-  tl.to(heroElement, {
-    duration: secondScrollDuration,
-    scrollTo: { y: scrollPositions.target, autoKill: false },
-    ease: "power3"
-  })
-
+  ))
+  if (secondScrollDuration > 0) {
+    tl.add(gsap.to(document.body, {
+      duration: secondScrollDuration,
+      scrollTo: { y: scrollPositions.target, autoKill: false },
+      ease: "power3"
+    }
+    ), `+=${pause}`)
+  }
   tl.play()
 
-  logger.info(`Scrolling to ${target} with a total duration of ${duration} seconds`)
   return of(void 0)
 }
 
 /** Subscribes to all user interaction observables and handles the corresponding actions. */
 const allSubscriptions = (): void => {
   // Observable for easter egg interactions
-const eggFunction = (event$: Observable<InteractionEvent>): Observable<void> => {
-  return event$.pipe(
-    withLatestFrom(infoBoxVisible$),
-    filter(([_, isVisible]) => !isVisible), // Proceed only if the info box is not visible
-    tap(([ev]) => ev.preventDefault()),
-    tap(() => {
-      showOverlay()
-      logger.info("Easter egg triggered, overlay shown")
-    }),
-    map(() => void 0)
-  )
-}
+  const eggFunction = (event$: Observable<InteractionEvent>): Observable<void> => {
+    return event$.pipe(
+      withLatestFrom(infoBoxVisible$),
+      filter(([_, isVisible]) => !isVisible), // Proceed only if the info box is not visible
+      tap(([ev]) => ev.preventDefault()),
+      tap(() => {
+        showOverlay()
+        logger.info("Easter egg triggered, overlay shown")
+      }),
+      map(() => void 0)
+    )
+  }
 
-const eggInteraction$ = createInteractionObservable<void>(
-  easterEgg as Element,
-  eggFunction
-)
+  const eggInteraction$ = createInteractionObservable<void>(
+    easterEgg as Element,
+    eggFunction
+  )
 
   subscriptions.push(
     eggInteraction$.subscribe({
@@ -203,27 +206,25 @@ const eggInteraction$ = createInteractionObservable<void>(
   )
 
   // Observable for info box interactions (closing the overlay)
-const eggBoxCloseFunc = (
-  event$: Observable<InteractionEvent>
-): Observable<void> => {
-  return event$.pipe(
-    withLatestFrom(infoBoxVisible$),
-    filter(([_, isVisible]) => isVisible), // Only proceed if the info box is visible
-    filter(([ev]) => {
-      const target = ev.target as Element | null
-      const clickedOutsideInfoBox = !infoBox.contains(target)
-      const clickedCloseButton = target?.closest("#egg-box-close") !== undefined
-      const clickedEgg = target?.closest("#the-egg") !== undefined
-      return (clickedOutsideInfoBox && !clickedEgg) || clickedCloseButton
-    }),
-    tap(([ev]) => ev.preventDefault()),
-    tap(() => {
-      hideOverlay()
-      logger.info("Easter egg box closed")
-    }),
-    map(() => void 0)
-  )
-}
+  const eggBoxCloseFunc = (
+    event$: Observable<InteractionEvent>
+  ): Observable<void> => {
+    return event$.pipe(
+      withLatestFrom(infoBoxVisible$),
+      filter(([_, isVisible]) => isVisible), // Only proceed if the info box is visible
+      filter(([ev]) => {
+        const target = ev.target as Element | null
+        // eslint-disable-next-line no-null/no-null
+        return (!infoBox.contains(target) && !easterEgg?.contains(target)) || target?.closest("#egg-box-close") !== null
+      }),
+      tap(([ev]) => ev.preventDefault()),
+      tap(() => {
+        hideOverlay()
+        logger.info("Easter egg box closed")
+      }),
+      map(() => void 0)
+    )
+  }
 
   const leaveInfoBoxInteraction$ = createInteractionObservable<void>(
     document,
@@ -232,52 +233,52 @@ const eggBoxCloseFunc = (
 
   subscriptions.push(
     leaveInfoBoxInteraction$.subscribe({
-      next: () => {},
+      next: () => { },
       error: err => logger.error("Error in leaving info box:", err),
       complete: () => logger.info("Leave info box observable completed")
     })
   )
 
-  const primaryButton = document.querySelector(".hero-cta-button")
-  const arrowDown = document.querySelector(".hero__scroll-down")
+  const heroSelectors = Array.from(document.querySelectorAll(".hero-target-selector"))
 
   // Observable for hero button interactions
   const heroButtonFunc = (event$: Observable<InteractionEvent>): Observable<void> => {
     return event$.pipe(
       filter(ev => {
-        const target = ev.target as Element | null
-        return (
-          // eslint-disable-next-line no-null/no-null
-          target?.closest("#hero-primary-button") !== null ||
-          // eslint-disable-next-line no-null/no-null
-          target?.closest("#arrow-down") !== null
-        )
+        const target = ev.target as Element
+        return heroSelectors.some(selector => selector.contains(target))
       }),
-      tap(ev => { ev.preventDefault() }),
+      tap(ev => {
+        ev.preventDefault()
+        history.replaceState(storedLocationState, "", "/")
+      }),
       tap(ev => {
         logger.info(`Hero button interaction observed on ${ev.target}`)
         if (infoBoxIsVisible()) {
           hideOverlay()
         }
-        const target = ev.target as Element | null
-        if (target?.closest("#arrow-down")) {
-          smoothScroll$(arrowDown!).subscribe()
-        } else {
-          smoothScroll$(primaryButton!).subscribe()
+        const target = ev.target as Element
+        const targetedElement = heroSelectors.find(selector => selector.contains(target))
+        if (targetedElement) {
+          smoothScroll$(targetedElement).subscribe({
+            next: () => { },
+            error: err => logger.error("Error in smooth scroll:", err),
+            complete: () => logger.info("Smooth scroll observable completed")
+          })
         }
       }),
       map(() => void 0)
     )
   }
 
-const heroInteraction$ = createInteractionObservable<void>(
-  [primaryButton!, arrowDown!],
-  heroButtonFunc
-)
+  const heroInteraction$ = createInteractionObservable<void>(
+    heroSelectors,
+    heroButtonFunc
+  )
 
   subscriptions.push(
     heroInteraction$.subscribe({
-      next: () => {},
+      next: () => { heroInteraction$.subscribe() },
       error: err => logger.error("Error in hero button interaction:", err),
       complete: () => logger.info("Hero button interaction observable completed")
     })
@@ -298,11 +299,103 @@ const heroInteraction$ = createInteractionObservable<void>(
 
   subscriptions.push(
     pathObservable$.subscribe({
-      next: () => {},
+      next: () => { },
       error: err => logger.error("Error in path change:", err),
       complete: () => logger.info("Path observable completed")
     })
   )
+if (!prefersReducedMotion) {
+
+  const setupAnimation = (selector: string, properties: gsap.TweenVars) => {
+    gsap.set(selector, properties)
+  }
+
+  const createTimeline = (selector: string, animations: gsap.TweenVars[], scrollTrigger: ScrollTrigger.Vars) => {
+    const timeline = gsap.timeline(scrollTrigger)
+    animations.forEach(animation => timeline.add(gsap.to(selector, animation)))
+    return timeline
+  }
+
+  const createFadeInAnimation = (): Observable<ScrollTrigger>[] => {
+    const fadeIns = (): ScrollTrigger[] => {
+      return ScrollTrigger.batch(".fade-in", {
+        start: "top bottom",
+        end: "top top",
+        interval: 0.15,
+        batchMax: 2,
+        onEnter: (batch: Element[]) => {
+          gsap.to(batch, { opacity: 1, y: 0, duration: 0.3, ease: "power2.out", stagger: { each: 0.15, grid: "auto" }, overwrite: true })
+        },
+        onLeave: (batch: Element[]) => { gsap.set(batch, { opacity: 0, y: -100, overwrite: true }) },
+        onEnterBack: (batch: Element[]) => { gsap.to(batch, { opacity: 1, y: 0, duration: 0.3, ease: "power2.out", stagger: 0.15, overwrite: true }) },
+        onLeaveBack: (batch: Element[]) => { gsap.set(batch, { opacity: 0, y: 100, overwrite: true }) }
+      })
+    }
+  setupAnimation(".fade-in", { opacity: 0, y: 100 })
+  ScrollTrigger.addEventListener("refreshInit", () => {
+    gsap.set(".fade-in", { y: 0, opacity: 1 })
+  }
+  )
+    return fadeIns().map(fadeIn => of(fadeIn))
+  }
+  subscriptions.push(merge(...createFadeInAnimation()).subscribe())
+
+  const createCtaAnimation = () => {
+    setupAnimation(".cta-ul", { scaleX: 0, transformOrigin: "left", height: "1.8em", width: "0" })
+    const ctaTimeline = createTimeline(".cta-ul", [
+      { scaleX: 1, transformOrigin: "left", duration: 0.25, height: "1.3em", width: "50%" },
+      { scaleX: 1, duration: 0.3, ease: "power2.out", height: "0.8em", width: "100%" }
+    ], {
+      scrub: 0.2,
+      start: "top 5vh",
+      trigger: ".hero__parallax",
+      onEnter: () => { ctaTimeline.play() },
+      scroller: ".hero__parallax"
+    })
+  }
+  subscriptions.push(of(createCtaAnimation).subscribe())
+
+  const createEmphasisAnimation = () => {
+    setupAnimation(".special-ul", { scaleX: 0, transformOrigin: "left", height: "1.8em", width: "0" })
+    const emphasisTimeline = createTimeline(".special-ul", [
+      { scaleX: 1, transformOrigin: "left", duration: 0.25, height: "1.3em", width: "50%" },
+      { scaleX: 1, duration: 0.3, ease: "power2.out", height: "0.8em", width: "100%" }
+    ],
+    {
+      scrub: 0.2,
+      start: "top 140vh",
+      trigger: "#pt2-hero-section-content",
+      onEnter: () => { emphasisTimeline.play() },
+      scroller: document.body
+      }
+    )
+  }
+  subscriptions.push(of(createEmphasisAnimation).subscribe())
+
+  const createSpecialHighlight = () => {
+    setupAnimation(".special-highlight", { textShadow: "0 0 0 transparent", x: 0 })
+    const specialHighlight = createTimeline(".special-highlight", [
+      { textShadow: "0.02em 0.02em 0 var(--turkey-red)", x: 20, duration: 0.25 },
+      { textShadow: "0.04em 0.04em 0.06em var(--turkey-red)", x: 50, duration: 0.2, ease: "power2.out" }
+    ],
+      {
+      start: "top 240vh",
+      trigger: "#pt3-hero-section-content",
+      scroller: document.body,
+      onEnter: () => { specialHighlight.play() }
+    })
+  }
+  subscriptions.push(of(createSpecialHighlight).subscribe())
+}
+  subscriptions.push(location$.pipe(
+    filter((location: URL) => location.pathname === "/" || location.pathname === "/index.html"),
+    distinctUntilKeyChanged("hash"),
+    filter((location: URL) =>
+    location.hash === "#" || location.hash === "" || location.hash === "#pt3-hero-section-content"
+    ),
+  ).subscribe(() => {
+  history.replaceState(storedLocationState, "", "/")
+}))
 }
 
 allSubscriptions()

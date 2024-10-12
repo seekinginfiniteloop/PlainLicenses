@@ -1,12 +1,12 @@
 {
   "metaOutput": {
-    "docs/assets/javascripts/index.OAILEXLX.js.map": {
-      "bytes": 1468362,
+    "docs/assets/javascripts/index.62CEJ7U4.js.map": {
+      "bytes": 1695583,
       "inputs": [],
       "exports": []
     },
-    "docs/assets/javascripts/index.OAILEXLX.js": {
-      "bytes": 200378,
+    "docs/assets/javascripts/index.62CEJ7U4.js": {
+      "bytes": 246721,
       "inputs": [
         "node_modules/focus-visible/dist/focus-visible.js",
         "node_modules/escape-html/index.js",
@@ -113,6 +113,7 @@
         "node_modules/rxjs/dist/esm5/internal/operators/mapTo.js",
         "node_modules/rxjs/dist/esm5/internal/operators/delayWhen.js",
         "node_modules/rxjs/dist/esm5/internal/operators/delay.js",
+        "node_modules/rxjs/dist/esm5/internal/operators/distinct.js",
         "node_modules/rxjs/dist/esm5/internal/operators/distinctUntilChanged.js",
         "node_modules/rxjs/dist/esm5/internal/operators/distinctUntilKeyChanged.js",
         "node_modules/rxjs/dist/esm5/internal/operators/throwIfEmpty.js",
@@ -245,6 +246,8 @@
         "node_modules/gsap/CSSPlugin.js",
         "node_modules/gsap/index.js",
         "node_modules/gsap/ScrollToPlugin.js",
+        "node_modules/gsap/Observer.js",
+        "node_modules/gsap/ScrollTrigger.js",
         "node_modules/rxjs/dist/esm5/operators/index.js",
         "src/assets/javascripts/log/index.ts",
         "src/assets/javascripts/hero/animation/index.ts",
@@ -297,6 +300,20 @@
       ],
       "exports": []
     },
+    "docs/assets/fonts/raleway.FJCY4DUZ.woff2": {
+      "bytes": 6656,
+      "inputs": [
+        "src/assets/fonts/raleway.woff2"
+      ],
+      "exports": []
+    },
+    "docs/assets/fonts/raleway.26K4BVKC.woff": {
+      "bytes": 7968,
+      "inputs": [
+        "src/assets/fonts/raleway.woff"
+      ],
+      "exports": []
+    },
     "docs/assets/fonts/bangers-regular.BIV5PPSH.woff2": {
       "bytes": 10856,
       "inputs": [
@@ -311,13 +328,13 @@
       ],
       "exports": []
     },
-    "docs/assets/stylesheets/bundle.V3LLSFJB.css.map": {
-      "bytes": 327032,
+    "docs/assets/stylesheets/bundle.DU7JQ27A.css.map": {
+      "bytes": 329399,
       "inputs": [],
       "exports": []
     },
-    "docs/assets/stylesheets/bundle.V3LLSFJB.css": {
-      "bytes": 178552,
+    "docs/assets/stylesheets/bundle.DU7JQ27A.css": {
+      "bytes": 179889,
       "inputs": [
         "external/mkdocs-material/material/templates/assets/stylesheets/palette.06af60db.min.css",
         "external/mkdocs-material/material/templates/assets/stylesheets/main.8c3ca2c6.min.css",

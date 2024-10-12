@@ -89,4 +89,16 @@ declare global {
     progress$: Subject<number> // progress indicator
     component$: Observable<CustomEvent>
   }
+
+  type T = Type["T"]
+  type R = Type["R"]
+
+  interface TransformationSettings {
+    transition?: string // The CSS transition property for smooth changes.
+    transitionBehavior?: string // The behavior of the transition (e.g., ease, linear).
+    transform?: string // The CSS transform property to apply transformations.
+    transformOrigin?: string // The origin point for the transformation.
+    transformStyle?: string // The style of the transformation (e.g., flat, preserve-3d).
+  }
+
 }

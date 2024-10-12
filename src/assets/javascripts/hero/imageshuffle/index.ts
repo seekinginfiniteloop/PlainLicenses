@@ -278,7 +278,7 @@ const orientation$ = createOrientationObservable(portraitMediaQuery).pipe(
 
 const locationChange$ = location$.pipe(
   distinctUntilChanged((a: URL, b: URL) => a.pathname === b.pathname),
-  filter(loc => loc.pathname === "/" || loc.pathname === "/index.html"),
+  filter(loc => loc.pathname === "/" || loc.pathname === "/index.html" || loc.pathname === "/#"),
   tap(() => stopImageCycling()),
   catchError(error => {
       logger.error("Error in location change observable:", error)

@@ -1,55 +1,28 @@
-import { Observable, OperatorFunction, Subscription, fromEvent, fromEventPattern, merge } from "rxjs"
+import { Observable, Subscription, fromEventPattern, merge } from "rxjs"
 import { filter, map, switchMap } from "rxjs/operators"
 
 import { logger } from "~/log"
+import { InteractionEvent, createInteractionObservable } from "~/hero/animation"
 
 const subscriptions = Array<Subscription>()
 
 const { document$, viewport$ } = window
 
 const hoverTabs = document.querySelectorAll<HTMLAnchorElement>(".md-typeset .tabbed-labels>label>[href]:first-child:hover a")
-type InteractionEvent = MouseEvent | TouchEvent | KeyboardEvent
 
-/**
- * Creates an observable that merges mouse click, touch end, and keydown events.
- * It accepts an array of operator functions to apply to the observable chain.
- * This function allows us to listen for any type of selection-related event.
- * @function
- * @template T - The type of events emitted by the observable, constrained to InteractionEvent.
- * @param  operators - An array of operator functions to apply to the observable, transforming the emitted events.
- * @returns An observable that emits interaction events, potentially transformed by the provided operators.
- */
-function createInteractionObservable<T extends InteractionEvent>(
-  ...operators: OperatorFunction<T, T>[]
-): Observable<T> {
-  const mergedEvents$: Observable<InteractionEvent> = document$.pipe(
-    switchMap(doc =>
-      merge(
-        fromEvent<InteractionEvent>(doc, "click"),
-        fromEvent<InteractionEvent>(doc, "touchend"),
-        fromEvent<InteractionEvent>(doc, "keydown")
-      )
-    )
+const triangleWatchElement = document.querySelector(".expanding-section")
+
+const triangleFunction = (event$: Observable<InteractionEvent>): Observable<void> => {
+  return event$.pipe(
+    map((event: InteractionEvent) => {
+      const target = event.target as HTMLElement
+      return target.closest(".section-header") as HTMLElement || target.closest(".triangle") as HTMLElement
+    }),
+    // eslint-disable-next-line no-null/no-null
+    filter((target: HTMLElement | null) => target !== null),
+    map(() => void 0)
   )
-
-  if (operators.length === 0) {
-    return mergedEvents$ as Observable<T>
-  } else {
-    return operators.reduce((prev$: Observable<T>, op: OperatorFunction<T, T>): Observable<T> => {
-      return prev$.pipe(op)
-    }, mergedEvents$ as Observable<T>)
   }
-}
-// observable for triangle icon and header text interaction (exoand/collapse) for license 'how to' sections
-const triangleInteraction$: Observable<InteractionEvent> = createInteractionObservable(
-  filter((event: InteractionEvent): boolean => {
-    const target = (event).target as HTMLElement | undefined
-    return (
-      target?.closest(".triangle") !== undefined ||
-      target?.closest(".header-text") !== undefined
-    )
-  })
-)
 
 /**
  * Handles the toggle action for the "how to use" license information"
@@ -174,14 +147,21 @@ const headerClicks$: Observable<MouseEvent> = fromEventPattern<MouseEvent>(
  * Subscribes to all observables.
  */
 export const subscribeToAll = (): void => {
-  subscriptions.push(triangleInteraction$.subscribe({
-    next: () => {
-      toggleSection()
-    },
-    error: err => {
-      logger.error("Error in triangleInteraction$ observable:", err)
-    }
-  }))
+  if (triangleWatchElement) {
+  // observable for triangle icon and header text interaction (exoand/collapse) for license 'how to' sections
+    const triangleInteraction$ = createInteractionObservable(triangleWatchElement, triangleFunction)
+
+    subscriptions.push(
+      triangleInteraction$.subscribe({
+        next: () => {
+          toggleSection()
+        },
+        error: err => {
+          logger.error("Error in triangleInteraction$ observable:", err)
+        }
+      })
+    )
+  }
   subscriptions.push(
     hoverEffect$.subscribe({
       next: ({ tab, icon, isOver }) => {

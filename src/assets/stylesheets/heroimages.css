@@ -11,7 +11,7 @@
   --object-position: center bottom;
   --translate-x: 0%;
   --translate-y: 0%;
-  position: fixed;
+  position: relative;
 
   top: 0;
   z-index: -5;
@@ -22,10 +22,10 @@
   justify-self: start;
   min-width: 100%;
   padding: 0;
-  max-height: 140vh;
+  max-height: calc(var(--vh) * 1.4);
+  min-height: 40vh;
   margin-top: 0;
   overflow-x: hidden;
-  overflow-y: hidden;
   object-fit: var(--object-fit);
   object-position: center bottom;
   background: var(--gunmetal);
@@ -38,12 +38,14 @@
 @keyframes glow {
   from {
     text-shadow:
+      0.01em 0.01em 0 var(--oxford-blue),
       0 0 0.16em var(--emerald),
       0.03em 0.03em 0 var(--ecru);
   }
 
   to {
     text-shadow:
+      0.01em 0.01em 0 var(--oxford-blue),
       0 0 0.25em var(--emerald),
       0 0 0.27em var(--emerald),
       0.04em 0.04em 0 var(--ecru);
@@ -53,7 +55,7 @@
 #CTA_header {
   margin: 0.5rem;
   font-family: Bangers, Impact, Haettenschweiler, Charcoal, "Arial Narrow Bold", Gadget, sans-serif;
-  font-size: clamp(4em, 8em, 12em);
+  font-size: clamp(3em, 8em, 13em);
   color: var(--h1-color);
   text-align: left;
   text-transform: uppercase;
@@ -62,20 +64,40 @@
   animation: glow 4000ms ease-in-out infinite alternate;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  position: relative;
 }
 
 #CTA_paragraph {
   margin: 0 1rem 1rem 1rem;
   font-family: Bangers, Impact, Haettenschweiler, Charcoal, "Arial Narrow Bold", Gadget, sans-serif;
-  font-size: clamp(1.5em, 3em, 4em);
+  font-size: clamp(1em, 3em, 5em);
   color: var(--p-color);
   text-align: left;
-  text-shadow: 0.05em 0.05em 0 var(--turkey-red);
+  text-shadow:
+  0.01em 0.01em 0 var(--oxford-blue),
+  0.05em 0.05em 0 var(--turkey-red);
   text-transform: uppercase;
   font-display: swap;
   object-position: bottom left;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  position: relative;
+  display: inline-block;
+}
+
+.cta-ul {
+  display: inline-block;
+  position: relative;
+}
+
+.special-ul {
+  display: inline-block;
+  position: relative;
+}
+
+.special-highlight {
+  display: inline-block;
+  position: relative;
 }
 
 .hero-parallax__image--anime {
@@ -214,17 +236,18 @@
   transform: translate(var(--translate-x), var(--translate-y));}
 
 .fade-overlay {
-  position: absolute;
+  position: relative;
+  object-fit: cover;
   z-index: -4;
   top: 2rem;
   left: 0;
-  width: 100%;
-  height: 140vh;
+  width: var(--vw);
+  height: calc(var(--vh) * 1.4);
   pointer-events: none; /* So that it doesn't interfere with image clicks */
   background: linear-gradient(
     to bottom,
-    rgba(var(--gunmetal-adj), 0) 100vh,
-    rgba(var(--gunmetal-adj), 0.3) 120vh,
-    rgba(var(--gunmetal-adj), 1) 140vh
+    rgba(var(--gunmetal-adj), 0) calc(var(--vh) * 0.8),
+    rgba(var(--gunmetal-adj), 0.3) var(--vh),
+    rgba(var(--gunmetal-adj), 1) calc(var(--vh) * 1.4)
   );
 }

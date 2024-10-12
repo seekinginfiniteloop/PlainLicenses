@@ -29,3 +29,16 @@
     url("../fonts/sourcecodepro-regular.woff") format("woff");
   /* stylelint-disable-next-line @stylistic/max-line-length */
 }
+
+@font-face {
+  font-family: "Raleway", Montserrat, "Noto Sans", "Open Sans", Lato, Helvetica, Arial, system-ui, sans-serif;
+  src:
+    local("Raleway"),
+    local("raleway-regular"),
+    local("raleway"),
+    local("raleway_v"),
+    local("raleway-regular"),
+    local("raleway_v"),
+    url("../fonts/raleway.woff2") format("woff2"),
+    url("../fonts/raleway.woff") format("woff");
+}
