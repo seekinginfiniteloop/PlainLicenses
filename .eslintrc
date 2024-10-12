@@ -253,7 +253,7 @@
     "eslint-comments/no-use": [
       "warn",
       {
-        "allow": ["eslint-disable-line", "eslint-disable-next-line"]
+        "allow": ["eslint-disable-line", "eslint-disable-next-line", "eslint-disable"]
       }
     ],
 

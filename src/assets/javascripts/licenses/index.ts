@@ -1,3 +1,11 @@
+/**
+ * @license Plain Unlicense (Public Domain)
+ * @copyright No rights reserved. Created by and for Plain License www.plainlicense.org
+ * @module This file contains the JavaScript code for the license pages.
+ * It handles the following interactions:
+ * - Hover effect on tabs and icons
+ * - Click event on section headers and 'how-to' to expand/collapse the content
+ */
 import { Observable, Subscription, fromEventPattern, merge } from "rxjs"
 import { filter, map, switchMap } from "rxjs/operators"
 

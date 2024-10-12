@@ -1,3 +1,12 @@
+/**
+ * @license Plain Unlicense (Public Domain)
+ * @copyright No rights reserved. Created by and for Plain License www.plainlicense.org
+ * @module Hero landing page animations and interactions, including:
+ * - Easter egg infobox overlay
+ * - Hero button interactions and smooth scrolling
+ * - Path change handling
+ * - Scroll triggered animations
+ */
 import { gsap } from "gsap"
 import { ScrollToPlugin } from "gsap/ScrollToPlugin"
 import { ScrollTrigger } from "gsap/ScrollTrigger"

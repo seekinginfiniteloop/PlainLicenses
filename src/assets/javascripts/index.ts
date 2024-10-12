@@ -1,3 +1,8 @@
+/**
+ * @license Plain Unlicense (Public Domain)
+ * @copyright No rights reserved. Created by and for Plain License www.plainlicense.org
+ * @module Main entry point for the JavaScript bundle.
+ */
 import "@/bundle" // we import mkdocs-material's scripts as a side effect
 import "~/hero"
 
@@ -41,7 +46,7 @@ document$.subscribe({
         cacheAssets("fonts", fontAssets as NodeListOf<HTMLElement>))
       )
     ).subscribe({
-      next: () => logger.info("Asset cached successfully"),
+      next: () => logger.info("Assets cached successfully"),
       error: (err: Error) => logger.error("Error caching asset:", err),
       complete: () => logger.info("All assets cached")
     })

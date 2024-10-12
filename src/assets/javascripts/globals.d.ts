@@ -1,3 +1,10 @@
+/**
+ * @license Plain Unlicense (Public Domain)
+ * @copyright No rights reserved. Created by and for Plain License www.plainlicense.
+ * org. Some interfaces are from mkdocs-material (c)2016-2024 Martin Donath, and may be
+ * subject to the MIT license.
+ * @module Global type definitions, not every type is cited but they are here for reference
+ */
 import { Observable, Subject } from "rxjs"
 
 declare global {
