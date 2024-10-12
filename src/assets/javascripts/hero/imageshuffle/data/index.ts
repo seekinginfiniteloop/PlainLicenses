@@ -24,17 +24,6 @@ function replaceDocs(src: string): string {
 
 const rawHeroImages: HeroImage[] = [
   {
-    imageName: "abstract",
-    parent: "docs/assets/images/hero/abstract",
-    widths: {
-      1280: "docs/assets/images/hero/abstract/abstract_1280.92bb4d97.avif",
-      1920: "docs/assets/images/hero/abstract/abstract_1920.7475cf5a.avif",
-      2560: "docs/assets/images/hero/abstract/abstract_2560.774883ee.avif",
-      3840: "docs/assets/images/hero/abstract/abstract_3840.f45e7c84.avif"
-    },
-    srcset: "docs/assets/images/hero/abstract/abstract_1280.92bb4d97.avif 1280w, docs/assets/images/hero/abstract/abstract_1920.7475cf5a.avif 1920w, docs/assets/images/hero/abstract/abstract_2560.774883ee.avif 2560w, docs/assets/images/hero/abstract/abstract_3840.f45e7c84.avif 3840w"
-  },
-  {
     imageName: "anime",
     parent: "docs/assets/images/hero/anime",
     widths: {

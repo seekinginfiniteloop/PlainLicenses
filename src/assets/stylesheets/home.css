@@ -210,7 +210,7 @@ header.md-header--shadow {
 svg#arrow-down {
   position: absolute;
   top: calc((var(--vh) * 0.9));
-  left: calc((var(--vw) * 0.4));
+  left: calc((var(--vw) * 0.5));
   width: 1.5rem;
   height: 1.5rem;
   overflow: hidden;
