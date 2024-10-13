@@ -40,8 +40,10 @@ def on_page_context(
     meta = page.meta
     if "original_name" not in meta:
         return context
-    if meta["original_name"].strip().lower() == "unlicense":
-        SITE_LICENSE_LOGGER.debug("found unlicense")
+    if (original_name := meta["original_name"].strip().lower()) and (
+        "unlicense" in original_name or original_name == "unlicense"
+    ):
+        SITE_LICENSE_LOGGER.info("found unlicense")
         SITE_LICENSE_LOGGER.debug(f"PATH: {Path.cwd()}")
         license = SiteLicense(context, page)
         license.check_for_updates()
@@ -51,9 +53,8 @@ def on_page_context(
 
 class SiteLicense:
     """
-    Represents the license information for a site, including its text and metadata.
-    This class is responsible for creating a structured representation of the license,
-    wrapping text for display, and checking for updates to the license file.
+    Represents the license information for the site, the license's text and metadata.
+    Creates a structured representation of the license, including its title, text, interpretation, and version.
 
     Args:
         context (TemplateContext): The current template context.
@@ -100,10 +101,10 @@ class SiteLicense:
         self.version = page.meta.get("plain_version", "").strip()
         self.version_text = f"Plain Version: {self.version}"
         self.original_url = page.meta.get("original_url", "").strip()
+        self._preamble = self.preamble
+        self.full_text = f"{self._preamble}\n\n{self.title}\n\n{self.version_text}\n\n{self.text}\n\n{self.interpretation_section}\n\nOfficial Unlicense: [Unlicense.org]({self.original_url})"
 
-        self.full_text = f"{self.title}\n\n{self.version_text}\n\n{self.text}\n\n{self.interpretation_section}\n\nOfficial Unlicense: [Unlicense.org]({self.original_url})"
-
-        SITE_LICENSE_LOGGER.debug(f"full_text: {self.full_text}")
+        SITE_LICENSE_LOGGER.debug(f"license full text: {self.full_text}")
 
     def wrap_text(self, text: str) -> str:
         """
@@ -146,6 +147,13 @@ class SiteLicense:
     def __str__(self) -> str:
         """It's... a string!"""
         return self.full_text
+
+    @property
+    def preamble(self) -> str:
+        """
+        Returns the preamble for the license, which is a comment block indicating the license's status.
+        """
+        return """<!---\nAll original content on plainlicense.org is in the public domain.\nSome content may be subject to other licenses.\n We try to make that clear where it happens.\n-->"""
 
     def check_for_updates(self) -> None:
         """

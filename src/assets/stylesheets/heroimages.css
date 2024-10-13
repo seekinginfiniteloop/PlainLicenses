@@ -1,7 +1,4 @@
 /* Default settings */
-:root {
-  --white: #ffffff;
-}
 
 .hero-parallax__image {
   --scale: 1.1;
@@ -20,15 +17,14 @@
   grid-column-start: 1;
   place-self: start start;
   min-width: 100%;
-  min-height: calc(var(--vh) * 0.3);
-  max-height: calc(var(--vh) * 1.4);
-  padding: 0;
-  margin-top: 0;
+  min-height: calc((var(--vh) * 0.3) - var(--header-height));
+  max-height: calc((var(--vh) * 1.4) - var(--header-height));
+  padding-bottom: 1rem;
+  margin-bottom: 0.1rem;
   overflow: hidden visible;
   object-fit: var(--object-fit);
   object-position: center bottom;
   background: var(--gunmetal);
-  /* stylelint-disable-next-line @stylistic/max-line-length */
   scale: var(--scale);
   perspective: var(--perspective);
   perspective-origin: center bottom;
@@ -241,6 +237,7 @@
 .hero-parallax__layer .hero-parallax__image:first-child {
   align-content: flex-start;
   align-self: flex-start;
+  overflow: hidden visible;
   opacity: 1;
   transition:
     transform 500ms ease, scale 500ms ease, translate 500ms ease, opacity /
@@ -252,16 +249,16 @@
   position: relative;
   top: 2rem;
   left: 0;
-  z-index: -4;
+  z-index: 5;
   width: var(--vw);
-  height: calc(var(--vh) * 1.4);
+  height: calc((var(--vh) * 1.4) - var(--header-height));
   pointer-events: none; /* So that it doesn't interfere with image clicks */
   object-fit: cover;
   background:
     linear-gradient(
       to bottom,
-      rgba(var(--gunmetal-adj), 0) calc(var(--vh) * 0.8),
-      rgba(var(--gunmetal-adj), 0.3) var(--vh),
-      rgba(var(--gunmetal-adj), 1) calc(var(--vh) * 1.4)
+      rgba(var(--gunmetal-adj), 0) calc((var(--vh)) * 0.8) - var(--header-height),
+      rgba(var(--gunmetal-adj), 0.3) calc(var(--vh) - var(--header-height)),
+      rgba(var(--gunmetal-adj), 1) calc((var(--vh) * 1.4) - var(--header-height))
     );
 }

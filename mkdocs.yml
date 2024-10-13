@@ -274,7 +274,7 @@ extra:
       can-change: >
         Change freely: You can change any work that uses this {{ license_type }} however you want.
       can-revoke: >
-        Taksies-backsies: You can revoke this license from any work that uses it at any time (if you hold the copyright).
+        Taksies-backsies: If you hold the copyright, you can revoke this license from any work that uses it at any time.
       relicense: >
         Relicense: You can change the {{ license_type }} to a different {{ license_type }} if you want. You may need to follow certain rules, like giving credit to the original author.
       share-alike (strict): >

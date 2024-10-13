@@ -9,11 +9,12 @@
  */
 import { gsap } from "gsap"
 import { ScrollToPlugin } from "gsap/ScrollToPlugin"
-import { ScrollTrigger } from "gsap/ScrollTrigger"
+import _ScrollTrigger, { ScrollTrigger } from "gsap/ScrollTrigger"
 import {
   BehaviorSubject,
   Observable,
   Subscription,
+  concat,
   fromEvent,
   merge,
   of
@@ -326,28 +327,35 @@ if (!prefersReducedMotion) {
   }
 
   const createFadeInAnimation = (): Observable<ScrollTrigger>[] => {
-    const fadeIns = (): ScrollTrigger[] => {
-      return ScrollTrigger.batch(".fade-in", {
+    const makeScrollBatch = (selector: string) => {
+      const batch: Observable<ScrollTrigger>[] = []
+      ScrollTrigger.batch(selector, {
         start: "top bottom",
         end: "top top",
         interval: 0.15,
         batchMax: 2,
-        onEnter: (batch: Element[]) => {
-          gsap.to(batch, { opacity: 1, y: 0, duration: 0.3, ease: "power2.out", stagger: { each: 0.15, grid: "auto" }, overwrite: true })
+        onEnter: (b: Element[]) => {
+          gsap.to(b, { opacity: 1, y: 0, duration: 0.3, ease: "power2.out", stagger: { each: 0.15, grid: "auto" }, overwrite: true })
         },
-        onLeave: (batch: Element[]) => { gsap.set(batch, { opacity: 0, y: -100, overwrite: true }) },
-        onEnterBack: (batch: Element[]) => { gsap.to(batch, { opacity: 1, y: 0, duration: 0.3, ease: "power2.out", stagger: 0.15, overwrite: true }) },
-        onLeaveBack: (batch: Element[]) => { gsap.set(batch, { opacity: 0, y: 100, overwrite: true }) }
-      })
+        onLeave: (b: Element[]) => { gsap.set(b, { opacity: 0, y: -100, overwrite: true }) },
+        onEnterBack: (b: Element[]) => { gsap.to(b, { opacity: 1, y: 0, duration: 0.3, ease: "power2.out", stagger: 0.15, overwrite: true }) },
+        onLeaveBack: (b: Element[]) => { gsap.set(b, { opacity: 0, y: 100, overwrite: true }) }
+      }).forEach((trigger: ScrollTrigger) => { batch.push(of(trigger)) })
+      return batch
     }
+  const fadeIns = (): Observable<ScrollTrigger>[] => {
+    return [...makeScrollBatch(".fade-in"), ...makeScrollBatch(".fade-in2")
+    ]
+  }
   setupAnimation(".fade-in", { opacity: 0, y: 100 })
+  setupAnimation(".fade-in2", { opacity: 0, y: 100 })
   ScrollTrigger.addEventListener("refreshInit", () => {
     gsap.set(".fade-in", { y: 0, opacity: 1 })
+    gsap.set(".fade-in2", { y: 0, opacity: 1 })
+  })
+  return fadeIns()
   }
-  )
-    return fadeIns().map(fadeIn => of(fadeIn))
-  }
-  subscriptions.push(merge(...createFadeInAnimation()).subscribe())
+  subscriptions.push(concat(...createFadeInAnimation()).subscribe())
 
   const createCtaAnimation = () => {
     setupAnimation(".cta-ul", { scaleX: 0, transformOrigin: "left", height: "1.8em", width: "0" })

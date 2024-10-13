@@ -38,10 +38,7 @@ if not hasattr(__name__, "ASSEMBLER_LOGGER"):
 
 def clean_content(content: dict[str, Any]) -> dict[str, Any] | None:
     """
-    Cleans up the content by stripping whitespace from string values.
-    This function iterates through a dictionary and removes leading and trailing whitespace
-    from string entries, as well as from each string in lists, ensuring that the content is
-    formatted consistently.
+    Strips whitespace from string values in a dictionary, and from strings in lists.
 
     Args:
         content (dict[str, Any]): A dictionary containing content that may include strings and lists of strings.
@@ -67,9 +64,7 @@ def on_page_markdown(
     markdown_content: str, page: Page, config: MkDocsConfig, files: list[File]
 ) -> str:
     """
-    Processes the Markdown content of a page and appends additional license information.
-    This function updates the page's metadata with license attributes, renders a boilerplate template,
-    and combines it with the original Markdown content to produce the final output.
+    Pipeline function for processing license content and assembling the final Markdown content for the license page.
 
     Args:
         markdown_content (str): The original Markdown content of the page.
@@ -127,7 +122,8 @@ def load_json(path: Path) -> dict[str, Any]:
 
 class LicenseContent:
     """
-    Represents a license's content and metadata, including the license text and associated attributes. All license text processing happens here."""
+    Represents a license's content and metadata, including the license text and associated attributes. All license text processing happens here.
+    """
 
     def __init__(self, page: Page) -> None:
         """
@@ -151,7 +147,7 @@ class LicenseContent:
         self.markdown_license_text = self.process_mkdocs_to_markdown()
         self.plaintext_license_text = self.process_markdown_to_plaintext()
         self.plain_version = self.get_plain_version()
-        ASSEMBLER_LOGGER.info("Created License Content object for %s", self.meta["plain_name"])
+        ASSEMBLER_LOGGER.debug("Created License Content object for %s", self.meta["plain_name"])
 
     def process_markdown_to_plaintext(self) -> str:
         """
@@ -250,8 +246,7 @@ class LicenseContent:
         def replacement(match: Match[str]) -> str:
             """
             Generates a footnote reference and stores the corresponding annotation.
-            This function is used as a replacement callback for regular expression matches,
-            incrementing the footnote number and appending the matched annotation to the footnotes list.
+            We replace the annotation with a footnote reference and store the annotation in a list for later use.
 
             Args:
                 match (re.Match): The match object containing the annotation to be processed.

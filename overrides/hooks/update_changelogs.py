@@ -31,7 +31,6 @@ TAG_MAP = {
     "same-license--library": "share-alike (relaxed)",
 }
 
-
 def get_tags(frontmatter: dict[str, Any]) -> list[str] | None:
     """
     Retrieves a list of tags from the provided frontmatter data dictionary.

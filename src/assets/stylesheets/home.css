@@ -1,16 +1,12 @@
 /* stylelint-disable declaration-no-important */
 
-/**
+/*
 Main stylesheet for the home page
 
 These are basic customizations for the home page.
 */
 @media screen and (prefers-reduced-motion: reduce) {
   html {
-    scroll-behavior: auto;
-  }
-
-  #pt3-hero-content-section {
     scroll-behavior: auto;
   }
 }
@@ -29,51 +25,26 @@ These are basic customizations for the home page.
   unicode-range: U+000D, U+0020-002F, U+003A-0040, U+005B-007E, U+0131, U+0300, U+2013-2014, U+2018-2019, U+201C-201D, U+2026, U+25FC;
 }
 
-html.js-focus-visible {
-  z-index: auto;
-  background-color: transparent;
+header#header-target.md-header {
+  position: fixed;
+  top: 0;
+  left: 0;
 }
 
-html {
-  scroll-behavior: auto;
-}
-
-body {
-  padding: 0;
-  margin: 0;
-  overflow-x: hidden;
-  transform-style: preserve-3d;
-}
-
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
-}
-
-header#header-target.md-header,
-header.md-header,
-header.md-header--shadow {
-  z-index: 998 !important;
-  display: block;
-  pointer-events: visible;
-  object-fit: cover;
+#hero-tabs {
+  position: fixed;
+  top: var(--header-height);
+  left: 0;
+  z-index: 1000;
+  align-self: flex-start;
+  margin-top: calc(var(--nav-height) - 0.2rem);
   background: var(--zaffre);
-  transition: opacity 750ms;
-}
-
-.md_main {
-  z-index: auto;
-}
-
-.md-main__inner {
-  margin: 0;
 }
 
 /** Hero section */
 
 .hero {
-  position: absolute;
+  position: relative;
   z-index: 0;
   display: flex;
   flex-direction: column;
@@ -82,13 +53,13 @@ header.md-header--shadow {
   align-items: flex-start;
   align-self: flex-start;
   width: var(--vw);
-  height: calc(var(--vh) * 3.8);
+  height: calc((var(--vh) * 3.8) - var(--header-height));
   object-fit: cover;
   background: rgb(var(--gunmetal));
 }
 
 .hero__parallax {
-  position: absolute;
+  position: relative;
   z-index: 1;
   display: flex;
   flex-direction: column;
@@ -98,18 +69,20 @@ header.md-header--shadow {
   align-self: flex-start;
   order: -1;
   width: var(--vw);
-  min-height: calc(var(--vh) * 1.4);
+  min-height: calc((var(--vh) * 1.4) - var(--header-height));
+  padding-bottom: 3rem;
   margin-top: -2.4rem;
+  margin-bottom: 0.1rem;
   overflow: hidden visible;
   background: rgb(var(--gunmetal));
   background-repeat: no-repeat;
   background-attachment: fixed;
-  transform: translateZ(-1px);
+  transform: translateZ(-3px);
   perspective: 5rem;
 }
 
 .hero-parallax__layer {
-  position: absolute;
+  position: relative;
   inset: 2rem 0 0;
   z-index: 2;
   display: grid;
@@ -118,20 +91,15 @@ header.md-header--shadow {
   place-content: start center;
   order: -1;
   width: var(--vw);
-  height: var(--vh);
+  height: calc((var(--vh) - var(--header-height)));
   padding-bottom: 1px;
   overflow-y: visible;
   pointer-events: auto;
 }
 
-.md-content__inner {
-  z-index: auto;
-  padding: 5.2rem 0;
-  margin-bottom: 0;
-}
-
 .mdx-hero__teaser {
   position: absolute;
+  top: calc((var(--vh) * 0.6) - var(--header-height));
   z-index: 40;
   display: flex;
   flex-direction: column;
@@ -139,15 +107,15 @@ header.md-header--shadow {
   align-items: center;
   justify-content: center;
   width: 80%;
-  padding-bottom: 7rem;
+  padding-bottom: 1rem;
 }
 
 @media screen and (orientation: portrait) {
   .md-hero__teaser {
     position: absolute;
-    bottom: calc(var(--vh) * 0.05);
+    bottom: calc((var(--vh) - var(--header-height)) * 0.05);
     width: 90%;
-    padding-bottom: 3rem;
+    padding-bottom: 1rem;
   }
 }
 
@@ -202,8 +170,8 @@ header.md-header--shadow {
 
 svg#arrow-down {
   position: absolute;
-  top: calc((var(--vh) * 0.9));
-  left: calc((var(--vw) * 0.5));
+  bottom: max(calc((var(--vh) - var(--header-height)) * 0.07), calc(var(--vh) * 0.05));
+  left: calc(var(--vw) * 0.5);
   z-index: 200;
   width: 1.5rem;
   height: 1.5rem;
@@ -241,11 +209,11 @@ svg#arrow-down:hover {
 
 #pt2-hero-content-section {
   --dynamic-font-min: 14px;
-  --dynamic-font-mid: calc(var(--vh) / 7);
+  --dynamic-font-mid: calc((var(--vh) - var(--header-height)) / 6);
   --dynamic-font-max: 40em;
 
-  position: absolute;
-  top: calc(var(--vh) * 1.4);
+  position: relative;
+  left: 0;
   z-index: 10;
   display: flex;
   flex-flow: column nowrap;
@@ -253,9 +221,11 @@ svg#arrow-down:hover {
   place-self: center center;
   justify-content: space-evenly;
   width: var(--vw);
-  height: var(--vh);
+  height: calc(var(--vh) - var(--header-height));
   padding-top: 0.01rem;
   padding-bottom: 0.01rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
   overflow: contain;
   scroll-snap-type: y mandatory;
   scroll-snap-align: start;
@@ -284,7 +254,7 @@ h1.hero-content-section.header-mid {
 h1.hero-content-section.header-mid.line {
   display: inline-block;
   max-width: var(--vw);
-  max-height: var(--vh);
+  max-height: (var(--vh) - var(--header-height) - 0.6em);
   padding: 0.3em;
   font-family: Bangers, Impact, Haettenschweiler, Charcoal, "Arial Narrow Bold", Gadget, sans-serif;
   color: var(--atomic-tangerine);
@@ -302,8 +272,8 @@ h1.hero-content-section.header-mid.line {
 }
 
 #pt2-3-buffer {
-  position: absolute;
-  top: calc(var(--vh) * 2.4);
+  position: relative;
+  left: 0;
   z-index: 10;
   display: block;
   place-items: center center;
@@ -311,16 +281,18 @@ h1.hero-content-section.header-mid.line {
   justify-content: center;
   width: var(--vw);
   height: calc(var(--vh) * 0.4);
-  padding-top: 0.1px;
-  padding-bottom: 0.1px;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  margin-top: 0.1rem;
+  margin-bottom: 0.1rem;
   background: var(--saffron);
   background-repeat: no-repeat;
   background-attachment: fixed;
 }
 
 #pt3-hero-content-section {
-  position: absolute;
-  top: calc(var(--vh) * 2.8);
+  position: relative;
+  left: 0;
   z-index: 10;
   display: grid;
   grid-template:
@@ -330,7 +302,7 @@ h1.hero-content-section.header-mid.line {
   gap: 1em;
   place-items: stretch stretch;
   width: var(--vw);
-  height: var(--vh);
+  height: calc(var(--vh) - var(--header-height));
   padding-top: 1px;
   padding-bottom: 1em;
   scroll-snap-type: y mandatory;
@@ -665,35 +637,11 @@ section#pt3-hero-content-section.hero-content-section svg.hlticon {
   }
 }
 
-/* footer */
-
-.md-source-file {
-  display: none;
-}
-
-nav.md-tabs {
-  position: fixed;
-  z-index: 1000;
-  align-self: flex-start;
-  margin-top: -0.35rem;
-  background: var(--zaffre);
-}
-
-footer.md-footer {
-  position: absolute;
-  top: calc(var(--vh) * 3.8);
-  z-index: 20;
-  width: var(--vw);
-  padding-top: 3rem;
-  margin-top: 2%;
-  object-fit: cover;
-}
-
 /** Easter egg section */
 
 svg#the-egg {
   position: absolute;
-  top: calc(var(--vh) * 0.4);
+  top: calc((var(--vh) * 0.4) - var(--header-height));
   right: calc(var(--vw) / 10);
   z-index: 25;
   display: none; /* enabled by JavaScript; off for noscript */
@@ -720,7 +668,7 @@ svg#the-egg:active {
 #hero-dialog-position {
   position: absolute;
   right: calc(var(--vw) / 2);
-  bottom: calc(var(--vh) * 0.6);
+  bottom: calc((var(--vh) * 0.6) - var(--header-height));
   z-index: 1000;
   display: flex;
   flex-direction: column;
@@ -828,37 +776,16 @@ a#yoshimi-link:hover {
 
 @media screen and (width <= 416px),
   screen and (orientation: portrait) {
-  div.md-tabs {
+  #hero-tabs {
     display: none !important;
     background: none;
   }
-}
-
-header#header-target {
-  z-index: 1000 !important;
-  pointer-events: visible;
-  object-fit: cover;
-  background: transparent;
-}
-
-div.md-main__inner.md-grid div.md-sidebar.md-sidebar--primary {
-  z-index: 1100;
-  margin-top: 2rem;
-  object-fit: cover;
-  background-color: rgba(var(--zaffre-adj), 0.6);
 }
 
 @media screen and (orientation: portrait) and (min-width: 416px) {
-  div.md-tabs {
+  #hero-tabs {
     display: none !important;
     background: none;
-  }
-
-  div.md-main__inner.md-grid div.md-sidebar.md-sidebar--primary {
-    z-index: 1100;
-    margin-top: 2rem;
-    object-fit: cover;
-    background-color: rgba(var(--zaffre-adj), 0.6);
   }
 
   .hero-parallax__image {
@@ -866,8 +793,4 @@ div.md-main__inner.md-grid div.md-sidebar.md-sidebar--primary {
     scale: 1.4;
     translate: 0% 20%;
   }
-}
-
-.md-header__option {
-  display: none;
 }

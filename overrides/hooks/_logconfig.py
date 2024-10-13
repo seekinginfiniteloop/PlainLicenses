@@ -20,15 +20,23 @@ from mkdocs.structure.files import Files
 from mkdocs.structure.nav import Navigation
 
 # You can override the hooks' global log level by setting the LOG_LEVEL_OVERRIDE environment variable as an integer: [Python logging levels](https://docs.python.org/3/library/logging.html#logging-levels).
+development = globals().get("development", os.getenv("GITHUB_ACTIONS") != "true")
 LOG_LEVEL_OVERRIDE = int(os.environ.get("LOG_LEVEL_OVERRIDE", 50))
-LOG_SAVE_PATH: str = f".workbench/logs/pl_build_log_{datetime.now(timezone.utc).isoformat(timespec="seconds")}.log"
 
 log_file: Path | None = None
 # add `timestamp` to the LOG_SAVE_PATH environment variable to have the current timestamp added to the log file name
-FILEHANDLER_ENABLED = os.environ.get("FILEHANDLER_ENABLED", "True") == "True"
-STREAMHANDLER_ENABLED = os.environ.get("STREAMHANDLER_ENABLED", "True") == "True"
+FILEHANDLER_ENABLED = (
+    os.environ.get("FILEHANDLER_ENABLED", "True" if development else "False") == "True"
+)
+STREAMHANDLER_ENABLED = (
+    os.environ.get("STREAMHANDLER_ENABLED", "True") == "True" or development
+)
 
-logging.captureWarnings(True)
+if FILEHANDLER_ENABLED:
+    LOG_SAVE_PATH: str = f".workbench/logs/pl_build_log_{datetime.now(timezone.utc).isoformat(timespec="seconds")}.log"
+
+if STREAMHANDLER_ENABLED or FILEHANDLER_ENABLED:
+    logging.captureWarnings(True)
 
 LOGGING_LOGGER: logging.Logger | None = None
 
@@ -49,7 +57,8 @@ if not log_file:
 
 def initialize_logging() -> None:
     """Initialize the logging logger, which logs logging."""
-    LOGGING_LOGGER: logging.Logger = get_logger(__name__, logging.INFO)
+    level = min(LOG_LEVEL_OVERRIDE, logging.WARNING)
+    LOGGING_LOGGER: logging.Logger = get_logger(__name__, level)
     LOGGING_LOGGER.info("Initialized logging logger.")
     LOGGERS[__name__] = LOGGING_LOGGER
 
@@ -60,43 +69,53 @@ def on_startup(
 ) -> None:
     """Initialize the logging logger. This is the first hook to run."""
     initialize_logging()
-    LOGGING_LOGGER.debug(f"Starting {command} command.")
+    if LOGGING_LOGGER:
+        LOGGING_LOGGER.debug(f"Starting {command} command.")
 
 
 @event_priority(100)
 def on_config(config: MkDocsConfig) -> MkDocsConfig:
     """Log the configuration."""
-    LOGGING_LOGGER.debug("starting on_config")
+    if LOGGING_LOGGER:
+        LOGGING_LOGGER.debug("starting on_config")
 
 
 @event_priority(100)
 def on_pre_build(config: MkDocsConfig) -> None:
     """Log the pre-build event."""
-    LOGGING_LOGGER.debug("starting on_prebuild")
+    if LOGGING_LOGGER:
+        LOGGING_LOGGER.debug("starting on_prebuild")
 
 
 @event_priority(100)
 def on_files(files: Files, config: MkDocsConfig) -> Files:
     """Log the files event."""
-    LOGGING_LOGGER.debug("starting on_files")
+    if LOGGING_LOGGER:
+        LOGGING_LOGGER.debug("starting on_files")
+    return files
 
 
 @event_priority(100)
 def on_nav(nav: Navigation, config: MkDocsConfig) -> Navigation:
     """Log the navigation event."""
-    LOGGING_LOGGER.debug("starting on_nav")
+    if LOGGING_LOGGER:
+        LOGGING_LOGGER.debug("starting on_nav")
+    return nav
 
 
 @event_priority(100)
 def on_env(env: Environment, config: MkDocsConfig, files: Files) -> Environment:
     """Log the environment event."""
-    LOGGING_LOGGER.debug("starting on_env")
+    if LOGGING_LOGGER:
+        LOGGING_LOGGER.debug("starting on_env")
+    return env
 
 
 @event_priority(100)
 def on_post_build(config: MkDocsConfig) -> None:
     """Log the post-build event."""
-    LOGGING_LOGGER.debug("starting on_post_build")
+    if LOGGING_LOGGER:
+        LOGGING_LOGGER.debug("starting on_post_build")
 
 
 class ColorFormatter(logging.Formatter):
@@ -140,7 +159,7 @@ def _add_logger(name: str, logger: logging.Logger) -> None:
     """Adds a logger to the LOGGERS dictionary and logs the addition."""
     LOGGERS[name] = logger
     if LOGGING_LOGGER:
-        LOGGING_LOGGER.info(f"Added logger: {name}")
+        LOGGING_LOGGER.debug(f"Added logger: {name}")
     else:
         print("initiating logging logger")
 
@@ -156,7 +175,7 @@ def set_handler(
 
 def get_logger(
     name: str = __name__,
-    level: int = logging.INFO,
+    level: int = logging.WARNING,
 ) -> logging.Logger:
     """
     Returns a logger with the specified name and log level.

@@ -1,5 +1,5 @@
-import { Observable, from, fromEvent, of, throwError, toArray } from "rxjs"
-import { catchError, map, mergeMap, switchMap, tap } from "rxjs/operators"
+import { Observable, from, fromEvent, of, throwError } from "rxjs"
+import { catchError, defaultIfEmpty, map, mergeMap, switchMap, tap } from "rxjs/operators"
 import { logger } from "~/log"
 
 export const CONFIG = {
@@ -64,7 +64,8 @@ export const getAsset = (url: string): Observable<Response> =>
               return of(response)
             } else {
               return from(cache.delete(url)).pipe(
-                switchMap(() => fetchAndCacheAsset(url, cache))
+                switchMap(() => fetchAndCacheAsset(url, cache)),
+                tap(() => logger.info(`Asset updated: ${url}`))
               )
             }
           } else {
@@ -85,7 +86,7 @@ export const getAsset = (url: string): Observable<Response> =>
  * @param el - the element to extract the URL from
  * @returns the URL of the asset
  */
-function extractUrlFromElement(type: string, el: HTMLElement): string {
+function extractUrlFromElement(type: string, el: Element): string {
   return type === "javascripts" ? (el as HTMLScriptElement).src : (el as HTMLLinkElement).href
 }
 
@@ -95,7 +96,7 @@ function extractUrlFromElement(type: string, el: HTMLElement): string {
  * @param elements - the elements to cache
  * @returns an observable of the cache operation
  */
-export function cacheAssets(type: string, elements: NodeListOf<HTMLElement>): Observable<boolean> {
+export function cacheAssets(type: string, elements: NodeListOf<Element>): Observable<boolean> {
   const requests = Array.from(elements).map(el => new Request(extractUrlFromElement(type, el)))
 
   return from(requests).pipe(
@@ -107,7 +108,7 @@ export function cacheAssets(type: string, elements: NodeListOf<HTMLElement>): Ob
           }
           return from(caches.open(type)).pipe(
             switchMap(cache => from(cache.put(request, response))),
-            map(() => true)
+            map(() => true), tap(() => logger.info(`Asset cached: ${request.url}`))
           )
         })
       )
@@ -124,7 +125,7 @@ const getCurrentAssetHashes = (): Observable<Set<string>> => {
     map(doc => {
       const assetElements = Array.from(
         doc.querySelectorAll('script[src], link[rel="stylesheet"][href], img[src], link[rel="stylesheet"][href*="fonts"]')
-      ) as HTMLElement[]
+      )
       const hashes = new Set<string>()
       assetElements.forEach(el => {
         const url = extractUrlFromElement("", el)
@@ -148,31 +149,27 @@ const cleanCache = (): Observable<boolean> => {
       openCache().pipe(
         switchMap(cache =>
           from(cache.keys()).pipe(
-mergeMap(request =>
-  from(request).pipe(
-    map(req => {
-      const { url } = req
-      return { req, hash: extractHashFromUrl(url) }
-    }),
-    mergeMap(({ req, hash }) => {
-      if (hash && currentHashes.has(hash)) {
-        logger.info(`Asset is in use: ${hash}`)
-        return of(true)
-      } else {
-        return from(cache.delete(req)).pipe(
-          tap(deleted => {
-            if (deleted) {
-              logger.info(`Deleted cached asset with hash: ${hash}`)
-            }
-          }),
-          map(() => true)
-        )
-      }
-    })
-  )
-),
-            toArray(),
-            map(() => true),
+            mergeMap(request =>
+              from(request).pipe(
+                mergeMap(req => {
+                  const { url } = req
+                  const hash = extractHashFromUrl(url)
+                  if (hash && currentHashes.has(hash)) {
+                    logger.info(`Asset is in use: ${hash}`)
+                    return of(true)
+                  } else {
+                    return from(cache.delete(req)).pipe(
+                      tap(deleted => {
+                        if (deleted) {
+                          logger.info(`Deleted cached asset with hash: ${hash}`)
+                        }
+                      }),
+                      map(() => true)
+                    )
+                  }
+                })
+              )
+            ),
             catchError(error => {
               logger.error(`Error cleaning cache: ${error}`)
               return of(false)
@@ -199,5 +196,21 @@ export const cleanupCache = (timer: number): Observable<Event> => {
         })
       }, timer)
     })
+  )
+}
+
+/**
+ * Deletes old caches
+ * @returns an observable of the cache deletion operation
+ */
+export const deleteOldCache = (): Observable<boolean> => {
+  const cacheRegex = /^static-assets-cache-v\d+$/
+  return from(caches.keys()).pipe(
+    mergeMap(keys => from(keys.filter(key => key.match(cacheRegex) && key !== CONFIG.CACHE_NAME))),
+    mergeMap(name => from(caches.delete(name)).pipe(
+      tap(() => logger.info(`Deleted old cache: ${name}`))
+    )),
+    map(() => true),
+    defaultIfEmpty(false)
   )
 }

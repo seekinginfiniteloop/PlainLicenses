@@ -30,8 +30,9 @@ def on_page_markdown(
     SOCIAL_LOGGER.info
     if not include.match(page.url) or "index" in page.url:
         return markdown
-    page_url: str = site_url + page.url
-    page_title: str = urllib.parse.quote(page.title + "\n")
+    base_url: str = config.get("site_url", "https://plainlicense.org")
+    page_url: str = f"{base_url}{page.url}" if page.url.startswith('/') else f"{base_url}/{page.url}"
+    page_title: str = urllib.parse.quote(f"{page.title or 'Plain License'}\n")
     SOCIAL_LOGGER.info("Adding social media buttons to %s", page.url)
     return markdown + dedent(f"""
     [Share on :simple-x:]({x_intent}?text={page_title}&url={page_url}){{ .md-button }}
