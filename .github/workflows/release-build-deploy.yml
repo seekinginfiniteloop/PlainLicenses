@@ -47,10 +47,7 @@ jobs:
         run: .github/scripts/update-submodules.sh
 
       - name: Build changelog
-        run: export NODE_ENV=production && npm run build
-
-      - name: Generate changelog
-        run: node .github/scripts/generate-changelog.js
+        run: export NODE_ENV=production && npm run generate-changelog
 
       - name: Release project
         env:
@@ -123,13 +120,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: npm-cache
-          path: .cache/npm
+          path: ~/.npm
 
       - name: Install npm dependencies
         run: npm ci --include dev
 
       - name: Build Scripts
-        run: npm run build
+        run: npm run runall
       - name: install Python with uv
         run: |
           uv python install cpython-3.12.5-linux-x86_64-gnu

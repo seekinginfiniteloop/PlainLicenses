@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "release": "semantic-release",
-    "generate-changelog": "node .github/scripts/generate-changelog.js",
+    "generate-changelog": "node .github/scripts/generate-changelog.mjs",
     "prepare": "husky",
     "check": "run-p check:*",
     "check:build": "tsc --noEmit",
@@ -21,7 +21,8 @@
     "build:site": "node tools/build/index.js",
     "upgrade": "run-s upgrade:*",
     "upgrade:bump": "ncu --upgrade --filterVersion \"/^\\^/\"",
-    "upgrade:install": "npm install"
+    "upgrade:install": "npm install",
+    "runall": "run-s check fix build"
   },
   "repository": {
     "type": "git",

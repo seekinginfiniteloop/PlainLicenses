@@ -9,16 +9,6 @@
 {% block container %}
 <style>
     /* Resetting base containers so we can do what we want on the hero page */
-    .md-content__inner {
-        z-index: auto;
-        padding: 5.2rem 0;
-        margin-bottom: 0;
-    }
-
-    div.md-main__inner {
-        padding: 0;
-        margin: 0;
-    }
 
     html {
         scroll-behavior: auto;
@@ -31,31 +21,6 @@
         transform-style: preserve-3d;
         max-height: max-content;
         min-width: 100vw;
-    }
-
-    * {
-        box-sizing: border-box;
-        padding: 0;
-        margin: 0;
-    }
-
-    .md_main {
-        top: 0;
-        left: 0;
-        padding: 0;
-        margin: 0;
-        min-height: fit-content;
-    }
-
-    body main.md-main div.md-main__inner.md-grid {
-        padding: 0;
-        margin: 0;
-        min-height: fit-content;
-        display: flex;
-        flex-direction: column;
-        width: 100%;
-        height: max-content;
-        column-gap: 1px;
     }
 
     /* Some hero-only settings on classes used on other pages */
@@ -88,7 +53,7 @@
         z-index: 20;
         width: 100vw;
         padding-top: 5rem;
-        margin-top: calc((100vh * 0.03));
+        margin-top: 3vh;
         object-fit: cover;
     }
 
@@ -99,16 +64,16 @@
         background-color: rgba(var(--zaffre-adj), 0.6);
     }
 
-    .mid-grid {
-        padding: 0;
-        margin: 0;
-    }
-
     .md-container {
         flex-direction: column;
         align-items: flex-start;
         align-content: space-between
     }
+    nav.md-tabs {
+        position: fixed;
+        top: 4.15rem;
+    }
+
 </style>
 {% endblock %}
 {% block content %}

@@ -22,6 +22,8 @@ babel==2.16.0
 boltons==24.0.0
     # via face
     # via glom
+bracex==2.5.post1
+    # via wcmatch
 cachecontrol==0.14.0
     # via mkdocs-rss-plugin
 cairocffi==1.7.1
@@ -117,6 +119,7 @@ mergedeep==1.3.4
 mkdocs==1.6.1
     # via mkdocs-git-authors-plugin
     # via mkdocs-git-revision-date-localized-plugin
+    # via mkdocs-include-markdown-plugin
     # via mkdocs-macros-plugin
     # via mkdocs-markdown-filter
     # via mkdocs-material
@@ -129,6 +132,8 @@ mkdocs-get-deps==0.2.0
 mkdocs-git-authors-plugin==0.9.0
     # via plainlicense
 mkdocs-git-revision-date-localized-plugin==1.2.9
+    # via plainlicense
+mkdocs-include-markdown-plugin==6.2.2
     # via plainlicense
 mkdocs-macros-plugin==1.2.0
     # via plainlicense
@@ -258,6 +263,8 @@ virtualenv==20.26.4
     # via pre-commit
 watchdog==5.0.2
     # via mkdocs
+wcmatch==10.0
+    # via mkdocs-include-markdown-plugin
 wcwidth==0.2.13
     # via prompt-toolkit
 webencodings==0.5.1

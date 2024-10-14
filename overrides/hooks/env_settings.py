@@ -22,17 +22,19 @@ Image.MAX_IMAGE_PIXELS = 300000000
 # We're a static site, so we don't need to worry about decompression bombs.
 
 if not hasattr(__name__, "ENV_LOGGER"):
-    ENV_LOGGER = get_logger(__name__, logging.INFO)
+    ENV_LOGGER = get_logger(__name__, logging.DEBUG)
 
-def md_filter(text: str, config: MkDocsConfig, **kwargs) -> Any:
+def md_filter(text: str, extensions: list[str], configs: dict[str, dict[str, str | bool]], **kwargs) -> Any:
     """
     Adds markdown filter to Jinja2 environment using markdown extensions and configurations from the mkdocs.yml file.
     """
     md = markdown.Markdown(
-        extensions=config["markdown_extensions"],
-        extension_configs=config.get("mdx_configs", {}),
+        extensions=extensions,
+        extension_configs=configs,
         # if you need to pass configs for the extensions, you can under the key "mdx_configs"
     )
+    ENV_LOGGER.info("Markdown filter applied to Jinja2 environment.")
+    ENV_LOGGER.debug(f"Markdown extension configs: {configs}")
     return Markup(md.convert(text))
 
 def get_build_meta_values()-> dict[str, str]:
@@ -53,7 +55,7 @@ def get_search_script()-> str:
     path = Path("external/mkdocs-material/material/templates/assets/javascripts/workers/search.*.min.js")
     return f"assets/javascripts/workers/{path.name}"
 
-def on_serve(server: LiveReloadServer, config: MkDocsConfig, builder: Callable) -> LiveReloadServer:
+def on_serve(server: LiveReloadServer, config: MkDocsConfig, builder: Callable[Any, Any]) -> LiveReloadServer:
     """
     Sets the build type for the site based on the command used to build the site.
     """
@@ -69,7 +71,13 @@ def on_env(env: Environment, config: MkDocsConfig, files: Files) -> Environment:
     Also adds Jinja2 extensions: do, loopcontrols
     """
     # we have to pass the extensions each time for pyMarkdown, and env.filters doesn't allow for that... rpartial to the rescue!
-    env.filters["markdown"] = rpartial(md_filter, config)
+    markdown_extensions = config["markdown_extensions"]
+    markdown_configs = {}
+    for item in markdown_extensions:
+        if isinstance(item, dict):
+            for key, value in item.items():
+                configs[key] = value
+    env.filters["markdown"] = rpartial(md_filter, markdown_extensions, markdown_configs)
     env.add_extension("jinja2.ext.do")
     env.add_extension("jinja2.ext.loopcontrols")
     build_updates = get_build_meta_values()

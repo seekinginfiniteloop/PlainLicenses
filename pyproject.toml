@@ -23,6 +23,7 @@ dependencies = [
     "mkdocs-minify-plugin>=0.8.0",
     "pyyaml_env_tag>=0.1.0",
     "ez-yaml>=2.2.0",
+    "mkdocs-include-markdown-plugin[cache]>=6.2.2",
 ]
 readme = "README.md"
 requires-python = ">= 3.12"
@@ -31,27 +32,6 @@ license = { text = "UNLICENSE" }
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
-
-[tool.rye]
-managed = true
-dev-dependencies = [
-    "glom>=23.5.0",
-    "ipython>=8.26.0",
-    "jsonschema>=4.23.0",
-    "pillow-avif-plugin>=1.4.6",
-    "pillow>=10.4.0",
-    "pre-commit-hooks>=4.6.0",
-    "pre-commit>=3.8.0",
-    "psutil>=6.0.0",
-    "pygithub>=2.4.0",
-    "pymdown-extensions>=10.9",
-    "rich>=13.7.1",
-    "ruff>=0.5.1",
-    "tqdm>=4.66.4",
-    "uv>=0.2.24",
-    "textblob>=0.18.0.post0",
-    "pyperclip>=1.9.0",
-]
 
 [tool.hatch.metadata]
 allow-direct-references = true
