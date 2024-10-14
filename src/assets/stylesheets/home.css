@@ -94,7 +94,7 @@ header#header-target.md-header {
   width: 100vw;
   min-height: calc((100vh - var(--header-height)));
   max-height: max(var(--parallax-height), calc((100vh * 1.4) - var(--header-height)));
-  padding-bottom: 1em;
+  padding-bottom: 25vh;
   overflow: hidden;
   pointer-events: auto;
 }
@@ -113,7 +113,7 @@ header#header-target.md-header {
 }
 
 @media screen and (orientation: portrait) {
-  .md-hero__teaser {
+  .mdx-hero__teaser {
     position: absolute;
     bottom: calc((100vh * 0.7) - var(--header-height));
     width: 90%;
@@ -155,8 +155,8 @@ header#header-target.md-header {
   cursor: pointer;
   user-select: none;
   object-fit: cover;
-  background: rgba(var(--zaffre-adj), 0.7);
-  border-radius: 0.35em;
+  background: rgba(var(--zaffre-adj), 0.85);
+  border-radius: 0.3em;
   transition:
     background-color 350ms ease-in-out,
     color 300ms ease-in-out,
@@ -234,7 +234,6 @@ svg#arrow-down:hover {
   padding-top: 0.01rem;
   padding-bottom: 0.01rem;
   margin-top: 1rem;
-  margin-bottom: 1rem;
   overflow: contain;
   scroll-snap-type: y mandatory;
   scroll-snap-align: start;
@@ -285,17 +284,13 @@ h1.hero-content-section.header-mid.line {
   left: 0;
   z-index: 10;
   display: block;
-  place-items: center center;
   place-self: center center;
-  justify-content: center;
   min-width: 100vw;
   max-width: 105vw;
-  min-height: (calc(100vh - var(--header-height)) * 0.8);
-  max-height: 100vh;
-  padding-top: 1rem;
-  padding-bottom: 1rem;
-  margin-top: 1rem;
-  margin-bottom: 1rem;
+  min-height: (calc(100vh - var(--header-height)) * 0.4);
+  max-height: 80vh;
+  padding-top: 20vh;
+  padding-bottom: 20vh;
   overflow: hidden;
   background: var(--ecru);
   background-repeat: no-repeat;
@@ -306,14 +301,7 @@ h1.hero-content-section.header-mid.line {
   position: relative;
   left: 0;
   z-index: 10;
-  box-sizing: content-box;
-  display: grid;
-
-  /* Define grid areas */
-  grid-template:
-    ".     .     .     .     " 1fr ".     head  head  .     " 1.5fr ".     hlt1  hlt2  .     " 2fr ".     hlt3  hlt4  .     " 2fr ".     hlt5  hlt6  .     " 2fr ".     .     .     .     " 1fr / 0.5fr 2.5fr 2.5fr 0.5fr;
-  grid-auto-flow: row;
-  gap: 1em;
+  box-sizing: border-box;
   place-items: stretch stretch;
   width: 105vw;
   min-width: 100vw;
@@ -348,16 +336,17 @@ h1.hero-content-section.header-mid.line {
   scroll-snap-align: start;
 }
 
-h2.hlt-header {
+/* Styles for hlt-header */
+.hlt-header {
   margin-left: 0.2em;
   font-family: Inter, "Noto Sans", "Open Sans", Lato, Helvetica, Arial, system-ui, sans-serif;
   font-size: clamp(10px, 1.75em, 4em);
   text-align: left;
 }
 
-p.hlt-paragraph {
+/* Styles for hlt-paragraph */
+.hlt-paragraph {
   width: 100%;
-  padding: 0.75em 0;
   padding: 0;
   margin-left: 0.2em;
   font-family: Inter, "Noto Sans", "Open Sans", Lato, Helvetica, Arial, system-ui, sans-serif;
@@ -366,22 +355,8 @@ p.hlt-paragraph {
   text-wrap: balance;
 }
 
-.hlt-paragraph a,
-.hlt-paragraph a:visited,
-.hlt-paragraph a:focus {
-  color: var(--emerald);
-  text-decoration: none;
-}
-
-.hlt-paragraph a:hover {
-  color: var(--ecru);
-}
-
-.hlt-paragraph a:active {
-  color: rgb(var(--zaffre));
-}
-
-section#pt3-hero-content-section.hero-content-section svg.hlticon {
+/* Icon styles */
+.hlticon {
   z-index: 100;
   width: 100%;
   padding: 0;
@@ -390,257 +365,10 @@ section#pt3-hero-content-section.hero-content-section svg.hlticon {
   fill: var(--ecru);
 }
 
-.hlt1 {
-  display: grid;
-  grid-area: hlt1;
-  grid-template:
-    "icn1 hlb1 hlb1" 1fr "icn1 hlb1 hlb1" 1fr "icn1 hlb1 hlb1" 1fr / 0.5fr 1.5fr 1.5fr;
-  grid-auto-flow: row;
-  gap: 0;
-  place-items: stretch stretch;
-}
-
-.hlb1 {
-  display: grid;
-  grid-area: hlb1;
-  place-content: start start;
-}
-
-.icn1 {
-  display: grid;
-  grid-area: icn1;
-  place-content: start center;
-  place-self: stretch stretch;
-  padding: 0;
-  margin: 0;
-}
-
-.hlt2 {
-  display: grid;
-  grid-area: hlt2;
-  grid-template:
-    "icn2 hlb2 hlb2" 1fr "icn2 hlb2 hlb2" 1fr "icn2 hlb2 hlb2" 1fr / 0.5fr 1.5fr 1.5fr;
-  grid-auto-flow: row;
-  gap: 0;
-  place-items: stretch stretch;
-}
-
-.hlb2 {
-  display: grid;
-  grid-area: hlb2;
-  place-content: start start;
-}
-
-.icn2 {
-  display: grid;
-  grid-area: icn2;
-}
-
-.hlt3 {
-  display: grid;
-  grid-area: hlt3;
-  grid-template:
-    "icn3 hlb3 hlb3" 1fr "icn3 hlb3 hlb3" 1fr "icn3 hlb3 hlb3" 1fr / 0.5fr 1.5fr 1.5fr;
-  grid-auto-flow: row;
-  gap: 0;
-  place-items: stretch stretch;
-}
-
-.hlb3 {
-  display: grid;
-  grid-area: hlb3;
-  place-content: start start;
-}
-
-.icn3 {
-  display: grid;
-  grid-area: icn3;
-}
-
-.hlt4 {
-  display: grid;
-  grid-area: hlt4;
-  grid-template:
-    "icn4 hlb4 hlb4" 1fr "icn4 hlb4 hlb4" 1fr "icn4 hlb4 hlb4" 1fr / 0.5fr 1.5fr 1.5fr;
-  grid-auto-flow: row;
-  gap: 0;
-  place-items: stretch stretch;
-}
-
-.hlb4 {
-  display: grid;
-  grid-area: hlb4;
-  place-content: start start;
-}
-
-.icn4 {
-  display: grid;
-  grid-area: icn4;
-}
-
-.hlt5 {
-  display: grid;
-  grid-area: hlt5;
-  grid-template:
-    "icn5 hlb5 hlb5" 0.5fr "icn5 hlb5 hlb5" 1fr "icn5 hlb5 hlb5" 1fr / 0.5fr 1.5fr 1.5fr;
-  grid-auto-flow: row;
-  gap: 0;
-  place-items: stretch stretch;
-}
-
-.hlb5 {
-  display: grid;
-  grid-area: hlb5;
-  place-content: start start;
-}
-
-.icn5 {
-  display: grid;
-  grid-area: icn5;
-}
-
-.hlt6 {
-  display: grid;
-  grid-area: hlt6;
-  grid-template:
-    "icn6 hlb6 hlb6" 1fr "icn6 hlb6 hlb6" 1fr "icn6 hlb6 hlb6" 1fr / 0.5fr 1.5fr 1.5fr;
-  grid-auto-flow: row;
-  gap: 0;
-  place-items: stretch stretch;
-}
-
-.hlb6 {
-  display: grid;
-  grid-area: hlb6;
-  place-content: start start;
-}
-
-.icn6 {
-  display: grid;
-  grid-area: icn6;
-}
-
+/* move to one in a row for phones */
 @media screen and (width <= 416px) {
-  h1#pt2-hero-content-section-header {
-    font-size: clamp(16px, 6em, 8em);
-    text-align: left;
-    opacity: 1;
-  }
-
-  #pt3-hero-content-section {
-    display: grid;
-    grid-template:
-      "head head head" 0.6fr ". hlb1 ." 1fr ". hlb2 ." 1fr ". hlb3 ." 1fr ". hlb4 ." /
-      auto ". hlb5 ." 1fr ". hlb6 ." 1fr / 0.7fr 7.6fr 0.7fr;
-    grid-auto-flow: row;
-    gap: 2em;
-  }
-
-  h1#pt3-hero-content-section-header.hero-content-section {
-    grid-area: head;
+  .hlt-header {
     font-size: clamp(14px, 2em, 6em);
-  }
-
-  .hlb1 {
-    display: grid;
-    grid-area: hlb1;
-    grid-template:
-      "icn1 hlt1 hlt1" 1fr "icn1 hlt1 hlt1" 1fr "icn1 hlt1 hlt1" 1fr / 01fr 1fr 1fr;
-    grid-auto-flow: row;
-    gap: 0;
-  }
-
-  .hlt1 {
-    grid-area: hlt1;
-  }
-
-  .icn1 {
-    grid-area: icn1;
-  }
-
-  .hlb2 {
-    display: grid;
-    grid-area: hlb2;
-    grid-template:
-      "icn2 hlt2 hlt2" 1fr "icn2 hlt2 hlt2" 1fr "icn2 hlt2 hlt2" 1fr / 01fr 1fr 1fr;
-    grid-auto-flow: row;
-    gap: 0;
-  }
-
-  .hlt2 {
-    grid-area: hlt2;
-  }
-
-  .icn2 {
-    grid-area: icn2;
-  }
-
-  .hlb3 {
-    display: grid;
-    grid-area: hlb3;
-    grid-template:
-      "icn3 hlt3 hlt3" 1fr "icn3 hlt3 hlt3" 1fr "icn3 hlt3 hlt3" 1fr / 01fr 1fr 1fr;
-    grid-auto-flow: row;
-    gap: 0;
-  }
-
-  .hlt3 {
-    grid-area: hlt3;
-  }
-
-  .icn3 {
-    grid-area: icn3;
-  }
-
-  .hlb4 {
-    display: grid;
-    grid-area: hlb4;
-    grid-template:
-      "icn4 hlt4 hlt4" 1fr "icn4 hlt4 hlt4" 1fr "icn4 hlt4 hlt4" 1fr / 01fr 1fr 1fr;
-    grid-auto-flow: row;
-    gap: 0;
-  }
-
-  .hlt4 {
-    grid-area: hlt4;
-  }
-
-  .icn4 {
-    grid-area: icn4;
-  }
-
-  .hlb5 {
-    display: grid;
-    grid-area: hlb5;
-    grid-template:
-      "icn5 hlt5 hlt5" 1fr "icn5 hlt5 hlt5" 1fr "icn5 hlt5 hlt5" 1fr / 01fr 1fr 1fr;
-    grid-auto-flow: row;
-    gap: 0;
-  }
-
-  .icn5 {
-    grid-area: icn5;
-  }
-
-  .hlt5 {
-    grid-area: hlt5;
-  }
-
-  .hlb6 {
-    display: grid;
-    grid-area: hlb6;
-    grid-template:
-      "icn6 hlt6 hlt6" 1fr "icn6 hlt6 hlt6" 1fr "icn6 hlt6 hlt6" 1fr / 01fr 1fr 1fr;
-    grid-auto-flow: row;
-    gap: 0;
-  }
-
-  .icn6 {
-    grid-area: icn6;
-  }
-
-  .hlt6 {
-    grid-area: hlt6;
   }
 }
 

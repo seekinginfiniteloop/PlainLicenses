@@ -1,12 +1,8 @@
 {% extends "main.html" %}
-{% block hero %}
-{% block tabs %}
-{% if "navigation.tabs.sticky" not in features %}
-{% if "navigation.tabs" in features %}
-{% include "partials/hero_tabs.html" %}
-{% endif %}
-{% endif %}
+{% block header %}
+{% include "partials/heroheader.html" %}
 {% endblock %}
+{% block hero %}
 {% include "partials/herolanding.html" %}
 {% endblock %}
 

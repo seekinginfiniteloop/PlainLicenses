@@ -82,25 +82,6 @@ subscriptions.push(document$.subscribe(function () {
   })
 }))
 
-subscriptions.push(viewport$.pipe(
-  map((viewport: ViewPort) => viewport.size),
-  distinct()
-).subscribe({
-  next: (size: ViewPortSize) => {
-    const { width, height } = size
-    logger.info("Viewport size changed to: ", width, height)
-    setCssVariable("--vw", `${width}px`)
-    setCssVariable("--vh", `${height}px`)
-  },
-  error: (err: Error) => logger.error("Error in viewport size change:", err)
-}))
-
-subscriptions.push(document$.subscribe({
-  next: () => {
-    setCssVariable("--vh", `${window.innerHeight}px`)
-    setCssVariable("--vw", `${window.innerWidth}px`)  }
-}))
-
 // Cleanup subscriptions
 const mergedSubscriptions = () => {
   const location: Observable<URL> = location$.pipe(

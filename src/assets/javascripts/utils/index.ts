@@ -42,7 +42,8 @@ export function createInteractionObservable<R>(
     fromEvent<InteractionEvent>(evt, "click"),
     fromEvent<InteractionEvent>(evt, "touchend"),
     fromEvent<InteractionEvent>(evt, "keydown")
-  ).pipe(filter(ev => ev !== undefined && (ev instanceof Event)))
+  // eslint-disable-next-line no-null/no-null
+  ).pipe(filter(ev => ev !== null && (ev instanceof Event)))
 
   if (handler) {
     return handler(events$)

@@ -1,6 +1,4 @@
 :root {
-  --vh: 100vh;
-  --vw: 100vw;
   --nav-height: 3em;
   --header-height: 3rem;
   --head-element-height: calc(var(--nav-height) + var(--header-height) + 0.2rem);
