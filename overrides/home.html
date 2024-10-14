@@ -1,7 +1,16 @@
 {% extends "main.html" %}
-
 {% block hero %}
+{% block tabs %}
+{% if "navigation.tabs.sticky" not in features %}
+{% if "navigation.tabs" in features %}
+{% include "partials/hero_tabs.html" %}
+{% endif %}
+{% endif %}
+{% endblock %}
 {% include "partials/herolanding.html" %}
+{% endblock %}
+
+{% block container %}
 <style>
     /* Resetting base containers so we can do what we want on the hero page */
     .md-content__inner {
@@ -24,6 +33,8 @@
         margin: 0;
         overflow-x: hidden;
         transform-style: preserve-3d;
+        max-height: max-content;
+        min-width: 100vw;
     }
 
     * {
@@ -35,9 +46,20 @@
     .md_main {
         top: 0;
         left: 0;
-        box-sizing: content-box;
         padding: 0;
         margin: 0;
+        min-height: fit-content;
+    }
+
+    body main.md-main div.md-main__inner.md-grid {
+        padding: 0;
+        margin: 0;
+        min-height: fit-content;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: max-content;
+        column-gap: 1px;
     }
 
     /* Some hero-only settings on classes used on other pages */
@@ -68,9 +90,9 @@
         position: relative;
         bottom: 0;
         z-index: 20;
-        width: var(--vw);
+        width: 100vw;
         padding-top: 5rem;
-        margin-top: calc((var(--vh) * 0.03));
+        margin-top: calc((100vh * 0.03));
         object-fit: cover;
     }
 
@@ -80,19 +102,18 @@
         object-fit: cover;
         background-color: rgba(var(--zaffre-adj), 0.6);
     }
+
+    .mid-grid {
+        padding: 0;
+        margin: 0;
+    }
+
+    .md-container {
+        flex-direction: column;
+        align-items: flex-start;
+        align-content: space-between
+    }
 </style>
 {% endblock %}
-
-{% block tabs %}
-{% if "navigation.tabs.sticky" not in features %}
-{% if "navigation.tabs" in features %}
-{% include "partials/hero_tabs.html" %}
-{% endif %}
-{% endif %}
-{% endblock %}
-
-{% include "partials/herobody.html" %}
-{% block container %}
 {% block content %}
-{% endblock %}
 {% endblock %}

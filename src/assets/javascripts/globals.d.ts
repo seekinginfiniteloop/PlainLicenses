@@ -8,6 +8,41 @@
 import { Observable, Subject } from "rxjs"
 
 declare global {
+
+  /* ----------------------------------------------------------------------------
+   * Types
+   * ------------------------------------------------------------------------- */
+
+  type T = Type["T"]
+  type R = Type["R"]
+
+  /** Type representing user interaction events. */
+  type InteractionEvent = MouseEvent | TouchEvent | KeyboardEvent
+
+  /** Type representing an interaction handler function. */
+  type InteractionHandler<T, R> = (event: Observable<T>) => Observable<R>
+
+  /**
+   * Component
+   *
+   * @template T - Component type
+   * @template U - Reference type
+   */
+  type Component<
+    T extends {} = {},
+    U extends HTMLElement = HTMLElement
+  > = T & {
+    ref: U /* Component reference */
+  }
+  type KeyboardMode = "global" /* Global */ | "search" /* Search is open */
+
+  /* ----------------------------------------------------------------------------
+   * Interfaces
+   * ------------------------------------------------------------------------- */
+
+  // Interfaces for mkdocs-material's exported RxJs observables
+  // (see Window interface below)
+
   interface ViewPortOffset {
     top: number
     left: number
@@ -20,33 +55,39 @@ declare global {
     offset: ViewPortOffset
     size: ViewPortSize
   }
-  type KeyboardMode = "global" /* Global */ | "search" /* Search is open */
-
   interface Keyboard {
     mode: KeyboardMode
     type: string
     claim(): void
   }
 
-  /**
-   * Component
-   *
-   * @template T - Component type
-   * @template U - Reference type
-   */
-  export type Component<
-    T extends {} = {},
-    U extends HTMLElement = HTMLElement
-  > = T & {
-    ref: U /* Component reference */
+/** NOTE ON COMPONENTS (Window.component$)
+ * see ComponentTypeMap for available components
+ * can be used to mount and observe components
+ * By default, they're all mounted in Material bundle.ts and available in component$
+ * You can add components by using the data-md-component attribute on
+ * the HTML element and then use  getComponentElements("componentName") from ~/external/components with your ObservationFunctions to create a custom observable.
+ * bundle.ts gives plenty of examples on how to use component$ to mount and observe components
+ */
+
+  interface Window {
+    document$: Observable<Document>
+    location$: Subject<URL>
+    target$: Observable<HTMLElement>
+    keyboard$: Observable<Keyboard>
+    viewport$: Observable<ViewPort>
+    tablet$: Observable<boolean> // (min-width: 960px)
+    screen$: Observable<boolean> // (min-width: 1220px)
+    print$: Observable<boolean>
+    alert$: Subject<string> // clipboard.js integration
+    progress$: Subject<number> // progress indicator
+    component$: Observable<CustomEvent>
   }
 
-  /* ----------------------------------------------------------------------------
-   * Helper types
-   * ------------------------------------------------------------------------- */
 
   /**
-   * Component type map
+   * these are the various components that can be observed under the component$
+   * observable
    */
   interface ComponentTypeMap {
     announce: HTMLElement /* Announcement bar */
@@ -74,32 +115,7 @@ declare global {
     top: HTMLAnchorElement /* Back-to-top button */
   }
 
-/** NOTE ON COMPONENTS (Window.component$)
- * see ComponentTypeMap for available components
- * can be used to mount and observe components
- * By default, they're all mounted in Material bundle.ts and available in component$
- * You can add components by using the data-md-component attribute on
- * the HTML element and then use  getComponentElements("componentName") from ~/external/components with your ObservationFunctions to create a custom observable.
- * bundle.ts gives plenty of examples on how to use component$ to mount and observe components
- */
-
-  interface Window {
-    document$: Observable<Document>
-    location$: Subject<URL>
-    target$: Observable<HTMLElement>
-    keyboard$: Observable<Keyboard>
-    viewport$: Observable<ViewPort>
-    tablet$: Observable<boolean> // (min-width: 960px)
-    screen$: Observable<boolean> // (min-width: 1220px)
-    print$: Observable<boolean>
-    alert$: Subject<string> // clipboard.js integration
-    progress$: Subject<number> // progress indicator
-    component$: Observable<CustomEvent>
-  }
-
-  type T = Type["T"]
-  type R = Type["R"]
-
+  // transformation settings for images (not yet implemented)
   interface TransformationSettings {
     transition?: string // The CSS transition property for smooth changes.
     transitionBehavior?: string // The behavior of the transition (e.g., ease, linear).

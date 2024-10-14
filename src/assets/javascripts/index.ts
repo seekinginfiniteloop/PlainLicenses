@@ -14,6 +14,7 @@ import { logger } from "~/log"
 import { Observable, Subscription, forkJoin, fromEvent, merge } from "rxjs"
 import { distinct, filter, map, mergeMap, switchMap, tap } from "rxjs/operators"
 import { cacheAssets } from "./cache"
+import { setCssVariable } from "./utils"
 // @ts-ignore
 import Tablesort from "tablesort"
 
@@ -88,17 +89,16 @@ subscriptions.push(viewport$.pipe(
   next: (size: ViewPortSize) => {
     const { width, height } = size
     logger.info("Viewport size changed to: ", width, height)
-    document.documentElement.style.setProperty("--vw", `${width}px`)
-    document.documentElement.style.setProperty("--vh", `${height}px`)
+    setCssVariable("--vw", `${width}px`)
+    setCssVariable("--vh", `${height}px`)
   },
   error: (err: Error) => logger.error("Error in viewport size change:", err)
 }))
 
 subscriptions.push(document$.subscribe({
   next: () => {
-    document.documentElement.style.setProperty("--vh", `${window.innerHeight}px`)
-    document.documentElement.style.setProperty("--vw", `${window.innerWidth}px`)
-  }
+    setCssVariable("--vh", `${window.innerHeight}px`)
+    setCssVariable("--vw", `${window.innerWidth}px`)  }
 }))
 
 // Cleanup subscriptions

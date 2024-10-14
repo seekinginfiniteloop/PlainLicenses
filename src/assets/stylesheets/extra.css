@@ -4,6 +4,8 @@
   --nav-height: 3em;
   --header-height: 3rem;
   --head-element-height: calc(var(--nav-height) + var(--header-height) + 0.2rem);
+  --parallax-height: calc(((100vh - var(--header-height)) * 1.4)); /* base value -- we adjust dynamically in js */
+  --fade-height: calc(var(--parallax-height));
 }
 
 @media screen and (orientation: portrait) {

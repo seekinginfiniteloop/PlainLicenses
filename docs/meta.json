@@ -1,12 +1,12 @@
 {
   "metaOutput": {
-    "docs/assets/javascripts/index.3EDNW5DH.js.map": {
-      "bytes": 1712149,
+    "docs/assets/javascripts/index.3DGH6VKB.js.map": {
+      "bytes": 1716754,
       "inputs": [],
       "exports": []
     },
-    "docs/assets/javascripts/index.3EDNW5DH.js": {
-      "bytes": 249595,
+    "docs/assets/javascripts/index.3DGH6VKB.js": {
+      "bytes": 250603,
       "inputs": [
         "node_modules/focus-visible/dist/focus-visible.js",
         "node_modules/escape-html/index.js",
@@ -250,6 +250,7 @@
         "node_modules/gsap/Observer.js",
         "node_modules/gsap/ScrollTrigger.js",
         "node_modules/rxjs/dist/esm5/operators/index.js",
+        "src/assets/javascripts/utils/index.ts",
         "src/assets/javascripts/log/index.ts",
         "src/assets/javascripts/hero/animation/index.ts",
         "src/assets/javascripts/cache/index.ts",
@@ -329,13 +330,13 @@
       ],
       "exports": []
     },
-    "docs/assets/stylesheets/bundle.RG2TGSBW.css.map": {
-      "bytes": 328537,
+    "docs/assets/stylesheets/bundle.KN7OG6FS.css.map": {
+      "bytes": 327875,
       "inputs": [],
       "exports": []
     },
-    "docs/assets/stylesheets/bundle.RG2TGSBW.css": {
-      "bytes": 179577,
+    "docs/assets/stylesheets/bundle.KN7OG6FS.css": {
+      "bytes": 179262,
       "inputs": [
         "external/mkdocs-material/material/templates/assets/stylesheets/palette.06af60db.min.css",
         "external/mkdocs-material/material/templates/assets/stylesheets/main.8c3ca2c6.min.css",

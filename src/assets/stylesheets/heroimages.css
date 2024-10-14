@@ -12,13 +12,14 @@
   position: relative;
   top: 0;
   z-index: -5;
+  box-sizing: content-box;
   display: block;
   flex-grow: 2;
   grid-column-start: 1;
   place-self: start start;
   min-width: 100%;
-  min-height: calc((var(--vh) * 0.3) - var(--header-height));
-  max-height: calc((var(--vh) * 1.4) - var(--header-height));
+  min-height: calc((100vh * 0.3) - var(--header-height));
+  max-height: var(--parallax-height);
   padding-bottom: 1rem;
   margin-bottom: 0.1rem;
   overflow: hidden visible;
@@ -47,19 +48,25 @@
   }
 }
 
+/*
+Not really images, but we set colors for the call to action header/subheader by image,
+so it made sense for them to live here
+*/
+
 #CTA_header {
   position: relative;
   display: inline-block;
   margin: 0.5rem;
   font-family: Bangers, Impact, Haettenschweiler, Charcoal, "Arial Narrow Bold", Gadget, sans-serif;
-  font-size: clamp(3em, 8em, 13em);
+  font-size: clamp(20px, calc(100vw / 14), 16em);
   color: var(--h1-color);
   text-align: left;
   text-transform: uppercase;
+  white-space: nowrap;
   font-display: swap;
   object-position: bottom left;
   transition: 300ms color ease;
-  animation: glow 4000ms ease-in-out infinite alternate;
+  animation: glow 3000ms ease-in-out infinite alternate;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -69,18 +76,29 @@
   display: inline-block;
   margin: 0 1rem 1rem;
   font-family: Bangers, Impact, Haettenschweiler, Charcoal, "Arial Narrow Bold", Gadget, sans-serif;
-  font-size: clamp(1em, 3em, 5em);
+  font-size: clamp(14px, calc(100vw / 19), 12em);
   color: var(--p-color);
   text-align: left;
   text-shadow:
     0.01em 0.01em 0 var(--oxford-blue),
     0.05em 0.05em 0 var(--turkey-red);
   text-transform: uppercase;
+  white-space: nowrap;
   font-display: swap;
   object-position: bottom left;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   transition: 300ms color ease;
+}
+
+@media screen and (width <= 416px) {
+  #CTA_header {
+    font-size: clamp(15px, calc(100vw / 16), 10em);
+  }
+
+  #CTA_paragraph {
+    font-size: clamp(12px, calc(100vw / 22), 6em);
+  }
 }
 
 .cta-ul {
@@ -245,20 +263,24 @@
   transform: translate(var(--translate-x), var(--translate-y));
 }
 
+/* TODO: get the overlay to actually show without messing up everything */
 .fade-overlay {
-  position: relative;
-  top: 2rem;
+  --fade-height: var(--parallax-height);
+
+  position: absolute;
+  top: 0;
   left: 0;
   z-index: 5;
-  width: var(--vw);
-  height: calc((var(--vh) * 1.4) - var(--header-height));
-  pointer-events: none; /* So that it doesn't interfere with image clicks */
-  object-fit: cover;
+  width: 100vw;
+  height: var(--parallax-height);
+  overflow: hidden clip;
+  pointer-events: none;
   background:
     linear-gradient(
       to bottom,
-      rgba(var(--gunmetal-adj), 0) calc((var(--vh)) * 0.8) - var(--header-height),
-      rgba(var(--gunmetal-adj), 0.3) calc(var(--vh) - var(--header-height)),
-      rgba(var(--gunmetal-adj), 1) calc((var(--vh) * 1.4) - var(--header-height))
+      rgba(var(--gunmetal-adj), 0) 70%,
+      rgba(var(--gunmetal-adj), 0.3) 85%,
+      rgba(var(--gunmetal-adj), 0.6) 90%,
+      rgba(var(--gunmetal-adj), 1) 100%
     );
 }

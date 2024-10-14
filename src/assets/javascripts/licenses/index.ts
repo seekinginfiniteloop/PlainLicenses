@@ -9,8 +9,8 @@
 import { Observable, Subscription, fromEventPattern, merge } from "rxjs"
 import { filter, map, switchMap } from "rxjs/operators"
 
+import { createInteractionObservable } from "~/utils"
 import { logger } from "~/log"
-import { InteractionEvent, createInteractionObservable } from "~/hero/animation"
 
 const subscriptions = Array<Subscription>()
 

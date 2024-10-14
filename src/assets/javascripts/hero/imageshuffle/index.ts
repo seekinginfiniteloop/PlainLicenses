@@ -16,10 +16,12 @@ import {
   fromEventPattern,
   interval,
   of,
+  shareReplay,
   throwError
 } from "rxjs"
-import { catchError, distinctUntilChanged, filter, first, mergeMap, switchMap, takeUntil, tap } from "rxjs/operators"
+import { catchError, distinctUntilChanged, filter, first, map, mergeMap, switchMap, takeUntil, tap } from "rxjs/operators"
 
+import { isElementVisible, setCssVariable } from "~/utils"
 import { getAsset } from "~/cache"
 import { heroImages } from "~/hero/imageshuffle/data"
 import { logger } from "~/log"
@@ -327,6 +329,53 @@ function loadFirstImage(): Observable<void> {
     return throwError(() => new Error("First image not found"))
   }
 }
+
+const getImage = () => {
+  const images = parallaxLayer?.getElementsByTagName("img")
+  if (images && images.length > 0) {
+    return images[0]
+  } else { return undefined }
+}
+const imageHeight$ = of(getImage())
+  .pipe(map(img => img?.height || window.innerHeight),
+    shareReplay(1),
+
+    filter(() => isPageVisible() && isElementVisible(parallaxLayer as Element)),
+    distinctUntilChanged()
+  )
+
+/**
+ * Sets the height of the parallax layer and its fade height based on the image height
+ * @function
+ * @param height - The height to set
+ */
+function setParallaxHeight(height: number) {
+  const headerHeight = document.getElementById("header-target")?.clientHeight || 95
+  setCssVariable("--header-height", `${headerHeight}px`)
+  const effectiveViewHeight = window.innerHeight - headerHeight
+  const maxFade = effectiveViewHeight * 1.4
+
+  if (!parallaxLayer || height <= 0) {
+    const currentValue = document.documentElement.style.getPropertyValue("--fade-height")
+    setCssVariable("--fade-height", Math.max(Number(currentValue), effectiveViewHeight).toString())
+  }
+
+  setCssVariable("--fade-height", `${Math.min(height * 1.2, maxFade, effectiveViewHeight)}px`)
+
+  const parallaxHeight = height < effectiveViewHeight
+    ? effectiveViewHeight
+    : Math.min(height * 1.2, maxFade)
+
+  setCssVariable("--parallax-height", `${parallaxHeight}px`)
+}
+
+subscriptions.push(
+  document$.pipe(
+    switchMap(() => imageHeight$)
+  ).subscribe({
+    next: height => setParallaxHeight(height)
+  })
+)
 
 initializeImageGenerator()
 

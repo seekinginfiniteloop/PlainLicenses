@@ -15,8 +15,6 @@ import {
   Observable,
   Subscription,
   concat,
-  fromEvent,
-  merge,
   of
 } from "rxjs"
 import {
@@ -27,6 +25,7 @@ import {
   withLatestFrom
 } from "rxjs/operators"
 
+import { createInteractionObservable } from "~/utils"
 import { logger } from "~/log"
 
 gsap.registerPlugin(ScrollToPlugin)
@@ -53,37 +52,6 @@ if (easterEgg && infoBox) {
 const infoBoxIsVisible = () => infoBox?.open ?? false
 const infoBoxVisibleSubject = new BehaviorSubject<boolean>(infoBoxIsVisible())
 const infoBoxVisible$ = infoBoxVisibleSubject.asObservable()
-
-/** Type representing user interaction events. */
-export type InteractionEvent = MouseEvent | TouchEvent | KeyboardEvent
-
-/** Type representing an interaction handler function. */
-type InteractionHandler<T, R> = (event: Observable<T>) => Observable<R>
-
-/**
- * Creates an observable from a specified event target and event type.
- * @function
- * @param evt - The event target or targets to observe.
- * @param handler - An optional interaction handler function to apply to the observable. The handler must receive and return an observable.
- * @returns Observable<R | InteractionEvent> - An observable of the specified event type.
- * @template R - The type of the observable result.
- */
-export function createInteractionObservable<R>(
-  evt: EventTarget | EventTarget[],
-  handler?: InteractionHandler<InteractionEvent, R>
-): Observable<R | InteractionEvent> {
-  const events$ = merge(
-    fromEvent<InteractionEvent>(evt, "click"),
-    fromEvent<InteractionEvent>(evt, "touchend"),
-    fromEvent<InteractionEvent>(evt, "keydown")
-  )
-
-  if (handler) {
-    return handler(events$)
-  } else {
-    return events$
-  }
-}
 
 const hideOverlay = (): void => {
   if (infoBox) {

@@ -52,8 +52,8 @@ header#header-target.md-header {
   place-content: flex-start flex-start;
   align-items: flex-start;
   align-self: flex-start;
-  width: var(--vw);
-  height: calc((var(--vh) * 3.8) - var(--header-height));
+  width: 100vw;
+  min-height: calc((100vh * 1.8) - var(--header-height));
   object-fit: cover;
   background: rgb(var(--gunmetal));
 }
@@ -68,9 +68,10 @@ header#header-target.md-header {
   align-items: flex-start;
   align-self: flex-start;
   order: -1;
-  width: var(--vw);
-  min-height: calc((var(--vh) * 1.4) - var(--header-height));
-  padding-bottom: 3rem;
+  width: 100vw;
+  min-height: var(--parallax-height);
+  max-height: calc((100vh * 1.6) - var(--header-height));
+  padding-bottom: 2rem;
   margin-top: -2.4rem;
   margin-bottom: 0.1rem;
   overflow: hidden visible;
@@ -90,16 +91,17 @@ header#header-target.md-header {
   grid-template-columns: 1fr;
   place-content: start center;
   order: -1;
-  width: var(--vw);
-  height: calc((var(--vh) - var(--header-height)));
-  padding-bottom: 1px;
-  overflow-y: visible;
+  width: 100vw;
+  min-height: calc((100vh - var(--header-height)));
+  max-height: max(var(--parallax-height), calc((100vh * 1.4) - var(--header-height)));
+  padding-bottom: 1em;
+  overflow: hidden;
   pointer-events: auto;
 }
 
 .mdx-hero__teaser {
   position: absolute;
-  top: calc((var(--vh) * 0.6) - var(--header-height));
+  top: calc((100vh * 0.6) - var(--header-height));
   z-index: 40;
   display: flex;
   flex-direction: column;
@@ -113,7 +115,7 @@ header#header-target.md-header {
 @media screen and (orientation: portrait) {
   .md-hero__teaser {
     position: absolute;
-    bottom: calc((var(--vh) - var(--header-height)) * 0.05);
+    bottom: calc((100vh * 0.7) - var(--header-height));
     width: 90%;
     padding-bottom: 1rem;
   }
@@ -127,7 +129,8 @@ header#header-target.md-header {
   place-content: center center;
   align-items: center;
   align-self: center;
-  width: max-content;
+  width: 80%;
+  height: 3rem;
   padding: 0.3rem;
   margin: 0.4rem;
   text-align: center;
@@ -137,14 +140,23 @@ header#header-target.md-header {
 
 #hero-primary-button {
   z-index: 3000;
+  box-sizing: content-box;
+  display: inline-block;
+  width: max-content;
+  height: fit-content;
+  padding: 0.7em;
+  margin: 0.3em;
   font-family: Inter, "Noto Sans", "Open Sans", Lato, Helvetica, Arial, system-ui, sans-serif;
-  font-size: 0.9em;
+  font-size: 1.1rem;
+  font-weight: 700;
   color: var(--emerald);
   font-display: swap;
+  pointer-events: all;
   cursor: pointer;
   user-select: none;
   object-fit: cover;
-  background: rgba(var(--zaffre-adj), 0.6);
+  background: rgba(var(--zaffre-adj), 0.7);
+  border-radius: 0.35em;
   transition:
     background-color 350ms ease-in-out,
     color 300ms ease-in-out,
@@ -170,8 +182,8 @@ header#header-target.md-header {
 
 svg#arrow-down {
   position: absolute;
-  bottom: max(calc((var(--vh) - var(--header-height)) * 0.07), calc(var(--vh) * 0.05));
-  left: calc(var(--vw) * 0.5);
+  top: max(calc((100vh * 0.93) - var(--header-height)), calc((100vh * 0.97)));
+  left: calc(100vw * 0.5);
   z-index: 200;
   width: 1.5rem;
   height: 1.5rem;
@@ -208,20 +220,17 @@ svg#arrow-down:hover {
 /* Slide content */
 
 #pt2-hero-content-section {
-  --dynamic-font-min: 14px;
-  --dynamic-font-mid: calc((var(--vh) - var(--header-height)) / 6);
-  --dynamic-font-max: 40em;
-
   position: relative;
   left: 0;
   z-index: 10;
+  box-sizing: content-box;
   display: flex;
   flex-flow: column nowrap;
   place-items: center center;
   place-self: center center;
   justify-content: space-evenly;
-  width: var(--vw);
-  height: calc(var(--vh) - var(--header-height));
+  width: 100vw;
+  height: calc(100vh - var(--header-height));
   padding-top: 0.01rem;
   padding-bottom: 0.01rem;
   margin-top: 1rem;
@@ -240,11 +249,11 @@ svg#arrow-down:hover {
 h1.hero-content-section.header-mid {
   z-index: 50;
   display: block;
-  width: var(--vw);
+  width: 100vw;
   padding: 0.3em;
   margin: 0.1em;
   overflow: hidden;
-  font-size: clamp(var(--dynamic-font-min), var(--dynamic-font-mid), var(--dynamic-font-max));
+  font-size: clamp(14px, calc(100vw / 8), 40em);
   text-align: center;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -253,8 +262,8 @@ h1.hero-content-section.header-mid {
 
 h1.hero-content-section.header-mid.line {
   display: inline-block;
-  max-width: var(--vw);
-  max-height: (var(--vh) - var(--header-height) - 0.6em);
+  max-width: 100vw;
+  max-height: (100vh - var(--header-height) - 0.6em);
   padding: 0.3em;
   font-family: Bangers, Impact, Haettenschweiler, Charcoal, "Arial Narrow Bold", Gadget, sans-serif;
   color: var(--atomic-tangerine);
@@ -279,13 +288,16 @@ h1.hero-content-section.header-mid.line {
   place-items: center center;
   place-self: center center;
   justify-content: center;
-  width: var(--vw);
-  height: calc(var(--vh) * 0.4);
+  min-width: 100vw;
+  max-width: 105vw;
+  min-height: (calc(100vh - var(--header-height)) * 0.8);
+  max-height: 100vh;
   padding-top: 1rem;
   padding-bottom: 1rem;
-  margin-top: 0.1rem;
-  margin-bottom: 0.1rem;
-  background: var(--saffron);
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  overflow: hidden;
+  background: var(--ecru);
   background-repeat: no-repeat;
   background-attachment: fixed;
 }
@@ -294,17 +306,22 @@ h1.hero-content-section.header-mid.line {
   position: relative;
   left: 0;
   z-index: 10;
+  box-sizing: content-box;
   display: grid;
+
+  /* Define grid areas */
   grid-template:
-    ". . . ." 1fr ". head head ." 1.5fr ". hlt1 hlt2 ." 2fr ". hlt3 hlt4 ." 2fr /
-    ". hlt5  hlt6 ." 2fr ". . . ." 1fr / 0.5fr 2.5fr 2.5fr 0.5fr;
+    ".     .     .     .     " 1fr ".     head  head  .     " 1.5fr ".     hlt1  hlt2  .     " 2fr ".     hlt3  hlt4  .     " 2fr ".     hlt5  hlt6  .     " 2fr ".     .     .     .     " 1fr / 0.5fr 2.5fr 2.5fr 0.5fr;
   grid-auto-flow: row;
   gap: 1em;
   place-items: stretch stretch;
-  width: var(--vw);
-  height: calc(var(--vh) - var(--header-height));
-  padding-top: 1px;
-  padding-bottom: 1em;
+  width: 105vw;
+  min-width: 100vw;
+  height: calc(100vh - var(--header-height));
+  min-height: calc(100vh - var(--header-height));
+  padding: 1em;
+  margin: 1em 0;
+  overflow: hidden visible;
   scroll-snap-type: y mandatory;
   scroll-snap-align: start;
   scroll-snap-stop: always;
@@ -314,17 +331,15 @@ h1.hero-content-section.header-mid.line {
   background-attachment: fixed;
 }
 
-h1#pt3-hero-content-section-header.hero-content-section {
+#pt3-hero-content-section-header {
   z-index: 50;
   display: grid;
   grid-area: head;
   place-self: first baseline center;
   width: 100%;
   margin-top: 0.3rem;
-  font-family:
-    Bangers, Impact, Haettenschweiler, Charcoal, "Arial Narrow Bold" /
-    Gadget, sans-serif;
-  font-size: clamp(10px, calc(var(--vw) / 26), 16em);
+  font-family: Bangers, Impact, Haettenschweiler, Charcoal, "Arial Narrow Bold", Gadget, sans-serif;
+  font-size: clamp(10px, calc(100vw / 26), 16em);
   color: var(--emerald);
   text-align: center;
   text-shadow: 0.01em 0.01em 0 var(--oxford-blue);
@@ -506,14 +521,6 @@ section#pt3-hero-content-section.hero-content-section svg.hlticon {
 }
 
 @media screen and (width <= 416px) {
-  #CTA_header {
-    font-size: clamp(16px, 3.5em, 6em);
-  }
-
-  #CTA_paragraph {
-    font-size: clamp(14px, 1.7em, 3em);
-  }
-
   h1#pt2-hero-content-section-header {
     font-size: clamp(16px, 6em, 8em);
     text-align: left;
@@ -641,8 +648,8 @@ section#pt3-hero-content-section.hero-content-section svg.hlticon {
 
 svg#the-egg {
   position: absolute;
-  top: calc((var(--vh) * 0.4) - var(--header-height));
-  right: calc(var(--vw) / 10);
+  top: calc((100vh * 0.4) - var(--header-height));
+  right: calc(100vw / 10);
   z-index: 25;
   display: none; /* enabled by JavaScript; off for noscript */
   width: 1rem;
@@ -667,27 +674,33 @@ svg#the-egg:active {
 
 #hero-dialog-position {
   position: absolute;
-  right: calc(var(--vw) / 2);
-  bottom: calc((var(--vh) * 0.6) - var(--header-height));
+  right: calc(100vw / 2);
+  bottom: calc((100vh * 0.6) - var(--header-height));
   z-index: 1000;
   display: flex;
   flex-direction: column;
   align-items: center;
   align-self: center;
   justify-content: center;
-  width: calc(var(--vw) * 0.8);
-  max-width: calc(var(--vw) * 0.8);
+  width: calc(100vw * 0.7);
+  max-width: calc(100vw * 0.8);
   object-fit: cover;
   object-position: center;
 }
 
 #hero-dialog-position::backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
   z-index: 1000;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  background: var(--ecru);
+  background: rgba(var(--ecru-adj), 0.6);
+  background-attachment: fixed;
 }
 
-#hero-dialog-position dialog#egg-box.info-box {
+dialog#egg-box.info-box {
   position: relative;
   z-index: 10000;
   width: 80%;
@@ -698,21 +711,33 @@ svg#the-egg:active {
   font-family: Inter, "Noto Sans", "Open Sans", Lato, Helvetica, Arial, system-ui, sans-serif;
   font-size: clamp(8px, 1.1em, 1.4em);
   line-height: 1.8;
-  color: #ffffff;
+  color: var(--white);
   object-fit: cover;
   object-position: center;
-  background: rgba(0, 0, 0, 0.8);
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(var(--smokier-black-adj), 1) 25%,
+      rgba(var(--smokier-black-adj), 0.9) 50%,
+      rgba(var(--smokier-black-adj), 0.8) 75%,
+      rgba(var(--smokier-black-adj), 0.75) 100%
+    );
   border-radius: 1rem;
   box-shadow: 0 0 1rem rgba(0, 0, 0, 0.4);
 }
 
-div#hero-dialog-position dialog#egg-box.info-box::backdrop {
+dialog#egg-box.info-box::backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
   z-index: 1000;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  background: rgba((var(--ecru-adj)), 0.8);
+  background: rgba((var(--ecru-adj)), 0.7);
 }
 
-div#hero-dialog-position dialog#egg-box.info-box form p {
+dialog#egg-box.info-box form p {
   position: relative;
   padding: 0.5em;
   margin: 1em;
@@ -722,7 +747,7 @@ div#hero-dialog-position dialog#egg-box.info-box form p {
   text-align: justify;
 }
 
-div#hero-dialog-position dialog#egg-box.info-box form h1 {
+dialog#egg-box.info-box form h1 {
   padding: 0.5em;
   margin: 1em 1em 0;
   font-size: clamp(12px, 3em, 6em);
@@ -730,7 +755,7 @@ div#hero-dialog-position dialog#egg-box.info-box form h1 {
   white-space: nowrap;
 }
 
-dialog#egg-box.info-box form button#egg-box-close.md-button {
+button#egg-box-close.md-button {
   position: relative;
   padding: 0.6em;
   margin: 1em;
@@ -744,7 +769,7 @@ dialog#egg-box.info-box form button#egg-box-close.md-button {
   transition: background-color 500ms ease-in-out, color 500ms ease-in-out;
 }
 
-dialog#egg-box.info-box form button#egg-box-close.md-button:hover {
+button#egg-box-close.md-button:hover {
   color: var(--zaffre);
   text-shadow: 0 0 0.1em var(--gunmetal);
   background-color: var(--emerald);
@@ -756,22 +781,9 @@ a#yoshimi-link:visited {
   text-decoration: none;
 }
 
+a#yoshimi-link:hover,
 a#yoshimi-link:focus {
-  color: var(--emerald);
-}
-
-a#yoshimi-link:hover {
   color: var(--mindaro);
-}
-
-@media screen and (min-width: 40em) {
-  @supports ((perspective: 2.5rem) and (not (-webkit-overflow-scrolling: touch))) {
-    body {
-      transform: translateZ(0);
-
-      /* Fix paint issues in Edge && Safari H/W acceleration */
-    }
-  }
 }
 
 @media screen and (width <= 416px),
