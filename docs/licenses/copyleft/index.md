@@ -1,5 +1,5 @@
 ---
-template: license.html
+template: main.html
 title: Plain License Copyleft Licenses
 description: Plain License copyleft licenses are for anyone passionate about keeping their work open source. We provide simple, clear licenses that allows you to do almost anything with a work.
 ---

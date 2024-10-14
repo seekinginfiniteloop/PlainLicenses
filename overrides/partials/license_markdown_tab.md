@@ -15,7 +15,7 @@ Plain Version: {{ plain_version|trim }}
 
 ### {{ interpretation_title|trim }}
 
-{{  interpretation_text|trim|wordwrap(width=80, break_long_words=False) }}
+{{ interpretation_text|trim|wordwrap(width=80, break_long_words=False) }}
 
 ```
 

@@ -1,4 +1,5 @@
 ---
+template: main.html
 title: Plain Licenses
 description: Our plain licenses are easy to understand and use. We divide our licenses into public domain (dedications), permissive, copyleft, source-available, and proprietary.
 ---

@@ -1,5 +1,5 @@
 //// tab | changelog :material-history:
-    attrs: { data-icon: "changelog_link"}
+    attrs: { data-icon: "changelog_link" }
 
 {% if changelog -%}
 {{ changelog|trim }}

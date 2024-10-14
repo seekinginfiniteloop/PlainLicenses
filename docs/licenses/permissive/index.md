@@ -1,4 +1,5 @@
 ---
+template: main.html
 title: Plain License Permissive Licenses
 description: Plain License permissive licenses give you the most freedom to use a work. We provide simple, clear licenses that allows you to do almost anything with a work.
 ---

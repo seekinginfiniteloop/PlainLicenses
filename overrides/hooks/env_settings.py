@@ -70,13 +70,14 @@ def on_env(env: Environment, config: MkDocsConfig, files: Files) -> Environment:
     Adds markdown filter to Jinja2 environment using markdown extensions and configurations from the mkdocs.yml file
     Also adds Jinja2 extensions: do, loopcontrols
     """
-    # we have to pass the extensions each time for pyMarkdown, and env.filters doesn't allow for that... rpartial to the rescue!
     markdown_extensions = config["markdown_extensions"]
     markdown_configs = {}
     for item in markdown_extensions:
         if isinstance(item, dict):
             for key, value in item.items():
                 configs[key] = value
+
+    # we have to pass the extensions each time for pyMarkdown, and env.filters doesn't allow for that... rpartial to the rescue!
     env.filters["markdown"] = rpartial(md_filter, markdown_extensions, markdown_configs)
     env.add_extension("jinja2.ext.do")
     env.add_extension("jinja2.ext.loopcontrols")

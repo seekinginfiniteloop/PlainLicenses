@@ -21,7 +21,7 @@ from mkdocs.structure.nav import Navigation
 
 # You can override the hooks' global log level by setting the LOG_LEVEL_OVERRIDE environment variable as an integer: [Python logging levels](https://docs.python.org/3/library/logging.html#logging-levels).
 development = globals().get("development", os.getenv("GITHUB_ACTIONS") != "true")
-LOG_LEVEL_OVERRIDE = int(os.environ.get("LOG_LEVEL_OVERRIDE", 50))
+LOG_LEVEL_OVERRIDE = int(os.environ.get("LOG_LEVEL_OVERRIDE", 10))
 
 log_file: Path | None = None
 # add `timestamp` to the LOG_SAVE_PATH environment variable to have the current timestamp added to the log file name

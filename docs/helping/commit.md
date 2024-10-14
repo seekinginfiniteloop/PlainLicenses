@@ -1,4 +1,5 @@
 ---
+template: main.html
 title: "Contributing to Plain License: A Beginner's Guide"
 description: "Committing to Plain License: A Beginner's Guide"
 ---

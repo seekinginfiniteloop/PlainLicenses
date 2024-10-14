@@ -1,5 +1,5 @@
 ---
-template: license.html
+template: main.html
 title: Plain License Public Domain Dedications
 description: Plain License public domain dedications give you the most freedom to use a work. We provide a simple, clear dedication that gives away all your rights to a work.
 ---

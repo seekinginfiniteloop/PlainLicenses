@@ -1,4 +1,5 @@
 ---
+template: main.html
 title: Writing Guidelines for Plain License
 description: Learn how to write clearly and accessibly for Plain License, including licenses and site content.
 ---

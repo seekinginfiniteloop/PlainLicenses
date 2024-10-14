@@ -1,4 +1,5 @@
 ---
+template: main.html
 title: License Crafting Guide
 description: Learn how to contribute to Plain License by crafting new licenses or improving existing ones.
 ---

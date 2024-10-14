@@ -1,4 +1,5 @@
 ---
+template: main.html
 title: Developer Contributions
 description: "How developers can contribute to Plain License"
 ---

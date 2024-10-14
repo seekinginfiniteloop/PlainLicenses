@@ -24,18 +24,19 @@
         <div class="md-sidebar__inner" id="license-sidebar-inner">
             <div class="md-nav md-nav--secondary">
                 {% include "partials/license_tags.html" %}
-                </div>
-                <div class="md-nav md-nav--secondary">
+            </div>
+            <div class="md-nav md-nav--secondary">
                 <div class="expanding-section">
                     <div class="section-header">
-                        <span class="triangle" role="button" tabindex="0">&#9654;</span> <!-- Right-pointing triangle -->
+                        <span class="triangle" role="button" tabindex="0">&#9654;</span>
+                        <!-- Right-pointing triangle -->
                         <span class="header-text">how to use</span>
                     </div>
                     <div class="section-content">
                         <p>{{ page.meta.how }}</p>
                     </div>
                 </div>
-                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -43,13 +44,13 @@
 {% block content %}
 <div class="license_about_intro_container">
     <div class="intro_icon">
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200">
-    <path
-        d="M600 127.12A472.89 472.89 0 1 0 1072.88 600a473.23 473.23 0 0 0-472.87-472.87zM673.5 900a23.45 23.45 0 0 1-23.44 23.44H549.94A23.45 23.45 0 0 1 526.51 900V500.06a23.45 23.45 0 0 1 23.43-23.44h100.12a23.45 23.45 0 0 1 23.44 23.44zM600 423.38a73.51 73.51 0 1 1 .13-147 73.5 73.5 0 0 1-.13 147z" />
-</svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200">
+            <path
+                d="M600 127.12A472.89 472.89 0 1 0 1072.88 600a473.23 473.23 0 0 0-472.87-472.87zM673.5 900a23.45 23.45 0 0 1-23.44 23.44H549.94A23.45 23.45 0 0 1 526.51 900V500.06a23.45 23.45 0 0 1 23.43-23.44h100.12a23.45 23.45 0 0 1 23.44 23.44zM600 423.38a73.51 73.51 0 1 1 .13-147 73.5 73.5 0 0 1-.13 147z" />
+        </svg>
 
     </div>
-<div class="license_intro"> {{ page.meta.license_description }} </div>
+    <div class="license_intro"> {{ page.meta.license_description }} </div>
 </div>
 {{ page.content }}
 {% endblock %}

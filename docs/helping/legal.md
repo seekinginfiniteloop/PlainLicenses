@@ -1,4 +1,5 @@
 ---
+template: main.html
 title: Legal Contributions to Plain License
 description: Learn how legal professionals can contribute their expertise to Plain License, including reviewing licenses and offering legal opinions.
 ---

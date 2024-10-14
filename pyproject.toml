@@ -23,7 +23,6 @@ dependencies = [
     "mkdocs-minify-plugin>=0.8.0",
     "pyyaml_env_tag>=0.1.0",
     "ez-yaml>=2.2.0",
-    "mkdocs-include-markdown-plugin[cache]>=6.2.2",
 ]
 readme = "README.md"
 requires-python = ">= 3.12"

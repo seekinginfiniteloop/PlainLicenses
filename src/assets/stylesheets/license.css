@@ -207,7 +207,8 @@ nav.md-nav.md-nav--secondary div.quick_links a.quicklink_group:active span.tab_q
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 15%;
+  min-width: 2em;
+  max-width: 64px;
   padding: 0.5em;
   margin-right: 1em;
 }
@@ -307,6 +308,7 @@ nav.md-nav.md-nav--secondary div.quick_links a.quicklink_group:active span.tab_q
   margin-right: 2em;
   margin-left: 0.5em;
   color: var(--emerald);
+  cursor: pointer;
   transition: transform 300ms ease;
 }
 

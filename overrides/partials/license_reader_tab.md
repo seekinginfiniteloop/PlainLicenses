@@ -1,5 +1,5 @@
 //// tab | reader :material-book-open-outline:
-    attrs: { data-icon: "reader_link"}
+    attrs: { data-icon: "reader_link" }
 
 <div class="license-header">
 <h1 class="license-title">{{ plain_name|trim }}</h1>
@@ -17,7 +17,7 @@ Plain Version: {{ plain_version|trim }}
 /// admonition | {{ interpretation_title|trim }}
     type: note
 
-{{  interpretation_text|trim }}
+{{ interpretation_text|trim }}
 ///
 <p class="license-divider"></p>
 {% include "partials/license_disclaimer_block.md" %}

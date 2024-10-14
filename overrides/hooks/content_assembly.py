@@ -101,6 +101,13 @@ def on_page_markdown(
     rendered_content = main_template.render(context)
     return f"{markdown_content}\n{rendered_content}"
 
+def on_post_template(output_content: str, template_name: str, config: MkDocsConfig) -> str:
+    """Just a log for debugging"""
+    if any((item for item in ["mit", "elastic", "mpl", "unlicense"] if item in template_name)):
+        ASSEMBLER_LOGGER.debug(f"Processing template {template_name} in on_post_template")
+        ASSEMBLER_LOGGER.debug(f"Output content: {output_content}")
+    return output_content
+
 
 def on_post_page(output: str, page: Page, config: MkDocsConfig) -> Any:
     """Replaces year placeholders in the license pages with the current year.

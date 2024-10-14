@@ -1,4 +1,5 @@
 ---
+template: main.html
 title: Helping Plain License -- How to Contribute
 description: How to help Plain License and contribute to our mission of making licenses easier to understand.
 ---

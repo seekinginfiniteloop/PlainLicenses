@@ -1,4 +1,5 @@
 ---
+template: main.html
 title: Plain License Source-Available Licenses
 description: Plain License source-available licenses offer a range of permissions and restrictions for sharing a work. We provide clear, simple terms for sharing software and other works with others while keeping some control over how it's used.
 ---

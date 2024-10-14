@@ -1,4 +1,5 @@
 ---
+template: main.html
 title: Plain License FAQ
 description: Plain License frequently asked questions.
 hide:
