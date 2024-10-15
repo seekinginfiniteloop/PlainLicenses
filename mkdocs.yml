@@ -5,6 +5,7 @@ repo_name: PlainLicense
 edit_uri: edit/main/docs/
 copyright: Plain License's authors dedicate all original content to the public domain. No rights reserved.
 hooks:
+  - overrides/hooks/buildtest.py # Tests build process for errors to prevent broken builds
   - overrides/hooks/socialmedia.py # Material hook for social media cards
   - overrides/hooks/update_changelogs.py # Handles changelog updates for individual licenses
   - overrides/hooks/content_assembly.py # Assembles licenses from frontmatter and boilerplate (boilerplate below)
