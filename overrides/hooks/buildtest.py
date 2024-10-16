@@ -9,9 +9,7 @@ from pathlib import Path
 from pprint import pformat
 from typing import Any, Literal, MutableMapping, TypedDict
 
-from regex import B
-
-from _logconfig import get_logger
+from hook_logger import get_logger
 from jinja2.environment import Environment
 from mkdocs.plugins import event_priority
 from mkdocs.structure.pages import Page
@@ -20,8 +18,9 @@ from mkdocs.structure.nav import Navigation
 from mkdocs.config.base import Config as MkDocsConfig
 from mkdocs.utils.templates import TemplateContext
 
-if not hasattr(__name__, "BUILD_TEST_LOGGER"):
-    BUILD_TEST_LOGGER = get_logger(
+
+if not hasattr(__name__, "build_logger"):
+    build_logger = get_logger(
         __name__,
         logging.DEBUG,
     )
@@ -32,6 +31,14 @@ LICENSES: dict[str, "ProcessedLicense"]
 WRITE_LICENSE_DATA = True
 TODAY = datetime.datetime.now().strftime("%Y-%m-%d")
 WRITE_PATH = Path(f".workbench/licenses/{TODAY}")
+
+def isLicense(page: Page) -> bool:
+    """Check if a page is a license."""
+    return ("spdx_id" in page.meta)  or any((name for name in LICENSES.keys() if name in page.url))
+
+def getName(url: str) -> str | None:
+    """Get the name of the license from the URL."""
+    return next((name for name in LICENSES.keys() if name in url), None)
 
 class ProcessedLicense(TypedDict):
     """A dictionary representing a processed license. We use this to keep track of the licenses we've processed, and then to evaluate whether everything was processed smoothly."""
@@ -73,16 +80,15 @@ def get_licenses() -> dict[str, ProcessedLicense]:
         for path in license_paths
     }
 
-
 @event_priority(100)
 def on_startup(command: Literal['build', 'gh-deploy', 'serve'], dirty: bool) -> None:
     """This literally just exists to start the logger as soon as possible and create the globals."""
-    BUILD_TEST_LOGGER.debug(f"Starting {command} command.")
+    build_logger.debug(f"Starting {command} command.")
     globals()["COMMAND"] = command
     globals()["IS_PRODUCTION"] = command == "build" or command == "gh-deploy" or os.getenv("GITHUB_ACTIONS") == "true"
     globals()["LICENSES"] = get_licenses()
-    BUILD_TEST_LOGGER.debug(f"Production: {IS_PRODUCTION}")
-    BUILD_TEST_LOGGER.debug(f"Licenses: {LICENSES.keys()}")
+    build_logger.debug(f"Production: {IS_PRODUCTION}")
+    build_logger.debug(f"Licenses: {LICENSES.keys()}")
 
 @event_priority(-100)
 def on_page_markdown(
@@ -101,11 +107,11 @@ def on_page_markdown(
         str: The final markdown content.
     """
     name = page.meta.get("spdx_id")
-    BUILD_TEST_LOGGER.debug(f"Processing {name}")
+    build_logger.debug(f"Processing {name}")
     if not name:
         return markdown
     if name not in LICENSES:
-        BUILD_TEST_LOGGER.error(
+        build_logger.error(
             f"License {name} not found in licenses dictionary. This is a bug."
         )
         return markdown
@@ -125,7 +131,7 @@ def on_env(env: Environment, config: MkDocsConfig, files: Files) -> Environment:
     Returns:
         Environment: The Jinja2 environment.
     """
-    BUILD_TEST_LOGGER.debug("Processing Jinja2 environment.")
+    build_logger.debug("Processing Jinja2 environment.")
     for license in LICENSES:
         LICENSES[license]["environment"] = env
     return env
@@ -148,7 +154,7 @@ def on_page_content(html: str, page: Page, config: MkDocsConfig, files: Files) -
     if not name:
         return html
     if name not in LICENSES:
-        BUILD_TEST_LOGGER.error(
+        build_logger.error(
             f"License {name} not found in licenses dictionary. This is a bug."
         )
         return html
@@ -169,16 +175,9 @@ def on_page_context(context: TemplateContext, page: Page, config: MkDocsConfig, 
     Returns:
         TemplateContext: The template context.
     """
-    try:
-        name = page.meta["spdx_id"]
-    except KeyError:
-        if missing := [name for name in LICENSES if name in page.url]:
-            BUILD_TEST_LOGGER.error(f"License {missing[0]} not found in licenses dictionary. This is a bug.")
+    if name := getName(page.url):
         return context
-    if name not in LICENSES:
-        BUILD_TEST_LOGGER.error(f"License {name} not found in licenses dictionary. This is a bug.")
-        return context
-    BUILD_TEST_LOGGER.debug(f"Processing {name} context.")
+    build_logger.debug(f"Processing {name} context.")
     LICENSES[name]["context"] = context
     LICENSES[name]["config"] = config
     LICENSES[name]["frontmatter"] = page.meta
@@ -195,6 +194,7 @@ def on_post_page(
     Args:
         output_content (str): The final output content.
         page (Page): The page object containing metadata and content.
+
         config (MkDocsConfig): The configuration object for the site.
         files (Files): The files that are being processed.
 
@@ -205,17 +205,17 @@ def on_post_page(
     if not name:
         return output_content
     if name not in LICENSES:
-        BUILD_TEST_LOGGER.error(
+        build_logger.error(
             f"License {name} not found in licenses dictionary. This is a bug."
         )
         return output_content
-    BUILD_TEST_LOGGER.debug(f"Processing {name} output.")
+    build_logger.debug(f"Processing {name} output.")
     LICENSES[name]["output"] = output_content
     return output_content
 
 def write_license_data() -> None:
     """Write the license data to a file."""
-    BUILD_TEST_LOGGER.debug("Writing license data.")
+    build_logger.debug("Writing license data.")
     for license in LICENSES:
         destination = WRITE_PATH / f"{license['name']}.txt"
         if not destination.parent.exists():
@@ -245,12 +245,12 @@ def on_post_template(
     keys_to_check = {k for k in LICENSES.values() if k != "all_completed"}
     for license in LICENSES:
         if not all((LICENSES[license][key] for key in keys_to_check)):
-            BUILD_TEST_LOGGER.error(f"License {license} was not fully processed.")
+            build_logger.error(f"License {license} was not fully processed.")
             LICENSES[license]["all_completed"] = False
         else:
             LICENSES[license]["all_completed"] = True
     if not all((LICENSES[license]["all_completed"] for license in LICENSES)):
-        BUILD_TEST_LOGGER.error("Not all licenses were fully processed.")
+        build_logger.error("Not all licenses were fully processed.")
     if WRITE_LICENSE_DATA:
         write_license_data()
     return output_content

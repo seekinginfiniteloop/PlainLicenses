@@ -9,15 +9,20 @@ import logging
 import re
 from datetime import datetime, timezone
 from pathlib import Path
-from re import Match, Pattern
+from re import L, Match, Pattern
 from typing import Any
 
-from _logconfig import get_logger
-from jinja2 import Environment, FileSystemLoader, Template
+from jinja2 import Environment, FileSystemLoader, Template, TemplateError
 from mkdocs.config.base import Config as MkDocsConfig
 from mkdocs.plugins import event_priority
 from mkdocs.structure.files import File
 from mkdocs.structure.pages import Page
+
+from hook_logger import get_logger
+from license_canary import LicenseBuildCanary, check_placeholders, is_license_page
+
+# Change hook-level logging here
+_assembly_log_level = logging.WARNING
 
 annotation_pattern: Pattern[str] = re.compile(
     r"(?P<citation>\([123]\)).*?(?P<class>\{\s\.annotate\s\})[\n\s]{1,4}[123]\.\s{1,2}(?P<annotation>.+?)\n",
@@ -27,13 +32,13 @@ header_pattern: Pattern[str] = re.compile(
     r'<h2 class="license-first-header">(.*?)</h2>'
 )
 
-placeholders = re.compile(r"\{\{\s(.*?)\s\}\}")
+placeholders = re.compile(r"\{\{\s{0,2}(.*?)\s{0,2}\}\}")
 
 
-if not hasattr(__name__, "ASSEMBLER_LOGGER"):
-    ASSEMBLER_LOGGER = get_logger(
+if not hasattr(__name__, "assembly_logger"):
+    assembly_logger = get_logger(
         __name__,
-        logging.WARNING,
+        _assembly_log_level,
     )
 
 def clean_content(content: dict[str, Any]) -> dict[str, Any] | None:
@@ -78,53 +83,57 @@ def on_page_markdown(
     Raises:
         Exception: If there is an error during template rendering or logging.
     """
-    ASSEMBLER_LOGGER.debug(f"Processing page {page.title} in on_page_markdown")
-    if not page.meta.get("category"):
-        ASSEMBLER_LOGGER.debug(f"No category found in page meta for page {page.title}")
+    assembly_logger.debug(f"Processing page {page.title} in on_page_markdown")
+    if is_license_page(page):
+        assembly_logger.debug(f"No category found in page meta for page {page.title}")
         return markdown_content
 
-    meta = page.meta
-    boilerplate = config["extra"]["boilerplate"].copy()
-    meta.update(LicenseContent(page).attributes)
-    boilerplate["year"] = datetime.now(timezone.utc).year
+    try:
+        meta = page.meta
+        boilerplate: dict[str, str] = config["extra"]["boilerplate"]
+        boilerplate["year"] = boilerplate.get("year", datetime.now(timezone.utc).strftime("%Y"))
+        license = LicenseContent(page)
+        meta.update(license.attributes)
+        boilerplate_copy = boilerplate.copy()
+        rendered_boilerplate = {
+            key: Template(value).render(meta) if isinstance(value, str) else value
+            for key, value in boilerplate_copy.items()
+        }
+        check_placeholders(rendered_boilerplate, "boilerplate")
+        meta.update(rendered_boilerplate)
+        page.meta = clean_content(meta)
 
-    rendered_boilerplate = {
-        key: Template(value).render(meta) if isinstance(value, str) else value
-        for key, value in boilerplate.items()
-    }
-    meta.update(rendered_boilerplate)
-    page.meta = clean_content(meta)
-    context = page.meta
+        env = Environment(loader=FileSystemLoader("overrides"))
+        main_template = env.get_template("license_main.md")
+        rendered_content = main_template.render(page.meta)
+        check_placeholders(rendered_content, "markdown")
+        return f"{markdown_content}\n{rendered_content}"
 
-    env = Environment(loader=FileSystemLoader("overrides"))
-    main_template = env.get_template("license_main.md")
-    rendered_content = main_template.render(context)
-    return f"{markdown_content}\n{rendered_content}"
-
-def on_post_template(output_content: str, template_name: str, config: MkDocsConfig) -> str:
-    """Just a log for debugging"""
-    if any((item for item in ["mit", "elastic", "mpl", "unlicense"] if item in template_name)):
-        ASSEMBLER_LOGGER.debug(f"Processing template {template_name} in on_post_template")
-        ASSEMBLER_LOGGER.debug(f"Output content: {output_content}")
-    return output_content
+    except TemplateError as t:
+        assembly_logger.error(f"Error rendering template: {t}")
+        LicenseBuildCanary.add_value("errors", f"Error rendering template: {t}")
+        return markdown_content # We can continue; the canary will catch this, and this gives us better data for debugging
 
 
 def on_post_page(output: str, page: Page, config: MkDocsConfig) -> Any:
     """Replaces year placeholders in the license pages with the current year.
     This was simpler than running a render on the page again, and it's a small change."""
-    if re.match(
-        r"licenses/(permissive|copyleft|public-domain/source-available|proprietary)/(.+?)/index.html",
-        page.url,
-    ):
+    if is_license_page(page):
         if match := re.search(r"\{\{\s?year\s?\}\}", output):
             logging.info("Replacing year placeholder")
-            output = output.replace(match[0], str(datetime.now().year))
+            output = output.replace(match[0], datetime.now().strftime("%Y"))
     return output
 
 
 def load_json(path: Path) -> dict[str, Any]:
     """Loads a JSON"""
     return json.loads(path.read_text())
+
+def write_json(path: Path, data: dict[str, Any]) -> None:
+    """Writes a JSON"""
+    if path.exists():
+        path.unlink()
+    path.write_text(json.dumps(data, indent=2))
 
 
 class LicenseContent:
@@ -154,7 +163,8 @@ class LicenseContent:
         self.markdown_license_text = self.process_mkdocs_to_markdown()
         self.plaintext_license_text = self.process_markdown_to_plaintext()
         self.plain_version = self.get_plain_version()
-        ASSEMBLER_LOGGER.debug("Created License Content object for %s", self.meta["plain_name"])
+        assembly_logger.debug("Created License Content object for %s", self.meta["plain_name"])
+        LicenseBuildCanary.add_value("processed_licenses", self)
 
     def process_markdown_to_plaintext(self) -> str:
         """
@@ -189,9 +199,6 @@ class LicenseContent:
 
         Returns:
             str: The processed text with definitions formatted appropriately.
-
-        Examples:
-            processed_text = process_definitions(input_text, plaintext=True)
         """
 
         definition_pattern = re.compile(
@@ -199,7 +206,7 @@ class LicenseContent:
             re.MULTILINE,
         )
         if matches := definition_pattern.finditer(text):
-            ASSEMBLER_LOGGER.debug(
+            assembly_logger.debug(
                 f"Processing definitions: {[match.group(0) for match in matches]}"
             )
             for match in matches:
@@ -234,8 +241,10 @@ class LicenseContent:
             version = package.get("version")
             if not version:
                 return "0.0.0"
-            if "development" in version:
-                return "0.0.0"
+            if "development" in version and LicenseBuildCanary.production:
+                package["version"] = "0.1.0"
+                write_json(path, package)
+                return "0.1.0"
 
         return "0.0.0"
 
@@ -274,15 +283,15 @@ class LicenseContent:
 
     def process_mkdocs_to_markdown(self) -> str:
         """
-        Processes MkDocs content and transforms it into Markdown format.
-        This function converts the text to footnotes, applies a header transformation,
-        and processes any definitions present in the text to produce a final Markdown string.
+        Processes MkDocs content and transforms it into standard Markdown (i.e. not markdown with extensions). This function converts the text to footnotes, applies a header transformation, and processes any definitions present in the text to produce a final Markdown string.
+
+        Note: Footnotes aren't *strictly* standard markdown, but they still look fine if you're not using a markdown processor that supports them. GitHub is the primary use case here, and it renders footnotes.
 
         Returns:
             str: The processed Markdown text after transformations and definitions have been applied.
         """
         text = self.transform_text_to_footnotes(self.reader)
-        ASSEMBLER_LOGGER.debug(f"Transformed text: {text}")
+        assembly_logger.debug(f"Transformed text: {text}")
         text = header_pattern.sub(r"## \1", text)
         return self.process_definitions(text)
 
@@ -299,7 +308,6 @@ class LicenseContent:
         """
 
         return {
-            # "tags": self.tags,
             "year": self.year,
             "markdown_license_text": self.markdown_license_text,
             "plaintext_license_text": self.plaintext_license_text,
