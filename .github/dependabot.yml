@@ -35,6 +35,13 @@ updates:
     target-branch: main
     assignees:
       - seekinginfiniteloop
+    groups:
+      all:
+        applies-to:
+          - security-updates
+        update-types:
+          - minor
+          - patch
   - package-ecosystem: pip
     # We only want to bump versions of packages in case of security updates, as
     # we want to keep maximum compatibility - see https://t.ly/INSR_
@@ -50,6 +57,13 @@ updates:
     target-branch: main
     assignees:
       - seekinginfiniteloop
+    groups:
+      all:
+        applies-to:
+          - security-updates
+        update-types:
+          - minor
+          - patch
   - package-ecosystem: github-actions
     open-pull-requests-limit: 10
     versioning-strategy: increase
@@ -63,3 +77,10 @@ updates:
     target-branch: main
     assignees:
       - seekinginfiniteloop
+    groups:
+      all:
+        applies-to:
+          - security-updates
+        update-types:
+          - minor
+          - patch
