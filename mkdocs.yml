@@ -5,15 +5,15 @@ repo_name: PlainLicense
 edit_uri: edit/main/docs/
 copyright: Plain License's authors dedicate all original content to the public domain. No rights reserved.
 hooks:
-  - overrides/hooks/buildtest.py # Tests build process for errors to prevent broken builds
+  - overrides/hooks/license_canary.py # Tests build process for errors to prevent broken builds
   - overrides/hooks/hook_logger.py # Central logger for hooks (can also do plugins)
   - overrides/hooks/socialmedia.py # Material hook for social media cards
   - overrides/hooks/update_changelogs.py # Handles changelog updates for individual licenses
   - overrides/hooks/content_assembly.py # Assembles licenses from frontmatter and boilerplate (boilerplate here in the config)
   - overrides/hooks/env_settings.py # Adds to the jinja environment
   - overrides/hooks/update_site_license.py # Updates the site license to match the latest Plain Unlicense
-site_description: |
-  Plain License: Terms for Everyone. We make licenses readable, understandable, and accessible.
+site_description: >
+  Plain License: Terms for Everyone.
 nav:
   - home: index.md
   - about: about/index.md

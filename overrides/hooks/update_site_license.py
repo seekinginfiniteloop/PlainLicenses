@@ -4,6 +4,7 @@ Hook that updates the site license to match the current version of the Plain Unl
 
 import logging
 from pathlib import Path
+from pprint import pformat
 from textwrap import wrap
 
 from hook_logger import get_logger
@@ -11,6 +12,8 @@ from mkdocs.config.base import Config as MkDocsConfig
 from mkdocs.structure.nav import Navigation
 from mkdocs.structure.pages import Page
 from mkdocs.utils.templates import TemplateContext
+
+from license_canary import LicenseBuildCanary
 
 _site_license_log_level = logging.WARNING
 
@@ -31,18 +34,25 @@ def on_page_context(
     Returns:
         TemplateContext: The updated template context after processing the page.
     """
-    logger = get_logger(__name__, _site_license_log_level)
+    logger = get_logger("SITE_LICENSE", _site_license_log_level)
+    canary = LicenseBuildCanary.canary()
+
+    if not (license := canary.is_license_page(page)):
+        return context
+
+    logger.debug("License context: %s \n", context)
+    logger.debug("License page: %s \n", pformat(page.content, 2))
     meta = page.meta
-    if "original_name" not in meta:
+    if 'original_name' not in meta:
         return context
     if (original_name := meta["original_name"].strip().lower()) and (
         "unlicense" in original_name or original_name == "unlicense"
     ):
         logger.info("found unlicense")
-        logger.debug(f"PATH: {Path.cwd()}")
+        logger.debug("PATH: %s", Path.cwd())
         license = SiteLicense(context, page)
         license.check_for_updates()
-        logger.debug(f"license: {license.full_text}")
+        logger.debug("license: %s", license.full_text)
     return context
 
 
@@ -70,11 +80,12 @@ class SiteLicense:
             context (TemplateContext): The current template context for rendering.
             page (Page): The page object containing metadata and content related to the license.
         """
+        self.logger = get_logger(__name__, _site_license_log_level)
         self.logger.info("Creating SiteLicense object")
         self.context = context
         self.self_location = "UNLICENSE"
         self.self_path = Path.cwd() / self.self_location
-        self.logger.debug(f"self_location: {self.self_location}")
+        self.logger.debug("self_location: %s", self.self_location)
         self.name = page.meta.get("plain_name", "Plain Unlicense").strip()
         self.title = f"\n# {self.name}"
         self.raw_text = page.meta.get("markdown_license_text", "").strip()
@@ -92,7 +103,7 @@ class SiteLicense:
         self.full_text = f"{self._preamble}\n\n{self.title}\n\n{self.version_text}\n\n{self.text}\n\n{self.interpretation_section}\n\nOfficial Unlicense: [Unlicense.org]({self.original_url})"
         self.logger = get_logger(__name__, _site_license_log_level)
 
-        self.logger.debug(f"license full text: {self.full_text}")
+        self.logger.debug("license full text: %s", self.full_text)
 
     def wrap_text(self, text: str) -> str:
         """
@@ -141,7 +152,7 @@ class SiteLicense:
         """
         Returns the preamble for the license, which is a comment block indicating the license's status.
         """
-        return """<!---\nAll original content on plainlicense.org is in the public domain.\nSome content may be subject to other licenses.\n We try to make that clear where it happens.\n-->"""
+        return """<!---\nAll original content on plainlicense.org is in the public domain.\nSome content may be subject to other licenses. Importantly, the site itself was built using Martin Donath's [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/) under the MIT license,\n and Tom Christy's [MkDocs](https://www.mkdocs.org/) under the BSD-2 license.\n For any other parts of the site under a different license, we try make it clear.\n--->"""
 
     def check_for_updates(self) -> None:
         """
@@ -157,4 +168,4 @@ class SiteLicense:
                 self.logger.info("UNLICENSE file updated")
         else:
             self.logger.debug("UNLICENSE file not found")
-            self.logger.debug(f"PATH: {self.self_path}")
+            self.logger.debug("PATH: %s", self.self_path)

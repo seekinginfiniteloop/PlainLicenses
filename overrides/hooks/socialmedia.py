@@ -11,13 +11,7 @@ from mkdocs.structure.pages import Page
 
 from hook_logger import get_logger
 
-x_intent = "https://twitter.com/intent/tweet"
-fb_sharer = "https://www.facebook.com/sharer/sharer.php"
-include = re.compile(
-    r"blog/[1-9].*|licenses/.+/index.md|licenses/.+/index.md|licenses/.+/.+/index.md"
-)
-
-if not hasattr(__name__, "social_logger"):
+if not hasattr("SOCIAL", "social_logger"):
     social_logger = get_logger(__name__, logging.WARNING)
 
 @event_priority(-100)  # run last
@@ -27,6 +21,11 @@ def on_page_markdown(
     """
     Adds social media buttons to the bottom of each blog and license page.
     """
+    x_intent = "https://twitter.com/intent/tweet"
+    fb_sharer = "https://www.facebook.com/sharer/sharer.php"
+    include = re.compile(
+        r"blog/[1-9].*|licenses/.+/index.+|licenses/.+/index.+|licenses/.+/.+/index.+|helping/.+|faq/.+|about/.+"
+    )
     social_logger.info
     if not include.match(page.url) or "index" in page.url:
         return markdown

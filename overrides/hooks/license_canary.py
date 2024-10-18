@@ -1,151 +1,187 @@
 """
 The license canary, a build-time check to ensure all licenses are processed correctly. Since we dynamically generate most license content at build, we need to ensure that the resulting pages aren't broken.
 """
+
 import logging
 import os
-
 from pathlib import Path
-from typing import Any, ClassVar, Self, Literal
+from pprint import pformat
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self
 
+from hook_logger import get_logger
 from mkdocs.config import Config as MkDocsConfig
+from mkdocs.exceptions import PluginError
+from mkdocs.plugins import event_priority
 from mkdocs.structure.files import Files
+from mkdocs.structure.nav import Navigation
 from mkdocs.structure.pages import Page
 from mkdocs.utils.templates import TemplateContext
 
-from hook_logger import get_logger
-from content_assembly import LicenseContent
+if TYPE_CHECKING:
+    from content_assembly import LicenseContent
 
 _canary_log_level = logging.WARNING
+
 
 class LicenseBuildCanary:
     """
     LicenseBuildCanary helps us ensure that all licenses are processed correctly, and prevents broken from entering production. It's also a singleton, so it doubles as a global reference point for other hooks.
     """
 
-    expected_licenses: ClassVar[set[str | None]]
-    processed_licenses: ClassVar[set[LicenseContent | None]]
-    processed_pages: ClassVar[set[TemplateContext | None]]
-    processed_html: ClassVar[set[str | None]]
-    errors: ClassVar[list[Any]]
-    production: ClassVar[bool]
-    _logger: ClassVar[logging.Logger]
-    _instance: Self | None = None
+    _instance: ClassVar[Self | None] = None
+    _initialized: ClassVar[bool] = False
 
     def __new__(cls) -> Self:
-        """We create a singleton pattern so we're not going all Oprah on the instance creation."""
         if cls._instance is None:
-            cls._instance = super(LicenseBuildCanary, cls).__new__(cls)
-            cls._set_initial_classvars()
+            cls._instance = super().__new__(cls)
         return cls._instance
 
-    @classmethod
-    def _set_initial_classvars(cls) -> None:
-        """Sets the initial class variables."""
-        cls.expected_licenses = set()
-        cls.processed_licenses = set()
-        cls.processed_pages = set()
-        cls.processed_html = set()
-        cls.errors = []
-        cls._logger = get_logger(__name__, _canary_log_level)
+    def __init__(self) -> None:
+        """Get this party started."""
+        if self.__class__._initialized:
+            return
+        self.expected_licenses: list[str] = self._list_expected_licenses()
+        self.processed_licenses: list["LicenseContent | None"] = []
+        self.processed_pages: list[TemplateContext | None] = []
+        self.processed_html: list[str | None] = []
+        self.errors: list[Any] = []
+        self.production: bool = True  # Assume production by default
+        self.logger: logging.Logger = get_logger("CANARY", _canary_log_level)
+        self.__class__._initialized = True
 
-    @classmethod
-    def _set_expected_licenses(cls) -> None:
+    def _list_expected_licenses(self) -> list[str]:
         license_paths = Path("docs/licenses/").glob("**/index.md")
-
-        cls.expected_licenses = {
-            path.parent.name # license name is the parent directory
+        return [
+            path.parent.name  # license name is the parent directory
             for path in license_paths
             if path.parent.name
-            not in [ # category and main info pages to exclude
+            not in [  # category and main info pages to exclude
                 "copyleft",
                 "licenses",
                 "permissive",
                 "proprietary",
                 "public-domain",
                 "source-available",
-                ]
-        }
+            ]
+        ]
 
-    @classmethod
-    def set_production(cls, command: str) -> None:
+    def list_production(self, command: str) -> None:
         """Sets the production flag based on the MKDocs command"""
-        cls.production = command == "build" or command == "gh-deploy" or os.getenv("GITHUB_ACTIONS") == "true"
+        self.production = (
+            command in {"build", "gh-deploy"} or os.getenv("GITHUB_ACTIONS") == "true"
+        )
 
-    @classmethod
-    def add_value(cls, attr: str, value: Any) -> None:
+    def add_value(self, attr: str, value: Any) -> None:
         """
-        Adds a value to the class variable collection for the specified attribute.
+        Adds a value to the instance variable collection for the specified attribute.
 
         Args:
             attr (str): The attribute to add the value to.
             value (Any): The value to add to the attribute collection.
 
         Raises:
-            AttributeError: If the attribute is not a valid class variable. or if the attribute is a protected variable.
+            AttributeError: If the attribute is not a valid instance attribute, or if the attribute is a protected variable.
 
         Example:
             LicenseBuildCanary.add_value("processed_licenses", license_content)
         """
-        match attr:
-            case "expected_licenses" | "processed_licenses" | "processed_pages" | "processed_html":
-                getattr(cls, attr).add(value)
-            case "errors":
-                cls.errors.append(value)
-            case "production" | "_logger" | "_instance":
-                raise AttributeError(f"Cannot add value to {attr}")
-            case _:
-                raise AttributeError(f"Attribute {attr} not a valid class variable")
+        self.logger.debug("Adding value to %s: %s", attr, value)
+        if attr in {"production", "logger", "_instance"}:
+            raise AttributeError(f"Cannot add value to {attr}")
+        try:
+            getattr(self, attr).append(value)
+        except AttributeError as e:
+            AttributeError(f"Attribute {attr} not a valid attribute {e}")
 
+    @classmethod
+    def canary(cls) -> Self:
+        """Returns the LicenseBuildCanary instance."""
+        if cls._instance is None:
+            cls._instance = cls()
+        return cls._instance
 
-def is_license_page(page: Page) -> bool:
-    """
-    Checks if the page is a license page.
+    def is_license_page(self, page: Page) -> bool:
+        """
+        Checks if the page is a license page.
 
-    Args:
-        page (Page): The page object containing metadata and content.
+        Args:
+            page (Page): The page object containing metadata and content.
 
-    Returns:
-        bool: True if the page is a license page, False otherwise.
-    """
-    return any(
-        name
-        for name in LicenseBuildCanary.expected_licenses
-        if isinstance(name, str) and name in page.url
-    )
-
-def check_placeholders(
-    content: Any, step: Literal["boilerplate", "markdown", "html"]
-) -> None:
-    """
-    Checks if jinja placeholders are still in the content.
-    """
-
-    def check_content(content: Any) -> bool:
-        if not content:
-            return False
-        if isinstance(content, str):
-            return "{{" in content
-        if isinstance(content, dict):
-            return any(check_content(value) for value in content.values())
-        else:
-            return any(check_content(item) for item in content)
-
-    if check_content(content):
-        LicenseBuildCanary.add_value(
-            "errors",
-            f"Jinja placeholders still in content. Placeholders found at step: {step}. Provided content: {content}",
+        Returns:
+            bool: True if the page is a license page, False otherwise.
+        """
+        self.logger.debug("Checking if page is a license page. Page URL: %s", page.url)
+        page_name = (
+            page.url.split("/")[-2]
+            if len(page.url.split("/")) > 2
+            else "definitely not a license page"
         )
+        return page_name in self.expected_licenses
 
-def on_startup(command: str, config: MkDocsConfig) -> None:
+    def check_placeholders(
+        self, content: Any, step: Literal["boilerplate", "markdown", "html"]
+    ) -> None:
+        """
+        Checks if jinja placeholders are still in the content.
+        """
+
+        def check_content(content: Any) -> bool:
+            if not content:
+                return False
+            if isinstance(content, str):
+                return "{{" in content
+            if isinstance(content, dict):
+                return any(check_content(value) for value in content.values())
+            else:
+                return any(check_content(item) for item in content)
+
+        if check_content(content):
+            self.add_value(
+                "errors",
+                f"Jinja placeholders still in content. Placeholders found at step: {step}. Provided content: {content}",
+            )
+
+    @property
+    def licenses(
+        self,
+    ) -> dict[
+        str,
+        list[str | None]
+        | list["LicenseContent | None"]
+        | list[TemplateContext | None]
+        | list[None],
+    ]:
+        """Returns the list of expected licenses."""
+        return {
+            "Expected licenses": self.expected_licenses,
+            "Processed licenses": self.processed_licenses,
+            "Processed pages": self.processed_pages,
+            "Processed HTML": self.processed_html,
+        }
+
+    @property
+    def build_errors(self) -> list[str]:
+        """Returns the list of build errors."""
+        return self.errors
+
+    @property
+    def dead(self) -> bool:
+        """Returns True if the canary is dead, False otherwise."""
+        return bool(self.errors) or not bool(self.expected_licenses)
+
+
+@event_priority(98)
+def on_startup(command: str, dirty: bool) -> None:
     """
     We start the Build Canary.
     """
     canary = LicenseBuildCanary()
-    canary.set_production(command)
-
+    canary.list_production(command)
+    canary.logger.debug("Build Canary production flag is list to %s", canary.production)
+    canary.logger.debug("Canary expected licenses: %s", canary.expected_licenses)
 
 def on_page_context(
-    context: TemplateContext, page: Page, config: MkDocsConfig
+    context: TemplateContext, page: Page, config: MkDocsConfig, nav: Navigation
 ) -> TemplateContext:
     """
     We add the page context to the Build Canary.
@@ -158,8 +194,9 @@ def on_page_context(
     Returns:
         TemplateContext: The updated template context after processing the page.
     """
-    if is_license_page(page):
-        LicenseBuildCanary.add_value("processed_pages", context)
+    canary = LicenseBuildCanary.canary()
+    if canary.is_license_page(page):
+        canary.add_value("processed_pages", str(context))
     return context
 
 
@@ -176,7 +213,51 @@ def on_page_content(html: str, page: Page, config: MkDocsConfig, files: Files) -
     Returns:
         str: The final HTML content.
     """
-    if is_license_page(page):
-        check_placeholders(html, "html")
-        LicenseBuildCanary.add_value("processed_html", html)
+    canary = LicenseBuildCanary.canary()
+    if canary.is_license_page(page):
+        canary.check_placeholders(html, "html")
+        canary.add_value("processed_html", html)
+        canary.logger.debug("Processed HTML: %s", html)
     return html
+
+
+def on_post_build(config: MkDocsConfig) -> None:
+    """
+    We check the Build Canary after the build is complete.
+    """
+    canary = LicenseBuildCanary.canary()
+    canary.logger.info("Checking Build Canary for errors.")
+
+    checks = [
+        (
+            canary.expected_licenses,
+            canary.processed_licenses,
+            "Expected licenses: {} do not match processed licenses: {}",
+        ),
+        (
+            canary.processed_pages,
+            canary.processed_html,
+            "Processed pages: {} do not match processed HTML: {}",
+        ),
+    ]
+
+    for expected, processed, message in checks:
+        if len(expected) != len(processed):
+            canary.add_value("errors", str(message.format(expected, processed)))
+    """
+    if canary.logger.level == logging.DEBUG:
+        for k, v in canary.licenses.items():
+            canary.logger.debug("%s: %s\n", k, v)
+
+    if empty := next((None if v else k for k, v in canary.licenses.items()), None):
+        canary.add_value(
+            "errors", "Build Canary found empty values. %s was empty." % empty)
+
+    if canary.dead:
+        canary.logger.error("Build Canary found errors.")
+        raise PluginError("Build Canary found errors. ... here's a list of the errors.\n %s", pformat((canary.build_errors), indent=2))
+
+    canary.logger.info("Build Canary passed without errors.")
+    """
+
+LicenseBuildCanary()

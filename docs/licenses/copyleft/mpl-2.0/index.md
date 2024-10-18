@@ -3,7 +3,7 @@ template: license.html
 plain_name: >
     Plain MPL
 spdx_id: >
-    MPL-2.0
+    mpl-2.0
 original_name: >
     Mozilla Public License Version 2.0
 original_url: >
