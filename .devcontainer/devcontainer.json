@@ -1,31 +1,33 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/ubuntu
 {
-	"name": "Ubuntu",
-	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"image": "mcr.microsoft.com/devcontainers/base:noble",
-	"features": {
-		"ghcr.io/shyim/devcontainers-features/bun:0": {},
-		"ghcr.io/jsburckhardt/devcontainer-features/uv:1": {},
-		"ghcr.io/wxw-matt/devcontainer-features/command_runner:0": {},
-		"ghcr.io/devcontainers-extra/features/node-asdf:0": {},
-		"ghcr.io/devcontainers-extra/features/ruff:1": {},
-		"ghcr.io/devcontainers-extra/features/ts-node:1": {},
-		"ghcr.io/devcontainers-extra/features/tsx:1": {}
-	}
+  "name": "Ubuntu",
+  // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+  "image": "mcr.microsoft.com/devcontainers/base:noble",
+  "features": {
+    "ghcr.io/shyim/devcontainers-features/bun:0": {},
+    "ghcr.io/jsburckhardt/devcontainer-features/uv:1": {},
+    "ghcr.io/devcontainers-extra/features/node-asdf:0": {},
+    "ghcr.io/devcontainers-extra/features/ruff:1": {},
+    "ghcr.io/devcontainers-extra/features/ts-node:1": {},
+    "ghcr.io/devcontainers-extra/features/tsx:1": {},
+    "ghcr.io/wxw-matt/devcontainer-features/command_runner:0": {
+      "script1": "avoid_password_service_ssh_start#https://gist.github.com/wxw-matt/186afd98891bd2c26adfb5b3045d236c/raw"
+    }
+  },
 
-	// Features to add to the dev container. More info: https://containers.dev/features.
-	// "features": {},
+  // Features to add to the dev container. More info: https://containers.dev/features.
+  // "features": {},
 
-	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// "forwardPorts": [],
+  // Use 'forwardPorts' to make a list of ports inside the container available locally.
+  "forwardPorts": [8000],
 
-	// Use 'postCreateCommand' to run commands after the container is created.
-	// "postCreateCommand": "uname -a",
+  // Use 'postCreateCommand' to run commands after the container is created.
+  "postCreateCommand": "sudo apt-get update && sudo apt upgrade -y && sudo apt install libcairo2-dev pkg-config python3-dev && uv sync && uv install && bun install"
 
-	// Configure tool-specific properties.
-	// "customizations": {},
+  // Configure tool-specific properties.
+  // "customizations": {},
 
-	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
-	// "remoteUser": "root"
+  // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+  // "remoteUser": "root"
 }
