@@ -1,5 +1,4 @@
-// For format details, see https://aka.ms/devcontainer.json. For config options, see the
-// README at: https://github.com/devcontainers/templates/tree/main/src/ubuntu
+
 {
   "name": "Ubuntu",
   // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
@@ -16,9 +15,6 @@
     }
   },
 
-  // Features to add to the dev container. More info: https://containers.dev/features.
-  // "features": {},
-
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
   "forwardPorts": [8000],
 
@@ -26,6 +22,7 @@
   "postCreateCommand": "sudo apt-get update && sudo apt upgrade -y && sudo apt -y install libcairo2-dev pkg-config python3-dev && /bin/bash -c 'export UV_LINK_MODE=copy' && uv sync --all-extras -q && bun install --no-summary --silent && uv tool install ipython -q && /bin/bash -c 'source .venv/bin/activate' && git submodule update && uv tool update-shell",
   "customizations": {
     "vscode": {
+      // I have a plugin addiction
       "extensions": [
         "Alexey-Strakh.stackoverflow-search",
         "almenon.birdseye-vscode",
