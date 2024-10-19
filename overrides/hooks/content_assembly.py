@@ -4,16 +4,16 @@ Assembles license content for all license pages.
 
 TODO: We can probably make more use of pyMarkdown to handle the processing of the license text; need to investigate further. We can also make much better use of mkdocs-macros to handle the processing of the license text.
 """
-import difflib
 import json
 import logging
 import re
 from datetime import datetime, timezone
+from functools import cached_property
+from itertools import chain
 from pathlib import Path
-from pprint import pprint
+from pprint import pformat
 from re import Match, Pattern
 from typing import Any
-import sys
 
 
 from jinja2 import Environment, FileSystemLoader, Template, TemplateError
@@ -67,6 +67,24 @@ def clean_content(content: dict[str, Any]) -> dict[str, Any] | None:
             else {key: value}
         )
 
+def test_write(s: str) -> None:
+    """Writes a string to a file for testing."""
+    digit = 1
+    basename = f"test{digit}"
+    path = Path(".workbench/tests")
+    if not path.exists():
+        path.mkdir(parents=True)
+    fp = path / f"{basename}.md"
+    if fp.exists():
+        while fp.exists():
+            digit += 1
+            fp = path / f"{basename}{digit}.md"
+
+    fp.write_text(s)
+
+def format_test(l: list[str]) -> str:
+    """Formats a list of strings for testing."""
+    return "\n========================================================\n".join(l)
 
 @event_priority(-90)
 def on_page_markdown(
@@ -93,7 +111,6 @@ def on_page_markdown(
     if not is_license_page:
         return markdown_content
     all_data = dict(page.meta)
-    d = difflib.Differ()
     boilerplate: dict[str, str] = config.extra["boilerplate"]
     boilerplate["year"] = boilerplate.get("year", datetime.now(timezone.utc).strftime("%Y"))
     license = LicenseContent(page)
@@ -102,23 +119,19 @@ def on_page_markdown(
 
     try:
         assembly_logger.debug("Rendering boilerplate for %s", page.title)
-        before = json.dumps(boilerplate).splitlines()
         rendered_boilerplate = {
             key: Template(str(value)).render(all_data) if isinstance(value, str) else value
             for key, value in boilerplate.items()
         }
-        after = json.dumps(rendered_boilerplate).splitlines()
-        pprint(list(d.compare(before, after)))
         all_data |= rendered_boilerplate
         all_data = clean_content(all_data)
         env = Environment(loader=FileSystemLoader("overrides"))
         main_template = env.get_template("license_main.md", globals=all_data)
         rendered_content = main_template.render()
         page.markdown = f"{markdown_content}\n{rendered_content}"
-        meta_before = json.dumps(page.meta).splitlines()
         page.meta |= all_data
-        meta_after = json.dumps(page.meta).splitlines()
-        pprint(list(d.compare(meta_before, meta_after)))
+        test = format_test([f"Meta: \n{pformat(json.dumps(page.meta))}", f"Content: \n{markdown_content}\n{rendered_content}", f"Unrendered boilerplate: \n{pformat(json.dumps(boilerplate))}", f"Boilerplate: \n{rendered_boilerplate}", f"License: \n{pformat(json.dumps(license.attributes))}"])
+        test_write(test)
         return f"{markdown_content}\n{rendered_content}"
 
     except TemplateError as t:
@@ -178,17 +191,17 @@ class LicenseContent:
             self.page = page
             self.meta = page.meta
             self.year = str(datetime.now().year)
-            assembly_logger.debug("Processing license content, license meta: %s", self.meta)
             self.license_type = (
-                "dedication" if "public" in self.meta["category"] else "license"
+                "dedication" if "public" in page.canonical_url else "license"
             )
+            print(self.license_type)
             self.reader: str = self.meta["reader_license_text"]
             self.markdown_license_text = self.process_mkdocs_to_markdown()
             self.plaintext_license_text = self.process_markdown_to_plaintext()
             self.changelog = self.meta.get("changelog")
             self.plain_version = self.get_plain_version()
             self.tags = self.get_tags()
-            assembly_logger.debug("Created License Content object for %s", self.meta["plain_name"])
+            assembly_logger.info("Created License Content object for %s", self.meta["plain_name"])
 
 
         except (KeyError, AttributeError) as k:
@@ -341,14 +354,15 @@ class LicenseContent:
         Examples:
             tags = get_tags(frontmatter)
         """
-        other_tags = []
-        if conditions := self.meta.get("conditions"):
-            other_tags.extend(conditions)
-        if permissions := self.meta.get("permissions"):
-            other_tags.extend(permissions)
-        if limitations := self.meta.get("limitations"):
-            other_tags.extend(limitations)
-        return [self.tag_map[tag] for tag in other_tags if tag in self.tag_map]
+        other_tags = (
+            self.meta.get("conditions", []) +
+            self.meta.get("permissions", []) +
+            self.meta.get("limitations", [])
+        )
+        tagmap = self.tag_map
+        return [tagmap[tag] for tag in other_tags if tag in tagmap]
+
+
 
     @property
     def attributes(self) -> dict[str, Any | int | str]:
@@ -369,9 +383,10 @@ class LicenseContent:
             "plain_version": self.plain_version,
             "license_type": self.license_type,
             "tags": self.tags,
+            "changelog": self.changelog,
         }
 
-    @property
+    @cached_property
     def tag_map(self) -> dict[str, str]:
         """Returns the tag map for the license for setting tags."""
         return {

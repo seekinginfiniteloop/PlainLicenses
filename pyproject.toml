@@ -25,7 +25,7 @@ dependencies = [
     "ez-yaml>=2.2.0",
 ]
 readme = "README.md"
-requires-python = ">= 3.12"
+requires-python = ">= 3.13"
 license = { text = "UNLICENSE" }
 
 [build-system]
@@ -40,8 +40,6 @@ packages = ["src/plainlicense"]
 
 [tool.uv]
 dev-dependencies = [
-    "glom>=23.5.0",
     "pyperclip>=1.9.0",
     "rich>=13.9.2",
-    "tqdm>=4.66.5",
 ]
