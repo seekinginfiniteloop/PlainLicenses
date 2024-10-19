@@ -12,6 +12,7 @@ rule_settings:
 
 ignore:
   - node_modules
+  - welcome-to-sourcery.py
   - .git
   - .venv
   - tox

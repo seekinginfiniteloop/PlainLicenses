@@ -40,6 +40,9 @@ packages = ["src/plainlicense"]
 
 [tool.uv]
 dev-dependencies = [
+    "glom>=23.5.0",
+    "ipython>=8.28.0",
     "pyperclip>=1.9.0",
     "rich>=13.9.2",
+    "tqdm>=4.66.5",
 ]

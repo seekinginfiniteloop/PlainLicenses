@@ -23,11 +23,69 @@
   "forwardPorts": [8000],
 
   // Use 'postCreateCommand' to run commands after the container is created.
-  "postCreateCommand": "sudo apt-get update && sudo apt upgrade -y && sudo apt install libcairo2-dev pkg-config python3-dev && uv sync && uv install && bun install"
-
-  // Configure tool-specific properties.
-  // "customizations": {},
-
-  // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
-  // "remoteUser": "root"
+  "postCreateCommand": "sudo apt-get update && sudo apt upgrade -y && sudo apt -y install libcairo2-dev pkg-config python3-dev && /bin/bash -c 'export UV_LINK_MODE=copy' && uv sync --all-extras -q && bun install --no-summary --silent && uv tool install ipython -q && /bin/bash -c 'source .venv/bin/activate' && git submodule update && uv tool update-shell",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "Alexey-Strakh.stackoverflow-search",
+        "almenon.birdseye-vscode",
+        "anteprimorac.html-end-tag-labels",
+        "antfu.iconify",
+        "charliermarsh.ruff",
+        "christian-kohler.npm-intellisense",
+        "christian-kohler.path-intellisense",
+        "cmstead.js-codeformer",
+        "cmstead.jsrefactor",
+        "DavidAnson.vscode-markdownlint",
+        "dbaeumer.vscode-eslint",
+        "donjayamanne.python-environment-manager",
+        "donjayamanne.python-extension-pack",
+        "ecmel.vscode-html-css",
+        "evgeniypeshkov.syntax-highlighter",
+        "fill-labs.dependi",
+        "firefox-devtools.vscode-firefox-debug",
+        "formulahendry.auto-rename-tag",
+        "hbenl.vscode-test-explorer",
+        "jock.svg",
+        "kakumei.ts-debug",
+        "kamikillerto.vscode-linthtml",
+        "leizongmin.node-module-intellisense",
+        "littlefoxteam.vscode-python-test-adapter",
+        "mads-hartmann.bash-ide-vscode",
+        "minherz.copyright-inserter",
+        "ms-python.debugpy",
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-vscode.test-adapter-converter",
+        "Mukundan.python-docs",
+        "njpwerner.autodocstring",
+        "njqdev.vscode-python-typehint",
+        "oderwat.indent-rainbow",
+        "pamaron.pytest-runner",
+        "PascalReitermann93.vscode-yaml-sort",
+        "qcz.text-power-tools",
+        "redhat.vscode-yaml",
+        "rogalmic.bash-debug",
+        "shakram02.bash-beautify",
+        "sourcery.sourcery",
+        "stylelint.vscode-stylelint",
+        "tamasfe.even-better-toml",
+        "tekumara.typos-vscode",
+        "timonwong.shellcheck",
+        "Tock.vscode-css-custom-properties",
+        "travis71i.clean-css-vscode",
+        "Tyriar.sort-lines",
+        "VisualStudioExptTeam.intellicode-api-usage-examples",
+        "VisualStudioExptTeam.vscodeintellicode",
+        "WallabyJs.quokka-vscode",
+        "wholroyd.jinja",
+        "wix.vscode-import-cost",
+        "wmontalvo.vsc-jsonsnippets",
+        "YoavBls.pretty-ts-errors",
+        "yzhang.markdown-all-in-one",
+        "ZainChen.json",
+        "Zignd.html-css-class-completion"
+      ]
+    }
+  }
 }
