@@ -18,4 +18,5 @@ external
 vendor
 .git
 /usr/share/code/**/*
+eslint.config.mjs
 """
