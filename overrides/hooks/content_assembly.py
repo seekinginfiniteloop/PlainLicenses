@@ -4,40 +4,28 @@ Assembles license content for all license pages.
 
 TODO: We can probably make more use of pyMarkdown to handle the processing of the license text; need to investigate further. We can also make much better use of mkdocs-macros to handle the processing of the license text.
 """
+
 import json
 import logging
 import re
 from datetime import datetime, timezone
+from copy import copy
 from functools import cached_property
-from itertools import chain
 from pathlib import Path
-from pprint import pformat
 from re import Match, Pattern
-from typing import Any
+from typing import Any, Literal
 
-
-from jinja2 import Environment, FileSystemLoader, Template, TemplateError
+import ez_yaml
+from hook_logger import get_logger
+from jinja2 import Template, TemplateError
+from license_canary import LicenseBuildCanary
 from mkdocs.config.base import Config as MkDocsConfig
 from mkdocs.plugins import event_priority
-from mkdocs.structure.files import File
+from mkdocs.structure.files import File, Files, InclusionLevel
 from mkdocs.structure.pages import Page
 
-from hook_logger import get_logger
-from license_canary import LicenseBuildCanary
-
 # Change hook-level logging here
-_assembly_log_level = logging.DEBUG
-
-annotation_pattern: Pattern[str] = re.compile(
-    r"(?P<citation>\([123]\)).*?(?P<class>\{\s\.annotate\s\})[\n\s]{1,4}[123]\.\s{1,2}(?P<annotation>.+?)\n",
-    re.MULTILINE | re.DOTALL,
-)
-header_pattern: Pattern[str] = re.compile(
-    r'<h2 class="license-first-header">(.*?)</h2>'
-)
-
-placeholders = re.compile(r"\{\{\s{0,2}(.*?)\s{0,2}\}\}")
-
+_assembly_log_level = logging.WARNING
 
 if not hasattr(__name__, "assembly_logger"):
     assembly_logger = get_logger(
@@ -45,12 +33,16 @@ if not hasattr(__name__, "assembly_logger"):
         _assembly_log_level,
     )
 
+def get_canary() -> LicenseBuildCanary:
+    """Returns the LicenseBuildCanary instance."""
+    return LicenseBuildCanary.canary()
+
 def clean_content(content: dict[str, Any]) -> dict[str, Any] | None:
     """
     Strips whitespace from string values in a dictionary, and from strings in lists.
 
     Args:
-        content (dict[str, Any]): A dictionary containing content that may include strings and lists of strings.
+        content (Any): The dictionary to clean.
 
     Returns:
         dict[str, Any]: The cleaned dictionary with whitespace removed from string values.
@@ -58,33 +50,139 @@ def clean_content(content: dict[str, Any]) -> dict[str, Any] | None:
     Examples:
         cleaned_content = clean_content({"title": "  Example Title  ", "tags": ["  tag1  ", "tag2 "]})
     """
-    for key, value in content.items():
-        return (
-            {key.strip(): value.strip()}
-            if isinstance(value, str)
-            else {key: [str(item).strip() for item in value]}
-            if isinstance(value, list) and all(isinstance(item, str) for item in value)
-            else {key: value}
-        )
 
-def test_write(s: str) -> None:
-    """Writes a string to a file for testing."""
-    digit = 1
-    basename = f"test{digit}"
-    path = Path(".workbench/tests")
-    if not path.exists():
-        path.mkdir(parents=True)
-    fp = path / f"{basename}.md"
-    if fp.exists():
-        while fp.exists():
-            digit += 1
-            fp = path / f"{basename}{digit}.md"
+    def cleaner(value: Any) -> str:
+        """Strips whitespace from a string."""
+        if isinstance(value, dict):
+            return {k: cleaner(v) for k, v in value.items()}
+        elif isinstance(value, list):
+            return [cleaner(item) for item in value]
+        elif isinstance(value, str):
+            return value.strip()
+        return value
 
-    fp.write_text(s)
+    cleaned_content = {k: cleaner(v) if v else "" for k, v in content.items()}
+    assembly_logger.debug("Cleaned content: %s", cleaned_content)
+    return cleaned_content
 
-def format_test(l: list[str]) -> str:
-    """Formats a list of strings for testing."""
-    return "\n========================================================\n".join(l)
+def render_mapping(mapping: dict[str, Any], context: dict):
+    """Renders a dict/mapping with a context."""
+
+    def render_value(value):
+        """Recursively render a value."""
+        if isinstance(value, str):
+            try:
+                return Template(value).render(**context)
+            except (TypeError, TemplateError) as e:
+                assembly_logger.error("Error rendering mapping: %s", e)
+                return value
+        elif isinstance(value, dict):
+            return render_mapping(value, context)
+        elif isinstance(value, list):
+            return [render_mapping(item, context) for item in value]
+        else:
+            return value
+
+    return {key: render_value(value) for key, value in mapping.items()}
+
+def assemble_license_page(config: MkDocsConfig, page: Page, file: File) -> Page:
+    """Returns the rendered boilerplate from the config."""
+    page.meta = clean_content(page.meta)
+    boilerplate: dict[str, str] = config.extra["boilerplate"]
+    boilerplate["year"] = boilerplate.get(
+        "year", datetime.now(timezone.utc).strftime("%Y")
+    )
+    boilerplate = clean_content(boilerplate)
+    license = LicenseContent(page)
+
+    get_canary().add_value("processed_licenses", license)
+    all_data = clean_content(license.attributes | page.meta)
+    assembly_logger.debug("All_data before rendering boilerplate: %s", all_data)
+    assembly_logger.debug("Rendering boilerplate for %s", page.title)
+    rendered_boilerplate = render_mapping(boilerplate, page.meta)
+    page.meta |= rendered_boilerplate
+    assembly_logger.debug("Meta with rendered boilerplate: %s", rendered_boilerplate)
+    return page
+
+def create_page_content(page: Page) -> str:
+    """Creates the content for a license page."""
+    frontmatter = ez_yaml.to_string(page.meta)
+    if not frontmatter.startswith("---"):
+        frontmatter = "---\n" + frontmatter
+    if not frontmatter.endswith("---"):
+        frontmatter += "\n---\n"
+    return f"{frontmatter}{page.markdown or ''}"
+
+
+def create_new_file(page: Page, file: File, config: MkDocsConfig) -> File:
+    """Creates a new file object from a page."""
+    return File.generated(
+        config,
+        file.src_uri,
+        content=create_page_content(page),
+        inclusion=InclusionLevel.INCLUDED,
+    )
+
+def get_category(uri: str) -> str | None:
+    """Returns the category of the license."""
+    if split := uri.split("/"):
+        if len(split) == 4:
+            return split[1] if split[1] in ["proprietary", "public-domain", "copyleft", "permissive", "source-available"] else None
+    return None
+
+def filter_license_files(files: Files) -> Files:
+    """Creates a new files object from the license files."""
+    license_files = []
+    for uri in files.src_uris:
+        assembly_logger.debug("Checking URI %s", uri)
+        if (file := files.src_uris[uri]) and get_category(uri) and uri.strip().lower().endswith("index.md"):
+            license_files.append(file)
+    return Files(license_files)
+
+def replace_files(files: Files, new_files: Files) -> Files:
+    """Replaces files in the files object."""
+    for file in new_files:
+        if replaced_file := files.get_file_from_path(file.src_uri):
+            files.remove(replaced_file)
+        files.append(file)
+    return files
+
+def on_files(files: Files, config: MkDocsConfig) -> Files:
+    """
+    Replaces license files with generated versions. I was doing this after Page creation but it was problematic. It's more involved, but the output fits better with MkDocs' expectations. We're also less prone to changes in MkDocs' internals.
+
+    Args:
+        files (Files): The files objects to process.
+        config (MkDocsConfig): The configuration settings for MkDocs.
+
+    Returns:
+        files: The processed Files with replaced files.
+
+    Raises:
+        Exception: If there is an error during template rendering or logging.
+    """
+    license_files = filter_license_files(copy(files))
+    if not license_files:
+        assembly_logger.error("No license files found. Files: %s", files)
+        raise FileNotFoundError("No license files found.")
+    new_license_files = []
+    for file in license_files:
+        page = Page(None,file, config)
+        if not page:
+            assembly_logger.error("No page found for file %s", file.src_uri)
+            continue
+        page.read_source(config)
+        assembly_logger.debug("Processing license page %s")
+        parent_path = "/".join(file.src_uri.split("/")[:-1])
+        changelog_file = next((f for f in files if f.src_uri == f"{parent_path}/CHANGELOG.md"), File.generated(config, f"{parent_path}/CHANGELOG.md", content="", inclusion=InclusionLevel.EXCLUDED))
+        page.meta["changelog"] = changelog_file.content_string or "## such empty, much void :nounproject-doge:"
+        changelog_file.inclusion = InclusionLevel.EXCLUDED
+        updated_page = assemble_license_page(config, page, file)
+        assembly_logger.debug("Meta after rendering and cleaning: %s", updated_page.meta)
+        assembly_logger.debug("Page meta after rendering: %s", updated_page.meta)
+        assembly_logger.debug("Page markdown after rendering: %s", updated_page.markdown)
+        new_license_files.append(create_new_file(updated_page, file, config))
+    return replace_files(files, Files(new_license_files))
 
 @event_priority(-90)
 def on_page_markdown(
@@ -105,59 +203,13 @@ def on_page_markdown(
     Raises:
         Exception: If there is an error during template rendering or logging.
     """
-    canary = LicenseBuildCanary.canary()
     assembly_logger.info("Processing page %s in on_page_markdown", page.title)
-    is_license_page = canary.is_license_page(page)
-    if not is_license_page:
+    if not (get_canary().is_license_page(page)):
         return markdown_content
-    all_data = dict(page.meta)
-    boilerplate: dict[str, str] = config.extra["boilerplate"]
-    boilerplate["year"] = boilerplate.get("year", datetime.now(timezone.utc).strftime("%Y"))
-    license = LicenseContent(page)
-    canary.add_value("processed_licenses", license)
-    all_data |= license.attributes
-
-    try:
-        assembly_logger.debug("Rendering boilerplate for %s", page.title)
-        rendered_boilerplate = {
-            key: Template(str(value)).render(all_data) if isinstance(value, str) else value
-            for key, value in boilerplate.items()
-        }
-        all_data |= rendered_boilerplate
-        all_data = clean_content(all_data)
-        env = Environment(loader=FileSystemLoader("overrides"))
-        main_template = env.get_template("license_main.md", globals=all_data)
-        rendered_content = main_template.render()
-        page.markdown = f"{markdown_content}\n{rendered_content}"
-        page.meta |= all_data
-        test = format_test([f"Meta: \n{pformat(json.dumps(page.meta))}", f"Content: \n{markdown_content}\n{rendered_content}", f"Unrendered boilerplate: \n{pformat(json.dumps(boilerplate))}", f"Boilerplate: \n{rendered_boilerplate}", f"License: \n{pformat(json.dumps(license.attributes))}"])
-        test_write(test)
-        return f"{markdown_content}\n{rendered_content}"
-
-    except TemplateError as t:
-        error_message = f"Error rendering template: {t}"
-        assembly_logger.error(error_message)
-        canary.add_value("errors", error_message)
-        return markdown_content
-
-def on_page_content(html: dict[str, Any], page: Page, config: MkDocsConfig, files: list[dict[str, Any]]) -> dict[str, Any]:
-    """Adds the license content to the page context."""
-    canary = LicenseBuildCanary.canary()
-    if canary.is_license_page(page):
-        pass
-        #assembly_logger.debug("Page content before final render, page: %s", page.markdown)
-        #assembly_logger.debug("Unrendered content, page: %s", html)
-    return html
-
-def on_post_page(output: str, page: Page, config: MkDocsConfig) -> Any:
-    """Replaces year placeholders in the license pages with the current year.
-    This was simpler than running a render on the page again, and it's a small change."""
-    if LicenseBuildCanary().canary().is_license_page(page):
-        if match := re.search(r"\{\{\s?year\s?\}\}", output):
-            logging.info("Replacing year placeholder")
-            output = output.replace(match[0], datetime.now().strftime("%Y"))
-    return output
-
+    assembly_logger.debug("Processing license page %s", page)
+    assembly_logger.debug("Page meta at on_page_markdown: %s", page.meta)
+    assembly_logger.debug("Page markdown at on_page_markdown: %s", markdown_content)
+    return markdown_content
 
 def load_json(path: Path) -> dict[str, Any]:
     """Loads a JSON"""
@@ -168,7 +220,6 @@ def write_json(path: Path, data: dict[str, Any]) -> None:
     if path.exists():
         path.unlink()
     path.write_text(json.dumps(data, indent=2))
-
 
 class LicenseContent:
     """
@@ -187,27 +238,27 @@ class LicenseContent:
         Examples:
             license_instance = LicenseClass(page)
         """
-        try:
-            self.page = page
-            self.meta = page.meta
-            self.year = str(datetime.now().year)
-            self.license_type = (
-                "dedication" if "public" in page.canonical_url else "license"
-            )
-            print(self.license_type)
-            self.reader: str = self.meta["reader_license_text"]
-            self.markdown_license_text = self.process_mkdocs_to_markdown()
-            self.plaintext_license_text = self.process_markdown_to_plaintext()
-            self.changelog = self.meta.get("changelog")
-            self.plain_version = self.get_plain_version()
-            self.tags = self.get_tags()
-            assembly_logger.info("Created License Content object for %s", self.meta["plain_name"])
+        self.page = page
+        self.meta = page.meta
+        self.license_type = self.get_license_type()
+        self.title = f"The {self.meta['plain_name']}"
+        self.year = str(datetime.now().strftime("%Y"))
+        self.reader: str = self.meta["reader_license_text"]
+        self.markdown_license_text = self.process_mkdocs_to_markdown()
+        self.plaintext_license_text = self.process_markdown_to_plaintext()
+        self.changelog = self.meta.get("changelog")
+        self.plain_version = self.get_plain_version()
+        self.tags = self.get_tags()
 
+    def get_license_type(self) -> Literal["dedication", "license"]:
+        """
+        Returns the license type based on the license metadata.
+        This might seem like overkill, but it was giving me a lot of trouble with a single check.
+        """
+        if (self.page.title and "domain" in self.page.title.lower()) or (self.page and "domain" in self.page.url.lower()):
+            return "dedication"
+        return "license"
 
-        except (KeyError, AttributeError) as k:
-            assembly_logger.error("Error processing license content: %s", k)
-            LicenseBuildCanary.canary().add_value("errors", "Error processing license content: " + str(k))
-            return
 
     def process_markdown_to_plaintext(self) -> str:
         """
@@ -317,6 +368,10 @@ class LicenseContent:
             footnotes.append(match.group("annotation").strip())
             return f"[^{footnote_num}]"
 
+        annotation_pattern: Pattern[str] = re.compile(
+            r"(?P<citation>\([123]\)).*?(?P<class>\{\s\.annotate\s\})[\n\s]{1,4}[123]\.\s{1,2}(?P<annotation>.+?)\n",
+            re.MULTILINE | re.DOTALL,
+        )
         transformed_text = annotation_pattern.sub(replacement, text)
         if footnotes:
             transformed_text += "\n\n"
@@ -333,8 +388,14 @@ class LicenseContent:
         Returns:
             str: The processed Markdown text after transformations and definitions have been applied.
         """
-        assembly_logger.debug("Processing mkdocs-style markdown to regular markdown for %s", self.meta["plain_name"])
+        assembly_logger.debug(
+            "Processing mkdocs-style markdown to regular markdown for %s",
+            self.meta["plain_name"],
+        )
         assembly_logger.debug("Reader content: ", self.reader)
+        header_pattern: Pattern[str] = re.compile(
+            r'<h2 class="license-first-header">(.*?)</h2>'
+        )
         text = self.reader
         text = self.transform_text_to_footnotes(text)
         assembly_logger.debug("Transformed text: %s", text)
@@ -350,21 +411,12 @@ class LicenseContent:
 
         Returns:
             list[str] | None: A list of mapped tags if found, or None if no valid tags are present.
-
-        Examples:
-            tags = get_tags(frontmatter)
         """
-        other_tags = (
-            self.meta.get("conditions", []) +
-            self.meta.get("permissions", []) +
-            self.meta.get("limitations", [])
-        )
+        frontmatter_tags = [tag in taglist for taglist in [self.meta.get("conditions"), self.meta.get("permissions"), self.meta.get("limitations")] for tag in taglist if taglist and tag]
         tagmap = self.tag_map
-        return [tagmap[tag] for tag in other_tags if tag in tagmap]
+        return [frontmatter_tags[tag] for tag in frontmatter_tags if tag in tagmap]
 
-
-
-    @property
+    @cached_property
     def attributes(self) -> dict[str, Any | int | str]:
         """
         Retrieves a dictionary of attributes related to the license.
@@ -377,6 +429,7 @@ class LicenseContent:
         """
 
         return {
+            "title": self.title,
             "year": self.year,
             "markdown_license_text": self.markdown_license_text,
             "plaintext_license_text": self.plaintext_license_text,
@@ -390,15 +443,15 @@ class LicenseContent:
     def tag_map(self) -> dict[str, str]:
         """Returns the tag map for the license for setting tags."""
         return {
-        "distribution": "can-share",  # allowances
-        "commercial-use": "can-sell",
-        "modifications": "can-change",
-        "revokable": "can-revoke",
-        "relicense": "relicense",
-        "disclose-source": "share-source",  # requirements
-        "document-changes": "describe-changes",
-        "include-copyright": "give-credit",
-        "same-license": "share-alike (strict)",
-        "same-license--file": "share-alike (relaxed)",
-        "same-license--library": "share-alike (relaxed)",
-    }
+            "distribution": "can-share",  # allowances
+            "commercial-use": "can-sell",
+            "modifications": "can-change",
+            "revokable": "can-revoke",
+            "relicense": "relicense",
+            "disclose-source": "share-source",  # requirements
+            "document-changes": "describe-changes",
+            "include-copyright": "give-credit",
+            "same-license": "share-alike (strict)",
+            "same-license--file": "share-alike (relaxed)",
+            "same-license--library": "share-alike (relaxed)",
+        }

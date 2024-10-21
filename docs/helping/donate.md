@@ -31,8 +31,8 @@ Once we are an official non-profit, we will be able to do a lot more. Your contr
 
 ## Progress Tracker
 
-{% set progress = page.meta.funding_progress|trim|int %}
-{% set goal = page.meta.funding_goal|trim|int %}
+{% set progress = page.meta.funding_progress | trim|int %}
+{% set goal = page.meta.funding_goal | trim|int %}
 {% set percentage = percentage|default(0) %}
 {% set percentage = (progress / goal * 100) %}
 {% set percentage = percentage|round(2)|default|string + "%" %}

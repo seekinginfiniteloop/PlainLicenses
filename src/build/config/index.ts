@@ -5,7 +5,7 @@ import * as esbuild from "esbuild";
 //import { readFileSync } from "node:fs";
 //import path from "path";
 import { copy } from 'esbuild-plugin-copy';
-import { globby } from "globby";
+import globby from "globby";
 
 import type { HeroImage, HeroImageBase, Project, WidthMap } from "../types.ts";
 
@@ -185,7 +185,7 @@ export const heroImages: { [key: string]: HeroImage } = Object.fromEntries(
       const key = parent.split("/").pop()
       const heroFilePattern = `${key}_{1280,1920,2560,3840}.avif`
       const children = await globby(`${parent}/${heroFilePattern}`, { onlyFiles: true, unique: true })
-      const flattenedWidths: WidthMap = children.reduce<WidthMap>((acc, child) => {
+      const flattenedWidths: WidthMap = children.reduce<WidthMap>((acc: WidthMap, child: string) => {
         const width: number | undefined = [1280, 1920, 2560, 3840].find((w: number) => child.includes(w.toString()))
         if (width) {
           acc[width] = child

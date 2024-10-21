@@ -2,11 +2,11 @@ import { exec } from 'child_process';
 import * as crypto from "crypto";
 import * as esbuild from "esbuild";
 import * as fs from 'fs/promises';
-import { globby } from "globby";
 import * as path from 'path';
 import { from } from "rxjs";
 import { optimize } from "svgo";
 import { baseProject, GHActions, heroImages, heroParents, nodeConfig, webConfig } from "./config/index.js";
+import globby from 'globby';
 const cssSrc = "src/assets/stylesheets/bundle.css";
 //TODO: Refactor to use esbuild's transform API and reduce the number of file reads and writes
 let noScriptImage = {

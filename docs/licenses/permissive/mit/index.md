@@ -1,27 +1,18 @@
 ---
 template: license.html
-plain_name: >
-  Plain MIT License
-spdx_id: >
-  MIT
-original_name: >
-  MIT License
-original_url: >
-  https://mit-license.org/
-original_organization: >
-  Massachusetts Institute of Technology
+plain_name: Plain MIT License
+spdx_id: MIT
+original_name: MIT License
+original_url: https://mit-license.org/
+original_organization: Massachusetts Institute of Technology
 original_version: null
 also_known_as: >
   Expat License, X11 License, MIT X11 License
 no_official: true
-category: >
-  permissive
-license_description: >
-  The MIT License is a permissive license that allows you to do whatever you want with the work <strong>as long as you include the original copyright and license notice</strong> in any copy of the software/source.
-how: >
-  Create a LICENSE or LICENSE.md file in the base of your project. If your project is on Github or another platform that uses markdown, copy the <a class="how_link" href=#markdown>markdown version</a> using the copy icon. Otherwise, use the <a class="how_link" href="#plaintext">plaintext version</a>.
-note: >
-  The MIT License is one of the most popular permissive licenses. It is a simple, clear license that allows you to do almost anything with a work as long as you give credit to the original author.
+category: permissive
+license_description: The MIT License is a permissive license that allows you to do whatever you want with the work <strong>as long as you include the original copyright and license notice</strong> in any copy of the software/source.
+how: Create a LICENSE or LICENSE.md file in the base of your project. If your project is on Github or another platform that uses markdown, copy the <a class="how_link" href=#markdown>markdown version</a> using the copy icon. Otherwise, use the <a class="how_link" href="#plaintext">plaintext version</a>.
+note: The MIT License is one of the most popular permissive licenses. It is a simple, clear license that allows you to do almost anything with a work as long as you give credit to the original author.
 permissions:
   - commercial-use
   - modifications
@@ -32,7 +23,7 @@ conditions:
 limitations:
   - liability
   - warranty
-intro:
+outro:
 reader_license_text: |
   Copyright (c) {{ year }} `[copyright holders]`
 
@@ -47,7 +38,6 @@ reader_license_text: |
   ## If You Use This Work, You Accept It "As Is"'
 
   We provide this work as-is and offer **no warranty. We also accept no liability** for any damages or claims that result from your use of this work.
-
 official_license_text: |
   # The MIT License (MIT)
 
@@ -72,12 +62,9 @@ official_license_text: |
   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
   OTHER DEALINGS IN THE SOFTWARE.
-
-
 original_gunning_fog: 21.94
 plain_gunning_fog: 9.74
 link_in_original: false
-
 reference_links: null
 ---
 

@@ -18,6 +18,10 @@
   }
 }
 
+.md-typeset details {
+  font-size: 0.8rem;
+}
+
 [data-md-color-scheme="slate"] {
   --md-hue: 235.2;
   --md-typeset-a-color: var(--ecru);
@@ -42,7 +46,7 @@
 }
 
 .md-typeset summary {
-  font-size: 1.2em;
+  font-size: 1rem;
   font-weight: 500;
 }
 

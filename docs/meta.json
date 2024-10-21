@@ -1,11 +1,11 @@
 {
   "metaOutput": {
-    "docs/assets/javascripts/index.XCL5J3QV.js.map": {
-      "bytes": 1711984,
+    "docs/assets/javascripts/index.NGI4FCOJ.js.map": {
+      "bytes": 1711986,
       "inputs": [],
       "exports": []
     },
-    "docs/assets/javascripts/index.XCL5J3QV.js": {
+    "docs/assets/javascripts/index.NGI4FCOJ.js": {
       "bytes": 250085,
       "inputs": [
         "node_modules/focus-visible/dist/focus-visible.js",
@@ -329,16 +329,16 @@
       ],
       "exports": []
     },
-    "docs/assets/stylesheets/bundle.7BOIOEZU.css.map": {
-      "bytes": 321121,
+    "docs/assets/stylesheets/bundle.OGTQU7GO.css.map": {
+      "bytes": 329542,
       "inputs": [],
       "exports": []
     },
-    "docs/assets/stylesheets/bundle.7BOIOEZU.css": {
-      "bytes": 176188,
+    "docs/assets/stylesheets/bundle.OGTQU7GO.css": {
+      "bytes": 183530,
       "inputs": [
         "external/mkdocs-material/material/templates/assets/stylesheets/palette.06af60db.min.css",
-        "external/mkdocs-material/material/templates/assets/stylesheets/main.8c3ca2c6.min.css",
+        "external/mkdocs-material/material/templates/assets/stylesheets/main.0253249f.min.css",
         "src/assets/stylesheets/bodyfont.css",
         "src/assets/stylesheets/colors.css",
         "src/assets/stylesheets/extra.css",

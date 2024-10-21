@@ -33,8 +33,8 @@ limitations:
   - trademark-use
   - warranty
 
-intro: |
-  /// details |  <span id="detail-title-highlight">Elastic:</span> Thanks for providing clear terms! <span id="detail-title-highlight">You rock!</span> :heart:
+outro: |
+  /// details |  <span class="detail-title-highlight">Elastic:</span> Thanks for providing clear terms! <span class="detail-title-highlight">You rock!</span> :heart:
       type: note
 
   **We commend the folks at [Elastic](https://www.elastic.co/)** for creating a license that's already clear. We've just made it clearer. You  worked hard to make your license terms accessible, and we appreciate it. **Thanks for leading by example.**

@@ -2,12 +2,13 @@ import { exec } from 'child_process';
 import * as crypto from "crypto";
 import * as esbuild from "esbuild";
 import * as fs from 'fs/promises';
-import { globby } from "globby";
 import * as path from 'path';
 import { from, Observable } from "rxjs";
 import { optimize } from "svgo";
 import { baseProject, GHActions, heroImages, heroParents, nodeConfig, webConfig } from "./config/index.js";
 import type { buildJson, esbuildOutputs, FileHashes, HeroImage, Project } from "./types.ts";
+
+import globby from 'globby';
 
 const cssSrc = "src/assets/stylesheets/bundle.css";
 

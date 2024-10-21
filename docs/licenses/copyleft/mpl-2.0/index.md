@@ -20,7 +20,6 @@ license_description: >
 how: >
     Create a LICENSE or LICENSE.md file in the base of your project. If your project is on Github or another platform that uses markdown, copy the <a class="how_link" href=#markdown>markdown version</a> using the copy icon. Otherwise, use the <a class="how_link" href="#plaintext">plaintext version</a>
 note: null
-
 permissions:
     - commercial-use
     - modifications
@@ -35,8 +34,7 @@ limitations:
     - liability
     - trademark-use
     - warranty
-
-intro: null
+outro: null
 reader_license_text: |
     <h2 class="license-first-header">We Give You a License to Use, Change, and Share This Work</h2>
 
@@ -163,7 +161,6 @@ reader_license_text: |
     `the work`
 
     :    The materials provided under this license
-
 official_license_text: |
     # Mozilla Public License Version 2.0
 
@@ -511,7 +508,6 @@ official_license_text: |
 
         This Source Code Form is "Incompatible With Secondary Licenses", as
         defined by the Mozilla Public License, v. 2.0.
-
 original_gunning_fog: 17.02
 plain_gunning_fog: 14.55 # we can do better
 link_in_original: true

@@ -4,7 +4,7 @@ import { tsconfigPathsPlugin } from "esbuild-plugin-tsconfig-paths";
 //import { readFileSync } from "node:fs";
 //import path from "path";
 import { copy } from 'esbuild-plugin-copy';
-import { globby } from "globby";
+import globby from "globby";
 /**
  * Resolves a glob to a single file.
  * @function

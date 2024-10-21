@@ -161,6 +161,7 @@ markdown_extensions:
   - pymdownx.blocks.html
   - pymdownx.blocks.tab:
       alternate_style: true
+      slugify: true
   - pymdownx.emoji:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
@@ -236,60 +237,50 @@ extra:
     share-source: sharesource
   boilerplate:
     # boilerplate for licenses; you don't need to change this
-    # jinja placeholders are replaced when rendering the license from the license frontmatter
+    # The placeholders (e.g. {{ original_name | trim }}) are jinja2 placeholders and are replaced with the values in the license frontmatter when the license is built.
     description: >
-      Plain License: {{ plain_name|trim }}. Terms for everyone. The {{ original_name|trim }}, but now in plain language for everyone to understand.
+      Plain License: {{ plain_name | trim }}. Terms for everyone. The {{ original_name | trim }}, but now in plain language for everyone to understand.
     plain_url: >
-      "licenses/{{ category.lower()|trim }}/{{ spdx_id.lower()|trim }}/"
+      "licenses/{{ category.lower() | trim }}/{{ spdx_id.lower() | trim }}/"
     github_base_url: >
       https://github.com/seekinginfiniteloop/PlainLicense
     github_issues_link: >
       [submit an issue](https://github.com/seekinginfiniteloop/PlainLicense/issues/new/choose "Submit an issue on GitHub")
     github_edit_link: >
-      [edit this page](https://github.com/seekinginfiniteloop/PlainLicense/edit/main/docs/licenses/{{ category.lower()|trim }}/{{ spdx_id.lower()|trim }}/index.md "Edit this license on GitHub")
+      [edit this page](https://github.com/seekinginfiniteloop/PlainLicense/edit/main/docs/licenses/{{ category.lower() | trim }}/{{ spdx_id.lower() | trim }}/index.md "Edit this license on GitHub")
     hide: # list of mkdocs components to hide in licenses; the table of contents is already hidden in the license template.
     official_link: >
-      [{{ original_name|trim }}]({{ original_url|trim }} "Official {{ original_name|trim }}")
+      [{{ original_name | trim }}]({{ original_url | trim }} "Official {{ original_name | trim }}")
     interpretation_title: >
-      **Legally Interpreting the {{ plain_name|trim }}**
+      Legally Interpreting the {{ plain_name | trim }}
     interpretation_text: |
-      The {{ plain_name|trim }} is a plain language adaptation of the {{ original_name|trim }}. We made the {{ plain_name|trim }} to make the {{ original_name|trim }} more accessible and understandable. We tried to match the {{ original_name|trim }}'s legal intent exactly. **If you think the {{ plain_name|trim }}'s terms are legally unclear, use the official {{ official_link|trim }} to clarify the terms.**
+      The {{ plain_name | trim }} is a plain language adaptation of the {{ original_name | trim }}. We made the {{ plain_name | trim }} to make the {{ original_name | trim }} more accessible and understandable. We tried to match the {{ original_name | trim }}'s legal intent exactly. **If you think the {{ plain_name | trim }}'s terms are legally unclear, use the official {{ official_link | trim }} to clarify the terms.**
 
-      If a court finds that any part of this {{ license_type }} cannot be enforced, the rest of the {{ license_type }} will still apply.
-    tag_map: # maps the keys in license frontmatter for conditions, permissions, and limitations to the simplified tags we use in the license template.
-      distribution: can-share, # allowances
-      commercial-use: can-sell,
-      modifications: can-change,
-      revokable: can-revoke,
-      relicense: relicense, # end allowances
-      disclose-source: share-source, # requirements
-      document-changes: describe-changes,
-      include-copyright: give-credit,
-      same-license: share-alike (strict),
-      same-license--file: share-alike (relaxed),
-      same-license--library: share-alike (relaxed), # end requirements
+      If a court finds that any part of this {{ license_type | trim }} cannot be enforced, the rest of the {{ license_type | trim }} will still apply.
+    how: |
+      Create a LICENSE or LICENSE.md file in the base of your project. If your project is on Github or another platform that uses markdown, copy the <a class="how_link" href=#markdown>markdown version</a> using the copy icon. If your platform doesn't support markddown, use the <a class="how_link" href="#plaintext">plaintext version</a>, or provide a link to our <a class="how_link" href="#reader">reader version</a>. **Notices**: the licensing community usually recommends adding a short notice to each part of your project telling readers how the work is licensed. For software projects, this is at the top of each module or file. <a class="how_link" href="#notice">Get the notice for the {{ plain_name | trim }}</a>.
     tag_text: # These values map to each of the tags in the license frontmatter, and are used for tooltips.
       can-share: >
-        <strong>Share Freely</strong>: You can share or distribute any work that uses this {{ license_type }} freely.
+        Share Freely: You can share or distribute any work that uses this {{ license_type | trim }} freely.
       can-sell: >
-        Use Commercially: You can sell any work that uses this {{ license_type }}, and you don't have to pay anyone anything or share your work.
+        Use Commercially: You can sell any work that uses this {{ license_type | trim }}, and you don't have to pay the authors anything or share your changes with them.
       can-change: >
-        Change freely: You can change any work that uses this {{ license_type }} however you want.
+        Change freely: You can change any work that uses this {{ license_type | trim }} however you want.
       can-revoke: >
-        Taksies-backsies: If you hold the copyright, you can revoke this license from any work that uses it at any time.
+        Taksies-backsies: You can revoke this license from any work that uses it at any time if you hold the copyright.
       relicense: >
-        Relicense: You can change the {{ license_type }} to a different {{ license_type }} if you want. You may need to follow certain rules, like giving credit to the original author.
+        Relicense: You can change the {{ license_type | trim }} to a different license if you want. You may need to follow certain rules, like giving credit to the original author.
       share-alike (strict): >
-        Share-Alike (strict): If you change or modify any work that uses this license, you must share your changes under the same license.
+        Share-Alike (strict): You must share your changes under the same license if you change or modify any work that uses this license.
       share-alike (relaxed): >
-        Share-Alike (relaxed): If you change or modify any work that uses this license, you must share your changes under the same license or a similar one.
+        Share-Alike (relaxed): You must share your changes under the same license or a similar one if you change or modify any work that uses this license.
       give-credit: >
         Give Credit: You must give credit to the original author of any work that uses this license, usually by including their name and the original license in your work.
       describe-changes: >
         Describe Changes: You must describe any changes you make to any work that uses this license.
       share-source: >
         Share Your Work: You must share the source code of any work that uses this license.
-  extensions: # These are the extensions we use in our documentation for making the most of markdown for plain language. They map the extension name in markdown_extensions to a human-readable name, a URL to the extension's documentation, and a description of what the extension does.
+  extensions: # These are the extensions we use in our documentation for making the most of markdown for writing plainly. They map the extension name in markdown_extensions to a human-readable name, a URL to the extension's documentation, and a description of what the extension does.
     abbr:
       name: abbreviations and acronyms
       url: >

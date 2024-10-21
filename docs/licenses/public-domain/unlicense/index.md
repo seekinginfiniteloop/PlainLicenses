@@ -18,7 +18,6 @@ license_description: >
   The Unlicense is a public domain dedication that allows you to do whatever you want with the work. You can use, modify, distribute, and sell the work without any restrictions. You don't need to give credit to the original author or include a license notice, and you can relicense the work under any other license.
 how: >
   Create an UNLICENSE or UNLICENSE.md file in the base of your project. If your project is on Github or another platform that uses markdown, copy the <a class="how_link" href=#markdown>markdown version</a> using the copy icon. Otherwise, use the <a class="how_link" href="#plaintext">plaintext version</a>
-
 permissions:
   - private-use
   - commercial-use
@@ -28,8 +27,7 @@ conditions: []
 limitations:
   - liability
   - warranty
-
-intro: null
+outro: null
 reader_license_text: |
   <h2 class="license-first-header">We Dedicate This Work to the Public Domain</h2>
 
@@ -52,7 +50,6 @@ reader_license_text: |
   ## We Provide No Warranty and Accept No Liability
 
   **We provide the work "as is" and offer no warranties.** We are not responsible for any damages or issues from your use of the work.
-
 official_license_text: |
   # Unlicense (Public Domain)
 
@@ -80,9 +77,8 @@ official_license_text: |
   OTHER DEALINGS IN THE SOFTWARE.
 
   For more information, please refer to <https://unlicense.org>.
-
 original_gunning_fog: 17.55
-plain_gunning_fog: 8.517
+plain_gunning_fog: 8.52
 link_in_original: true
 reference_links: null
 ---

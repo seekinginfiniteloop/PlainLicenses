@@ -111,12 +111,12 @@ You can...                 | Please...
 Plain License uses [MKDocs][mkdocshome] to generate our site. We write all site content in [Markdown][mdown]. MKDocs allows a wide range of 'extensions' to enhance the content, and you should use these to make your writing more accessible. Currently, we think the following extensions are the most useful and they are enabled in our configuration:
 
 {% for ext in config.markdown_extensions %}
-    {% set extname = ext.split('.')|last|trim %}
+    {% set extname = ext.split('.')|last | trim %}
     {% if config.extra.extensions.get(extname) %}
-    {% set fullname = config.extra.extensions[extname].name|trim %}
-    {% set exturl = config.extra.extensions[extname].url|trim %}
-    {% set extdesc = config.extra.extensions[extname].description|trim %}
-- [{{ fullname|trim }}]({{ exturl|trim }}): {{ extdesc|trim }}
+    {% set fullname = config.extra.extensions[extname].name | trim %}
+    {% set exturl = config.extra.extensions[extname].url | trim %}
+    {% set extdesc = config.extra.extensions[extname].description | trim %}
+- [{{ fullname | trim }}]({{ exturl | trim }}): {{ extdesc | trim }}
 {% endif %}
 {% endfor %}
 

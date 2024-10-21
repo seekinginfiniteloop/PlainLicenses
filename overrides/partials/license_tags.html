@@ -1,32 +1,15 @@
-{% if page.meta and page.meta.hide %}
-{% set hidden = "hidden" if "tags" in page.meta.hide %}
+{% if page.meta and page.meta['hide'] %}
+{% set hidden = "hidden" if "tags" in page.meta['hide'] %}
 {% endif %}
 {% set meta = page.meta %}
 <p class="md-nav__description license">
-    {{ page.meta.license_type }} features
+    {{ page.meta['license_type'] }} features
 </p>
-{# TODO: Figure how to dynamically generate tags... the tags plugin probably is checking for tags before we can generate them
-    {% set tag_map = config['extra']['boilerplate']['tag_map'] %}
-    {% set conditions = page.meta.conditions | select('defined') | select('sequence') | list %}
-    {% set permissions = page.meta.permissions | select('defined') | select('sequence') | list %}
-    {% set limitations = page.meta.limitations | select('defined') | select('sequence') | list %}
-    {% set key_tags = conditions + permissions + limitations %}
-    {% set tags = [] %}
-    {% for key in key_tags %}
-    {% if key in tag_map %}
-    {% do tags.append(tag_map[key]) %}
-    {% endif %}
-    {% endfor %}
-    {% set tags = tags | unique | list %}
-    {# now tags is a list of values in tag_map that correspond to keys present in conditions,
-    permissions, and limitations #}
-
-    {# Next we iterate over tags and map explanatory text from tag_text to each tag #}
 <nav class="md-tags">
     {% for tag in tags %}
     {% set icon = "" %}
     {% set tagtext = config['extra']['boilerplate']['tag_text'][tag.name] %}
-    {% set license_type = 'dedication' if page.meta.category == 'public-domain' else 'license' %}
+    {% set license_type = 'dedication' if page.meta['category'] == 'public-domain' else 'license' %}
 
     {% macro replacer(tag_text, license_type) %}
     {{ tag_text | replace("{{ license_type }}", license_type) | trim }}

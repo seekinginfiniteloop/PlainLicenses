@@ -1,0 +1,119 @@
+<!-- License content -->
+{% set tabcount = 1 %}
+{% set hidden = 'hidden' if page.meta.get("hide_tabs") else '' %}
+<div class="admonition license">
+    <p class="admonition-title">Plain License: <span class="detail-title-highlight">The {{ page.meta['plain_name']
+        | trim }}</span></p>
+    <p>
+    <div class="tabbed-set tabbed-alternate" data-tabs="{{ tabcount }}:5">
+        {% include "partials/license_tablabels.html" %}
+        <div class="tabbed-content" style="overflow-y: scroll">
+            <div class="tabbed-block">
+                <div class="license-header">
+                    <h1 class="license-title">{{ page.meta['plain_name'] | trim }}</h1>
+                    <div class="version-info">
+                        {% if page.meta['original_version'] %}
+                        <p class="original-version">Original Version: {{
+                            page.meta['original_version'] |
+                            trim }}</p>
+                        {% endif %}
+                        <p class="plain-version">Plain Version: <strong>{{
+                                page.meta['plain_version'] |
+                                trim
+                                }}</strong></p>
+                    </div>
+                </div>
+                {{ page.meta['reader_license_text'] | markdown }}
+                <div class="result">
+                    <details class="note" open="open">
+                        <summary><strong>{{ page.meta['interpretation_title'] | trim }}</strong>
+                        </summary>
+                        {{ page.meta['interpretation_text'] | trim | markdown }}
+                    </details>
+                </div>
+                {% set tab_name = 'reader' %}
+                {% include "partials/license_disclaimer_block.html" %}
+            </div>
+            <div class="tabbed-block">
+                {% filter markdown %}
+                {% filter e %}
+                ```markdown
+                # {{ page.meta['plain_name'] | trim }}
+
+                {% if page.meta['original_version'] -%}
+                Original Version: {{ page.meta['original_version'] | trim }} | Plain Version: {{
+                plain_version | trim
+                }}
+                {% else -%}
+                Plain Version: {{ page.meta['plain_version'] | trim }}
+                {% endif %}
+
+                {{ page.meta['markdown_license_text'] | trim | wordwrap(width=80,
+                break_long_words=False) }}
+
+                ### {{ page.meta['interpretation_title'] | trim }}
+
+                {{ page.meta['interpretation_text'] | trim | wordwrap(width=80,
+                break_long_words=False)
+                }}
+                ```
+                {% endfilter %}
+                {% endfilter %}
+                {% set tab_name = 'markdown' %}
+                {% include "partials/license_disclaimer_block.html" %}
+            </div>
+            <div class="tabbed-block">
+                {% filter markdown %}
+                {% filter e %}
+                ```plaintext
+                {{ page.meta['plain_name'] | trim }}
+
+                {% if page.meta['original_version'] -%}
+                Original Version: {{ page.meta['original_version'] | trim }} | Plain Version: {{
+                page.meta['plain_version'] | trim
+                }}
+                {% else -%}
+                Plain Version: {{ page.meta['plain_version'] | trim }}
+                {% endif %}
+
+                {{ page.meta['plaintext_license_text'] | trim | wordwrap(width=80,
+                break_long_words=False) }}
+
+                NOTE: {{ page.meta['interpretation_title'] | trim | replace('*', '') }}
+                {{ page.meta['interpretation_text'] | trim | wordwrap(width=80,
+                break_long_words=False)
+                }}
+
+                ```
+                {% endfilter %}
+                {% endfilter %}
+                {% set tab_name = 'plaintext' %}
+                {% include "partials/license_disclaimer_block.html" %}
+            </div>
+            <div class="tabbed-block">
+                {{ page.meta['changelog'] | markdown }}
+            </div>
+            <div class="tabbed-block">
+                {% filter markdown %}
+
+                {{ page.meta['official_license_text'] | trim }}
+
+                {% if not page.meta.get("link_in_original") %}
+
+                {{ page.meta['official_link'] | trim | markdown }}
+                {% endif %}
+                {% endfilter %}
+            </div>
+        </div>
+        <div class="tabbed-control tabbed-control--prev" {{ hidden }}>
+            <button class="tabbed-button" tabindex="-1" aria-hidden="true"></button>
+        </div>
+        <div class="tabbed-control tabbed-control--next" {{ hidden }}="">
+            <button class="tabbed-button" tabindex="-1" aria-hidden="true"></button>
+        </div>
+    </div>
+    </p>
+</div>
+{%- if page.meta.get("outro") -%}
+{{ page.meta.get("outro") | trim | markdown }}
+{% endif %}

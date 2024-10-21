@@ -21,15 +21,13 @@ Image.MAX_IMAGE_PIXELS = 300000000
 if not hasattr("ENV", "env_logger"):
     env_logger = get_logger(__name__, logging.WARNING)
 
-def md_filter(text: str, extensions: list[str], configs: dict[str, dict[str, str | bool]], **kwargs) -> Any:
+def md_filter(text: str, config: MkDocsConfig) -> Any:
     """
     Adds markdown filter to Jinja2 environment using markdown extensions and configurations from the mkdocs.yml file.
     """
     md = markdown.Markdown(
-        extensions=extensions,
-        extension_configs=configs,)
-    env_logger.info("Markdown filter applied to Jinja2 environment.")
-    env_logger.debug("Markdown extension configs: %s", configs)
+        extensions=config["markdown_extensions"] or [],
+        extension_configs=config["mdx_configs"] or {},)
     return md.convert(text)
 
 def get_build_meta_values()-> dict[str, str]:
@@ -58,7 +56,7 @@ def on_env(env: Environment, config: MkDocsConfig, files: Files) -> Environment:
     extensions = list(markdown_configs.keys())
 
     # we have to pass the extensions each time for pyMarkdown, and env.filters doesn't allow for that... rpartial to the rescue!
-    env.filters["markdown"] = rpartial(md_filter, extensions, markdown_configs)
+    env.filters["markdown"] = rpartial(md_filter, config)
     env.add_extension("jinja2.ext.do")
     env.add_extension("jinja2.ext.loopcontrols")
     build_updates = get_build_meta_values()

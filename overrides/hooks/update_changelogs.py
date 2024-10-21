@@ -7,12 +7,14 @@ from hook_logger import get_logger
 from mkdocs.config.base import Config as MkDocsConfig
 from mkdocs.structure.pages import Page
 from mkdocs.structure.files import Files
+from mkdocs.plugins import event_priority
 
 from license_canary import LicenseBuildCanary
 
 if not hasattr("CHANGELOGS", "changelog_logger"):
     changelog_logger = get_logger(__name__, logging.WARNING)
 
+@event_priority(50)
 def on_pre_page(page: Page, config: MkDocsConfig, files: Files) -> Page:
     """Update the changelog for each license page.
 

@@ -42,8 +42,9 @@ class LicenseBuildCanary:
             return
         self.expected_licenses: list[str] = self._list_expected_licenses()
         self.processed_licenses: list["LicenseContent | None"] = []
-        self.processed_pages: list[TemplateContext | None] = []
+        self.processed_context: list[TemplateContext | None] = []
         self.processed_html: list[str | None] = []
+        self.assembled_pages: list[Page | None] = []
         self.errors: list[Any] = []
         self.production: bool = True  # Assume production by default
         self.logger: logging.Logger = get_logger("CANARY", _canary_log_level)
@@ -155,7 +156,7 @@ class LicenseBuildCanary:
         return {
             "Expected licenses": self.expected_licenses,
             "Processed licenses": self.processed_licenses,
-            "Processed pages": self.processed_pages,
+            "Processed pages": self.processed_context,
             "Processed HTML": self.processed_html,
         }
 
@@ -196,7 +197,7 @@ def on_page_context(
     """
     canary = LicenseBuildCanary.canary()
     if canary.is_license_page(page):
-        canary.add_value("processed_pages", str(context))
+        canary.add_value("processed_context", str(context))
     return context
 
 
@@ -235,7 +236,7 @@ def on_post_build(config: MkDocsConfig) -> None:
             "Expected licenses: {} do not match processed licenses: {}",
         ),
         (
-            canary.processed_pages,
+            canary.processed_context,
             canary.processed_html,
             "Processed pages: {} do not match processed HTML: {}",
         ),
