@@ -9,7 +9,6 @@
     {% for tag in tags %}
     {% set icon = "" %}
     {% set tagtext = config['extra']['boilerplate']['tag_text'][tag.name] %}
-    {% set license_type = 'dedication' if page.meta['category'] == 'public-domain' else 'license' %}
 
     {% macro replacer(tag_text, license_type) %}
     {{ tag_text | replace("{{ license_type }}", license_type) | trim }}
