@@ -20,6 +20,8 @@ const compat = new FlatCompat({
 
 export default [{
     ignores: [
+        "external/**",
+        "mkdocs-material/**",
         "**/node_modules",
         "**/__pycache__",
         "**/venv",

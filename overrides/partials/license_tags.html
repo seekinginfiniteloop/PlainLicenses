@@ -3,16 +3,15 @@
 {% endif %}
 {% set meta = page.meta %}
 <p class="md-nav__description license">
-    {{ page.meta['license_type'] }} features
+    {{ meta['license_type'] }} features
 </p>
 <nav class="md-tags">
     {% for tag in tags %}
     {% set icon = "" %}
     {% set tagtext = config['extra']['boilerplate']['tag_text'][tag.name] %}
-    {% set license_type = 'dedication' if page.meta['category'] == 'public-domain' else 'license' %}
 
     {% macro replacer(tag_text, license_type) %}
-    {{ tag_text | replace("{{ license_type }}", license_type) | trim }}
+    {{ tag_text | replace("{{ license_type }}", meta['license_type']) | trim }}
     {% endmacro %}
     {% set rendered_text = replacer(tagtext, license_type) %}
     {% if config.extra.tags %}

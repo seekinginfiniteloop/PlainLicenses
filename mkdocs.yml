@@ -171,7 +171,9 @@ markdown_extensions:
   - pymdownx.highlight:
       default_lang: markdown
       guess_lang: true
-      line_spans: __span
+      line_spans: __codeline
+      line_anchors: __codelineno
+      anchor_linenums: true
       use_pygments: true
   - pymdownx.betterem
   - pymdownx.critic
@@ -201,6 +203,7 @@ markdown_extensions:
         - /
   - pymdownx.saneheaders
   - pymdownx.superfences:
+      disable_indented_code_blocks: true
       custom_fences:
         - name: mermaid
           class: mermaid

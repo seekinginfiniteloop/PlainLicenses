@@ -5,35 +5,23 @@
  */
 import "@/bundle" // we import mkdocs-material's scripts as a side effect
 import "~/hero"
+import "~/licenses"
 
 import { cleanupCache, deleteOldCache } from "~/cache"
 
-import { subscribeToAll } from "~/licenses"
-import { logger } from "~/log"
-
-import { Observable, Subscription, forkJoin, fromEvent, merge } from "rxjs"
-import { distinct, filter, map, mergeMap, switchMap, tap } from "rxjs/operators"
+import { Subscription, merge } from "rxjs"
+import { mergeMap, switchMap, tap } from "rxjs/operators"
 import { cacheAssets } from "./cache"
-import { setCssVariable } from "./utils"
+import { logger } from "~/log"
+import { mergedSubscriptions } from "~/utils"
 // @ts-ignore
 import Tablesort from "tablesort"
 
 import "~/feedback"
 
-const licensePattern = /\/licenses\/(source-available|proprietary|permissive|public-domain|copyleft)\/\w+-?\d?\.?\d?\/index.html$/
-
-const { document$, location$, viewport$ } = window
+const { document$ } = window
 
 const subscriptions: Subscription[] = []
-
-// we watch the location$ Subject for changes to the URL, and if it matches the license pattern, we subscribe to all the observables
-location$.subscribe({
-  next: (url: URL) => {
-    if (licensePattern.test(url.pathname)) {
-      subscribeToAll()
-    }
-  }
-})
 
 // Assets to cache
 const styleAssets = document.querySelectorAll("link[rel=stylesheet][href*=stylesheets]")
@@ -83,17 +71,9 @@ subscriptions.push(document$.subscribe(function () {
 }))
 
 // Cleanup subscriptions
-const mergedSubscriptions = () => {
-  const location: Observable<URL> = location$.pipe(
-    filter((url: URL) => (url.hostname !== "plainlicense.org" && url.protocol === "https:")), tap((url: URL) => logger.info("Navigating to:", url)
-    ))
+const customUrlFilter = (url: URL) => url.hostname !== "plainlicense.org" && url.protocol === "https:"
 
-  const beforeUnload: Observable<Event> = fromEvent(window, "beforeunload")
-
-  return forkJoin([location, beforeUnload])
-}
-
-mergedSubscriptions().subscribe({
+mergedSubscriptions(customUrlFilter).subscribe({
   next: () => {
     subscriptions.forEach(sub => sub.unsubscribe())
     logger.info("Subscriptions cleaned up")

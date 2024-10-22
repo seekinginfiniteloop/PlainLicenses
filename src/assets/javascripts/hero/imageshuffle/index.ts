@@ -1,7 +1,7 @@
 /**
  * @license Plain Unlicense (Public Domain)
  * @copyright No rights reserved. Created by and for Plain License www.plainlicense.org
- * @module This module contains the logic for the hero image shuffling on the home page.
+ * @module hero module contains the logic for the hero image shuffling on the home page.
  * It fetches the image URLs, randomizes their order, caches and loads the images on
  * the hero landing page.
  * It also handles visibility changes and screen orientation changes.
@@ -21,7 +21,7 @@ import {
 } from "rxjs"
 import { catchError, distinctUntilChanged, filter, first, map, mergeMap, switchMap, takeUntil, tap } from "rxjs/operators"
 
-import { isElementVisible, setCssVariable } from "~/utils"
+import { isElementVisible, mergedSubscriptions, setCssVariable } from "~/utils"
 import { getAsset } from "~/cache"
 import { heroImages } from "~/hero/imageshuffle/data"
 import { logger } from "~/log"
@@ -406,7 +406,10 @@ document$.pipe(
     complete: () => logger.info("Document initialization and image cycling completed")
   })
 
-window.addEventListener("beforeunload", () => {
-    stopImageCycling()
+const urlFilter = (url: URL) => (url.pathname !== "/" && url.pathname !== "/index.html" && url.pathname !== "/#") || (url.hostname !== "plainlicense.org" && url.protocol === "https:")
+
+mergedSubscriptions(urlFilter).subscribe({
+  next: () => {
     subscriptions.forEach(sub => sub.unsubscribe())
-  })
+  }
+})

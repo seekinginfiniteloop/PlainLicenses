@@ -25,7 +25,7 @@ import {
   withLatestFrom
 } from "rxjs/operators"
 
-import { createInteractionObservable } from "~/utils"
+import { createInteractionObservable, mergedSubscriptions } from "~/utils"
 import { logger } from "~/log"
 
 gsap.registerPlugin(ScrollToPlugin)
@@ -385,6 +385,10 @@ if (!prefersReducedMotion) {
 
 allSubscriptions()
 
-window.addEventListener("beforeunload", () => {
-  subscriptions.forEach(sub => sub.unsubscribe())
+const urlFilter = (url: URL) => (url.pathname !== "/" && url.pathname !== "/index.html" && url.pathname !== "/#") || (url.hostname !== "plainlicense.org" && url.protocol === "https:")
+
+mergedSubscriptions(urlFilter).subscribe({
+  next: () => {
+    subscriptions.forEach(sub => sub.unsubscribe())
+  }
 })

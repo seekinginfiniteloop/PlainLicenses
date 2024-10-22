@@ -1,5 +1,7 @@
-import { Observable, fromEvent, merge } from "rxjs"
+import { Observable, forkJoin, fromEvent, merge } from "rxjs"
 import { filter } from "rxjs/operators"
+
+const { location$ } = window
 
 /**
  * Check if an element is visible in the viewport
@@ -26,8 +28,10 @@ export function isElementVisible(el: Element) {
   )
 }
 
+type InteractionHandler<E, R> = (events$: Observable<E>) => Observable<R>
+
 /**
- * Creates an observable from a specified event target and event type.
+ * Creates an observable from specified event targets and event types.
  * @function
  * @param evt - The event target or targets to observe.
  * @param handler - An optional interaction handler function to apply to the observable. The handler must receive and return an observable.
@@ -36,20 +40,27 @@ export function isElementVisible(el: Element) {
  */
 export function createInteractionObservable<R>(
   evt: EventTarget | EventTarget[],
-  handler?: InteractionHandler<InteractionEvent, R>
-): Observable<R | InteractionEvent> {
-  const events$ = merge(
-    fromEvent<InteractionEvent>(evt, "click"),
-    fromEvent<InteractionEvent>(evt, "touchend"),
-    fromEvent<InteractionEvent>(evt, "keydown")
+  handler?: InteractionHandler<Event, R>
+): Observable<R | Event> {
+  const eventTargets = Array.isArray(evt) ? evt : [evt]
   // eslint-disable-next-line no-null/no-null
-  ).pipe(filter(ev => ev !== null && (ev instanceof Event)))
+  const validEventTargets = eventTargets.filter(target => target != null)
 
-  if (handler) {
-    return handler(events$)
-  } else {
-    return events$
-  }
+  const click$ = merge(
+    ...validEventTargets.map(target => fromEvent<Event>(target, "click"))
+  )
+
+  const touchend$ = merge(
+    ...validEventTargets.map(target => fromEvent<Event>(target, "touchend"))
+  )
+
+  const keydown$ = fromEvent<KeyboardEvent>(document, "keydown").pipe(
+    filter(event => validEventTargets.includes(event.target as EventTarget))
+  )
+
+  const events$ = merge(click$, touchend$, keydown$)
+
+  return handler ? handler(events$) : events$
 }
 
 /**
@@ -60,4 +71,18 @@ export function createInteractionObservable<R>(
  */
 export function setCssVariable(name: string, value: string) {
   document.documentElement.style.setProperty(name, value)
+}
+
+/**
+ * Merge location and beforeunload events with a URL filter.
+ * @param urlFilter - A function that filters URLs.
+ * @returns An observable of merged location and beforeunload events.
+ */
+export const mergedSubscriptions = (urlFilter: (url: URL) => boolean) => {
+  const location: Observable<URL> = location$.pipe(
+    filter(urlFilter))
+
+  const beforeUnload: Observable<Event> = fromEvent(window, "beforeunload")
+
+  return forkJoin([location, beforeUnload])
 }

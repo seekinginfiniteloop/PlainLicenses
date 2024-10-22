@@ -84,7 +84,6 @@ declare global {
     component$: Observable<CustomEvent>
   }
 
-
   /**
    * these are the various components that can be observed under the component$
    * observable

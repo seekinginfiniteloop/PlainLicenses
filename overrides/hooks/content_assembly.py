@@ -13,7 +13,7 @@ from copy import copy
 from functools import cached_property
 from pathlib import Path
 from re import Match, Pattern
-from typing import Any, Literal
+from typing import Any, ClassVar, Literal
 
 import ez_yaml
 from hook_logger import get_logger
@@ -226,6 +226,8 @@ class LicenseContent:
     Represents a license's content and metadata, including the license text and associated attributes. All license text processing happens here.
     """
 
+    _year_pattern: ClassVar[Pattern[str]] = re.compile(r"\{\{\s{1,2}year\s{1,2}\}\}")
+
     def __init__(self, page: Page) -> None:
         """
         Initializes a new instance of the class with the provided page object.
@@ -238,17 +240,19 @@ class LicenseContent:
         Examples:
             license_instance = LicenseClass(page)
         """
+
         self.page = page
         self.meta = page.meta
         self.license_type = self.get_license_type()
         self.title = f"The {self.meta['plain_name']}"
         self.year = str(datetime.now().strftime("%Y"))
-        self.reader: str = self.meta["reader_license_text"]
+        self.reader: str = self.replace_year(self.meta["reader_license_text"])
         self.markdown_license_text = self.process_mkdocs_to_markdown()
         self.plaintext_license_text = self.process_markdown_to_plaintext()
         self.changelog = self.meta.get("changelog")
         self.plain_version = self.get_plain_version()
         self.tags = self.get_tags()
+
 
     def get_license_type(self) -> Literal["dedication", "license"]:
         """
@@ -326,7 +330,7 @@ class LicenseContent:
         Returns:
             str: The version string from the package, or "0.0.0" if the file is missing or the version is not valid.
         """
-        path = Path(self.page.url)
+        path = Path(self.page.file.src_uri)
         path = path.parent / "package.json"
         if not path.exists():
             return "0.0.0"
@@ -339,7 +343,6 @@ class LicenseContent:
                 package["version"] = "0.1.0"
                 write_json(path, package)
                 return "0.1.0"
-
         return "0.0.0"
 
     def transform_text_to_footnotes(self, text: str) -> str:
@@ -379,6 +382,19 @@ class LicenseContent:
                 transformed_text += f"[^{i}]: {footnote}\n"
         return transformed_text
 
+    def replace_year(self, text: str) -> str:
+        """
+        Replaces the year placeholder in the provided text with the current year.
+
+        Args:
+            text (str): The text to process and replace the year placeholder.
+
+        Returns:
+            str: The text with the year placeholder replaced by the current year.
+        """
+        return self._year_pattern.sub(self.year, text)
+
+
     def process_mkdocs_to_markdown(self) -> str:
         """
         Processes MkDocs content and transforms it into standard Markdown (i.e. not markdown with extensions). This function converts the text to footnotes, applies a header transformation, and processes any definitions present in the text to produce a final Markdown string.
@@ -412,9 +428,14 @@ class LicenseContent:
         Returns:
             list[str] | None: A list of mapped tags if found, or None if no valid tags are present.
         """
-        frontmatter_tags = [tag in taglist for taglist in [self.meta.get("conditions"), self.meta.get("permissions"), self.meta.get("limitations")] for tag in taglist if taglist and tag]
-        tagmap = self.tag_map
-        return [frontmatter_tags[tag] for tag in frontmatter_tags if tag in tagmap]
+        possible_tags: list[list[str | None] | None] = [self.meta.get("conditions"), self.meta.get("permissions"), self.meta.get("limitations")]
+        frontmatter_tags = []
+        for taglist in possible_tags:
+            if taglist:
+                frontmatter_tags.extend(taglist)
+        if frontmatter_tags:
+            return [self.tag_map[tag] for tag in frontmatter_tags if tag in self.tag_map]
+        return None
 
     @cached_property
     def attributes(self) -> dict[str, Any | int | str]:
