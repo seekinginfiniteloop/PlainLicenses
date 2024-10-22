@@ -2,30 +2,28 @@
 {% set hidden = "hidden" if "tags" in page.meta['hide'] %}
 {% endif %}
 {% set meta = page.meta %}
+{% set license_type = meta['license_type'] %}
 <p class="md-nav__description license">
-    {{ meta['license_type'] }} features
+    {{ license_type }} features
 </p>
 <nav class="md-tags">
-    {% for tag in tags %}
-    {% set icon = "" %}
-    {% set tagtext = config['extra']['boilerplate']['tag_text'][tag.name] %}
-
     {% macro replacer(tag_text, license_type) %}
-    {{ tag_text | replace("{{ license_type }}", meta['license_type']) | trim }}
+    {{ tag_text | replace("{{ license_type }}", license_type) | trim }}
     {% endmacro %}
-    {% set rendered_text = replacer(tagtext, license_type) %}
-    {% if config.extra.tags %}
-    {% set icon = " md-tag-icon" %}
-    {% if tag.type %}
-    {% set icon = icon ~ " md-tag--" ~ tag.type %}
-    {% endif %}
-    {% endif %}
-    {% if tag.url %}
-    <a href="{{ tag.url | url }}" class="md-tag{{ icon }}" title="{{ rendered_text }}">
-    </a>
+    {% if config.extra.tags and page.meta['tags'] %}
+    {% set configtags = config.extra.tags %}
+    {% set tags = page.meta['tags'] %}
     {% else %}
-    <span class="md-tag{{ icon }}">
-    </span>
+    {% set tags = [] %}
     {% endif %}
+    {% for tag in tags %}
+    {% set icon = " md-tag-icon" %}
+    {% set icon_name = configtags[tag.name] %}
+    {% set tagtext = config['extra']['boilerplate']['tag_text'][tag.name] %}
+    {% set rendered_text = replacer(tagtext, license_type) %}
+    {% set icon = icon ~ " md-tag--" ~ icon_name %}
+    {% set tagurl = config.site_url ~ "/tags.html#" ~ tag.name | url %}
+    <a href="{{ tagurl }}" class="md-tag{{ icon }}" title="{{ rendered_text }}">
+    </a>
     {% endfor %}
 </nav>
