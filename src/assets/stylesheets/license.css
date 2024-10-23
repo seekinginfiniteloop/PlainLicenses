@@ -136,16 +136,16 @@ h1.license-title {
   border-radius: 0.313em;
 }
 
-.version-info p {
+.version-info {
   margin: 0;
   font-weight: 500;
 }
 
-.version-info p.original_version {
+.version-info .original_version {
   font-weight: 400;
 }
 
-.version-info p.plain_version {
+.version-info .plain_version {
   font-weight: 600;
 }
 

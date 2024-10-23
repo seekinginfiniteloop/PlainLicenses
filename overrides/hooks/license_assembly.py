@@ -246,20 +246,22 @@ class LicenseContent:
         self.license_type = self.get_license_type()
         self.title = f"The {self.meta['plain_name']}"
         self.year = str(datetime.now().strftime("%Y"))
-        self.reader: str = self.replace_year(self.meta["reader_license_text"])
+        self.reader_license_text: str = self.replace_year(self.meta["reader_license_text"])
         self.markdown_license_text = self.process_mkdocs_to_markdown()
         self.plaintext_license_text = self.process_markdown_to_plaintext()
-        self.changelog = self.meta.get("changelog")
+        self.changelog_text = self.meta.get("changelog", "## such empty, much void :nounproject-doge:")
+        self.official_license_text = self.meta.get("official_license_text", "")
         self.plain_version = self.get_plain_version()
         self.tags = self.get_tags()
 
+        self.has_official = bool(self.official_license_text)
 
     def get_license_type(self) -> Literal["dedication", "license"]:
         """
         Returns the license type based on the license metadata.
         This might seem like overkill, but it was giving me a lot of trouble with a single check.
         """
-        if (self.page.title and "domain" in self.page.title.lower()) or (self.page and "domain" in self.page.url.lower()):
+        if (self.page.title and isinstance(self.page.title, str) and "domain" in self.page.title.lower()) or (self.page and "domain" in self.page.url.lower()) or (self.meta.get("category") and "domain" in self.meta["category"].lower()):
             return "dedication"
         return "license"
 
@@ -408,11 +410,11 @@ class LicenseContent:
             "Processing mkdocs-style markdown to regular markdown for %s",
             self.meta["plain_name"],
         )
-        assembly_logger.debug("Reader content: ", self.reader)
+        assembly_logger.debug("Reader content: ", self.reader_license_text)
         header_pattern: Pattern[str] = re.compile(
             r'<h2 class="license-first-header">(.*?)</h2>'
         )
-        text = self.reader
+        text = self.reader_license_text
         text = self.transform_text_to_footnotes(text)
         assembly_logger.debug("Transformed text: %s", text)
         text = header_pattern.sub(r"## \1", text)
@@ -452,12 +454,14 @@ class LicenseContent:
         return {
             "title": self.title,
             "year": self.year,
+            "reader_license_text": self.reader_license_text,
             "markdown_license_text": self.markdown_license_text,
             "plaintext_license_text": self.plaintext_license_text,
             "plain_version": self.plain_version,
             "license_type": self.license_type,
             "tags": self.tags,
             "changelog": self.changelog,
+            "official_license_text": self.official_license_text,
         }
 
     @cached_property
@@ -476,3 +480,109 @@ class LicenseContent:
             "same-license--file": "share-alike (relaxed)",
             "same-license--library": "share-alike (relaxed)",
         }
+
+    @property
+    def icon_map(self) -> dict[str, str]:
+        """Returns the icon map for the license tab icons."""
+        return {
+            "reader": ":material-book-open-variant:",
+            "markdown": ":octicons-markdown-24:",
+            "plaintext": ":nounproject-txt:",
+            "changelog": ":material-history:",
+            "official": ":material-license:",
+        }
+
+    @staticmethod
+    def block_block(text: str, kind: str, title: str, separator_count: int = 5) -> str:
+        """Returns a blocks api block with the provided text."""
+        separator = "/" * separator_count
+        return f"\n{separator} {kind} | {title}\n{text}\n{separator}"
+
+    def interpretation_block(self, kind: str) -> str:
+        """Returns the interpretation block for the license."""
+        if not self.has_official:
+            return ""
+        if kind == "reader":
+            return self.block_block(
+                f"\n{self.meta.get('interpretation_text')}", "note", self.meta.get("interpretation_title", 4)
+            ) + "\n\n"
+        if kind == "markdown":
+            return f"""### {self.meta.get('interpretation_title')}\n\n{self.meta.get('interpretation_text')}\n\n"""
+        return f"""NOTE: {self.meta.get('interpretation_title')}\n\n{self.meta.get('interpretation_text')}\n\n"""
+
+    @property
+    def not_advice_text(self) -> str:
+        """Returns the not advice text for the license."""
+        return f"""\nWe are not lawyers. This is not legal advice. You use this license at your own risk. If you need legal advice, talk to a lawyer.\nWe are normal people who want to make licenses accessible for everyone. We hope that our plain language helps you and anyone else (including lawyers) understand this license. If you see a mistake or want to suggest a change, please [submit an issue on GitHub]({self.meta.get("github_issues_link")} "Submit an issue on GitHub") or [submit edits to this page]({self.meta.get("github_edit_link")} "edit on GitHub").\n"""
+
+    @property
+    def not_official_text(self) -> str:
+        """Returns the not official text for the license."""
+        if self.has_official:
+            return f"""\nPlain License is not affiliated with the original {self.meta['original_name'].strip()} authors or {self.meta['original_organization'].strip()}. **Our plain language versions are not official** and are not endorsed by the original authors. Our licenses may also include different terms or additional information. We try to capture the *legal meaning* of the original license, but we can't guarantee our license provides the same legal protections.\n\nIf you want to use the {self.meta['plain_name'].strip()}, you should refer to the original license text so you understand how it might be different. You can find the official {self.meta['original_name'].strip()} [here]({self.meta['original_url'].strip()} "check out the official {self.meta['original_name'].strip()}" ).\n"""
+        return ""
+
+    @property
+    def disclaimer_block(self) -> str:
+        """Returns the disclaimer block for the license."""
+        not_advice_title = "This is not legal advice."
+        not_advice = self.block_block(
+            self.not_advice_text,
+            "tab" if self.official_license_text else "warning",
+            not_advice_title,
+            3,
+        )
+        if not self.has_official:
+            return not_advice
+        not_official_title = f"This is not the official {self.meta.get("original_name")}"
+        not_official = self.block_block(self.not_official_text, "tab", not_official_title, 3)
+        return self.block_block("    open: True\n\n" + not_advice + not_official, "details", "disclaimer", 4)
+
+    @property
+    def reader(self) -> str:
+        """Returns the reader block for the license."""
+        title = f"\n# {self.meta.get('plain_name')}.strip()\n\n"
+        version_info = f"""<div class='version-info'><span class="original-version">{self.meta.get("original_version")}</span><span class="plain-version">{self.plain_version}</span></div>\n\n""" if self.meta.get("original_version") else f"""<div class='version-info'><span class="plain-version">{self.plain_version}</span></div>\n\n"""
+        header_block = f"""<div class="license-header">{title}{version_info}</div>\n\n"""
+        text = (header_block + self.replace_year(self.reader_license_text) + self.interpretation_block("reader") + self.disclaimer_block) if self.official_license_text else (header_block + self.replace_year(self.reader_license_text) + self.disclaimer_block)
+        return self.block_block(text, "tab", f"reader {self.icon_map['reader']}")
+
+    @property
+    def markdown(self) -> str:
+        """Returns the markdown block for the license."""
+        title = f"# {self.meta.get('plain_name')}\n\n"
+        version_info = f"""> Original version: {self.meta.get("original_version")}\n> Plain Version: {self.meta.get("plain_version")}\n\n""" if self.meta.get("original_version") else f"""> Plain Version: {self.meta.get("plain_version")}\n\n"""
+        header_block = f"""{title}{version_info}\n\n"""
+        text = f"""\n```markdown\n\n{header_block}{self.markdown_license_text}{self.interpretation_block("markdown")}```\n\n + {self.disclaimer_block}"""
+        return self.block_block(text, "tab", f"markdown {self.icon_map['markdown']}")
+
+    @property
+    def plaintext(self) -> str:
+        """Returns the plaintext block for the license."""
+        title = f"\n{self.meta.get('plain_name').upper()}\n\n"
+        version_info = f"""Original version: {self.meta.get("original_version")} | Plain Version: {self.meta.get("plain_version")}\n\n""" if self.meta.get("original_version") else f"""Plain Version: {self.meta.get("plain_version")}\n\n"""
+        header_block = f"""{title}{version_info}\n\n"""
+        text = f"""```plaintext\n\n{header_block}{self.plaintext_license_text}{self.interpretation_block("plaintext")}```\n\n + {self.disclaimer_block}"""
+        return self.block_block(text, "tab", f"plaintext {self.icon_map['plaintext']}")
+
+    @property
+    def changelog(self) -> str:
+        """Returns the changelog block for the license."""
+        return self.block_block(self.changelog_text, "tab", f"changelog {self.icon_map['changelog']}")
+
+    @property
+    def official(self) -> str:
+        """Returns the official block for the license."""
+        if not self.has_official:
+            return ""
+        if not self.meta.get("link_in_original"):
+        text = f"""{self.official_license_text}\n{self.meta.get("official_link")}\n""" if not self.meta.get("link_in_original") else f"""{self.official_license_text}\n"""
+        return self.block_block(text, "tab", f"official {self.icon_map['official']}")
+
+
+    @property
+    def license_content(self) -> str:
+        """Returns the content for a license page"""
+        tabs = (self.reader + self.markdown + self.plaintext + self.changelog) + (self.official if self.has_official else "")
+        outro = self.meta.get("outro", "")
+        return self.block_block(f"    type:license, open:True\n\n{tabs}{outro}\n", "details", f"Plain License: <span class='detail-title-highlight'>The {self.meta.get('plain_name')}</span>", 6)

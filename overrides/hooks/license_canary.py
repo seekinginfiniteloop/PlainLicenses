@@ -18,7 +18,7 @@ from mkdocs.structure.pages import Page
 from mkdocs.utils.templates import TemplateContext
 
 if TYPE_CHECKING:
-    from content_assembly import LicenseContent
+    from overrides.hooks.license_assembly import LicenseContent
 
 _canary_log_level = logging.WARNING
 
