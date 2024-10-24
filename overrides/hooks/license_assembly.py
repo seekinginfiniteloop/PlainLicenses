@@ -25,7 +25,7 @@ from mkdocs.structure.files import File, Files, InclusionLevel
 from mkdocs.structure.pages import Page
 
 # Change hook-level logging here
-_assembly_log_level = logging.WARNING
+_assembly_log_level = logging.DEBUG
 
 if not hasattr(__name__, "assembly_logger"):
     assembly_logger = get_logger(
@@ -82,7 +82,8 @@ def render_mapping(mapping: dict[str, Any], context: dict):
             return [render_mapping(item, context) for item in value]
         else:
             return value
-
+    assembly_logger.debug("Rendering mapping: %s", mapping)
+    assembly_logger.debug("Context: %s", context)
     return {key: render_value(value) for key, value in mapping.items()}
 
 def assemble_license_page(config: MkDocsConfig, page: Page, file: File) -> Page:
@@ -91,17 +92,16 @@ def assemble_license_page(config: MkDocsConfig, page: Page, file: File) -> Page:
     boilerplate: dict[str, str] = config.extra["boilerplate"]
     boilerplate["year"] = boilerplate.get(
         "year", datetime.now(timezone.utc).strftime("%Y")
-    )
+    ).strip()
     boilerplate = clean_content(boilerplate)
     license = LicenseContent(page)
-
     get_canary().add_value("processed_licenses", license)
-    all_data = clean_content(license.attributes | page.meta)
-    assembly_logger.debug("All_data before rendering boilerplate: %s", all_data)
+    assembly_logger.debug("All data before rendering boilerplate: %s", page.meta)
     assembly_logger.debug("Rendering boilerplate for %s", page.title)
     rendered_boilerplate = render_mapping(boilerplate, page.meta)
     page.meta |= rendered_boilerplate
-    assembly_logger.debug("Meta with rendered boilerplate: %s", rendered_boilerplate)
+    markdown = (page.markdown or "") + license.license_content
+    page.markdown = Template(markdown).render(**page.meta)
     return page
 
 def create_page_content(page: Page) -> str:
@@ -116,12 +116,14 @@ def create_page_content(page: Page) -> str:
 
 def create_new_file(page: Page, file: File, config: MkDocsConfig) -> File:
     """Creates a new file object from a page."""
-    return File.generated(
+    new_file = File.generated(
         config,
         file.src_uri,
         content=create_page_content(page),
         inclusion=InclusionLevel.INCLUDED,
     )
+    del page
+    return new_file
 
 def get_category(uri: str) -> str | None:
     """Returns the category of the license."""
@@ -223,6 +225,7 @@ def write_json(path: Path, data: dict[str, Any]) -> None:
 
 class LicenseContent:
     """
+    TODO: Break this class up into smaller classes
     Represents a license's content and metadata, including the license text and associated attributes. All license text processing happens here.
     """
 
@@ -394,7 +397,7 @@ class LicenseContent:
         Returns:
             str: The text with the year placeholder replaced by the current year.
         """
-        return self._year_pattern.sub(self.year, text)
+        return type(self)._year_pattern.sub(self.year, text)
 
 
     def process_mkdocs_to_markdown(self) -> str:
@@ -439,6 +442,48 @@ class LicenseContent:
             return [self.tag_map[tag] for tag in frontmatter_tags if tag in self.tag_map]
         return None
 
+    @staticmethod
+    def blockify(text: str, kind: str, title: str, separator_count: int = 5, options: str = "") -> str:
+        """Returns a blocks api block with the provided text."""
+        separator = "/" * separator_count
+        option_line = f"{' ' * (separator_count + 1)}options\n\n" if options else "\n"
+        return f"\n{separator} {kind} | {title}\n{option_line}{text}\n{separator}"
+
+    def interpretation_block(self, kind: str) -> str:
+        """Returns the interpretation block for the license."""
+        if not self.has_official:
+            return ""
+        if kind == "reader":
+            return self.blockify(
+                f"{self.meta.get('interpretation_text')}", "note", self.meta.get("interpretation_title", ""), 4
+            )
+        if kind == "markdown":
+            return f"""### {self.meta.get('interpretation_title')}\n\n{self.meta.get('interpretation_text')}\n\n"""
+        return f"""NOTE: {self.meta.get('interpretation_title')}\n\n{self.meta.get('interpretation_text')}\n\n"""
+
+    def get_header_block(self, kind: Literal["reader", "markdown", "plaintext"]) -> str:
+        """Returns the version block for the license."""
+        if kind == "reader":
+            title = f"\n\n# {self.meta['plain_name'].strip()}\n\n"
+            if self.meta.get("original_version"):
+                version_info = f"""<div class='version-info'><span class="original-version">original version: {self.meta.get("original_version")}</span><span class="plain-version">plain version: {self.plain_version}</span></div>\n\n"""
+            else:
+                version_info = f"""<div class='version-info'><span class="plain-version">plain version: {self.plain_version}</span></div>\n\n"""
+            return f"""<div class="license-header">{title}{version_info}</div>\n\n"""
+        if kind == "markdown":
+            title = f"\n\n# {self.meta.get('plain_name')}\n\n"
+            if self.meta.get("original_version"):
+                version_info = f"""> original version: {self.meta.get("original_version")}\n> plain version: {self.meta.get("plain_version")}\n\n"""
+            else:
+                version_info = f"""> plain version: {self.meta.get("plain_version")}\n\n"""
+            return f"""\n\n{title}{version_info}\n\n"""
+        title = f"\n\n# {self.meta.get('plain_name').upper()}\n\n"
+        if self.meta.get("original_version"):
+            version_info = f"""\n\noriginal version: {self.meta.get("original_version")} | plain version: {self.meta.get("plain_version")}\n\n"""
+        else:
+            version_info = f"""\n\nplain version: {self.meta.get("plain_version")}\n\n"""
+        return f"""\n\n{title}{version_info}\n\n"""
+
     @cached_property
     def attributes(self) -> dict[str, Any | int | str]:
         """
@@ -462,6 +507,8 @@ class LicenseContent:
             "tags": self.tags,
             "changelog": self.changelog,
             "official_license_text": self.official_license_text,
+            "has_official": self.has_official,
+            "final_markdown": self.license_content,
         }
 
     @cached_property
@@ -488,101 +535,103 @@ class LicenseContent:
             "reader": ":material-book-open-variant:",
             "markdown": ":octicons-markdown-24:",
             "plaintext": ":nounproject-txt:",
+            "embed": ":material-language-html5:",
             "changelog": ":material-history:",
             "official": ":material-license:",
         }
 
-    @staticmethod
-    def block_block(text: str, kind: str, title: str, separator_count: int = 5) -> str:
-        """Returns a blocks api block with the provided text."""
-        separator = "/" * separator_count
-        return f"\n{separator} {kind} | {title}\n{text}\n{separator}"
-
-    def interpretation_block(self, kind: str) -> str:
-        """Returns the interpretation block for the license."""
-        if not self.has_official:
-            return ""
-        if kind == "reader":
-            return self.block_block(
-                f"\n{self.meta.get('interpretation_text')}", "note", self.meta.get("interpretation_title", 4)
-            ) + "\n\n"
-        if kind == "markdown":
-            return f"""### {self.meta.get('interpretation_title')}\n\n{self.meta.get('interpretation_text')}\n\n"""
-        return f"""NOTE: {self.meta.get('interpretation_title')}\n\n{self.meta.get('interpretation_text')}\n\n"""
-
     @property
     def not_advice_text(self) -> str:
         """Returns the not advice text for the license."""
-        return f"""\nWe are not lawyers. This is not legal advice. You use this license at your own risk. If you need legal advice, talk to a lawyer.\nWe are normal people who want to make licenses accessible for everyone. We hope that our plain language helps you and anyone else (including lawyers) understand this license. If you see a mistake or want to suggest a change, please [submit an issue on GitHub]({self.meta.get("github_issues_link")} "Submit an issue on GitHub") or [submit edits to this page]({self.meta.get("github_edit_link")} "edit on GitHub").\n"""
+        return f"""We are not lawyers. This is not legal advice. You use this license at your own risk. If you need legal advice, talk to a lawyer.\nWe are normal people who want to make licenses accessible for everyone. We hope that our plain language helps you and anyone else (including lawyers) understand this license. If you see a mistake or want to suggest a change, please [submit an issue on GitHub]({self.meta.get("github_issues_link")} "Submit an issue on GitHub") or [submit edits to this page]({self.meta.get("github_edit_link")} "edit on GitHub").\n"""
 
     @property
     def not_official_text(self) -> str:
         """Returns the not official text for the license."""
         if self.has_official:
-            return f"""\nPlain License is not affiliated with the original {self.meta['original_name'].strip()} authors or {self.meta['original_organization'].strip()}. **Our plain language versions are not official** and are not endorsed by the original authors. Our licenses may also include different terms or additional information. We try to capture the *legal meaning* of the original license, but we can't guarantee our license provides the same legal protections.\n\nIf you want to use the {self.meta['plain_name'].strip()}, you should refer to the original license text so you understand how it might be different. You can find the official {self.meta['original_name'].strip()} [here]({self.meta['original_url'].strip()} "check out the official {self.meta['original_name'].strip()}" ).\n"""
+            return f"""Plain License is not affiliated with the original {self.meta['original_name'].strip()} authors or {self.meta['original_organization'].strip()}. **Our plain language versions are not official** and are not endorsed by the original authors. Our licenses may also include different terms or additional information. We try to capture the *legal meaning* of the original license, but we can't guarantee our license provides the same legal protections.\n\nIf you want to use the {self.meta['plain_name'].strip()}, you should refer to the original license text so you understand how it might be different. You can find the official {self.meta['original_name'].strip()} [here]({self.meta['original_url'].strip()} "check out the official {self.meta['original_name'].strip()}" ).\n"""
         return ""
 
     @property
     def disclaimer_block(self) -> str:
         """Returns the disclaimer block for the license."""
         not_advice_title = "This is not legal advice."
-        not_advice = self.block_block(
+        not_advice = self.blockify(
             self.not_advice_text,
-            "tab" if self.official_license_text else "warning",
+            "tab" if self.has_official else "warning",
             not_advice_title,
             3,
+            options="open: True",
         )
         if not self.has_official:
             return not_advice
         not_official_title = f"This is not the official {self.meta.get("original_name")}"
-        not_official = self.block_block(self.not_official_text, "tab", not_official_title, 3)
-        return self.block_block("    open: True\n\n" + not_advice + not_official, "details", "disclaimer", 4)
+        not_official = self.blockify(self.not_official_text, "tab", not_official_title, 3, options="open: True")
+        return self.blockify(f"{not_advice}\n{not_official}\n", "details", "disclaimer", 4, "open:True")
 
     @property
     def reader(self) -> str:
         """Returns the reader block for the license."""
-        title = f"\n# {self.meta.get('plain_name')}.strip()\n\n"
-        version_info = f"""<div class='version-info'><span class="original-version">{self.meta.get("original_version")}</span><span class="plain-version">{self.plain_version}</span></div>\n\n""" if self.meta.get("original_version") else f"""<div class='version-info'><span class="plain-version">{self.plain_version}</span></div>\n\n"""
-        header_block = f"""<div class="license-header">{title}{version_info}</div>\n\n"""
-        text = (header_block + self.replace_year(self.reader_license_text) + self.interpretation_block("reader") + self.disclaimer_block) if self.official_license_text else (header_block + self.replace_year(self.reader_license_text) + self.disclaimer_block)
-        return self.block_block(text, "tab", f"reader {self.icon_map['reader']}")
+        header_block = self.get_header_block("reader")
+        if self.has_official:
+            text = header_block + self.replace_year(self.reader_license_text) + self.interpretation_block("reader") + self.disclaimer_block
+        else:
+            text = header_block + self.replace_year(self.reader_license_text) + self.disclaimer_block
+        return self.blockify(text, "tab", f"reader {self.icon_map['reader']}")
 
     @property
     def markdown(self) -> str:
         """Returns the markdown block for the license."""
-        title = f"# {self.meta.get('plain_name')}\n\n"
-        version_info = f"""> Original version: {self.meta.get("original_version")}\n> Plain Version: {self.meta.get("plain_version")}\n\n""" if self.meta.get("original_version") else f"""> Plain Version: {self.meta.get("plain_version")}\n\n"""
-        header_block = f"""{title}{version_info}\n\n"""
-        text = f"""\n```markdown\n\n{header_block}{self.markdown_license_text}{self.interpretation_block("markdown")}```\n\n + {self.disclaimer_block}"""
-        return self.block_block(text, "tab", f"markdown {self.icon_map['markdown']}")
+        header_block = self.get_header_block("markdown")
+        text = f"""\n```markdown {header_block}{self.markdown_license_text}{self.interpretation_block("markdown")}\n```\n\n{self.disclaimer_block}"""
+        return self.blockify(text, "tab", f"markdown {self.icon_map['markdown']}")
 
     @property
     def plaintext(self) -> str:
         """Returns the plaintext block for the license."""
-        title = f"\n{self.meta.get('plain_name').upper()}\n\n"
-        version_info = f"""Original version: {self.meta.get("original_version")} | Plain Version: {self.meta.get("plain_version")}\n\n""" if self.meta.get("original_version") else f"""Plain Version: {self.meta.get("plain_version")}\n\n"""
-        header_block = f"""{title}{version_info}\n\n"""
-        text = f"""```plaintext\n\n{header_block}{self.plaintext_license_text}{self.interpretation_block("plaintext")}```\n\n + {self.disclaimer_block}"""
-        return self.block_block(text, "tab", f"plaintext {self.icon_map['plaintext']}")
+        header_block = self.get_header_block("plaintext")
+        text = f"""```plaintext\n\n{header_block}{self.plaintext_license_text}{self.interpretation_block("plaintext")}```\n\n{self.disclaimer_block}"""
+        return self.blockify(text, "tab", f"plaintext {self.icon_map['plaintext']}")
 
     @property
     def changelog(self) -> str:
         """Returns the changelog block for the license."""
-        return self.block_block(self.changelog_text, "tab", f"changelog {self.icon_map['changelog']}")
+        return self.blockify(self.changelog_text, "tab", f"changelog {self.icon_map['changelog']}")
 
     @property
     def official(self) -> str:
         """Returns the official block for the license."""
         if not self.has_official:
             return ""
-        if not self.meta.get("link_in_original"):
-        text = f"""{self.official_license_text}\n{self.meta.get("official_link")}\n""" if not self.meta.get("link_in_original") else f"""{self.official_license_text}\n"""
-        return self.block_block(text, "tab", f"official {self.icon_map['official']}")
+        text = f"""{self.official_license_text}\n""" if self.meta.get("link_in_original") else f"""{self.official_license_text}\n\n{self.meta.get("official_link")}\n"""
+        return self.blockify(text, "tab", f"official {self.icon_map['official']}")
 
+    @property
+    def embed_link(self) -> str:
+        """Returns the embed link for the license."""
+        return f"""<iframe
+    src="https://plainlicense.org/embed/{self.meta['spdx_id']}.html"
+    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 1px solid #E4C580; border-radius: 8px; overflow: hidden auto;"
+    title=f"{self.title}"
+    loading="lazy"
+    sandbox="allow-scripts"
+    onload="if(this.contentDocument.body.scrollHeight > 400) this.style.height = this.contentDocument.body.scrollHeight + 'px';"
+    referrerpolicy="no-referrer-when-downgrade">
+    <p>Your browser does not support iframes. View {self.title} at:
+      <a href="{self.page.url}">plainlicense.org</a>
+    </p>
+  </iframe>"""
+
+    @property
+    def embed(self) -> str:
+        """Returns the embed block for the license."""
+        return self.blockify(self.embed_link, "tab", f"html {self.icon_map['embed']}")
 
     @property
     def license_content(self) -> str:
         """Returns the content for a license page"""
-        tabs = (self.reader + self.markdown + self.plaintext + self.changelog) + (self.official if self.has_official else "")
+        tabs = self.reader + self.markdown + self.plaintext + self.changelog
+        if self.has_official:
+            tabs += self.official
         outro = self.meta.get("outro", "")
-        return self.block_block(f"    type:license, open:True\n\n{tabs}{outro}\n", "details", f"Plain License: <span class='detail-title-highlight'>The {self.meta.get('plain_name')}</span>", 6)
+        return self.blockify(f"{tabs}{outro}\n", "admonition license", f"Plain License\: <span class='detail-title-highlight'>The {self.meta.get('plain_name')}</span>\n", 6, options="open:True") + f"\n\n{outro}"

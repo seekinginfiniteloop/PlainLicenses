@@ -92,7 +92,7 @@ limitations: # AS APPLICABLE:
   - trademark-use
   - warranty
 # NOTE: The simplified tags you see on license pages, with icon representations are added in the build process automatically. They are appended based on permissions, conditions, limitations
-# The mapping is in the content_assembly.py script in overrides/hooks directory
+# The mapping is in the license_assembly.py script in overrides/hooks directory
 
 # outro text for the license page; this is appended to the standard outro text. Optional and usually empty; if empty, change to `null`
 outro: |

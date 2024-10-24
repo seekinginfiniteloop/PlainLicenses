@@ -18,7 +18,7 @@
     8000
   ],
   // Use 'postCreateCommand' to run commands after the container is created.
-  "postCreateCommand": "sudo apt-get update && sudo apt upgrade -y && sudo apt -y install libcairo2-dev pkg-config python3-dev ripgrep && uv sync --all-extras -q && bun install --no-summary --silent && uv tool install ipython -q && echo 'source /workspaces/PlainLicense/.venv/bin/activate' >> ~/.zshrc && echo \"export PATH='/home/vscode/.local/bin:\\$PATH'\" >> ~/.zshrc && echo 'export UV_LINK_MODE=copy' >> ~/.zshrc && echo 'export UV_COMPILE_BYTECODE=1' >> ~/.zshrc && git submodule update && bun install -g @linthtml/linthtml && echo 'export PATH=/home/vscode/.bun/bin:$PATH' >> ~/.zshrc && source ~/.zshrc",
+  "postCreateCommand": "sudo apt-get update && sudo apt upgrade -y && sudo apt -y install libcairo2-dev pkg-config python3-dev ripgrep && uv sync --all-extras -q && bun install --no-summary --silent && uv tool install ipython -q && echo 'source /workspaces/PlainLicense/.venv/bin/activate' >> ~/.zshrc && echo \"export PATH='/home/vscode/.local/bin:\\$PATH'\" >> ~/.zshrc && echo 'export UV_LINK_MODE=copy' >> ~/.zshrc && echo 'export UV_COMPILE_BYTECODE=1' >> ~/.zshrc && git submodule update && bun install -g @linthtml/linthtml && echo 'export PATH=/home/vscode/.bun/bin:$PATH' >> ~/.zshrc && . ~/.zshrc",
   "customizations": {
     "vscode": {
       // I have a plugin addiction
