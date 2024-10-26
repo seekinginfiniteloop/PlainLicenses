@@ -23,13 +23,14 @@ from mkdocs.structure.files import Files
 from mkdocs.structure.nav import Navigation
 
 # Configuration
-LOG_LEVEL_OVERRIDE = int(os.environ.get("LOG_LEVEL_OVERRIDE", logging.WARNING))
+override = os.getenv("LOG_LEVEL_OVERRIDE")
+LOG_LEVEL_OVERRIDE = int(override) if override else logging.WARNING
 DEVELOPMENT = os.getenv("GITHUB_ACTIONS") != "true"
 FILEHANDLER_ENABLED = (
-    os.environ.get("FILEHANDLER_ENABLED", str(DEVELOPMENT)).lower() == "true"
+    os.getenv("FILEHANDLER_ENABLED", str(DEVELOPMENT)).lower() == "true"
 )
 STREAMHANDLER_ENABLED = (
-    os.environ.get("STREAMHANDLER_ENABLED", "true").lower() == "true"
+    os.getenv("STREAMHANDLER_ENABLED", "true").lower() == "true"
 )
 
 if FILEHANDLER_ENABLED:
@@ -39,7 +40,7 @@ if FILEHANDLER_ENABLED:
     LOG_SAVE_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 # Global variables
-LOGGERS: dict[str, logging.Logger] = {}
+ROOT_LOGGER = None
 
 class ColorFormatter(logging.Formatter):
     """Formats log messages"""
@@ -75,51 +76,47 @@ class ColorFormatter(logging.Formatter):
             )
             + click.style(f"{record.name:<12} ", **module_color)
             + click.style(log_message, fg=(self.COLORS.get(record.levelname, "white")), bg="bright_blue" if record.name == "CANARY" else None) + f" logger: {record.filename}"
-        )
+        ) # Assuming a default path for demonstration
 
+def configure_handler(handler: logging.Handler, format: logging.Formatter, level: int) -> logging.Handler:
+    """Configures a handler with the specified format and level."""
+    handler.setFormatter(format)
+    if isinstance(handler, logging.FileHandler):
+        level = min(level, logging.INFO)
+    handler.setLevel(level)
+    return handler
+
+def configure_root_logger() -> logging.Logger:
+    """Configures the root logger with predefined settings."""
+    def set_override() -> int:
+        """Set the override level"""
+        return LOG_LEVEL_OVERRIDE
+    root_logger = logging.getLogger()
+    log_level = logging.NOTSET
+    if FILEHANDLER_ENABLED:
+        file_format = logging.Formatter(
+            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        )
+        if LOG_LEVEL_OVERRIDE < logging.INFO:
+            log_level = set_override()
+        root_logger.addHandler(configure_handler(logging.FileHandler(LOG_SAVE_PATH), file_format, log_level))
+    if STREAMHANDLER_ENABLED:
+        formatter = ColorFormatter("%(asctime)s - %(message)s")
+        if LOG_LEVEL_OVERRIDE < logging.INFO:
+            log_level = set_override()
+        root_logger.addHandler(configure_handler(logging.StreamHandler(sys.stdout), formatter, log_level))
+    return root_logger
 
 def get_logger(name: str, level: int = logging.WARNING) -> logging.Logger:
     """
     Get a logger instance with the specified name and logging level.
-
-    This function retrieves a logger by name, creating it if it does not already exist. It configures the logger with appropriate handlers based on the specified logging level and predefined settings.
-
-    Args:
-        name (str): The name of the logger to retrieve or create.
-        level (int, optional): The logging level to set for the logger. Defaults to logging.WARNING.
-
-    Returns:
-        logging.Logger: The configured logger instance.
-
-    Raises:
-        ValueError: If the logging level is invalid.
     """
-
-    if name in LOGGERS:
-        return LOGGERS[name]
-
-    logger = logging.getLogger(name)
-    level = min(LOG_LEVEL_OVERRIDE, level)
-    logger.setLevel(level)
-
-    if FILEHANDLER_ENABLED and not logger.hasHandlers():
-        file_handler = logging.FileHandler(LOG_SAVE_PATH)
-        file_handler.setFormatter(
-            logging.Formatter(
-                "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-            )
-        )
-        file_handler.setLevel(level)
-        logger.addHandler(file_handler)
-
-    if STREAMHANDLER_ENABLED and not logger.hasHandlers():
-        stream_handler = logging.StreamHandler(sys.stdout)
-        stream_handler.setFormatter(ColorFormatter("%(asctime)s - %(message)s"))
-        logger.addHandler(stream_handler)
-
-    LOGGERS[name] = logger
+    global ROOT_LOGGER
+    ROOT_LOGGER = ROOT_LOGGER or configure_root_logger()
+    logger = ROOT_LOGGER.getChild(name)
+    logger.setLevel(min(level, LOG_LEVEL_OVERRIDE))
+    logger.propagate = True
     return logger
-
 
 # MkDocs plugin hooks
 @event_priority(100)

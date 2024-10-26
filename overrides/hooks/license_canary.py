@@ -18,14 +18,16 @@ from mkdocs.structure.pages import Page
 from mkdocs.utils.templates import TemplateContext
 
 if TYPE_CHECKING:
-    from overrides.hooks.license_assembly import LicenseContent
+    from license_assembly import LicenseContent
 
-_canary_log_level = logging.WARNING
+_canary_log_level = logging.DEBUG
 
 
 class LicenseBuildCanary:
     """
-    LicenseBuildCanary helps us ensure that all licenses are processed correctly, and prevents broken from entering production. It's also a singleton, so it doubles as a global reference point for other hooks.
+    LicenseBuildCanary helps us ensure that all licenses are processed correctly, and prevents broken fbuild rom entering production. It's also a singleton, so it doubles as a global reference point for other hooks.
+
+    Well, that's the idea, anyway. It's a work in progress.
     """
 
     _instance: ClassVar[Self | None] = None
@@ -100,6 +102,13 @@ class LicenseBuildCanary:
         if cls._instance is None:
             cls._instance = cls()
         return cls._instance
+
+    def dump(self) -> None:
+        """Dumps the current state of the LicenseBuildCanary."""
+        self.logger.debug("Dumping LicenseBuildCanary state.")
+        for k, v in self.__dict__.items():
+            if not k.startswith("_"):
+                self.logger.debug("%s: %s", k, pformat(v))
 
     def is_license_page(self, page: Page) -> bool:
         """
@@ -178,7 +187,7 @@ def on_startup(command: str, dirty: bool) -> None:
     """
     canary = LicenseBuildCanary()
     canary.list_production(command)
-    canary.logger.debug("Build Canary production flag is list to %s", canary.production)
+    canary.logger.debug("Build Canary production flag is set to %s", canary.production)
     canary.logger.debug("Canary expected licenses: %s", canary.expected_licenses)
 
 def on_page_context(
@@ -260,5 +269,10 @@ def on_post_build(config: MkDocsConfig) -> None:
 
     canary.logger.info("Build Canary passed without errors.")
     """
-
-LicenseBuildCanary()
+try:
+    LicenseBuildCanary()
+except Exception as e:
+    print(e)
+finally:
+    if (canary := LicenseBuildCanary.canary()) and canary.__class__._initialized and canary.logger and canary.logger.level == logging.DEBUG:
+        canary.dump()

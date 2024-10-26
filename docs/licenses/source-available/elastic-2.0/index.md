@@ -17,8 +17,6 @@ category: >
   source-available
 license_description: >
   The Elastic License 2.0 is a source-available license that allows you to use, copy, distribute, and modify the work. However, you can't offer the work as a service to others. You must keep all copyright notices in the software. The license includes a patent grant, but you lose your patent rights if you claim the software infringes a patent.
-how: >
-  Create a LICENSE or LICENSE.md file in the base of your project. If your project is on Github or another platform that uses markdown, copy the <a class="how_link" href=#markdown>markdown version</a> using the copy icon. Otherwise, use the <a class="how_link" href="#plaintext">plaintext version</a>
 note: null
 permissions:
   - distribution

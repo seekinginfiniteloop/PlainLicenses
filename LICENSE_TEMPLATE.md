@@ -15,7 +15,7 @@
 #     - **Please don't use reference link tags on license pages. Use in-line links.**
 #
 # Steps:
-# 1) replace all {{ variables }} with the appropriate information
+# 1) !!IMPORTANT: replace all {{ variables }} with the appropriate information
 #     You can use find and replace to fill the variables in this template
 #     Variables are: plain_name, original_name, spdx_id, original_url,
 #     original_organization, original_version, category, license_description,
@@ -45,14 +45,15 @@
 template: license.html
 plain_name: > # don't include version number in the plain name
   {{ plain_name }}
-# SPDX identifier for the original license, find it at https://spdx.org/licenses/
+# SPDX identifier for the original license, find it at https://spdx.org/licenses/ or in our repository at https://github.com/seekinginfiniteloop/PlainLicense/external/license-list-data/json/licenses.json (both are pulled from the same source)
+# If the license is a Plain License original, try to copy the spdx convention when naming it, and prefix it with `Plain-`. Following SPDX convention, use the major.minor version number at the end of the spdx_id. Example: `Plain-Public-Work-1.0`
 spdx_id: >
   {{ spdx_id }}
 original_name: >
-  {{ original_name }} # original name as it is known in the SPDX database
-# URL to the original license text, link to official site if possible, otherwise link to the SPDX page
+  {{ original_name }} # original name as listed in the SPDX database else null
+# URL to the original license text, link to official site if possible, otherwise link to the opensource.org or SPDX page
 original_url: >
-  {{ original_url }}
+  {{ original_url }} # URL to the original license text else null
 original_organization: > # organization that created the license
   {{ original_organization }}
 original_version:
@@ -68,8 +69,10 @@ license_description: >
 note: >
   {{ notes }}
 # We use choosealicense.com's tagging system; we haven't implemented this yet, but we
-# will in the future, which divides tags into permissions, conditions, and limitations
-# SELECT ONLY TAGS THAT APPLY TO THE LICENSE, AND REMOVE THE REST. If the license is already on choosealicense.com, please use the same tags as on their site.
+# will in the future. Their system divides tags into permissions, conditions, and limitations
+# SELECT ONLY TAGS THAT APPLY TO THE LICENSE, AND REMOVE THE REST. If the license is already on choosealicense.com, please use the same tags as on their site. You can find all licenses and their tags at https://www.github.com/seekinginfiniteloop/PlainLicense/external/choosealicense.com/_licenses_/
+# If the license is not on choosealicense.com, use the tags that best describe the license
+# Descriptions of the tags are here: https://www.github.com/seekinginfiniteloop/PlainLicense/external/choosealicense.com/_data/rules.yml
 permissions: # AS APPLICABLE:
   - distribution
   - commercial-use
@@ -91,12 +94,18 @@ limitations: # AS APPLICABLE:
   - patent-use
   - trademark-use
   - warranty
-# NOTE: The simplified tags you see on license pages, with icon representations are added in the build process automatically. They are appended based on permissions, conditions, limitations
-# The mapping is in the license_assembly.py script in overrides/hooks directory
+# NOTE: The simplified tags you see on license pages with icon representations are added in the build process automatically. They are appended based on permissions, conditions, limitations
+# The mapping is in the license_assembly.py script in the `overrides/hooks` directory
 
-# outro text for the license page; this is appended to the standard outro text. Optional and usually empty; if empty, change to `null`
+# outro text for the license page; this is appended to the page, below the license tabs. Optional and usually empty; if empty, change to `null`
 outro: |
-  {{ outro }}
+  null
+
+# Optional additional instructions for how to use the license. This is appended to the stock `how` instructions from the boilerplate in the mkdocs.yml. This is usually empty, and null is the default value. When we do have instructions, most often the license itself gives them, so reference the license text with an anchor link, which is the header for that section of the license text. Example:
+# ```markdown
+# See [`How to Apply the Plain Apache to Your Work`](#how-to-apply-the-plain-apache-to-your-work "jump to additional license instructions")` section for information on applying the license to your work.
+# ```
+extra_how: null
 
 # Reader License Text -- MKDocs markdown format. Make it pretty.
 # See [Writing Guidelines](plainlicense.org/helping/write.html)
@@ -115,6 +124,8 @@ reader_license_text: |
 # https://github.com/IQAndreas/markdown-licenses or convert it to markdown by hand
 # (usually just adding header tags and fixing links). Reach out if you need help.
 # Don't use reference tags in the license text; use in-line links instead
+
+# if it's a Plain License original, set to null
 official_license_text: |
   {{ official_license_text }}
 

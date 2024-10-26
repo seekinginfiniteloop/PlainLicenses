@@ -1,3 +1,4 @@
+{% import "partials/language.html" as lang with context %}
 <!doctype html>
 <html lang="{{ lang.t('language') }}" class="no-js">
 
@@ -45,7 +46,7 @@
     {% endfor %}
     {% endif %}
 </head>
-{% set direction = config.theme.direction or lang.t("direction") %}
+{% set direction = config.theme.direction or lang.t('direction') %}
 {% if config.theme.palette %}
 {% set palette = config.theme.palette %}
 {% if not palette is mapping %}
@@ -59,7 +60,6 @@
     data-md-color-primary="{{ primary | replace(' ', '-') }}"
     data-md-color-accent="{{ accent | replace(' ', '-') }}">
     {% else %}
-
     <body dir="{{ direction }}">
         {% endif %}
 

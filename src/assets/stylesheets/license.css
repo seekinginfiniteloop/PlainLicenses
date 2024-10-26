@@ -412,11 +412,12 @@ p.md-nav__description.license {
 #license-sidebar-inner .md-tag-icon[href]:hover::before {
   background-color: var(--md-accent-bg-color);
 }
-
-.expandable-section {
-
-}
 */
+.expandable-section {
+  height: min-content;
+  margin: 0.2em 0.05em;
+  overflow-x: hidden;
+}
 
 .section-toggle {
   display: none;
@@ -445,7 +446,7 @@ p.md-nav__description.license {
 .section-content {
   display: grid;
   grid-template-rows: 0fr;
-  overflow: hidden;
+  overflow: hidden auto;
   transition: grid-template-rows 300ms ease;
 }
 

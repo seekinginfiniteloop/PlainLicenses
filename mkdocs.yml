@@ -46,9 +46,6 @@ nav:
 theme:
   name: material
   custom_dir: overrides
-  static_templates:
-    - embedded_license.html
-    - license.html
   logo: assets/images/logo_named.svg
   favicon: favicon.ico
   features:

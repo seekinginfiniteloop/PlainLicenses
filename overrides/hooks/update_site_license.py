@@ -6,6 +6,7 @@ import logging
 from pathlib import Path
 from pprint import pformat
 from textwrap import wrap
+import re
 
 from hook_logger import get_logger
 from mkdocs.config.base import Config as MkDocsConfig
@@ -16,6 +17,9 @@ from mkdocs.utils.templates import TemplateContext
 from license_canary import LicenseBuildCanary
 
 _site_license_log_level = logging.WARNING
+
+def clean_context(context: TemplateContext) -> TemplateContext:
+    if 
 
 def on_page_context(
     context: TemplateContext, page: Page, config: MkDocsConfig, nav: Navigation
@@ -36,15 +40,13 @@ def on_page_context(
     """
     logger = get_logger("SITE_LICENSE", _site_license_log_level)
     canary = LicenseBuildCanary.canary()
-
     if not (license := canary.is_license_page(page)):
         return context
-
-    logger.debug("License context: %s \n", context)
-    logger.debug("License page: %s \n", pformat(page.content, 2))
+    logger.debug("site license checking license %s if it's an unlicense", license)
     meta = page.meta
-    if 'original_name' not in meta:
+    if meta and 'original_name' not in meta:
         return context
+    context = clean_context(context)
     if (original_name := meta["original_name"].strip().lower()) and (
         "unlicense" in original_name or original_name == "unlicense"
     ):

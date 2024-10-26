@@ -7,7 +7,12 @@ provides information on the license #}
         {{ title }}
     </label>
     <p class="md-nav__description license">
-        {{ page.meta['license_type'] }} views
+        {% if page.meta.get('license_type') %}
+        {{ page.meta.get('license_type') }} views
+        {% else %}
+        {% debug %}
+        {% endif %}
+
     </p>
     <div class="quick_links" title="license views" data-md-scrollfix>
         <a href="#reader" class="quicklink_group"

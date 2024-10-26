@@ -6,7 +6,7 @@ from pathlib import Path
 from hook_logger import get_logger
 from mkdocs.config.base import Config as MkDocsConfig
 from mkdocs.structure.pages import Page
-from mkdocs.structure.files import Files
+from mkdocs.structure.files import Files, InclusionLevel
 from mkdocs.plugins import event_priority
 
 from license_canary import LicenseBuildCanary
@@ -28,5 +28,5 @@ def on_pre_page(page: Page, config: MkDocsConfig, files: Files) -> Page:
     if changelog := files.get_file_from_path(f"{license_dir}/CHANGELOG.md"):
         changelog_content = changelog.content_string
         page.meta["changelog"] = changelog_content
-        setattr(changelog, "inclusion", -3)
+        setattr(changelog, "inclusion", InclusionLevel.EXCLUDED)
     return page

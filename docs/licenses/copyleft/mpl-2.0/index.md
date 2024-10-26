@@ -17,8 +17,6 @@ category: >
     copyleft
 license_description: >
     The MPL is a weak copyleft license. It requires you to share your source code when you distribute your software, but only for the files under the MPL. You can combine MPL software with software under other licenses and distribute the combined work under different terms. The MPL also includes a patent grant from contributors. The license is compatible with the GPL and LGPL, allowing you to relicense your MPL software under those licenses.
-how: >
-    Create a LICENSE or LICENSE.md file in the base of your project. If your project is on Github or another platform that uses markdown, copy the <a class="how_link" href=#markdown>markdown version</a> using the copy icon. Otherwise, use the <a class="how_link" href="#plaintext">plaintext version</a>
 note: null
 permissions:
     - commercial-use
@@ -35,6 +33,8 @@ limitations:
     - trademark-use
     - warranty
 outro: null
+extra_how: |
+    The MPL requires you to include notices in parts of your work where you can. There are two notices you can include. Which one you use depends on how you use the work. See the [`How to Provide Notices`](#how-to-provide-notices "jump to notices section") section of the license for more information.
 reader_license_text: |
     <h2 class="license-first-header">We Give You a License to Use, Change, and Share This Work</h2>
 

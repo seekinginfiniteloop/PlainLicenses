@@ -8,7 +8,7 @@
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
 <link rel="manifest" href="/site.webmanifest">
 {% endblock %}
-
+{% block fonts %}{% endblock %}
 {% block styles %}
 <!-- Extra color palette -->
 {% if config.theme.palette %}
@@ -18,13 +18,7 @@
 <!-- Custom icons -->
 {% include "partials/icons.html" %}
 {% endblock %}
-{% block fonts %}
-{% endblock %}
-<!-- Theme-related JavaScript -->
+<!-- Theme-related JavaScript and site JavaScript bundle -->
 {% block scripts %}
 <script async fetch-priority="high" src="{{ js_bundle | url }}"></script>
-<!-- Custom JavaScript -->
-{% for script in config.extra_javascript %}
-{{ script | script_tag }}
-{% endfor %}
 {% endblock %}

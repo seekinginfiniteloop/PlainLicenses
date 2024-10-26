@@ -59,6 +59,7 @@ def on_env(env: Environment, config: MkDocsConfig, files: Files) -> Environment:
     env.filters["markdown"] = rpartial(md_filter, config)
     env.add_extension("jinja2.ext.do")
     env.add_extension("jinja2.ext.loopcontrols")
+    env.add_extension("jinja2.ext.debug")
     build_updates = get_build_meta_values()
     env.globals["no_script_image"] = build_updates["noScriptImage"]
     env.globals["css_bundle"] = build_updates["CSSBUNDLE"]

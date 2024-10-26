@@ -21,12 +21,13 @@ import ez_yaml
 from hook_logger import get_logger
 from jinja2 import Template, TemplateError
 from license_canary import LicenseBuildCanary
-from mkdocs.config.base import Config as MkDocsConfig, load_config
+from mkdocs.config.base import Config as MkDocsConfig
 from mkdocs.plugins import event_priority
 from mkdocs.structure.files import File, Files, InclusionLevel
 from mkdocs.structure.pages import Page
+from mkdocs.structure.nav import Navigation
 
-# Change hook-level logging here
+# Change logging level here
 _assembly_log_level = logging.DEBUG
 
 if not hasattr(__name__, "assembly_logger"):
@@ -67,10 +68,34 @@ def clean_content(content: dict[str, Any]) -> dict[str, Any] | None:
     assembly_logger.debug("Cleaned content: %s", cleaned_content)
     return cleaned_content
 
-def render_mapping(mapping: dict[str, Any], context: dict):
+def get_extra_meta(spdx_id: str) -> dict[str, Any]:
+    """Returns the extra metadata for the license."""
+    choose_a_license_files = list(Path("external/choosealicense.com/_licenses").glob("*.txt"))
+    new_meta = {}
+    if file := next((f for f in choose_a_license_files if f.stem.lower() == spdx_id.lower()), None):
+        raw_text = file.read_text()
+        if match := re.search(r"---\n(.*?)\n---", raw_text, re.DOTALL):
+            frontmatter = ez_yaml.to_object(match[1])
+            new_meta |= clean_content(
+                {
+                    f'cal_{k}': v
+                    for k, v in frontmatter.items()
+                    if v and k != "using"
+                } | frontmatter.get("using", {})
+            )
+    spdx_files = list(Path("external/license-list-data/json/details").glob("*.json"))
+    assembly_logger.debug("SPDX files: %s", spdx_files)
+    if file := next((f for f in spdx_files if (f.stem.lower() == spdx_id.lower() or f in spdx_files)), None):
+        assembly_logger.debug("Found SPDX file: %s", file)
+        new_meta |= clean_content(load_json(file))
+    assembly_logger.debug("Extra metadata: %s", new_meta)
+    return new_meta
+
+
+def render_mapping(mapping: dict[str, Any], context: dict) -> dict[str, str]:
     """Renders a dict/mapping with a context."""
 
-    def render_value(value):
+    def render_value(value: str) -> str:
         """Recursively render a value."""
         if isinstance(value, str):
             try:
@@ -84,8 +109,6 @@ def render_mapping(mapping: dict[str, Any], context: dict):
             return [render_mapping(item, context) for item in value]
         else:
             return value
-    assembly_logger.debug("Rendering mapping: %s", mapping)
-    assembly_logger.debug("Context: %s", context)
     return {key: render_value(value) for key, value in mapping.items()}
 
 def assemble_license_page(config: MkDocsConfig, page: Page, file: File) -> Page:
@@ -98,8 +121,9 @@ def assemble_license_page(config: MkDocsConfig, page: Page, file: File) -> Page:
     boilerplate = clean_content(boilerplate)
     license = LicenseContent(page)
     page.meta |= license.attributes
+    extra_meta = get_extra_meta(page.meta["spdx_id"])
     get_canary().add_value("processed_licenses", license)
-    assembly_logger.debug("All data before rendering boilerplate: %s", page.meta)
+    page.meta |= extra_meta
     assembly_logger.debug("Rendering boilerplate for %s", page.title)
     rendered_boilerplate = render_mapping(boilerplate, page.meta)
     page.meta |= rendered_boilerplate
@@ -127,8 +151,6 @@ def create_new_file(page: Page, file: File, config: MkDocsConfig) -> File:
     )
     new_file.page = page
     new_file.page.file = new_file
-    assembly_logger.debug("New file: %s", new_file)
-    assembly_logger.debug("New file page: %s", new_file.page)
     return new_file
 
 def get_category(uri: str) -> str | None:
@@ -142,7 +164,6 @@ def filter_license_files(files: Files) -> Files:
     """Creates a new files object from the license files."""
     license_files = []
     for uri in files.src_uris:
-        assembly_logger.debug("Checking URI %s", uri)
         if (file := files.src_uris[uri]) and get_category(uri) and uri.strip().lower().endswith("index.md"):
             license_files.append(file)
     return Files(license_files)
@@ -155,7 +176,7 @@ def replace_files(files: Files, new_files: Files) -> Files:
         files.append(file)
     return files
 
-def create_license_embed_file(page: Page, file: File, config: MkDocsConfig) -> File:
+def create_license_embed_file(page: Page, config: MkDocsConfig) -> File:
     """Creates an embedded license file."""
     content = f"""---\ntemplate: embedded_license.html\ntitle: {page.title} (embedded)\ndescription: {page.meta['description']}\nhide: [toc, nav, header, consent, dialog, announce, search, sidebar, source, tabs, skip, ]\n---\n\n{page.meta['embed_file_markdown']}"""
     stem = page.meta['spdx_id'].lower()
@@ -199,14 +220,11 @@ def on_files(files: Files, config: MkDocsConfig) -> Files:
         page.meta["changelog"] = changelog_file.content_string or "## such empty, much void :nounproject-doge:"
         changelog_file.inclusion = InclusionLevel.EXCLUDED
         updated_page = assemble_license_page(config, page, file)
-        assembly_logger.debug("Meta after rendering and cleaning: %s", updated_page.meta)
-        assembly_logger.debug("Page meta after rendering: %s", updated_page.meta)
-        assembly_logger.debug("Page markdown after rendering: %s", updated_page.markdown)
         new_file = create_new_file(updated_page, file, config)
         new_license_files.extend(
             (
                 new_file,
-                create_license_embed_file(updated_page, new_file, config),
+                create_license_embed_file(updated_page, config),
             )
         )
     return replace_files(files, Files(new_license_files))
@@ -216,23 +234,20 @@ def on_page_markdown(
     markdown_content: str, page: Page, config: MkDocsConfig, files: list[File]
 ) -> str:
     """
-    Pipeline function for processing license content and assembling the final Markdown content for the license page.
-
-    Args:
-        markdown_content (str): The original Markdown content of the page.
-        page (Page): The page object containing metadata and content.
-        config (MkDocsConfig): The configuration settings for MkDocs.
-        files (list[File]): A list of files associated with the documentation.
-
-    Returns:
-        str: The combined Markdown content including the original content and the rendered license information.
-
-    Raises:
-        Exception: If there is an error during template rendering or logging.
+    It just logs.
     """
-    #if markdown_content:
-    #    markdown_content = re.sub(r"(\n{3,})", markdown_content, "\n\n")
+    assembly_logger.debug("On page markdown: %s", page.title)
+    if not page.meta:
+        assembly_logger.debug("No page metadata found for %s", page.title)
     return markdown_content
+
+def on_page_context(context: dict[str, Any], page: Page, config: MkDocsConfig, nav: Navigation) -> dict[str, Any]:
+    """Logs the page context."""
+    assembly_logger.debug("On page context: %s", page.title)
+    if not page.meta:
+        assembly_logger.debug("No page metadata found for %s", page.title)
+        assembly_logger.debug("Page context: %s", context)
+    return context
 
 def load_json(path: Path) -> dict[str, Any]:
     """Loads a JSON"""
@@ -487,26 +502,40 @@ class LicenseContent:
 
     def get_header_block(self, kind: Literal["reader", "markdown", "plaintext"]) -> str:
         """Returns the version block for the license."""
+
+        def construct_version_info(original_version: str, plain_version: str, format_type: Literal['reader', 'markdown', 'plaintext']) -> str:
+            """Constructs the version info block for the license."""
+            if original_version:
+                if format_type == "reader":
+                    return f"""<div class='version-info'><span class="original-version">original version: {original_version}</span><span class="plain-version">plain version: {plain_version}</span></div>\n\n"""
+                elif format_type == "markdown":
+                    return f"""> original version: {original_version}\n> plain version: {plain_version}\n\n"""
+                else:
+                    return f"""\n\noriginal version: {original_version} | plain version: {plain_version}\n\n"""
+            else:
+                if format_type == "reader":
+                    return f"""<div class='version-info'><span class="plain-version">plain version: {plain_version}</span></div>\n\n"""
+                elif format_type == "markdown":
+                    return f"""> plain version: {plain_version}\n\n"""
+                else:
+                    return f"""\n\nplain version: {plain_version}\n\n"""
+
+        original_version = self.meta.get("original_version")
+        plain_version = self.meta.get("plain_version")
+
         if kind == "reader":
             title = f"\n\n<h1 class='license-title'>{self.meta['plain_name']}</h1>\n\n"
-            if self.meta.get("original_version"):
-                version_info = f"""<div class='version-info'><span class="original-version">original version: {self.meta.get("original_version")}</span><span class="plain-version">plain version: {self.plain_version}</span></div>\n\n"""
-            else:
-                version_info = f"""<div class='version-info'><span class="plain-version">plain version: {self.plain_version}</span></div>\n\n"""
+            version_info = construct_version_info(original_version, plain_version, "reader")
             return f"""<div class="license-header">{title}{version_info}</div>\n\n"""
-        if kind == "markdown":
+        elif kind == "markdown":
             title = f"\n\n# {self.meta.get('plain_name')}\n\n"
-            if self.meta.get("original_version"):
-                version_info = f"""> original version: {self.meta.get("original_version")}\n> plain version: {self.meta.get("plain_version")}\n\n"""
-            else:
-                version_info = f"""> plain version: {self.meta.get("plain_version")}\n\n"""
+            version_info = construct_version_info(original_version, plain_version, "markdown")
             return f"""\n\n{title}{version_info}\n\n"""
-        title = f"\n\n# {self.meta.get('plain_name').upper()}\n\n"
-        if self.meta.get("original_version"):
-            version_info = f"""\n\noriginal version: {self.meta.get("original_version")} | plain version: {self.meta.get("plain_version")}\n\n"""
         else:
-            version_info = f"""\n\nplain version: {self.meta.get("plain_version")}\n\n"""
-        return f"""\n\n{title}{version_info}\n\n"""
+            title = f"\n\n# {self.meta.get('plain_name').upper()}\n\n"
+            version_info = construct_version_info(original_version, plain_version, "plaintext")
+            return f"""\n\n{title}{version_info}\n\n"""
+
 
     @cached_property
     def attributes(self) -> dict[str, Any | int | str]:

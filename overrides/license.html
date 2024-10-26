@@ -31,6 +31,9 @@
                     <div class="section-content">
                         <div id="section-content">
                             {{ page.meta['how'] | trim }}
+                            {% if page.meta.get('how_extra') %}
+                            {{ page.meta['how_extra'] | trim }}
+                            {% endif %}
                         </div>
                     </div>
                 </div>
