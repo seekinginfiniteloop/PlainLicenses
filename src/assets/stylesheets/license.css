@@ -101,7 +101,6 @@ h1.license-title {
 
 [data-md-color-scheme="default"] h1.license-title {
   color: var(--blue-blue);
-  border-bottom: 0.1em solid var(--ecru);
 }
 
 .md-typeset .tabbed-block h2.license-first-header {
@@ -123,6 +122,41 @@ h1.license-title {
   margin: 0;
   line-height: 0;
   text-align: left;
+}
+
+.version-indicator {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background-color: var(--bg-color);
+  border: 1px solid var(--subtle-color);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  z-index: 10;
+  /* Glass effect */
+  background: rgba(255, 255, 255, 0.9);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  /* Safari support */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Forced theme versions */
+:root[data-md-color-scheme="slate"] .version-indicator {
+  background: rgba(8, 15, 91, 0.9);
+}
+
+.version-line {
+  color: var(--text-color);
+  opacity: 0.8;
+}
+
+.version-number {
+  font-weight: 500;
+  color: var(--text-color);
+  opacity: 1;
 }
 
 .version-info {

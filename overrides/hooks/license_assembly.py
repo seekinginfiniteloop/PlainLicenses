@@ -3,6 +3,8 @@
 Assembles license content for all license pages.
 
 TODO: We can probably make more use of pyMarkdown to handle the processing of the license text; need to investigate further. We can also make much better use of mkdocs-macros to handle the processing of the license text.
+
+Also, it's getting a bit unwieldy, so we should probably break this up into smaller pieces.
 """
 
 import json
@@ -19,7 +21,7 @@ import ez_yaml
 from hook_logger import get_logger
 from jinja2 import Template, TemplateError
 from license_canary import LicenseBuildCanary
-from mkdocs.config.base import Config as MkDocsConfig
+from mkdocs.config.base import Config as MkDocsConfig, load_config
 from mkdocs.plugins import event_priority
 from mkdocs.structure.files import File, Files, InclusionLevel
 from mkdocs.structure.pages import Page
@@ -95,6 +97,7 @@ def assemble_license_page(config: MkDocsConfig, page: Page, file: File) -> Page:
     ).strip()
     boilerplate = clean_content(boilerplate)
     license = LicenseContent(page)
+    page.meta |= license.attributes
     get_canary().add_value("processed_licenses", license)
     assembly_logger.debug("All data before rendering boilerplate: %s", page.meta)
     assembly_logger.debug("Rendering boilerplate for %s", page.title)
@@ -122,14 +125,17 @@ def create_new_file(page: Page, file: File, config: MkDocsConfig) -> File:
         content=create_page_content(page),
         inclusion=InclusionLevel.INCLUDED,
     )
-    del page
+    new_file.page = page
+    new_file.page.file = new_file
+    assembly_logger.debug("New file: %s", new_file)
+    assembly_logger.debug("New file page: %s", new_file.page)
     return new_file
 
 def get_category(uri: str) -> str | None:
     """Returns the category of the license."""
     if split := uri.split("/"):
-        if len(split) == 4:
-            return split[1] if split[1] in ["proprietary", "public-domain", "copyleft", "permissive", "source-available"] else None
+        if len(split) == 4 and split[1] in ["proprietary", "public-domain", "copyleft", "permissive", "source-available"]:
+            return split[1]
     return None
 
 def filter_license_files(files: Files) -> Files:
@@ -148,6 +154,19 @@ def replace_files(files: Files, new_files: Files) -> Files:
             files.remove(replaced_file)
         files.append(file)
     return files
+
+def create_license_embed_file(page: Page, file: File, config: MkDocsConfig) -> File:
+    """Creates an embedded license file."""
+    content = f"""---\ntemplate: embedded_license.html\ntitle: {page.title} (embedded)\ndescription: {page.meta['description']}\nhide: [toc, nav, header, consent, dialog, announce, search, sidebar, source, tabs, skip, ]\n---\n\n{page.meta['embed_file_markdown']}"""
+    stem = page.meta['spdx_id'].lower()
+    assembly_logger.debug("Creating embed file for %s", stem)
+    return File.generated(
+        config,
+        f"embeds/{stem}.md",
+        content=content,
+        inclusion=InclusionLevel.NOT_IN_NAV,
+    )
+
 
 def on_files(files: Files, config: MkDocsConfig) -> Files:
     """
@@ -183,7 +202,13 @@ def on_files(files: Files, config: MkDocsConfig) -> Files:
         assembly_logger.debug("Meta after rendering and cleaning: %s", updated_page.meta)
         assembly_logger.debug("Page meta after rendering: %s", updated_page.meta)
         assembly_logger.debug("Page markdown after rendering: %s", updated_page.markdown)
-        new_license_files.append(create_new_file(updated_page, file, config))
+        new_file = create_new_file(updated_page, file, config)
+        new_license_files.extend(
+            (
+                new_file,
+                create_license_embed_file(updated_page, new_file, config),
+            )
+        )
     return replace_files(files, Files(new_license_files))
 
 @event_priority(-90)
@@ -205,12 +230,8 @@ def on_page_markdown(
     Raises:
         Exception: If there is an error during template rendering or logging.
     """
-    assembly_logger.info("Processing page %s in on_page_markdown", page.title)
-    if not (get_canary().is_license_page(page)):
-        return markdown_content
-    assembly_logger.debug("Processing license page %s", page)
-    assembly_logger.debug("Page meta at on_page_markdown: %s", page.meta)
-    assembly_logger.debug("Page markdown at on_page_markdown: %s", markdown_content)
+    #if markdown_content:
+    #    markdown_content = re.sub(r"(\n{3,})", markdown_content, "\n\n")
     return markdown_content
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -336,7 +357,7 @@ class LicenseContent:
             str: The version string from the package, or "0.0.0" if the file is missing or the version is not valid.
         """
         path = Path(self.page.file.src_uri)
-        path = path.parent / "package.json"
+        path = "docs" / path.parent / "package.json"
         if not path.exists():
             return "0.0.0"
         if path.exists():
@@ -443,11 +464,14 @@ class LicenseContent:
         return None
 
     @staticmethod
-    def blockify(text: str, kind: str, title: str, separator_count: int = 5, options: str = "") -> str:
+    def blockify(text: str, kind: str, title: str, separator_count: int = 5, options: list[str] | None = None) -> str:
         """Returns a blocks api block with the provided text."""
         separator = "/" * separator_count
-        option_line = f"{' ' * (separator_count + 1)}options\n\n" if options else "\n"
-        return f"\n{separator} {kind} | {title}\n{option_line}{text}\n{separator}"
+        spaces = " " * (separator_count + 1)
+        option_line = ""
+        if options:
+            option_line = "\n".join([f"{spaces}{option}" for option in options]) if options else ""
+        return f"\n{separator} {kind} | {title}\n{option_line}\n{text}\n{separator}"
 
     def interpretation_block(self, kind: str) -> str:
         """Returns the interpretation block for the license."""
@@ -464,7 +488,7 @@ class LicenseContent:
     def get_header_block(self, kind: Literal["reader", "markdown", "plaintext"]) -> str:
         """Returns the version block for the license."""
         if kind == "reader":
-            title = f"\n\n# {self.meta['plain_name'].strip()}\n\n"
+            title = f"\n\n<h1 class='license-title'>{self.meta['plain_name']}</h1>\n\n"
             if self.meta.get("original_version"):
                 version_info = f"""<div class='version-info'><span class="original-version">original version: {self.meta.get("original_version")}</span><span class="plain-version">plain version: {self.plain_version}</span></div>\n\n"""
             else:
@@ -509,6 +533,7 @@ class LicenseContent:
             "official_license_text": self.official_license_text,
             "has_official": self.has_official,
             "final_markdown": self.license_content,
+            "embed_file_markdown": self.embed_file_markdown,
         }
 
     @cached_property
@@ -561,13 +586,13 @@ class LicenseContent:
             "tab" if self.has_official else "warning",
             not_advice_title,
             3,
-            options="open: True",
+            options=["open: True"],
         )
         if not self.has_official:
             return not_advice
         not_official_title = f"This is not the official {self.meta.get("original_name")}"
-        not_official = self.blockify(self.not_official_text, "tab", not_official_title, 3, options="open: True")
-        return self.blockify(f"{not_advice}\n{not_official}\n", "details", "disclaimer", 4, "open:True")
+        not_official = self.blockify(self.not_official_text, "tab", not_official_title, 3, options=["open: True"])
+        return self.blockify(f"{not_advice}\n{not_official}\n", "details", "disclaimer", 4, ["open:True"])
 
     @property
     def reader(self) -> str:
@@ -609,29 +634,49 @@ class LicenseContent:
     @property
     def embed_link(self) -> str:
         """Returns the embed link for the license."""
-        return f"""<iframe
-    src="https://plainlicense.org/embed/{self.meta['spdx_id']}.html"
-    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 1px solid #E4C580; border-radius: 8px; overflow: hidden auto;"
-    title=f"{self.title}"
-    loading="lazy"
-    sandbox="allow-scripts"
-    onload="if(this.contentDocument.body.scrollHeight > 400) this.style.height = this.contentDocument.body.scrollHeight + 'px';"
-    referrerpolicy="no-referrer-when-downgrade">
-    <p>Your browser does not support iframes. View {self.title} at:
-      <a href="{self.page.url}">plainlicense.org</a>
-    </p>
-  </iframe>"""
+        return f"""```html\n\n<iframe
+        src="https://plainlicense.org/embed/{self.meta['spdx_id']}.html"
+        style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; \nborder: 1px solid #E4C580; border-radius: 8px; overflow: hidden auto;"
+        title=f"{self.title}"
+        loading="lazy"
+        sandbox="allow-scripts"\n
+        onload="if(this.contentDocument.body.scrollHeight > 400) this.style.height = this.contentDocument.body.scrollHeight + 'px';"
+        referrerpolicy="no-referrer-when-downgrade">
+        <p>Your browser does not support iframes. View {self.title} at:
+        <a href="{self.page.url}">plainlicense.org</a>
+        </p>\n</iframe>\n\n```"""
+
+    @property
+    def embed_instructions(self) -> str:
+        """Returns the embed instructions for the license."""
+        return f"""### How to Embed This License\n\n1. **Copy the code above** using the copy button\n2. **Paste it** into your HTML where you want the license to appear\n3. **Adjust the size** (optional):\n   - The default width is 100% (fills the container)\n   - The default height is either the content height or 1024px, whichever is smaller.\n   - Change these values in the `style` attribute if needed\n\n### Customizing\n\n#### Size Examples\nCommon size adjustments in the `style` attribute:\n\n```html\n<!-- Full width, taller -->\nstyle="width: 100%; height: 800px;"\n\n<!-- Fixed width, default height -->\nstyle="width: 800px; height: 500px;"\n\n<!-- Full width, minimum height -->\nstyle="width: 100%; min-height: 500px;"\n```\n\n### Color Scheme\n\n#### Matching Theme with Your Site\n\nBy default, the license will match your visitors' system light/dark color scheme preference. To force a specific theme, add `?theme=` to the URL:\n\n- For light theme: `src="https://plainlicense.org/embed/{self.meta['spdx_id'].lower()}.html?theme=light"`\n- For dark theme: `src="https://plainlicense.org/embed/{self.meta['spdx_id'].lower()}.html?theme=dark"`\n\n#### Theme Syncing\n\nYou can optionally sync the license's theme to your site's theme. You need to send the embedded license page a message. You can include this code in your script bundle or html:\n\n```javascript\n\n    const syncTheme = () => """ + r"""{const iframe = document.getElementById('license-embed');const theme = document.documentElement.classList.contain('dark') ? 'dark' : 'light';iframe.contentWindow.postMessage({ theme }, 'https://plainlicense.org');};""" + """\n\n```\n\nYou can also link a theme toggle switch on your site to sync with the embedded license. You need to set up the toggle to send a `themeChange` event. We can't provide specific code for that, but once it does, you just add a listener for it to dispatch the same message:\n\n```javascript\n\n// Same code from above here\ndocument.addEventListener('themeChange', syncTheme);`\n\n```\n\n### Need Help?\n\nBring your questions to our [GitHub Discussions](https://github.com/seekinginfiniteloop/PlainLicense/discussions "visit Plain License's discussions page") for help and support."""
 
     @property
     def embed(self) -> str:
         """Returns the embed block for the license."""
-        return self.blockify(self.embed_link, "tab", f"html {self.icon_map['embed']}")
+        return self.blockify(f"{self.embed_link}\n\n{self.embed_instructions}\n", "tab", f"html {self.icon_map['embed']}")
+
+    @property
+    def embed_file_markdown(self) -> str:
+        """Returns the embed file markdown for the license."""
+        return self.blockify(f"{self.get_header_block("reader")}{self.reader_license_text}", "details", f"Plain License: <span class='detail-title-highlight'>The {self.meta.get('plain_name')}</span>", 3, options=["open:True", "attrs:" + r"{ class: license }"])
 
     @property
     def license_content(self) -> str:
         """Returns the content for a license page"""
-        tabs = self.reader + self.markdown + self.plaintext + self.changelog
+        tabs = (
+            self.reader + self.embed + self.markdown + self.plaintext + self.changelog
+        )
         if self.has_official:
             tabs += self.official
         outro = self.meta.get("outro", "")
-        return self.blockify(f"{tabs}{outro}\n", "admonition license", f"Plain License\: <span class='detail-title-highlight'>The {self.meta.get('plain_name')}</span>\n", 6, options="open:True") + f"\n\n{outro}"
+        return (
+            self.blockify(
+                f"{tabs}{outro}\n",
+                "admonition",
+                f"Plain License: <span class='detail-title-highlight'>The {self.meta.get('plain_name')}</span>",
+                6,
+                options=["open:True", "attrs:" + r"{ class: license }"],
+            )
+            + f"\n\n{outro}"
+        )

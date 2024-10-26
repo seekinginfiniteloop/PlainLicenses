@@ -1,0 +1,148 @@
+site_name: Plain License
+site_url: https://plainlicense.org
+repo_url: https://github.com/seekinginfiniteloop/PlainLicense
+repo_name: PlainLicense
+edit_uri: edit/main/docs/
+copyright: Plain License's authors dedicate all original content to the public domain. No rights reserved.
+site_description: >
+  Plain License: Terms for Everyone.
+theme:
+  name: material
+  custom_dir: overrides
+  favicon: favicon.ico
+  features:
+    - content.action.edit
+    - content.code.annotate
+    - content.code.copy
+    - content.code.select
+    - content.tooltips
+    - content.footnote.tooltips
+  icon:
+    repo: simple/github
+    edit: material/pencil
+    view: material/eye
+    tag: # These are the icons for the tags in the license frontmatter. They map to the tag name in the license frontmatter.
+      canshare: octicons/share-24
+      cansell: fontawesome/solid/money-bill-1
+      canchange: material/file-edit
+      canrevoke: nounproject/revoke
+      required: nounproject/required
+      allowed: nounproject/allowed
+      relicense: nounproject/relicense
+      copyleft: nounproject/copyleft
+      givecredit: nounproject/copyright
+      describechanges: octicons/file-diff-24
+      sharesource: octicons/book-24
+  palette:
+    # Palette toggle for system automatic mode; chooses the color scheme based on the user's system preference, but allows the user to override it.
+    - media: "(prefers-color-scheme)"
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      primary: custom
+      accent: custom
+      scheme: slate
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      primary: custom
+      accent: custom
+      scheme: default
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to system preference
+plugins:
+  - macros
+  - offline
+  - tags:
+      tags: true
+      enabled: true
+  - privacy:
+      assets: true
+      assets_fetch: true
+markdown_extensions:
+  - abbr
+  - attr_list
+  - def_list
+  - md_in_html
+  - footnotes
+  - markdown.extensions.meta
+  - pymdownx.blocks.admonition
+  - pymdownx.blocks.details
+  - pymdownx.blocks.definition
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+      options:
+        custom_icons:
+          - overrides/.icons
+  - pymdownx.highlight:
+      default_lang: markdown
+      guess_lang: true
+      line_spans: __codeline
+      line_anchors: __codelineno
+      anchor_linenums: true
+      use_pygments: true
+  - pymdownx.betterem
+  - pymdownx.critic
+  - pymdownx.caret
+  - pymdownx.inlinehilite
+  - pymdownx.keys:
+      separator: +
+      strict: false
+      camel_case: false
+  - pymdownx.mark
+  - pymdownx.magiclink:
+      hide_protocol: true
+      repo_url_shortener: true
+      social_url_shortener: true
+      repo_url_shorthand: true
+      social_url_shorthand: true
+      provider: github
+      user: seekinginfiniteloop
+      repo: PlainLicense
+  - pymdownx.progressbar:
+      progress_increment: 20
+  - pymdownx.smartsymbols
+  - pymdownx.snippets:
+      auto_append:
+        - includes/abbreviations.md
+      base_path:
+        - /
+  - pymdownx.saneheaders
+  - pymdownx.superfences:
+      disable_indented_code_blocks: true
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.striphtml:
+      strip_comments: true
+  - pymdownx.tilde
+  - sane_lists
+  - tables
+watch:
+  - includes
+  - overrides
+  - mkdocs.yml
+not_in_nav: |
+  index*
+  CHANGELOG*
+  tags
+  shame*
+extra:
+  tags: # maps the tags in the license front matter to the names above in theme.icon.tag. This allows us to replace the tag with an icon in the license template.
+    can-share: canshare
+    can-sell: cansell
+    can-change: canchange
+    can-revoke: canrevoke
+    relicense: relicense
+    share-alike (strict): copyleft
+    share-alike (relaxed): copyleft
+    give-credit: givecredit
+    describe-changes: describechanges
+    share-source: sharesource
