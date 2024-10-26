@@ -9,3 +9,7 @@
         url = https://github.com/spdx/license-list-data.git
         branch = master
         ignore = all
+[submodule "external/choosealicense.com"]
+	path = external/choosealicense.com
+	url = https://github.com/github/choosealicense.com.git
+	branch = gh-pages
