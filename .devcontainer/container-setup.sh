@@ -1,13 +1,43 @@
 #!/bin/bash
 
 # Update and install packages
-sudo apt-get update && sudo apt upgrade -y
-sudo apt -y install libcairo2-dev pkg-config python3-dev ripgrep nano git git-man
-
+mkdir -p /workspaces/PlainLicense
+cd /workspaces/PlainLicense
+apk update && apk upgrade
+apk add --no-cache \
+    bash \
+    curl \
+    git \
+    git-doc \
+    nano \
+    python3 \
+    python3-dev \
+    ripgrep \
+    ripgrep-zsh-completion \
+    zsh-autosuggestions \
+    cairo \
+    cairo-dev \
+    cairomm \
+    cairo-gobject \
+    pkgconfig \
+    py3-cairo \
+    py3-cairo-dev \
+    py3-pip \
+    unzip \
+    gpg \
+    gnupg \
+    gnupg-gpgconf
+/bin/bash
 # sync and install tools
-bun install --no-summary --silent
+curl -fsSL https://fnm.vercel.app/install | bash
+fnm install --lts
+fnm completions --shell zsh >> ~/.zshrc
+curl -fsSL https://bun.sh/install | bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
 uv python install cpython-3.13.0-linux-x86_64-gnu -q
+bun install --no-summary --silent
 uv tool install ipython -q
+uv tool install ruff -q
 
 export BUNOPTS="--no-summary --silent"
 # Install global npm packages
@@ -31,6 +61,7 @@ export PYVENV="/workspaces/PlainLicense/.venv/bin/activate"
     echo 'alias ll="ls -alF"'
     echo "source \"${PYVENV}\"" >> ~/.zshrc
     echo "source \"${PYVENV}\"" >> ~/.bashrc
+    eval "$(fnm env --use-on-cd --shell zsh)"
 } >> ~/.zshrc
 
 source "${PYVENV}"

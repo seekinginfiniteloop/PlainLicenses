@@ -5,7 +5,6 @@
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
 	"image": "mcr.microsoft.com/devcontainers/base:alpine",
 	"features": {
-		"ghcr.io/jsburckhardt/devcontainer-features/uv:1": {},
 		"ghcr.io/cirolosapio/devcontainers-features/alpine-bash:0": {},
 		"ghcr.io/cirolosapio/devcontainers-features/alpine-bun:0": {},
 		"ghcr.io/cirolosapio/devcontainers-features/alpine-curl:0": {},
@@ -17,6 +16,7 @@
 		"ghcr.io/cirolosapio/devcontainers-features/alpine-ohmyzsh:0": {},
 		"ghcr.io/cirolosapio/devcontainers-features/alpine-openssh:0": {}
 	},
+  "postCreateCommand": "chmod +x /workspaces/PlainLicense/.devcontainer/container-setup.sh && /workspaces/PlainLicense/.devcontainer/container-setup.sh",
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	"customizations": { "vscode": {
