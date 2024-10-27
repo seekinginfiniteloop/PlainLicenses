@@ -4,20 +4,23 @@
 	"name": "Alpine",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
 	"image": "mcr.microsoft.com/devcontainers/base:alpine",
-	"features": {
-		"ghcr.io/cirolosapio/devcontainers-features/alpine-bash:0": {},
-		"ghcr.io/cirolosapio/devcontainers-features/alpine-bun:0": {},
-		"ghcr.io/cirolosapio/devcontainers-features/alpine-curl:0": {},
-		"ghcr.io/cirolosapio/devcontainers-features/alpine-gh-cli:0": {},
-		"ghcr.io/cirolosapio/devcontainers-features/alpine-git:0": {},
-		"ghcr.io/cirolosapio/devcontainers-features/alpine-gpg:0": {},
-		"ghcr.io/cirolosapio/devcontainers-features/alpine-nano:0": {},
-		"ghcr.io/cirolosapio/devcontainers-features/alpine-node:0": {},
-		"ghcr.io/cirolosapio/devcontainers-features/alpine-ohmyzsh:0": {},
-		"ghcr.io/cirolosapio/devcontainers-features/alpine-openssh:0": {}
-	},
-  "postCreateCommand": "chmod +x /workspaces/PlainLicense/.devcontainer/container-setup.sh && /workspaces/PlainLicense/.devcontainer/container-setup.sh",
 
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	"forwardPorts": [8000],
+  "containerEnv": {
+    "PATH": "${HOME}/.local/share/uv/python/cpython-3.13.0-linux-x86_64-gnu/bin:${HOME}/.local/bin:${HOME}/.bun/bin:${HOME}/bin:${HOME}/sbin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+    "UV_LINK_MODE": "copy",
+    "UV_COMPILE_BYTECODE": "1",
+    "FORCE_COLOR": "1",
+    "CLICOLOR_FORCE": "1",
+    "UV_PYTHON": "cpython-3.13.0-linux-x86_64-gnu",
+    "UV_PYTHON_PREFERENCE": "only-managed",
+    "BUN_INSTALL": "$HOME/.bun",
+    "PYVENV": "/workspaces/PlainLicense/.venv/bin/activate",
+    "UV_CACHE_DIR": "/workspaces/PlainLicense/.cache/uv"
+  },
+
+  "postCreateCommand": "chmod +x /workspaces/PlainLicense/.devcontainer/container-setup.sh && /workspaces/PlainLicense/.devcontainer/container-setup.sh",
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	"customizations": { "vscode": {
       "extensions": [
@@ -85,23 +88,5 @@
         "yzhang.markdown-all-in-one"
       ]
     }
-  },
-
-	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	"forwardPorts": [8000],
-
-	// Use 'postCreateCommand' to run commands after the container is created.
-	// "postCreateCommand": "uname -a",
-  "containerEnv": {
-    "PATH": "${HOME}/.local/share/uv/python/cpython-3.13.0-linux-x86_64-gnu/bin:${HOME}/.local/bin:${HOME}/.bun/bin:${HOME}/bin:${HOME}/sbin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
-    "UV_LINK_MODE": "copy",
-    "UV_COMPILE_BYTECODE": "1",
-    "FORCE_COLOR": "1",
-    "CLICOLOR_FORCE": "1",
-    "UV_PYTHON": "cpython-3.13.0-linux-x86_64-gnu",
-    "UV_PYTHON_PREFERENCE": "only-managed",
-    "BUN_INSTALL": "$HOME/.bun",
-    "PYVENV": "/workspaces/PlainLicense/.venv/bin/activate",
-    "UV_CACHE_DIR": "/workspaces/PlainLicense/.cache/uv"
   }
 }

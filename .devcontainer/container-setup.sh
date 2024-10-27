@@ -5,6 +5,7 @@ mkdir -p /workspaces/PlainLicense
 cd /workspaces/PlainLicense
 apk update && apk upgrade
 apk add --no-cache \
+    zsh \
     bash \
     curl \
     git \
@@ -67,7 +68,7 @@ export PYVENV="/workspaces/PlainLicense/.venv/bin/activate"
 source "${PYVENV}"
 
 uv sync --all-extras
-uv venv --allow-existing .
+uv venv --allow-existing .venv
 
 # Update git submodules
 git submodule update
