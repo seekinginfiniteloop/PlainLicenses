@@ -1,37 +1,38 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/alpine
 {
-  "name": "Ubuntu",
-  "image": "mcr.microsoft.com/devcontainers/base:noble",
-  "features": {
-    "ghcr.io/shyim/devcontainers-features/bun:0": {},
-    "ghcr.io/jsburckhardt/devcontainer-features/uv:1": {},
-    "ghcr.io/devcontainers-extra/features/node-asdf:0": {},
-    "ghcr.io/devcontainers-extra/features/ruff:1": {},
-    "ghcr.io/devcontainers-extra/features/ts-node:1": {},
-    "ghcr.io/devcontainers-extra/features/tsx:1": {},
-    "ghcr.io/wxw-matt/devcontainer-features/command_runner:0": {
-      "script1": "avoid_password_service_ssh_start#https://gist.github.com/wxw-matt/186afd98891bd2c26adfb5b3045d236c/raw"
-    }
-  },
-  "forwardPorts": [
-    8000
-  ],
-  "postCreateCommand": "chmod +x /workspaces/PlainLicense/.devcontainer/container-setup.sh && /workspaces/PlainLicense/.devcontainer/container-setup.sh",
-  "containerEnv": {
-    "PATH": "~/.local/share/uv/python/cpython-3.13.0-linux-x86_64-gnu/bin:/home/vscode/.local/bin:/home/vscode/.bun/bin:${PATH}",
-    "UV_LINK_MODE": "copy",
-    "UV_COMPILE_BYTECODE": "1",
-    "FORCE_COLOR": "1",
-    "CLICOLOR_FORCE": "1",
-    "UV_PYTHON": "cpython-3.13.0-linux-x86_64-gnu",
-    "UV_PYTHON_PREFERENCE": "only-managed",
-    "BUN_INSTALL": "$HOME/.bun",
-    "PYVENV": "/workspaces/PlainLicense/.venv/bin/activate",
-    "UV_CACHE_DIR": "/workspaces/PlainLicense/.cache/uv"
-  },
-  "customizations": {
-    "vscode": {
+	"name": "Alpine",
+	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+	"image": "mcr.microsoft.com/devcontainers/base:alpine",
+	"features": {
+		"ghcr.io/jsburckhardt/devcontainer-features/uv:1": {},
+		"ghcr.io/cirolosapio/devcontainers-features/alpine-bash:0": {},
+		"ghcr.io/cirolosapio/devcontainers-features/alpine-bun:0": {},
+		"ghcr.io/cirolosapio/devcontainers-features/alpine-curl:0": {},
+		"ghcr.io/cirolosapio/devcontainers-features/alpine-gh-cli:0": {},
+		"ghcr.io/cirolosapio/devcontainers-features/alpine-git:0": {},
+		"ghcr.io/cirolosapio/devcontainers-features/alpine-gpg:0": {},
+		"ghcr.io/cirolosapio/devcontainers-features/alpine-nano:0": {},
+		"ghcr.io/cirolosapio/devcontainers-features/alpine-node:0": {},
+		"ghcr.io/cirolosapio/devcontainers-features/alpine-ohmyzsh:0": {},
+		"ghcr.io/cirolosapio/devcontainers-features/alpine-openssh:0": {}
+	},
+
+	// Features to add to the dev container. More info: https://containers.dev/features.
+	"customizations": { "vscode": {
       "extensions": [
         "Alexey-Strakh.stackoverflow-search",
+        "DavidAnson.vscode-markdownlint",
+        "Mukundan.python-docs",
+        "PascalReitermann93.vscode-yaml-sort",
+        "Tock.vscode-css-custom-properties",
+        "Tyriar.sort-lines",
+        "VisualStudioExptTeam.intellicode-api-usage-examples",
+        "VisualStudioExptTeam.vscodeintellicode",
+        "WallabyJs.quokka-vscode",
+        "YoavBls.pretty-ts-errors",
+        "ZainChen.json",
+        "Zignd.html-css-class-completion",
         "almenon.birdseye-vscode",
         "anteprimorac.html-end-tag-labels",
         "antfu.iconify",
@@ -40,11 +41,12 @@
         "christian-kohler.path-intellisense",
         "cmstead.js-codeformer",
         "cmstead.jsrefactor",
-        "DavidAnson.vscode-markdownlint",
         "dbaeumer.vscode-eslint",
+        "donjayamanne.githistory",
         "donjayamanne.python-environment-manager",
         "donjayamanne.python-extension-pack",
         "ecmel.vscode-html-css",
+        "eriklynd.json-tools",
         "evgeniypeshkov.syntax-highlighter",
         "fill-labs.dependi",
         "firefox-devtools.vscode-firefox-debug",
@@ -61,38 +63,45 @@
         "ms-python.python",
         "ms-python.vscode-pylance",
         "ms-vscode.test-adapter-converter",
-        "Mukundan.python-docs",
         "njpwerner.autodocstring",
         "njqdev.vscode-python-typehint",
         "oderwat.indent-rainbow",
         "pamaron.pytest-runner",
-        "PascalReitermann93.vscode-yaml-sort",
         "qcz.text-power-tools",
         "redhat.vscode-yaml",
+        "remcohaszing.schemastore",
         "rogalmic.bash-debug",
         "shakram02.bash-beautify",
         "sourcery.sourcery",
         "stylelint.vscode-stylelint",
         "tamasfe.even-better-toml",
+        "tberman.json-schema-validator",
         "tekumara.typos-vscode",
         "timonwong.shellcheck",
-        "Tock.vscode-css-custom-properties",
         "travis71i.clean-css-vscode",
-        "Tyriar.sort-lines",
-        "VisualStudioExptTeam.intellicode-api-usage-examples",
-        "VisualStudioExptTeam.vscodeintellicode",
-        "WallabyJs.quokka-vscode",
         "wholroyd.jinja",
         "wix.vscode-import-cost",
         "wmontalvo.vsc-jsonsnippets",
-        "YoavBls.pretty-ts-errors",
-        "yzhang.markdown-all-in-one",
-        "ZainChen.json",
-        "Zignd.html-css-class-completion",
-        "eriklynd.json-tools",
-        "tberman.json-schema-validator",
-        "remcohaszing.schemastore"
+        "yzhang.markdown-all-in-one"
       ]
     }
+  },
+
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	"forwardPorts": [8000],
+
+	// Use 'postCreateCommand' to run commands after the container is created.
+	// "postCreateCommand": "uname -a",
+  "containerEnv": {
+    "PATH": "${HOME}/.local/share/uv/python/cpython-3.13.0-linux-x86_64-gnu/bin:${HOME}/.local/bin:${HOME}/.bun/bin:${HOME}/bin:${HOME}/sbin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+    "UV_LINK_MODE": "copy",
+    "UV_COMPILE_BYTECODE": "1",
+    "FORCE_COLOR": "1",
+    "CLICOLOR_FORCE": "1",
+    "UV_PYTHON": "cpython-3.13.0-linux-x86_64-gnu",
+    "UV_PYTHON_PREFERENCE": "only-managed",
+    "BUN_INSTALL": "$HOME/.bun",
+    "PYVENV": "/workspaces/PlainLicense/.venv/bin/activate",
+    "UV_CACHE_DIR": "/workspaces/PlainLicense/.cache/uv"
   }
 }
