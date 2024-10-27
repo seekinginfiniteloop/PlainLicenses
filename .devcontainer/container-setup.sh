@@ -3,8 +3,8 @@
 # Update and install packages
 mkdir -p /workspaces/PlainLicense
 cd /workspaces/PlainLicense
-apk update && apk upgrade
-apk add --no-cache \
+sudo apk update && sudo apk upgrade
+sudo apk add --no-cache \
     zsh \
     bash \
     curl \
