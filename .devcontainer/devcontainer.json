@@ -4,6 +4,7 @@
   "image": "mcr.microsoft.com/devcontainers/base:noble",
   "features": {
     "ghcr.io/shyim/devcontainers-features/bun:0": {},
+    "ghcr.io/devcontainers/features/python:1": {"version": "3.13"},
     "ghcr.io/jsburckhardt/devcontainer-features/uv:1": {},
     "ghcr.io/devcontainers-extra/features/node-asdf:0": {},
     "ghcr.io/devcontainers-extra/features/ruff:1": {},
@@ -18,10 +19,10 @@
     8000
   ],
   // Use 'postCreateCommand' to run commands after the container is created.
-  "postCreateCommand": "sudo apt-get update && sudo apt upgrade -y && sudo apt -y install libcairo2-dev pkg-config python3-dev ripgrep && uv sync --all-extras -q && bun install --no-summary --silent && uv tool install ipython -q && echo 'source /workspaces/PlainLicense/.venv/bin/activate' >> ~/.zshrc && echo \"export PATH='/home/vscode/.local/bin:\\$PATH'\" >> ~/.zshrc && echo 'export UV_LINK_MODE=copy' >> ~/.zshrc && echo 'export UV_COMPILE_BYTECODE=1' >> ~/.zshrc && git submodule update && bun install -g @linthtml/linthtml && echo 'export PATH=/home/vscode/.bun/bin:$PATH' >> ~/.zshrc && . ~/.zshrc",
+  "postCreateCommand": "chmod +x /workspaces/PlainLicense/.devcontainer/container-setup.sh && /workspaces/PlainLicense/.devcontainer/container-setup.sh",
   "customizations": {
     "vscode": {
-      // I have a plugin addiction
+      // I have an extension addiction
       "extensions": [
         "Alexey-Strakh.stackoverflow-search",
         "almenon.birdseye-vscode",
