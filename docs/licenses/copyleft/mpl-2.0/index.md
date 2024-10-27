@@ -16,7 +16,7 @@ no_official: false
 category: >
     copyleft
 license_description: >
-    The MPL is a weak copyleft license. It requires you to share your source code when you distribute your software, but only for the files under the MPL. You can combine MPL software with software under other licenses and distribute the combined work under different terms. The MPL also includes a patent grant from contributors. The license is compatible with the GPL and LGPL, allowing you to relicense your MPL software under those licenses.
+    The MPL is a weak copyleft license. It requires you share your source code or materials when you distribute your work, but only for the parts under the MPL. You can combine and MPL work with works covered by other licenses and distribute the combined work under different terms. The MPL also includes a patent grant from contributors. The license is compatible with the GPL and LGPL, allowing you to relicense an MPL work under those licenses, which are stronger copyleft licenses.
 note: null
 permissions:
     - commercial-use
@@ -34,7 +34,7 @@ limitations:
     - warranty
 outro: null
 extra_how: |
-    The MPL requires you to include notices in parts of your work where you can. There are two notices you can include. Which one you use depends on how you use the work. See the [`How to Provide Notices`](#how-to-provide-notices "jump to notices section") section of the license for more information.
+    The MPL requires you include notices in parts of your work if you can. There are two notices you can include. You should always include [Notice A](#notice-a-license-notice), which tells people that the work is licensed under the Plain MPL. If you distribute the work in a way that isn't compatible with other licenses, you must also include [Notice B](#notice-B-incompatible-license-notice).
 reader_license_text: |
     <h2 class="license-first-header">We Give You a License to Use, Change, and Share This Work</h2>
 
@@ -53,18 +53,18 @@ reader_license_text: |
 
     - Any part of the work that a contributor removes
     - Changes to the work that infringe on patent or intellectual property rights, including by combining the work with another
-    - Patent claims that the work infringes on without our contributions
+    - Patent claims that the work or a work you create with the work infringes on a patent, if the claim covers parts of the work that don't include our contributions
     - Trademarks, service marks, or logos of any contributor
 
     **If you distribute the work under a different version of this license or another license, we don't give you additional rights.**
 
-    ## This Doesn't Limit Your Rights for Fair Use
+    ## Your License Doesn't Limit Your Rights for Fair Use
 
-    This license does not limit your rights under applicable copyright rules for fair use, fair dealing, or similar exceptions.
+    Your license does not limit your rights under applicable copyright rules for fair use, fair dealing, or similar exceptions.
 
     ## Contributor Promises
 
-    Contributors promise that their contributions are original or that they have the power to grant the rights in this license for their contributions to the work.
+    Contributors promise that their contributions are original or that they have the power to give the rights in this license for their contributions to the work.
 
     ## Conditions
 
@@ -94,7 +94,7 @@ reader_license_text: |
 
     1. Once you correct the violation, your license returns on a trial basis unless we explicitly end it.
     2. If you fix the violation within 60 days without notice from any of us, your license is fully restored.
-    3. If one of us notifies you of your violation, and you correct it within 30 days of the notice, your license is fully returned. It will only be return if it's the first time you've violated the license.
+    3. If one of us notifies you of your violation, and you correct it within 30 days of the notice, your license is fully returned. It will only be returned if it's the first time you've violated the license.
 
     **If you sue anyone for patent infringement related to the work, your rights under this license end immediately.**
 
@@ -107,16 +107,14 @@ reader_license_text: |
     **This license is a plain language translation of the Mozilla Public License 2.0. You should consider the Plain MPL to have the same terms as the Mozilla Public License 2.0.** You can also distribute the work under the terms of the [Mozilla Public License 2.0](https://www.mozilla.org/en-US/MPL/2.0/) or any later version published by the [Mozilla Foundation](https://foundation.mozilla.org/).(1) Plain License does not claim that the Mozilla Foundation or anyone else endorses this license or agrees to its compatibility with the Mozilla Public License 2.0.
     { .annotate }
 
-    4. **Don't relicense an existing work to Plain MPL if the existing work is already licensed under the Mozilla Public License 2.0**, unless the [Mozilla Foundation](https://foundation.mozilla.org/) clarifies that the Plain MPL is compatible with the Mozilla Public License 2.0.
+    1. **Don't relicense an existing work to the Plain MPL if the existing work is already licensed under the Mozilla Public License 2.0**. If the [Mozilla Foundation](https://foundation.mozilla.org/) ever clarifies that the Plain MPL is compatible with the Mozilla Public License 2.0, then you may treat the two licenses as compatible.
 
     ## You Must Clearly Describe Any Limitations on Your Compliance with this License
 
     If you can't comply with any of this license's terms because of laws or regulations, you must:
 
-    5. **Comply with the terms to the extent possible**
-    6. **Describe the limitations and the affected part of the work in a text file or similar notice included with all distributions of the work**
-
-    You must describe your limitations in plain language, and you must use enough detail to describe your limitations for an average person to understand them.
+    - **Comply with the terms as much as your laws allow**
+    - **Describe your legal limits, what parts of the work they affect, and how your limits change these terms.** You must describe your limits in plain language, and you must provide enough detail about your limits for an average person to clearly understand them.You must provide these details in a text file, or similar notice, that you provide with all copies of the work.
 
     ## If You Take Legal Action, You Must Take It Where the Defendant Is Based
 
@@ -124,39 +122,49 @@ reader_license_text: |
 
     ## Other Terms
 
-    - **This license is the complete agreement between you and the creators.**
-    - If any part of this license is unenforceable, that part will be changed only as much as needed to make it enforceable.
-    - If any law says that a contract's language should be interpreted against the drafter, that law does not apply to the creators.
+    - **This license is the complete agreement between you and the authors.**
+    - If a court determines it cannot enforce any part of this agreement, it will change that part only as much as needed to make it enforceable.
+    - If any law says that a court should interpret a contract's language the person who wrote the contract, that law does not apply to the authors of this work. This is a standard, publicly available contract, and the authors did not write it to benefit themselves.
 
     ## How to Provide Notices
 
-    If you distribute the work in a way that is not compatible with other licenses, you must include a notice that the work is incompatible (see [Notice B][#notice-b---incompatible-license-notice]). You must also include a notice that the work is licensed under the Plain MPL (see [Notice A][#notice-a---license-notice]). **As much as possible, include these notices in the individual parts of the work.** If that's not possible, include them in a LICENSE file.
+    If you distribute the work in a way that is not compatible with other licenses, you must include a notice that the work is incompatible with other licenses (see [Notice B][#notice-b---incompatible-license-notice]). You also must include a notice that the work is licensed under the Plain MPL (see [Notice A][#notice-a---license-notice]). **Where you can, include these notices in the individual parts of the work.** If you can't, include them in a LICENSE file or in a similar way.
 
     ### Notice A - License Notice
 
-    `This work is licensed under the Plain MPL. If you didn't get a copy of the license with this work, you can find it at <https://plainlicense.org{{ plain_url }}>.`
+    ```markdown
+
+    This work is licensed under the Plain MPL. If you didn't get a copy of the license
+    with this work, you can find it at [plainlicense.org{{ plain_url | trim('" ') }}](https://plainlicense.org{{ plain_url | trim('" ') }}.
+
+    ```
 
     ### Notice B - Incompatible License Notice
 
-    `This work is not compatible with other licenses. It is licensed under the Plain MPL and cannot be distributed in any form under other licenses, except the Mozilla Public License 2.0.`
+    ```markdown
+
+    This work is licensed under the Plain MPL. You may distribute this work under the
+    Plain MPL, or the Mozilla Public License 2.0. You may not distribute this work under any other license.
+
+    ```
 
     ## Definitions
 
-    `we`
+    `we` and `the authors`
 
-    :    The people or organizations that own the work
+    :    The people or organizations that created the work
 
     `you`
 
-    :    The person or organization receiving the work
+    :    The person or organization getting, copying, changing, using or providing the work
 
     `contributor`
 
-    :    A person or organization that contributes to the work
+    :    A person or organization that contributes to the work. You may be a contributor, a user, and an author at the same time. Each set of rights and responsibilities applies to you based on your role.
 
     `larger work`
 
-    :    A work that combines the licensed work with other works
+    :    A work that combines the licensed work with other works. For example, a software program that includes the licensed work and other software is a larger work.
 
     `the work`
 

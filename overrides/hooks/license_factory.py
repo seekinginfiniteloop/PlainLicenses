@@ -84,8 +84,7 @@ def get_extra_meta(spdx_id: str) -> dict[str, Any]:
                 } | frontmatter.get("using", {})
             )
     spdx_files = list(Path("external/license-list-data/json/details").glob("*.json"))
-    assembly_logger.debug("SPDX files: %s", spdx_files)
-    if file := next((f for f in spdx_files if (f.stem.lower() == spdx_id.lower() or f in spdx_files)), None):
+    if file := next((f for f in spdx_files if (f.stem.lower() == spdx_id.lower())), None):
         assembly_logger.debug("Found SPDX file: %s", file)
         new_meta |= clean_content(load_json(file))
     assembly_logger.debug("Extra metadata: %s", new_meta)
@@ -261,8 +260,9 @@ def write_json(path: Path, data: dict[str, Any]) -> None:
 
 class LicenseContent:
     """
-    TODO: Break this class up into smaller classes
     Represents a license's content and metadata, including the license text and associated attributes. All license text processing happens here.
+
+    TODO: Break this class up into smaller classes
     """
 
     _year_pattern: ClassVar[Pattern[str]] = re.compile(r"\{\{\s{1,2}year\s{1,2}\}\}")
@@ -482,11 +482,12 @@ class LicenseContent:
     def blockify(text: str, kind: str, title: str, separator_count: int = 5, options: list[str] | None = None) -> str:
         """Returns a blocks api block with the provided text."""
         separator = "/" * separator_count
-        spaces = " " * (separator_count + 1)
         option_line = ""
         if options:
-            option_line = "\n".join([f"{spaces}{option}" for option in options]) if options else ""
-        return f"\n{separator} {kind} | {title}\n{option_line}\n{text}\n{separator}"
+            option_line = ("\n\n" + ("\u0020"*(separator_count+1))).join(
+                [f"{'\u0020'*(separator_count+1)}{option}" for option in options]
+            )
+        return f"\n{separator} {kind} | {title}\n\n{option_line}\n\n{text}\n\n{separator}\n"
 
     def interpretation_block(self, kind: str) -> str:
         """Returns the interpretation block for the license."""
@@ -701,11 +702,11 @@ class LicenseContent:
         outro = self.meta.get("outro", "")
         return (
             self.blockify(
-                f"{tabs}{outro}\n",
+                f"{tabs}{outro}",
                 "admonition",
                 f"Plain License: <span class='detail-title-highlight'>The {self.meta.get('plain_name')}</span>",
                 6,
-                options=["open:True", "attrs:" + r"{ class: license }"],
+                options=["type: license"],
             )
             + f"\n\n{outro}"
         )

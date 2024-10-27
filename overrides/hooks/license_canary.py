@@ -10,7 +10,6 @@ from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self
 
 from hook_logger import get_logger
 from mkdocs.config import Config as MkDocsConfig
-from mkdocs.exceptions import PluginError
 from mkdocs.plugins import event_priority
 from mkdocs.structure.files import Files
 from mkdocs.structure.nav import Navigation
@@ -18,7 +17,7 @@ from mkdocs.structure.pages import Page
 from mkdocs.utils.templates import TemplateContext
 
 if TYPE_CHECKING:
-    from license_assembly import LicenseContent
+    from license_factory import LicenseContent
 
 _canary_log_level = logging.DEBUG
 
@@ -190,6 +189,7 @@ def on_startup(command: str, dirty: bool) -> None:
     canary.logger.debug("Build Canary production flag is set to %s", canary.production)
     canary.logger.debug("Canary expected licenses: %s", canary.expected_licenses)
 
+
 def on_page_context(
     context: TemplateContext, page: Page, config: MkDocsConfig, nav: Navigation
 ) -> TemplateContext:
@@ -269,10 +269,17 @@ def on_post_build(config: MkDocsConfig) -> None:
 
     canary.logger.info("Build Canary passed without errors.")
     """
+
+
 try:
     LicenseBuildCanary()
 except Exception as e:
     print(e)
 finally:
-    if (canary := LicenseBuildCanary.canary()) and canary.__class__._initialized and canary.logger and canary.logger.level == logging.DEBUG:
+    if (
+        (canary := LicenseBuildCanary.canary())
+        and canary.__class__._initialized
+        and canary.logger
+        and canary.logger.level == logging.DEBUG
+    ):
         canary.dump()

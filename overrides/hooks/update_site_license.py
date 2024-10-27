@@ -18,9 +18,6 @@ from license_canary import LicenseBuildCanary
 
 _site_license_log_level = logging.WARNING
 
-def clean_context(context: TemplateContext) -> TemplateContext:
-    if 
-
 def on_page_context(
     context: TemplateContext, page: Page, config: MkDocsConfig, nav: Navigation
 ) -> TemplateContext:
@@ -46,7 +43,6 @@ def on_page_context(
     meta = page.meta
     if meta and 'original_name' not in meta:
         return context
-    context = clean_context(context)
     if (original_name := meta["original_name"].strip().lower()) and (
         "unlicense" in original_name or original_name == "unlicense"
     ):

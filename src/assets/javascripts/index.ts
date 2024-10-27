@@ -4,22 +4,20 @@
  * @module Main entry point for the JavaScript bundle.
  */
 import "@/bundle" // we import mkdocs-material's scripts as a side effect
+import "~/feedback"
 import "~/hero"
 import "~/licenses"
 
 import { cleanupCache, deleteOldCache } from "~/cache"
 
 import { Subscription, merge } from "rxjs"
-import { mergeMap, switchMap, tap } from "rxjs/operators"
+import { filter, map, mergeMap, switchMap, tap } from "rxjs/operators"
 import { cacheAssets } from "./cache"
 import { logger } from "~/log"
 import { mergedSubscriptions } from "~/utils"
 // @ts-ignore
 import Tablesort from "tablesort"
-
-import "~/feedback"
-
-const { document$ } = window
+const { document$, location$ } = window
 
 const subscriptions: Subscription[] = []
 
@@ -56,19 +54,36 @@ subscriptions.push(document$.subscribe(() => {
   })
 }))
 
-subscriptions.push(document$.subscribe(function () {
+subscriptions.push(document$.subscribe(() => {
   const script = document.createElement("script")
   script.type = "text/javascript"
   script.src = "https://app.tinyanalytics.io/pixel/ei74pg7dZSNOtFvI"
   document.head.appendChild(script)
 }))
 
-subscriptions.push(document$.subscribe(function () {
+subscriptions.push(document$.subscribe(() => {
   const tables = document.querySelectorAll("article table:not([class])")
-  tables.forEach(function (table) {
+  tables.forEach(table => {
     new Tablesort(table)
   })
 }))
+
+subscriptions.push(
+  location$.pipe(
+    map((location: URL) => location.pathname.split("/")),
+    map((pathArray: string[]) => ({
+      parent: pathArray[pathArray.length - 2],
+      page: pathArray[pathArray.length - 1]
+    })),
+    filter(({ parent, page }) => parent === "helping" && page === "index.html")
+  ).subscribe(() => {
+    const script = document.createElement("script")
+    script.async = true
+    script.defer = true
+    script.src = "https://buttons.github.io/buttons.js"
+    document.head.appendChild(script)
+  })
+)
 
 // Cleanup subscriptions
 const customUrlFilter = (url: URL) => url.hostname !== "plainlicense.org" && url.protocol === "https:"

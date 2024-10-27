@@ -62,7 +62,7 @@ class ColorFormatter(logging.Formatter):
             The formatted record as a string
 
         """
-        if record.message.splitlines() > 1:
+        if len(record.message.splitlines()) > 1:
             log_message = super().format(pformat(record))
         else:
             log_message = super().format(record)
