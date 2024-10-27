@@ -14,7 +14,7 @@ from mkdocs.structure.nav import Navigation
 from mkdocs.structure.pages import Page
 from mkdocs.utils.templates import TemplateContext
 
-from license_canary import LicenseBuildCanary
+from _utils import is_license_page
 
 _site_license_log_level = logging.WARNING
 
@@ -36,8 +36,7 @@ def on_page_context(
         TemplateContext: The updated template context after processing the page.
     """
     logger = get_logger("SITE_LICENSE", _site_license_log_level)
-    canary = LicenseBuildCanary.canary()
-    if not (license := canary.is_license_page(page)):
+    if not (license := is_license_page(page)):
         return context
     logger.debug("site license checking license %s if it's an unlicense", license)
     meta = page.meta

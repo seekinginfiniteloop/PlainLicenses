@@ -9,7 +9,7 @@ from mkdocs.structure.pages import Page
 from mkdocs.structure.files import Files, InclusionLevel
 from mkdocs.plugins import event_priority
 
-from license_canary import LicenseBuildCanary
+from _utils import is_license_page
 
 if not hasattr("CHANGELOGS", "changelog_logger"):
     changelog_logger = get_logger(__name__, logging.WARNING)
@@ -20,9 +20,8 @@ def on_pre_page(page: Page, config: MkDocsConfig, files: Files) -> Page:
 
     Also, check for tags in the frontmatter and update them if necessary.
     """
-    if not LicenseBuildCanary().canary().is_license_page(page):
+    if not is_license_page(page):
         return page
-
     license_dir = Path(page.file.src_uri).parent
     changelog_logger.info("Updating changelogs and tags for license %s.", str(license_dir).split("/")[-1])
     if changelog := files.get_file_from_path(f"{license_dir}/CHANGELOG.md"):

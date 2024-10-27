@@ -5,7 +5,6 @@ repo_name: PlainLicense
 edit_uri: edit/main/docs/
 copyright: Plain License's authors dedicate all original content to the public domain. No rights reserved.
 hooks:
-  - overrides/hooks/license_canary.py # Tests build process for errors to prevent broken builds
   - overrides/hooks/hook_logger.py # Central logger for hooks (can also do plugins)
   - overrides/hooks/socialmedia.py # Material hook for social media cards
   - overrides/hooks/update_changelogs.py # Handles changelog updates for individual licenses

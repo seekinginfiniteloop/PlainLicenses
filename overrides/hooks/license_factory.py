@@ -21,12 +21,13 @@ from typing import Any, ClassVar, Literal
 import ez_yaml
 from hook_logger import get_logger
 from jinja2 import Template, TemplateError
-from license_canary import LicenseBuildCanary
 from mkdocs.config.base import Config as MkDocsConfig
 from mkdocs.plugins import event_priority
 from mkdocs.structure.files import File, Files, InclusionLevel
 from mkdocs.structure.nav import Navigation
 from mkdocs.structure.pages import Page
+
+from _utils import Status
 
 # Change logging level here
 _assembly_log_level = logging.DEBUG
@@ -36,12 +37,6 @@ if not hasattr(__name__, "assembly_logger"):
         "ASSEMBLER",
         _assembly_log_level,
     )
-
-
-def get_canary() -> LicenseBuildCanary:
-    """Returns the LicenseBuildCanary instance."""
-    return LicenseBuildCanary.canary()
-
 
 def clean_content(content: dict[str, Any]) -> dict[str, Any] | None:
     """
@@ -130,7 +125,6 @@ def assemble_license_page(config: MkDocsConfig, page: Page, file: File) -> Page:
     license = LicenseContent(page)
     page.meta |= license.attributes
     extra_meta = get_extra_meta(page.meta["spdx_id"])
-    get_canary().add_value("processed_licenses", license)
     page.meta |= extra_meta
     assembly_logger.debug("Rendering boilerplate for %s", page.title)
     rendered_boilerplate = render_mapping(boilerplate, page.meta)
@@ -441,7 +435,7 @@ class LicenseContent:
             version = package.get("version")
             if not version:
                 return "0.0.0"
-            if "development" in version and LicenseBuildCanary.canary().production:
+            if "development" in version and Status.production_status:
                 package["version"] = "0.1.0"
                 write_json(path, package)
                 return "0.1.0"

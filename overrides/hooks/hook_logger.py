@@ -22,12 +22,15 @@ from mkdocs.structure.pages import Page
 from mkdocs.structure.files import Files
 from mkdocs.structure.nav import Navigation
 
+from _utils import Status, MkDocsCommand # initialize the Status singleton
+
+
 # Configuration
 override = os.getenv("LOG_LEVEL_OVERRIDE")
 LOG_LEVEL_OVERRIDE = int(override) if override else logging.WARNING
-DEVELOPMENT = os.getenv("GITHUB_ACTIONS") != "true"
+PRODUCTION = Status.status.production
 FILEHANDLER_ENABLED = (
-    os.getenv("FILEHANDLER_ENABLED", str(DEVELOPMENT)).lower() == "true"
+    os.getenv("FILEHANDLER_ENABLED", "false").lower() == "true" or not PRODUCTION
 )
 STREAMHANDLER_ENABLED = (
     os.getenv("STREAMHANDLER_ENABLED", "true").lower() == "true"
@@ -120,8 +123,9 @@ def get_logger(name: str, level: int = logging.WARNING) -> logging.Logger:
 
 # MkDocs plugin hooks
 @event_priority(100)
-def on_startup(command: Literal['build', 'serve', 'gh-deploy'], dirty: bool) -> None:
+def on_startup(command: MkDocsCommand, dirty: bool) -> None:
     """log startup"""
+    Status(command)
     logging.captureWarnings(True)
     logger = get_logger("MkDocs", logging.DEBUG)
     logger.info("Starting %s command", command)
@@ -143,7 +147,6 @@ def on_files(files: Files, config: MkDocsConfig) -> Files:
     logger.debug("Processing %s files", str(len(files)))
     logger.debug("Files: %s", files)
     return files
-
 
 def on_env(env: Environment, config: MkDocsConfig, files: Files) -> Environment:
     """log on_env"""
