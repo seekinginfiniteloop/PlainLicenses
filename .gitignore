@@ -4,7 +4,6 @@
 .workbench/
 .devenv/
 .devenv/*
-typings
 .testbuild
 .testbuild/*
 .testbuild/**/*
@@ -21,6 +20,7 @@ typings
 **/__pycache__/
 **/.pytest_cache/
 **/.venv
+.venv/
 
 .vscode/
 __pycache__/
@@ -43,10 +43,6 @@ dist/
 *.swp
 
 
-node_modules/
-**/node_modules/
-**/**/node_modules/
-**/**/**/node_modules/
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
@@ -141,3 +137,4 @@ bower_components/
 
 # Local History for Visual Studio Code
 .history/
+lib64

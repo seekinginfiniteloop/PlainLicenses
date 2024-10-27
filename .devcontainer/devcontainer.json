@@ -1,10 +1,8 @@
 {
   "name": "Ubuntu",
-  // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
   "image": "mcr.microsoft.com/devcontainers/base:noble",
   "features": {
     "ghcr.io/shyim/devcontainers-features/bun:0": {},
-    "ghcr.io/devcontainers/features/python:1": {"version": "3.13"},
     "ghcr.io/jsburckhardt/devcontainer-features/uv:1": {},
     "ghcr.io/devcontainers-extra/features/node-asdf:0": {},
     "ghcr.io/devcontainers-extra/features/ruff:1": {},
@@ -14,15 +12,24 @@
       "script1": "avoid_password_service_ssh_start#https://gist.github.com/wxw-matt/186afd98891bd2c26adfb5b3045d236c/raw"
     }
   },
-  // Use 'forwardPorts' to make a list of ports inside the container available locally.
   "forwardPorts": [
     8000
   ],
-  // Use 'postCreateCommand' to run commands after the container is created.
   "postCreateCommand": "chmod +x /workspaces/PlainLicense/.devcontainer/container-setup.sh && /workspaces/PlainLicense/.devcontainer/container-setup.sh",
+  "containerEnv": {
+    "PATH": "~/.local/share/uv/python/cpython-3.13.0-linux-x86_64-gnu/bin:/home/vscode/.local/bin:/home/vscode/.bun/bin:${PATH}",
+    "UV_LINK_MODE": "copy",
+    "UV_COMPILE_BYTECODE": "1",
+    "FORCE_COLOR": "1",
+    "CLICOLOR_FORCE": "1",
+    "UV_PYTHON": "cpython-3.13.0-linux-x86_64-gnu",
+    "UV_PYTHON_PREFERENCE": "only-managed",
+    "BUN_INSTALL": "$HOME/.bun",
+    "PYVENV": "/workspaces/PlainLicense/.venv/bin/activate",
+    "UV_CACHE_DIR": "/workspaces/PlainLicense/.cache/uv"
+  },
   "customizations": {
     "vscode": {
-      // I have an extension addiction
       "extensions": [
         "Alexey-Strakh.stackoverflow-search",
         "almenon.birdseye-vscode",

@@ -797,7 +797,7 @@ dependencies = [
     { name = "pyyaml-env-tag" },
 ]
 
-[package.dev-dependencies]
+[package.dependency-groups]
 dev = [
     { name = "glom" },
     { name = "ipython" },
@@ -828,7 +828,7 @@ requires-dist = [
     { name = "pyyaml-env-tag", specifier = ">=0.1.0" },
 ]
 
-[package.metadata.requires-dev]
+[package.metadata.dependency-groups]
 dev = [
     { name = "glom", specifier = ">=23.5.0" },
     { name = "ipython", specifier = ">=8.28.0" },
