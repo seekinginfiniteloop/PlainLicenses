@@ -1,21 +1,20 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/alpine
 {
-	"name": "Alpine",
+	"name": "Ubuntu",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"image": "mcr.microsoft.com/devcontainers/base:alpine",
+	"image": "mcr.microsoft.com/devcontainers/base:noble",
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	"forwardPorts": [8000],
   "containerEnv": {
-    "PATH": "${HOME}/.local/share/uv/python/cpython-3.13.0-linux-x86_64-gnu/bin:${HOME}/.local/bin:${HOME}/.bun/bin:${HOME}/bin:${HOME}/sbin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
     "UV_LINK_MODE": "copy",
     "UV_COMPILE_BYTECODE": "1",
     "FORCE_COLOR": "1",
     "CLICOLOR_FORCE": "1",
     "UV_PYTHON": "cpython-3.13.0-linux-x86_64-gnu",
-    "UV_PYTHON_PREFERENCE": "only-managed",
-    "BUN_INSTALL": "$HOME/.bun",
+    "UV_PYTHON_PREFERENCE": "managed",
+    "UV_PYTHON_DOWNLOADS": "automatic",
     "PYVENV": "/workspaces/PlainLicense/.venv/bin/activate",
     "UV_CACHE_DIR": "/workspaces/PlainLicense/.cache/uv"
   },
