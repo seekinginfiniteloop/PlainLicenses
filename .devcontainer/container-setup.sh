@@ -53,13 +53,12 @@ echo "This is the path: $PATH"
 # Define the block of code as a variable
 CONFIG_BLOCK=$(cat << 'EOF'
 export BUN_INSTALL="/home/vscode/.bun"
-[ -s "~/.bun/_bun" ] && source "~/.bun/_bun"
 alias rg="rg --no-ignore-vcs --stats --trim --color=always --colors \"match:fg:white\" --colors \"path:fg:blue\" --smart-case --search-zip"
 alias rgf="rg --files"
 alias rgp="rg --pretty"
 alias rgc="rg --count"
 alias ll="ls -alF"
-export PATH="$HOME/bin:$HOME/sbin:$HOME/.local/share/fnm:$PATH:/opt/bin:/opt/sbin:/opt/local/bin:/opt/local/sbin"
+export PATH="$BUN_INSTALL/bin:$HOME/bin:$HOME/sbin:$HOME/.local/share/fnm:$PATH:/opt/bin:/opt/sbin:/opt/local/bin:/opt/local/sbin"
 export UV_PYTHON_DOWNLOADS="automatic"
 export UV_COLOR="always"
 source "/workspaces/PlainLicense/.venv/bin/activate"
@@ -67,6 +66,7 @@ EOF
 )
 ZCONFIG_BLOCK=$(cat << 'EOF'
 eval "$(/home/vscode/.local/share/fnm/fnm env --use-on-cd --shell zsh)"
+eval "$(fnm env)"
 fpath+=~/.zfunc
 autoload -Uz compinit
 zstyle ':completion:*' menu select
@@ -120,6 +120,7 @@ function bun_install() {
     $bunloc install -g "${BUNOPTS}" 'eslint'
     $bunloc install -g "${BUNOPTS}" 'prettier'
     $bunloc install -g "${BUNOPTS}" 'semantic-release-cli'
+
 }
 export BUNOPTS="--no-interactive --silent"
 

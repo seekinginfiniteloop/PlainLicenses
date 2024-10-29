@@ -25,58 +25,114 @@ function readSpdxLicenseList(): string[] {
   const licenses: spdxLicense[] = JSON.parse(data).licenses as spdxLicense[]
   return licenses
     .filter(license => !license.isDeprecatedLicenseId)
-    .map(license => license.licenseId)
+    .map(license => license.licenseId.toLowerCase())
 }
+
+/**
+ * Normalizes a scope to lowercase.
+ *
+ * @param scope The scope to normalize.
+ * @returns The normalized scope.
+ */
+function normalizeScope(scope: string): string {
+  return scope.toLowerCase()
+}
+
 export type SPDXID = typeof licenseScopes[number]
 
-const otherScopes = ["site", "build", "hooks", "config", "ci", "deps"]
-const licenseScopes = readSpdxLicenseList()
-const allScopes = [...otherScopes, ...licenseScopes]
+const devScopes = ["site", "build", "hooks", "config", "ci", "deps"]
+const licenseScopes = [readSpdxLicenseList(), "plain-*"].flat()
+const allScopes = [...devScopes, ...licenseScopes]
 
 // dynamically generate the type, which is any literal from the licensesScopes array
 export type CommitScope = typeof allScopes[number]
+export type DevCommitScope = typeof devScopes[number]
+export type LicenseCommitScope = typeof licenseScopes[number]
 
-export type CommitType =
-  | "subs" // Substantive changes to **licenses**
-  | "admin" // Administrative changes to **licenses**
-  | "fix"
-  | "content"
-  | "feat"
-  | "script"
-  | "blog"
-  | "ci"
-  | "refactor"
-  | "config"
-  | "build"
-  | "chore"
-  | "bot" // not for humans
+export const licenseTypes = ["subs", "admin", "bot"]
+export const devTypes = ["blog", "bot", "build", "chore", "ci", "config", "content", "feat", "fix", "refactor", "script"]
+export const allCommitTypes = [...licenseTypes, ...devTypes]
+
+export type CommitType = typeof allCommitTypes[number]
+export type DevCommitType = typeof devTypes[number]
+export type LicenseCommitType = typeof licenseTypes[number]
 
 /**
- * Represents a Git commit.
+ * Represents a Developer (or site content) Git commit.
  */
-export interface Commit {
+export interface DevCommit {
   hash: string
-  type: CommitType
-  scope: CommitScope | undefined
+  type: DevCommitType
+  scope: DevCommitScope
   description: string
   body: string
 }
 
-// Export the allowed types and scopes for commitlint
-export const allowedCommitTypes: CommitType[] = [
-  "subs",
-  "admin",
-  "fix",
-  "content",
-  "feat",
-  "script",
-  "blog",
-  "ci",
-  "refactor",
-  "config",
-  "build",
-  "chore",
-  "bot"
-]
+/**
+ * Represents a License Git commit.
+ */
+export interface LicenseCommit {
+  hash: string
+  type: LicenseCommitType
+  scope: LicenseCommitScope
+  description: string
+  body: string
+}
 
-export const allowedCommitScopes: CommitScope[] = allScopes
+// Define the allowed commit types and scopes
+const allowedCommitTypes: CommitType[] = allCommitTypes
+const allowedCommitScopes: CommitScope[] = allScopes.map(normalizeScope)
+
+const typeScopeMap: Record<CommitType, CommitScope[]> = {
+  subs: licenseScopes,
+  admin: licenseScopes,
+  bot: allScopes, // allow any scope for bot commits
+  blog: devScopes,
+  build: devScopes,
+  chore: devScopes,
+  ci: devScopes,
+  config: devScopes,
+  content: devScopes,
+  feat: devScopes,
+  fix: devScopes,
+  refactor: devScopes,
+  script: devScopes
+}
+
+// Create a function to validate the commit message based on the type and scope
+function validateCommitMessage(type: CommitType, scope: CommitScope): boolean {
+  const allowedScopes = typeScopeMap[type] || []
+  return allowedScopes && allowedScopes.includes(scope)
+}
+
+function validScope(scope: string): boolean {
+  return allScopes.includes(scope)
+}
+
+function validType(type: string): boolean {
+  return allCommitTypes.includes(type)
+}
+
+// Export the configuration for Commitlint
+export const commitlintConfig = {
+  rules: {
+    'type-enum': [2, 'always', allowedCommitTypes],
+    'scope-enum': [2, 'always', allowedCommitScopes],
+    'type-scope-enum': [2, 'always', (parsed: { type: CommitType, scope: CommitScope }) => {
+      const { type, scope } = parsed
+      const isValidScope = validScope(scope)
+      const isValidType = validType(type)
+      if (!isValidType) {
+        return [false, `Type "${type}" is not allowed, expected one of ${allowedCommitTypes.join(", ")}`]
+      }
+      if (!isValidScope) {
+        return [false, `Scope "${scope}" is not allowed, expected one of ${allowedCommitScopes.join(", ")}`]
+      }
+      const isValid = validateCommitMessage(type, scope)
+      const scopeType = devScopes.includes(scope) ? "dev" : "license"
+      return [isValid, `Scope "${scope}" is not allowed for type "${type},
+        expected a ${scopeType} scope for type "${type}. Allowed scopes are ${typeScopeMap[type].join(", ")}`]
+    }
+    ]
+  }
+}
