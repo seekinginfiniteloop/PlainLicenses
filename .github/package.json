@@ -1,8 +1,0 @@
-{
-  "name": "plain-license-generate-changelog",
-  "main": "scripts/index.js",
-  "type": "module",
-  "scripts": {
-    "generate-changelog": "node .github/scripts/index.js"
-  }
-}

@@ -1,5 +1,5 @@
 {
-  "branches": ["main"],
+  "branches": ["main", { "name": "dev", "channel": "pre/rc", "prerelease": true }],
   "plugins": [
     [
       "@semantic-release/commit-analyzer",
@@ -11,9 +11,10 @@
           { "type": "feat", "release": "minor" },
           { "type": "fix", "release": "patch" },
           { "type": "content", "release": "patch" },
+          { "type": "script", "release": "minor" },
+          { "type": "initial", "release": "minor"},
           { "type": "blog", "release": null},
           { "type": "ci", "release": null },
-          { "type": "script", "release": "minor" },
           { "type": "refactor", "release": null },
           { "type": "config", "release": null },
           { "type": "chore", "release": null },

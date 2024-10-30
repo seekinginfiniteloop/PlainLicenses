@@ -83,6 +83,7 @@ export interface LicenseCommit {
 const allowedCommitTypes: CommitType[] = allCommitTypes
 const allowedCommitScopes: CommitScope[] = allScopes.map(normalizeScope)
 
+
 const typeScopeMap: Record<CommitType, CommitScope[]> = {
   subs: licenseScopes,
   admin: licenseScopes,
@@ -99,8 +100,18 @@ const typeScopeMap: Record<CommitType, CommitScope[]> = {
   script: devScopes
 }
 
+export type ValidCommit = DevCommit | LicenseCommit
+
+export interface CommitMessage {
+  hash
+  type: CommitType
+  scope: CommitScope
+  description: string
+  body: string
+}
+
 // Create a function to validate the commit message based on the type and scope
-function validateCommitMessage(type: CommitType, scope: CommitScope): boolean {
+export function validateCommitMessage(type: CommitType, scope: CommitScope): boolean {
   const allowedScopes = typeScopeMap[type] || []
   return allowedScopes && allowedScopes.includes(scope)
 }
@@ -120,11 +131,11 @@ export const commitlintConfig = {
     'scope-enum': [2, 'always', allowedCommitScopes],
     'type-scope-enum': [2, 'always', (parsed: { type: CommitType, scope: CommitScope }) => {
       const { type, scope } = parsed
-      const isValidScope = validScope(scope)
       const isValidType = validType(type)
       if (!isValidType) {
         return [isValidType, `Type "${type}" is not allowed, expected one of ${allowedCommitTypes.join(", ")}`]
       }
+      const isValidScope = validScope(scope)
       if (!isValidScope) {
         return [isValidScope, `Scope "${scope}" is not allowed, expected one of ${allowedCommitScopes.join(", ")}`]
       }

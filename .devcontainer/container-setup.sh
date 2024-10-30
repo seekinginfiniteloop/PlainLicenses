@@ -26,6 +26,7 @@ libz-dev \
 unzip \
 gpg \
 gnupg2 \
+nodejs \
 ncurses-base \
 ncurses-bin \
 zlib1g \
@@ -43,7 +44,6 @@ export BUN_INSTALL="/home/vscode/.bun"
 export BUNOPTS="--no-interactive --silent"
 export UV_PYTHON_DOWNLOADS="automatic"
 # sync and install tools
-curl -fsSL https://fnm.vercel.app/install | bash &&
 curl -LsSf https://astral.sh/uv/install.sh | sh &&
 curl -fsSL https://bun.sh/install | bash &&
 
@@ -58,46 +58,28 @@ alias rgf="rg --files"
 alias rgp="rg --pretty"
 alias rgc="rg --count"
 alias ll="ls -alF"
-export PATH="$BUN_INSTALL/bin:$HOME/bin:$HOME/sbin:$HOME/.local/share/fnm:$PATH:/opt/bin:/opt/sbin:/opt/local/bin:/opt/local/sbin"
+alias node="bun run"
+export PATH="$BUN_INSTALL/bin:$HOME/bin:$HOME/sbin:$PATH:/opt/bin:/opt/sbin:/opt/local/bin:/opt/local/sbin"
 export UV_PYTHON_DOWNLOADS="automatic"
 export UV_COLOR="always"
 source "/workspaces/PlainLicense/.venv/bin/activate"
 EOF
 )
 ZCONFIG_BLOCK=$(cat << 'EOF'
-eval "$(/home/vscode/.local/share/fnm/fnm env --use-on-cd --shell zsh)"
-eval "$(fnm env)"
 fpath+=~/.zfunc
 autoload -Uz compinit
 zstyle ':completion:*' menu select
-EOF
-)
-BASH_CONFIG_BLOCK=$(cat << 'EOF'
-eval "$(/home/vscode/.local/share/fnm/fnm env --use-on-cd --shell bash)"
-eval "$(fnm env)"
 EOF
 )
 # Write the block of code to .zshrc and .bashrc
 echo "$CONFIG_BLOCK" >> ~/.zshrc
 echo "$CONFIG_BLOCK" >> ~/.bashrc
 echo "$ZCONFIG_BLOCK" >> ~/.zshrc
-echo "$BASH_CONFIG_BLOCK" >> ~/.bashrc
 source ~/.bashrc
 mkdir -p ~/.bash_completion.d
 /usr/bin/rg --generate zsh >> ~/.zfunc/_rg
 /usr/bin/rg --generate bash >> ~/.bash_completion.d/_rg
 # Install global npm packages
-
-function fnm_install() {
-    local fnmloc=/home/vscode/.local/share/fnm/fnm
-    $fnmloc install --lts &&
-    $fnmloc use lts-latest &&
-    mkdir -p ~/.zfunc
-    $fnmloc completions --shell zsh >> ~/.zfunc/_fnm
-    $fnmloc completions --shell bash >> ~/.bash_completion.d/_fnm
-    echo "/home/vscode/.local/share/fnm/fnm use lts-latest" >> ~/.zshrc
-    echo "/home/vscode/.local/share/fnm/fnm use lts-latest" >> ~/.bashrc
-}
 
 function uv_install() {
     export UV_PYTHON_DOWNLOADS="automatic"
@@ -120,8 +102,9 @@ function bun_install() {
     $bunloc install -g "${BUNOPTS}" 'eslint'
     $bunloc install -g "${BUNOPTS}" 'prettier'
     $bunloc install -g "${BUNOPTS}" 'semantic-release-cli'
-
+    $bunloc install -g "${BUNOPTS}" 'markdownlint-cli2'
 }
+
 export BUNOPTS="--no-interactive --silent"
 
 FNM_PATH="/home/vscode/.local/share/fnm"

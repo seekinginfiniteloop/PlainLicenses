@@ -106,22 +106,6 @@ export const webConfig: esbuild.BuildOptions = {
   ],
 };
 
-export const nodeConfig: esbuild.BuildOptions = {
-  loader: webConfig.loader,
-  format: "esm",
-  bundle: true,
-  metafile: false,
-  banner: { js: ciBanner },
-  platform: "node",
-  target: "node18",
-  sourcemap: false,
-  minify: false,
-  splitting: false,
-  plugins: [],
-  allowOverwrite: true,
-  outExtension: {'.js': '.mjs'}
-};
-
 export const GHActions: Project[] = [
   {
     // Build GitHub actions

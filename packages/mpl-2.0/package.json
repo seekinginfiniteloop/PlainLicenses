@@ -1,0 +1,10 @@
+{
+  "name": "plain-license-mpl-2.0",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Plain language version of MPL 2.0",
+  "scripts": {
+    "release": "semantic-release"
+  },
+  "main": "../../docs/licenses/copyleft/mpl-2.0/index.md"
+}

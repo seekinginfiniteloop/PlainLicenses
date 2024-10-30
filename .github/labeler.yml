@@ -1,23 +1,47 @@
-documentation:
+repo:
   - changed-files:
-    - any-glob-to-any-file: ['**/*.md']
+    - any-glob-to-any-file: ['README.md', 'CONTRIBUTING.md', '.gitignore', '.gitmodules', 'node_modules/*', '.venv/*', 'UNLICENSE']
 
+blog:
+  - changed-files:
+    - any-glob-to-any-file: ['docs/blog/*', 'docs/blog/*/*', 'docs/blog/*/*/*']
 
 dependencies:
   - changed-files:
-    - any-glob-to-any-file: ['pyproject.toml', '*-lock.json', '*.lock', 'requirements*', 'uv']
+    - any-glob-to-any-file: ['package.json', 'pyproject.toml', '*-lock.json', '*.lock', 'requirements*', '**/.uv/**', 'uv.lock', '.python-version', 'bun.lockb']
 
 licenses:
   - changed-files:
-    - any-glob-to-any-file: ['docs/licenses/**/**/*.md', 'LICENSE_TEMPLATE.md']
+    - any-glob-to-any-file: ['docs/licenses/*/*/index.md', 'LICENSE_TEMPLATE.md']
+
+build:
+  - changed-files:
+    - any-glob-to-any-file: ['src/build/**']
+
+content:
+  - changed-files:
+    - any-glob-to-any-file: ['docs/**/*.md, docs/*.md']
+    - all-globs-
+
+assets:
+  - changed-files:
+    - any-glob-to-any-file: ['overrides/**', 'docs/**', 'overrides/**', 'src/assets/**']
+    -any-globs-to-all-files: ['!*.js', '!*.ts', '!*.sh', '!*.py', '!*.mjs', '!*.md']
+
+config:
+  - changed-files:
+    - any-glob-to-any-file: ['.editorconfig', 'mkdocs.yml', '.browserlistrc', 'mlc_config.json']
 
 ci:
   - changed-files:
-    - any-glob-to-any-file: ['.github/*', 'commitlint*', '*lint*']
+    - any-glob-to-any-file: ['.github/*', 'commitlint*', '*lint*', 'husky*', '.releaserc*', '_typos.toml', '.pre-commit*', '.releaserc*', '.sourcery.yaml', 'tsconfig.*.json', 'tsconfig.json', 'ruff.toml', 'lerna.json', 'scripts/*']
 
-scripts:
+script:
   - changed-files:
-    - any-glob-to-all-files: ['*.js', '*.ts', '*scripts/*', '*.sh']
+    - any-glob-to-all-files: ['*.js', '*.ts', '*scripts/**', '*.sh', 'overrides/hooks/**', '*.py', '*.mjs']
+
+enhancement:
+  - head-branch: ['^feature', '^feat', '^enhancement']
 
 
 # i18n:

@@ -1,0 +1,10 @@
+{
+  "name": "plain-license-mit",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Plain language version of the MIT License",
+  "scripts": {
+    "release": "semantic-release"
+  },
+  "main": "../../docs/licenses/permissive/mit/index.md"
+}
