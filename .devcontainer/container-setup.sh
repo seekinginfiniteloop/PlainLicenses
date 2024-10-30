@@ -3,7 +3,7 @@
 # Update and install packages
 cd /workspaces/PlainLicense || return
 sudo apt update &&
-sudo apt upgrade &&
+sudo apt upgrade -y &&
 sudo apt install -y --no-install-recommends \
 zsh \
 bash \
@@ -47,7 +47,7 @@ export UV_PYTHON_DOWNLOADS="automatic"
 curl -LsSf https://astral.sh/uv/install.sh | sh &&
 curl -fsSL https://bun.sh/install | bash &&
 
-export PATH="$HOME/bin:$HOME/sbin:$HOME/.local/sbin:$HOME/.local/share/fnm/fnm:$HOME/.cargo/bin:$PATH:/opt/bin:/opt/sbin:/opt/local/bin:opt/local/sbin"
+export PATH="$HOME/bin:$HOME/sbin:$HOME/.local/sbin:$HOME/.cargo/bin:$PATH:/opt/bin:/opt/sbin:/opt/local/bin:opt/local/sbin"
 echo "This is the path: $PATH"
 
 # Define the block of code as a variable
@@ -107,14 +107,7 @@ function bun_install() {
 
 export BUNOPTS="--no-interactive --silent"
 
-FNM_PATH="/home/vscode/.local/share/fnm"
-if [ -d "$FNM_PATH" ]; then
-  export PATH="$FNM_PATH:$PATH"
-  eval "$(fnm env)"
-fi
-
 # Execute functions
-fnm_install &&
 uv_install &&
 bun_install &&
 sudo chsh -s /bin/zsh vscode
