@@ -123,10 +123,10 @@ export const commitlintConfig = {
       const isValidScope = validScope(scope)
       const isValidType = validType(type)
       if (!isValidType) {
-        return [false, `Type "${type}" is not allowed, expected one of ${allowedCommitTypes.join(", ")}`]
+        return [isValidType, `Type "${type}" is not allowed, expected one of ${allowedCommitTypes.join(", ")}`]
       }
       if (!isValidScope) {
-        return [false, `Scope "${scope}" is not allowed, expected one of ${allowedCommitScopes.join(", ")}`]
+        return [isValidScope, `Scope "${scope}" is not allowed, expected one of ${allowedCommitScopes.join(", ")}`]
       }
       const isValid = validateCommitMessage(type, scope)
       const scopeType = devScopes.includes(scope) ? "dev" : "license"
