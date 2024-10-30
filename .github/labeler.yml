@@ -1,50 +1,47 @@
-repo:
+# Core site labels
+site:
   - changed-files:
-    - any-glob-to-any-file: ['README.md', 'CONTRIBUTING.md', '.gitignore', '.gitmodules', 'node_modules/*', '.venv/*', 'UNLICENSE']
+    - any-glob-to-any-file: ['docs/**/*.md', 'docs/*.md']
+    - all-globs-to-any-file: ['!docs/blog/**', '!docs/licenses/**']  # Exclude blog and licenses
 
 blog:
   - changed-files:
     - any-glob-to-any-file: ['docs/blog/*', 'docs/blog/*/*', 'docs/blog/*/*/*']
 
-dependencies:
-  - changed-files:
-    - any-glob-to-any-file: ['package.json', 'pyproject.toml', '*-lock.json', '*.lock', 'requirements*', '**/.uv/**', 'uv.lock', '.python-version', 'bun.lockb']
-
 licenses:
   - changed-files:
     - any-glob-to-any-file: ['docs/licenses/*/*/index.md', 'LICENSE_TEMPLATE.md']
 
-build:
+# Infrastructure and tooling
+infra:
   - changed-files:
-    - any-glob-to-any-file: ['src/build/**']
+    - any-glob-to-any-file: [
+      # Build files
+      'src/build/**',
+      '.editorconfig', 'mkdocs.yml', '.browserlistrc', 'mlc_config.json',
+      '.github/*', 'commitlint*', '*lint*', 'husky*', '.releaserc*', 
+      '_typos.toml', '.pre-commit*', '.sourcery.yaml', 'tsconfig*.json',
+      'ruff.toml', 'lerna.json'
+    ]
 
-content:
+deps:
   - changed-files:
-    - any-glob-to-any-file: ['docs/**/*.md, docs/*.md']
-    - all-globs-
-
-assets:
-  - changed-files:
-    - any-glob-to-any-file: ['overrides/**', 'docs/**', 'overrides/**', 'src/assets/**']
-    -any-globs-to-all-files: ['!*.js', '!*.ts', '!*.sh', '!*.py', '!*.mjs', '!*.md']
-
-config:
-  - changed-files:
-    - any-glob-to-any-file: ['.editorconfig', 'mkdocs.yml', '.browserlistrc', 'mlc_config.json']
-
-ci:
-  - changed-files:
-    - any-glob-to-any-file: ['.github/*', 'commitlint*', '*lint*', 'husky*', '.releaserc*', '_typos.toml', '.pre-commit*', '.releaserc*', '.sourcery.yaml', 'tsconfig.*.json', 'tsconfig.json', 'ruff.toml', 'lerna.json', 'scripts/*']
+    - any-glob-to-any-file: [
+      'package.json', 'pyproject.toml', '*-lock.json', '*.lock',
+      'requirements*', '**/.uv/**', 'uv.lock', '.python-version', 'bun.lockb'
+    ]
 
 script:
   - changed-files:
     - any-glob-to-all-files: ['*.js', '*.ts', '*scripts/**', '*.sh', 'overrides/hooks/**', '*.py', '*.mjs']
 
-enhancement:
-  - head-branch: ['^feature', '^feat', '^enhancement']
+style:
+  - changed-files:
+    - any-glob-to-any-file: ['overrides/**', 'src/assets/**']
+    - any-globs-to-all-files: ['!*.js', '!*.ts', '!*.sh', '!*.py', '!*.mjs', '!*.md']
 
+# Repository metadata
+repo:
+  - changed-files:
+    - any-glob-to-any-file: ['README.md', 'CONTRIBUTING.md', '.gitignore', '.gitmodules', 'node_modules/*', '.venv/*', 'UNLICENSE']
 
-# i18n:
-# question:
-# bug:
-# enhancement
