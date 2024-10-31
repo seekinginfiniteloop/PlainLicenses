@@ -79,5 +79,71 @@
   "peerDependencies": {
     "@commitlint/lint": "^19.5.0",
     "semantic-release": "^24.2.0"
+  },
+  "release": {
+    "branches": [
+      "+([0-9])?(.{+([0-9]),x}).x",
+      "main",
+      {
+        "name": "dev",
+        "prerelease": true,
+        "channel": "pre/rc"
+      }
+    ],
+    "plugins": [
+      ["@semantic-release/commit-analyzer",
+      {
+        "releaseRules": [
+          { "breaking": true, "release": "major" },
+          { "type": "stable", "release": "major" },
+          { "type": "new", "release": "minor" },
+          { "type": "subs", "release": "minor" },
+          { "type": "admin", "release": "patch" },
+          { "type": "fix", "release": "patch" },
+          { "type": "refactor", "release": "patch" },
+          { "type": "new", "scope": "content", "release": "minor" },
+          { "type": "new", "scope": "ui", "release": "patch"},
+          { "scope": "scripts", "release": "patch"},
+          { "revert": true, "release": "patch"},
+          { "type": "bot", "release": false },
+          { "type": "chore", "release": false },
+          { "scope": "infra", "release": false },
+          { "scope": "deps", "release": false},
+          { "scope": "blog", "release": false },
+          { "scope": "no-release", "release": false }
+        ],
+      "parserOpts": {
+        "noteKeywords": ["BREAKING CHANGE", "BREAKING CHANGES", "BREAKING", "BREAKING-CHANGE"]
+      }
+    }
+    ],
+    [
+      "@semantic-release/release-notes-generator",
+      {
+        "parserOpts": {
+          "noteKeywords": ["BREAKING CHANGE", "BREAKING CHANGES", "BREAKING", "BREAKING-CHANGE"]
+        }
+      }
+    ]
+      [
+        "@semantic-release/exec",
+        {
+          "prepareCmd": "node update-version.js ${nextRelease.version} && node generate-changelog.js"
+        }
+      ],
+      [
+        "@semantic-release/git",
+        {
+          "assets": [
+            "docs/licenses/**/**/index.md",
+            "CHANGELOG.md",
+            "docs/licenses/**/**/CHANGELOG.md"
+          ],
+          "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+        }
+      ],
+      "@semantic-release/github"
+    ],
+    "preset": "angular"
   }
 }

@@ -6,20 +6,17 @@
       {
         "preset": "angular",
         "releaseRules": [
+          { }
           { "type": "subs", "release": "minor" },
           { "type": "admin", "release": "patch" },
-          { "type": "feat", "release": "minor" },
+          { "type": "new", "release": }
+          { "type": "bot", "release": null },
+
+          { "type": "site", "scope": "site", "release": "minor" },
+          { "type": "site", "release": "patch" },
+          {"type": "blog", "release": null},
+          {"type": "deps", }
           { "type": "fix", "release": "patch" },
-          { "type": "content", "release": "patch" },
-          { "type": "script", "release": "minor" },
-          { "type": "initial", "release": "minor"},
-          { "type": "blog", "release": null},
-          { "type": "ci", "release": null },
-          { "type": "refactor", "release": null },
-          { "type": "config", "release": null },
-          { "type": "chore", "release": null },
-          { "type": "build", "release": null},
-          { "type": "bot", "release": null }
         ],
         "parserOpts": {
           "noteKeywords": ["BREAKING CHANGE", "BREAKING CHANGES", "BREAKING"]
