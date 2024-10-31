@@ -110,7 +110,8 @@
           { "scope": "infra", "release": false },
           { "scope": "deps", "release": false},
           { "scope": "blog", "release": false },
-          { "scope": "no-release", "release": false }
+          { "scope": "no-release", "release": false },
+          { "scope": "release", "release": false }
         ],
       "parserOpts": {
         "noteKeywords": ["BREAKING CHANGE", "BREAKING CHANGES", "BREAKING", "BREAKING-CHANGE"]
