@@ -64,12 +64,8 @@
     "@commitlint/cli": "^19.5.0",
     "@commitlint/config-conventional": "^19.5.0",
     "@commitlint/types": "^19.5.0",
-    "@semantic-release/changelog": "^6.0.3",
-    "@semantic-release/commit-analyzer": "^13.0.0",
-    "@semantic-release/git": "^10.0.1",
-    "@semantic-release/github": "^11.0.0",
-    "@semantic-release/release-notes-generator": "^14.0.1",
     "bun": "^1.1.33",
+    "commitlint-plugin-selective-scope": "^1.0.1",
     "husky": "^9.1.6",
     "issue-parser": "^7.0.1",
     "lerna": "^8.1.8",
@@ -91,60 +87,43 @@
       }
     ],
     "plugins": [
-      ["@semantic-release/commit-analyzer",
-      {
-        "releaseRules": [
-          { "breaking": true, "release": "major" },
-          { "type": "stable", "release": "major" },
-          { "type": "new", "release": "minor" },
-          { "type": "subs", "release": "minor" },
-          { "type": "admin", "release": "patch" },
-          { "type": "fix", "release": "patch" },
-          { "type": "refactor", "release": "patch" },
-          { "type": "new", "scope": "content", "release": "minor" },
-          { "type": "new", "scope": "ui", "release": "patch"},
-          { "scope": "scripts", "release": "patch"},
-          { "revert": true, "release": "patch"},
-          { "type": "bot", "release": false },
-          { "type": "chore", "release": false },
-          { "scope": "infra", "release": false },
-          { "scope": "deps", "release": false},
-          { "scope": "blog", "release": false },
-          { "scope": "no-release", "release": false },
-          { "scope": "release", "release": false }
-        ],
-      "parserOpts": {
-        "noteKeywords": ["BREAKING CHANGE", "BREAKING CHANGES", "BREAKING", "BREAKING-CHANGE"]
-      }
-    }
-    ],
-    [
-      "@semantic-release/release-notes-generator",
-      {
-        "parserOpts": {
-          "noteKeywords": ["BREAKING CHANGE", "BREAKING CHANGES", "BREAKING", "BREAKING-CHANGE"]
-        }
-      }
-    ]
       [
-        "@semantic-release/exec",
+        "@semantic-release/commit-analyzer",
         {
-          "prepareCmd": "node update-version.js ${nextRelease.version} && node generate-changelog.js"
-        }
-      ],
-      [
-        "@semantic-release/git",
-        {
-          "assets": [
-            "docs/licenses/**/**/index.md",
-            "CHANGELOG.md",
-            "docs/licenses/**/**/CHANGELOG.md"
+          "releaseRules": [
+            { "breaking": true, "release": "major" },
+            { "type": "stable", "release": "major" },
+            { "type": "fix", "release": "patch" },
+            { "type": "refactor", "release": "patch" },
+            { "type": "new", "scope": "content", "release": "minor" },
+            { "type": "new", "scope": "ui", "release": "patch" },
+            { "type": "new", "release": "patch" },
+            { "scope": "scripts", "release": "patch" },
+            { "revert": true, "release": "patch" },
+            { "type": "bot", "release": false },
+            { "type": "chore", "release": false },
+            { "scope": "infra", "release": false },
+            { "scope": "deps", "release": false },
+            { "scope": "blog", "release": false },
+            { "scope": "no-release", "release": false },
+            { "scope": "release", "release": true }
           ],
-          "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+          "parserOpts": {
+            "noteKeywords": ["BREAKING CHANGE", "BREAKING CHANGES", "BREAKING", "BREAKING-CHANGE"]
+          }
         }
       ],
-      "@semantic-release/github"
-    ],
-    "preset": "angular"
+      [
+        "@semantic-release/release-notes-generator",
+        {
+          "parserOpts": {
+            "noteKeywords": ["BREAKING CHANGE", "BREAKING CHANGES", "BREAKING", "BREAKING-CHANGE"]
+          }
+        }
+      ],
+      [
+        "@semantic-release/github"
+      ]
+    ]
   }
 }

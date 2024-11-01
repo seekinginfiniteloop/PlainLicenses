@@ -1,0 +1,22 @@
+<type>(<scope>): <short summary>
+  │       │             │
+  │       │             └─⫸ Summary in present tense. Not capitalized. No period at the end.
+  │       │
+  │       └─⫸ Commit Scope: [SPDX-ID](https://spdx.org/licenses/)
+  │
+  │
+  │
+  │
+  └─⫸ Commit Type: new | subs | admin | bot | stable
+
+
+<type>(<scope>): <short summary>
+  │       │             │
+  │       │             └─⫸ Summary in present tense. Not capitalized. No period at the end.
+  │       │
+  │       └─⫸ Commit Scope: content | ui | infra | deps | blog | scripts
+  │
+  │
+  │
+  │
+  └─⫸ Commit Type: fix | refactor | new | chore | bot

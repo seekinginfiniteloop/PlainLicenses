@@ -4,16 +4,16 @@ repos:
     hooks:
       - id: markdownlint-cli2
         args: [--config, .markdownlint.yml, --fix]
-        stages: [post-commit]
+        stages: [pre-commit]
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
     hooks:
       - id: trailing-whitespace
-        stages: [post-commit]
+        stages: [pre-commit]
         args: [--markdown-linebreak-ext=md]
       - id: end-of-file-fixer
-        stages: [post-commit]
+        stages: [pre-commit]
       - id: check-yaml
-        stages: [post-commit]
+        stages: [pre-commit]
       - id: check-added-large-files
-        stages: [post-commit]
+        stages: [pre-commit]

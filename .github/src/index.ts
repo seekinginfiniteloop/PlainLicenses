@@ -38,8 +38,6 @@ function normalizeScope(scope: string): string {
   return scope.toLowerCase()
 }
 
-export type SPDXID = typeof licenseScopes[number]
-
 const devScopes = ["site", "build", "hooks", "config", "ci", "deps"]
 const licenseScopes = [readSpdxLicenseList(), "plain-*"].flat()
 const allScopes = [...devScopes, ...licenseScopes]
