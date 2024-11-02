@@ -5,7 +5,7 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { from, Observable } from "rxjs";
 import { optimize } from "svgo";
-import { baseProject, GHActions, heroImages, heroParents, nodeConfig, webConfig } from "./config/index.js";
+import { baseProject, GHActions, heroImages, heroParents, webConfig } from "./config/index.js";
 import type { buildJson, esbuildOutputs, FileHashes, HeroImage, Project } from "./types.ts";
 
 import globby from 'globby';
@@ -187,7 +187,7 @@ async function handleHeroImages() {
  */
 async function build(project: Project): Promise<Observable<unknown>> {
   console.log(`Building ${project.platform}...`);
-  const config = project.platform === "node" ? nodeConfig : webConfig;
+  const config = webConfig;
   const buildPromise = esbuild.build({
     ...config,
     ...project

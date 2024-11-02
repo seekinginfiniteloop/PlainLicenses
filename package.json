@@ -21,14 +21,13 @@
     "dev-container": ".devcontainer"
   },
   "scripts": {
-    "prepare": "husky",
+    "commit": "git-cz",
     "release": "semantic-release",
-    "generate-changelog": "node .github/",
     "check:build": "tsc --noEmit",
     "check:style:css": "stylelint \"src/**/*.css\"",
-    "check:style:ts": "eslint --cache \"src/**/*.ts\"",
+    "check:style:ts": "eslint --cache \"**/*.ts\"",
     "fix:style:css": "stylelint --fix \"src/**/*.css\"",
-    "fix:style:ts": "bunx eslint --cache \"src/**/*.ts\" --fix",
+    "fix:style:ts": "eslint --cache \"**/*.ts\" --fix",
     "build": "bun run src/build/index.ts",
     "upgrade": "bun update"
   },
@@ -63,13 +62,14 @@
   "dependencies": {
     "@commitlint/cli": "^19.5.0",
     "@commitlint/config-conventional": "^19.5.0",
+    "@commitlint/cz-commitlint": "^19.5.0",
     "@commitlint/types": "^19.5.0",
     "bun": "^1.1.33",
+    "commitizen": "^4.3.1",
     "commitlint-plugin-selective-scope": "^1.0.1",
-    "husky": "^9.1.6",
+    "inquirer": "^9.0.0",
     "issue-parser": "^7.0.1",
     "lerna": "^8.1.8",
-    "lerna-changelog": "^2.2.0",
     "semantic-release": "^24.2.0"
   },
   "peerDependencies": {
@@ -91,35 +91,25 @@
         "@semantic-release/commit-analyzer",
         {
           "releaseRules": [
-            { "breaking": true, "release": "major" },
             { "type": "stable", "release": "major" },
+            { "type": "subs", "release": "minor" },
+            { "type": "admin", "release": "patch" },
             { "type": "fix", "release": "patch" },
             { "type": "refactor", "release": "patch" },
             { "type": "new", "scope": "content", "release": "minor" },
             { "type": "new", "scope": "ui", "release": "patch" },
             { "type": "new", "release": "patch" },
             { "scope": "scripts", "release": "patch" },
-            { "revert": true, "release": "patch" },
             { "type": "bot", "release": false },
             { "type": "chore", "release": false },
             { "scope": "infra", "release": false },
             { "scope": "deps", "release": false },
-            { "scope": "blog", "release": false },
-            { "scope": "no-release", "release": false },
-            { "scope": "release", "release": true }
-          ],
-          "parserOpts": {
-            "noteKeywords": ["BREAKING CHANGE", "BREAKING CHANGES", "BREAKING", "BREAKING-CHANGE"]
-          }
+            { "scope": "blog", "release": false }
+          ]
         }
       ],
       [
-        "@semantic-release/release-notes-generator",
-        {
-          "parserOpts": {
-            "noteKeywords": ["BREAKING CHANGE", "BREAKING CHANGES", "BREAKING", "BREAKING-CHANGE"]
-          }
-        }
+        "@semantic-release/release-notes-generator"
       ],
       [
         "@semantic-release/github"

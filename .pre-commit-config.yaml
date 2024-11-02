@@ -1,12 +1,12 @@
 repos:
   - repo: https://github.com/DavidAnson/markdownlint-cli2
-    rev: v0.13.0
+    rev: v0.14.0
     hooks:
       - id: markdownlint-cli2
         args: [--config, .markdownlint.yml, --fix]
         stages: [pre-commit]
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v5.0.0
     hooks:
       - id: trailing-whitespace
         stages: [pre-commit]
@@ -17,3 +17,9 @@ repos:
         stages: [pre-commit]
       - id: check-added-large-files
         stages: [pre-commit]
+  - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
+    rev: <latest tag>
+    hooks:
+        - id: commitlint
+          stages: [commit-msg]
+          args: [--config, commitlint.config.ts]

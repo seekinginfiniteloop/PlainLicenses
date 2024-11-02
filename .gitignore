@@ -22,12 +22,13 @@
 **/.venv
 .venv/
 
-.vscode/
+# node
+node_modules
+**/node_modules/**
+
 __pycache__/
 .gitattributes
 .pytest_cache
-node_modules/
-**/node_modules/
 
 dist/
 *.tar

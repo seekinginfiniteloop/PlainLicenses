@@ -6,7 +6,7 @@
   "main": "../../mkdocs.yml",
   "bin": {
     "generate-changelog": "../../.github/src/generate-changelog.ts"
-    },
+  },
   "directories": {
     "build-source": "../../src/build",
     "ci": "../../.github",
@@ -56,7 +56,6 @@
   "devDependencies": {
     "@asn.aeb/esbuild-css-modules-plugin": "^0.1.9",
     "@eslint/js": "^9.13.0",
-    "@types/eslint__js": "^8.42.3",
     "@fortawesome/fontawesome-free": "^6.6.0",
     "@linthtml/linthtml": "^0.10.1",
     "@mdi/svg": "^7.4.47",
@@ -66,6 +65,7 @@
     "@stylistic/stylelint-plugin": "^3.1.1",
     "@types/css-modules": "^1.0.5",
     "@types/escape-html": "^1.0.4",
+    "@types/eslint__js": "^8.42.3",
     "@types/fuzzaldrin-plus": "^0.6.5",
     "@types/glob": "^8.1.0",
     "@types/html-minifier-terser": "^7.0.2",
@@ -85,7 +85,6 @@
     "glob": "^11.0.0",
     "google-fonts-complete": "jonathantneal/google-fonts-complete",
     "html-minifier-terser": "^7.2.0",
-    "husky": "^9.1.6",
     "material-design-color": "^2.3.2",
     "material-shadows": "^3.0.1",
     "path-scurry": "^2.0.0",
@@ -120,7 +119,7 @@
   },
   "engines": {
     "node": "> 19"
-    },
+  },
   "release": {
     "branches": [
       "+([0-9])?(.{+([0-9]),x}).x",
@@ -132,42 +131,39 @@
       }
     ],
     "plugins": [
-      ["@semantic-release/commit-analyzer",
-      {
-        "releaseRules": [
-          { "breaking": true, "release": "major" },
-          { "type": "stable", "release": "major" },
-          { "type": "new", "release": "minor" },
-          { "type": "fix", "release": "patch" },
-          { "type": "refactor", "release": "patch" },
-          { "type": "new", "scope": "content", "release": "minor" },
-          { "type": "new", "scope": "ui", "release": "patch"},
-          { "scope": "scripts", "release": "patch"},
-          { "revert": true, "release": "patch"},
-          { "type": "bot", "release": false },
-          { "type": "chore", "release": false },
-          { "scope": "infra", "release": false },
-          { "scope": "deps", "release": false},
-          { "scope": "blog", "release": false },
-          { "scope": "no-release", "release": false },
-          { "scope": "release", "release": true }
-        ],
-      "parserOpts": {
-        "noteKeywords": ["BREAKING CHANGE", "BREAKING CHANGES", "BREAKING", "BREAKING-CHANGE"]
-      }
-    }
-    ],
-    [
-      "@semantic-release/release-notes-generator",
-      {
-        "parserOpts": {
-          "noteKeywords": ["BREAKING CHANGE", "BREAKING CHANGES", "BREAKING", "BREAKING-CHANGE"]
+      [
+        "@semantic-release/commit-analyzer",
+        {
+          "releaseRules": [
+            { "type": "stable", "release": "major" },
+            { "type": "fix", "release": "patch" },
+            { "type": "refactor", "release": "patch" },
+            { "type": "new", "scope": "content", "release": "minor" },
+            { "type": "new", "scope": "ui", "release": "patch" },
+            { "type": "new", "release": "patch" },
+            { "scope": "scripts", "release": "patch" },
+            { "type": "bot", "release": false },
+            { "type": "chore", "release": false },
+            { "scope": "infra", "release": false },
+            { "scope": "deps", "release": false },
+            { "scope": "blog", "release": false }
+          ],
+          "parserOpts": {
+            "noteKeywords": ["BREAKING CHANGE", "BREAKING CHANGES", "BREAKING", "BREAKING-CHANGE"]
+          }
         }
-      }
-    ],
-    [
-      "@semantic-release/github"
-    ]
+      ],
+      [
+        "@semantic-release/release-notes-generator",
+        {
+          "parserOpts": {
+            "noteKeywords": ["BREAKING CHANGE", "BREAKING CHANGES", "BREAKING", "BREAKING-CHANGE"]
+          }
+        }
+      ],
+      [
+        "@semantic-release/github"
+      ]
     ]
   }
 }

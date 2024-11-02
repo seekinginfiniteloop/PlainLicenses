@@ -24,38 +24,36 @@
       }
     ],
     "plugins": [
-      ["@semantic-release/commit-analyzer",
-      {
-        "releaseRules": [
-          { "breaking": true, "release": "major" },
-          { "type": "stable", "release": "major" },
-          { "type": "new", "release": "minor" },
-          { "type": "subs", "release": "minor" },
-          { "type": "admin", "release": "patch" },
-          { "revert": true, "release": "patch"},
-          { "type": "bot", "release": false },
-          { "scope": "release", "release": true }
-        ],
-      "parserOpts": {
-        "noteKeywords": ["BREAKING CHANGE", "BREAKING CHANGES", "BREAKING", "BREAKING-CHANGE"]
-      }
-    }
-    ],
-    [
-      "@semantic-release/changelog",
-      {
-        "changelogFile": "../changelogs/unlicense.md",
-        "changelogTitle": "Plain Unlicense Changelog"
-      }
-    ],
-    [
-      "@semantic-release/git",
-      {
-        "assets": [
-          "../changelogs/unlicense.md"
-        ]
-      }
-    ]
+      [
+        "@semantic-release/commit-analyzer",
+        {
+          "releaseRules": [
+            { "type": "stable", "release": "major" },
+            { "type": "new", "release": "minor" },
+            { "type": "subs", "release": "minor" },
+            { "type": "admin", "release": "patch" },
+            { "type": "bot", "release": false }
+          ],
+          "parserOpts": {
+            "noteKeywords": ["BREAKING CHANGE", "BREAKING CHANGES", "BREAKING", "BREAKING-CHANGE"]
+          }
+        }
+      ],
+      [
+        "@semantic-release/changelog",
+        {
+          "changelogFile": "../changelogs/unlicense.md",
+          "changelogTitle": "Plain Unlicense Changelog"
+        }
+      ],
+      [
+        "@semantic-release/git",
+        {
+          "assets": [
+            "../changelogs/unlicense.md"
+          ]
+        }
+      ]
     ]
   }
 }

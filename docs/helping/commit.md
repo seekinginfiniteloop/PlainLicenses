@@ -37,38 +37,54 @@ You can find a complete guide to all of the ways you can contribute to Plain lic
 
 ## Commit Message Format
 
-When you make changes, **we use a special format for commit messages**. This helps us track changes and update version numbers automatically. Here's the format:
+When you make changes, **we use a specific format for commit messages**. This helps us track changes and update version numbers automatically. Here's the format:
 
 ```git
 <type>(<scope>): <description>
 ```
 
 `type` is the kind of change you made. `scope` is the part of the project you changed. `description` is a short summary of your changes.
+You must prove all three, and they should all be lower case.
 
-### Types and Their Meanings
+### License Types and Scopes
 
-### Types that Increment the Version
+#### License Types
 
-| Type | Minor | Patch | For **Licenses** | For **Everything Else** | Description |
-| ---+ | ---+ | ---+ | ---+ | ---+ | ---+ |
-| `subs` | ✓ | | ✓ | | Substantive changes *to a license* |
-| `admin` | | ✓ | ✓ | | Administrative changes *to a license* |
-| `feat` | ✓ | | | ✓ | New features |
-| `script` | ✓ | | | ✓ | *Additions* to project scripts |
-| `fix` | | ✓ | | ✓ | Bug fixes |
-| `content` | | ✓ | | ✓ | Site content changes |
+When you make changes **to a license**, use the following types:
 
-### Types that Don't Increment the Version
-
-| Type | For **Everything Else** | Description |
+| Type (for licenses) | Description | Version Increment |
 | ---+ | ---+ | ---+ |
-| `blog` | ✓ | Blog post updates |
-| `ci` | ✓ | Changes to CI configuration files and to scripts |
-| `refactor` | ✓ | Code refactoring without feature changes |
-| `config` | ✓ | Configuration changes |
-| `build` | ✓ | Changes that affect the build system |
-| `chore` | ✓ | Routine tasks and maintenance |
-| `bot` | ✓ | Changes made by bots |
+| `subs` | substantive changes | minor |
+| `admin` | administrative changes | minor |
+| `new` | new licenses | minor |
+
+#### License Scopes
+
+For licenses, **use the license's lower-case SPDX identifier as the scope**. For example, if you're changing the MIT license, use `mit` as the scope. A full list of SPDX identifiers is available [here][spdx].
+
+For Plain License original licenses, use the code in the license's URL as the scope. If it's a new license, use `plain-` followed by a name that describes the license and follows the SPDX convention.
+
+### Site and Development Types
+
+For all other changes, use the following types:
+
+| Type | Description | Version Increment |
+| ---+ | ---+ | ---+ |
+| `new` | new features | minor |
+| `fix` | bug fixes | patch |
+| `refactor` | refactoring/reorganizing | minor |
+| `chore` | routine tasks and maintenance | patch |
+
+#### Site and Development Scopes
+
+| Scope | Description |
+| ---+ | ---+ |
+| `content` | changes to the content of the site, not including licenses or blog posts|
+| `ui` | changes to the user interface or site styling |
+| `infra` | changes to the site's infrastructure or build process, including CI/CD and configs |
+| `deps` | changes to dependencies or package management |
+| `scripts` | changes to scripts or automation |
+| `blog` | changes to blog posts or blog content |
 
 ### Using Types
 
@@ -76,29 +92,18 @@ The `<scope>` for licenses should be the [SPDX identifier][spdx] (e.g., MIT, Apa
 
 Examples:
 
-- `subs(MIT): Clarify liability clause`
-- `feat(site): Add interactive license chooser`
-- `fix(Apache-2.0): Correct typo in patent grant`
-- `blog(site): Add new post about license compatibility`
-- `ci(ci): Update Node.js version`
-- `script(hooks): fixed regex for license headers`
+- `new(content): add interactive license chooser`
+- `subs(apache-2.0): correct typo in patent grant section`
+- `new(blog): Add new post about license compatibility`
+- `refactor(infra): reorganized ci/cd pipeline`
+- `fix(ui): fixed broken link in footer`
+- `chore(deps): update dependencies to latest versions`
 
-### Commits to More than One Scope
+### Keep Your Changes Small
 
-<div class="annotate" markdown>
-| scopes | commit message |
-| +--- | +--- |
-| if your commit changes *more than one*... | use... |
-| *license* page | one commit for each license page (1) |
-| *non-license* page | one commit with multiple scopes |
+**Try to keep your changes small and focused**. This makes it easier for us to review and accept your PR. If you have a large change in mind, consider breaking it into smaller parts.
 
-</div>
-
-1. You can include multiple scopes in a commit message if they all affect one license page.
-
-We need to keep licenses changes separate to make sure we track their changes correctly.
-
-Thank you for your contributions!
+Commits should have one scope and one type. If you need to make changes to multiple scopes, make multiple commits.
 
 ## Need Help?
 
