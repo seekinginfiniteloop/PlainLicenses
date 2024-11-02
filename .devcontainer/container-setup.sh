@@ -37,7 +37,9 @@ openssl \
 readline-common \
 libreadline-dev \
 libffi-dev \
+rustup \
 sqlite3 \
+shellcheck \
 sqlite-utils &&
 
 export BUN_INSTALL="/home/vscode/.bun"
@@ -46,7 +48,9 @@ export UV_PYTHON_DOWNLOADS="automatic"
 # sync and install tools
 curl -LsSf https://astral.sh/uv/install.sh | sh &&
 curl -fsSL https://bun.sh/install | bash &&
+curl https://sh.rustup.rs -sSf | sh &&
 
+. "$HOME"/.cargo/env &&
 export PATH="$HOME/bin:$HOME/sbin:$HOME/.local/sbin:$HOME/.cargo/bin:$PATH:/opt/bin:/opt/sbin:/opt/local/bin:opt/local/sbin"
 echo "This is the path: $PATH"
 
@@ -59,7 +63,7 @@ alias rgp="rg --pretty"
 alias rgc="rg --count"
 alias ll="ls -alF"
 alias node="bun run"
-export PATH="$BUN_INSTALL/bin:$HOME/bin:$HOME/sbin:$PATH:/opt/bin:/opt/sbin:/opt/local/bin:/opt/local/sbin"
+export PATH="$BUN_INSTALL/bin:$HOME/.cargo/bin:$HOME/bin:$HOME/sbin:$PATH:/opt/bin:/opt/sbin:/opt/local/bin:/opt/local/sbin"
 export UV_PYTHON_DOWNLOADS="automatic"
 export UV_COLOR="always"
 source "/workspaces/PlainLicense/.venv/bin/activate"
@@ -71,15 +75,20 @@ autoload -Uz compinit
 zstyle ':completion:*' menu select
 EOF
 )
-# Write the block of code to .zshrc and .bashrc
+# Write the block of stuff to .zshrc and .bashrc
 echo "$CONFIG_BLOCK" >> ~/.zshrc
 echo "$CONFIG_BLOCK" >> ~/.bashrc
 echo "$ZCONFIG_BLOCK" >> ~/.zshrc
 source ~/.bashrc
-mkdir -p ~/.bash_completion.d
+bash_completion=~/.local/share/bash-completion/completions
+mkdir -p $bash_completion
+mkdir -p ~/.zfunc
+"$HOME/.rustup/bin/rustup completions" zsh > ~/.zfunc/_rustup
+"$HOME/.rustup/bin/rustup completions" bash > $bash_completion/rustup
+"$HOME/.cargo/bin/rustup completions" cargo zsh > ~/.zfunc/_cargo
+"$HOME/.cargo/bin/rustup completions" cargo bash > $bash_completion/cargo
 /usr/bin/rg --generate zsh >> ~/.zfunc/_rg
-/usr/bin/rg --generate bash >> ~/.bash_completion.d/_rg
-# Install global npm packages
+/usr/bin/rg --generate bash >> $bash_completion/_rg
 
 function uv_install() {
     export UV_PYTHON_DOWNLOADS="automatic"
@@ -88,10 +97,11 @@ function uv_install() {
     $uvloc venv --allow-existing .venv &&
     $uvloc tool install ipython -q &&
     $uvloc tool install ruff -q &&
+    $uvloc tool install pre-commit -q &&
     source /workspaces/PlainLicense/.venv/bin/activate &&
     $uvloc sync --all-extras
     $uvloc generate-shell-completion zsh > ~/.zfunc/_uv
-    $uvloc generate-shell-completion bash > ~/.bash_completion.d/_uv
+    $uvloc generate-shell-completion bash > $bash_completion/uv
 }
 
 function bun_install() {
@@ -103,11 +113,14 @@ function bun_install() {
     $bunloc install -g "${BUNOPTS}" 'prettier'
     $bunloc install -g "${BUNOPTS}" 'semantic-release-cli'
     $bunloc install -g "${BUNOPTS}" 'markdownlint-cli2'
+    $bunloc install -g "${BUNOPTS}" 'commitizen'
+    $bunloc install -g "${BUNOPTS}" 'commitlint'
 }
 
 export BUNOPTS="--no-interactive --silent"
 
 # Execute functions
+cargo install typos-cli &&
 uv_install &&
 bun_install &&
 sudo chsh -s /bin/zsh vscode

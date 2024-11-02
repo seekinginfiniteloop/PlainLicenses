@@ -1,7 +1,6 @@
 /**
  * @license Plain Unlicense (Public Domain)
  * @copyright No rights reserved. Created by and for Plain License www.plainlicense.org
- * @module Main entry point for the JavaScript bundle.
  */
 import "@/bundle" // we import mkdocs-material's scripts as a side effect
 import "~/feedback"

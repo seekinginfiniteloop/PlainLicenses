@@ -97,17 +97,6 @@ export const webConfig: esbuild.BuildOptions = {
   ],
 };
 
-export const GHActions: Project[] = [
-  {
-    // Build GitHub actions
-    entryPoints: [".github/src/generate-changelog.ts"],
-    entryNames: "[dir]/[name]",
-    outdir: ".github/scripts",
-    tsconfig: ".github/tsconfig.json",
-    platform: "node",
-  },
-];
-
 export const baseProject: Project = {
   entryPoints: ["src/assets/javascripts/index.ts", "src/assets/stylesheets/bundle.css"
   ],

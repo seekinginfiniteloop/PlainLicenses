@@ -20,6 +20,24 @@ repos:
   - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
     rev: <latest tag>
     hooks:
-        - id: commitlint
-          stages: [commit-msg]
-          args: [--config, commitlint.config.ts]
+      - id: commitlint
+        stages: [commit-msg]
+        args: [--config, commitlint.config.ts]
+  - repo: https://github.com/crate-ci/typos
+    rev: v1.27.0
+    hooks:
+      - id: typos
+        stages: [pre-commit]
+        args:
+          - '--ignore'
+          - .gitignore
+          - '--ignore'
+          - .pre-commit-config.yaml
+          - '--ignore'
+          - .markdownlint.yml
+  - repo: https://github.com/koalaman/shellcheck-precommit
+    rev: v0.7.2
+    hooks:
+      - id: shellcheck
+        stages: [pre-commit]
+        args: ["--severity=warning"]

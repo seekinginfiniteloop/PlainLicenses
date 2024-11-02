@@ -3,7 +3,6 @@
 	url = https://github.com/spdx/license-list-data.git
 	branch = main
     ignore = all
-
 [submodule "external/mkdocs-material"]
 	path = external/mkdocs-material
 	url = https://github.com/spdx/license-list-data.git

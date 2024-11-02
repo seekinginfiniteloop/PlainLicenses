@@ -1,8 +1,7 @@
 # Core site labels
-site:
+content:
   - changed-files:
-    - any-glob-to-any-file: ['docs/**/*.md', 'docs/*.md']
-    - all-globs-to-any-file: ['!docs/blog/**', '!docs/licenses/**']  # Exclude blog and licenses
+    - any-glob-to-any-file: ['docs/**/*.md', 'docs/*.md', '!docs/blog/**', '!docs/licenses/**', 'README.md', 'CONTRIBUTING.md', 'UNLICENSE']
 
 blog:
   - changed-files:
@@ -15,33 +14,45 @@ licenses:
 # Infrastructure and tooling
 infra:
   - changed-files:
-    - any-glob-to-any-file: [
-      # Build files
-      'src/build/**',
-      '.editorconfig', 'mkdocs.yml', '.browserlistrc', 'mlc_config.json',
-      '.github/*', 'commitlint*', '*lint*', 'husky*', '.releaserc*', 
-      '_typos.toml', '.pre-commit*', '.sourcery.yaml', 'tsconfig*.json',
-      'ruff.toml', 'lerna.json'
-    ]
+    - any-glob-to-any-file:
+        - 'src/build/**'
+        - '.editorconfig'
+        - 'mkdocs.yml'
+        - '.browserlistrc'
+        - 'mlc_config.json'
+        - '.github/*'
+        - 'commitlint*'
+        - '*lint*'
+        - 'husky*'
+        - '.releaserc*'
+        - '_typos.toml'
+        - '.pre-commit*'
+        - '.sourcery.yaml'
+        - 'tsconfig*.json'
+        - 'ruff.toml'
+        - 'lerna.json'
+        - '.gitignore'
+        - '.gitmodules'
+        - 'external/**'
 
 deps:
   - changed-files:
-    - any-glob-to-any-file: [
-      'package.json', 'pyproject.toml', '*-lock.json', '*.lock',
-      'requirements*', '**/.uv/**', 'uv.lock', '.python-version', 'bun.lockb'
-    ]
+    - any-glob-to-any-file:
+        - package.json
+        - pyproject.toml
+        - '*lock.json'
+        - '*.lock'
+        - 'requirements*'
+        - '**/.uv/**'
+        - 'uv.lock'
+        - '.python-version'
+        - 'bun.lockb'
 
-script:
+scripts:
   - changed-files:
-    - any-glob-to-all-files: ['*.js', '*.ts', '*scripts/**', '*.sh', 'overrides/hooks/**', '*.py', '*.mjs']
+    - any-glob-to-any-files: ['*.js', '*.ts', '*scripts/**', '*.sh', 'overrides/hooks/**', '*.py', '*.mjs']
 
-style:
+
+ui:
   - changed-files:
-    - any-glob-to-any-file: ['overrides/**', 'src/assets/**']
-    - any-globs-to-all-files: ['!*.js', '!*.ts', '!*.sh', '!*.py', '!*.mjs', '!*.md']
-
-# Repository metadata
-repo:
-  - changed-files:
-    - any-glob-to-any-file: ['README.md', 'CONTRIBUTING.md', '.gitignore', '.gitmodules', 'node_modules/*', '.venv/*', 'UNLICENSE']
-
+    - any-glob-to-any-file: ['overrides/**', 'src/assets/**', 'docs/assets', '!*.js', '!*.ts', '!*.sh', '!*.py', '!*.mjs', '!*.md']

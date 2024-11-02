@@ -48,6 +48,17 @@ You must prove all three, and they should all be lower case.
 
 ### License Types and Scopes
 
+<type>(<scope>): <short summary>
+  │       │             │
+  │       │             └─⫸ Summary in present tense. Not capitalized. No period at the end.
+  │       │
+  │       └─⫸ Commit Scope: [SPDX-ID](https://spdx.org/licenses/)
+  │
+  │
+  │
+  │
+  └─⫸ Commit Type: new | subs | admin | bot
+
 #### License Types
 
 When you make changes **to a license**, use the following types:
@@ -64,7 +75,20 @@ For licenses, **use the license's lower-case SPDX identifier as the scope**. For
 
 For Plain License original licenses, use the code in the license's URL as the scope. If it's a new license, use `plain-` followed by a name that describes the license and follows the SPDX convention.
 
-### Site and Development Types
+### Site and Development Types and Scopes
+
+<type>(<scope>): <short summary>
+  │       │             │
+  │       │             └─⫸ Summary in present tense. Not capitalized. No period at the end.
+  │       │
+  │       └─⫸ Commit Scope: content | ui | infra | deps | blog | scripts
+  │
+  │
+  │
+  │
+  └─⫸ Commit Type: fix | refactor | new | chore | bot
+
+#### Site and Development Types
 
 For all other changes, use the following types:
 

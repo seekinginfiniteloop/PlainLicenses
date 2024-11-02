@@ -1,11 +1,24 @@
 import eslint from "@eslint/js"
 import stylisticTs from "@stylistic/eslint-plugin-ts"
 import jsdoc from "eslint-plugin-jsdoc"
-import tseslint from "typescript-eslint"
-import parser from "typescript-eslint"
+import { parser, configs } from "typescript-eslint"
 import esLintConfigPrettier from "eslint-config-prettier"
 
-export default [
+export default [{
+  languageOptions: {
+    parser,
+    ecmaVersion: "latest",
+    sourceType: "module",
+
+    parserOptions: {
+      project: [
+        "tsconfig.json",
+      ],
+      projectService: true,
+      tsconfigRootDir: import.meta.dirname,
+    },
+  }
+},
   jsdoc.configs["flat/recommended-typescript"],
   jsdoc.configs["flat/logical-typescript"],
   jsdoc.configs["flat/requirements-typescript"],
@@ -13,11 +26,13 @@ export default [
   jsdoc.configs["flat/contents-typescript"],
   eslint.configs.recommended,
   {
-    files: ["**/*.ts", "eslint.config.mjs, commitlint.config.js"],
+    files: ["**/*.ts", "*.ts", "eslint.config.mjs, commitlint.config.ts"],
     plugins: {
       jsdoc
     },
     rules: {
+      "jsdoc/require-example": "off",
+      "jsdoc/match-description": "off",
       "jsdoc/require-description": "warn",
       "jsdoc/check-indentation": "warn",
       "jsdoc/sort-tags": "warn"
@@ -117,6 +132,7 @@ export default [
       "no-throw-literal": "off",
       "no-trailing-spaces": "warn",
       "no-undef-init": "error",
+      "no-undef": "off",
       "no-underscore-dangle": "error",
       "no-var": "error",
       "no-whitespace-before-property": "warn",
@@ -193,25 +209,24 @@ export default [
       "@stylistic/ts/type-annotation-spacing": "error"
     }
   },
-  ...tseslint.configs.stylisticTypeChecked,
-  {        languageOptions: {
+  {
+  ...configs.stylisticTypeChecked,
+    languageOptions: {
     parser,
     ecmaVersion: "latest",
-    sourceType: "script",
+    sourceType: "module",
 
     parserOptions: {
       project: [
         "tsconfig.json",
-        "tsconfig.build.json",
-        ".github/tsconfig.json",
       ],
       projectService: true,
       tsconfigRootDir: import.meta.dirname,
     },
   },
 
-  files: ['**/*.js', '**/*.mjs'],
-  ...tseslint.configs.disableTypeChecked,
+  files: ['*.js', '*.mjs'],
+  ...configs.disableTypeChecked,
   },
   esLintConfigPrettier
 ]

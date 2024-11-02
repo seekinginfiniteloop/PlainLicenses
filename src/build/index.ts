@@ -5,8 +5,8 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { from, Observable } from "rxjs";
 import { optimize } from "svgo";
-import { baseProject, GHActions, heroImages, heroParents, webConfig } from "./config/index.js";
-import type { buildJson, esbuildOutputs, FileHashes, HeroImage, Project } from "./types.ts";
+import { baseProject, heroImages, heroParents, webConfig } from "./config/index.js";
+import { buildJson, esbuildOutputs, FileHashes, HeroImage, Project } from "./types.ts";
 
 import globby from 'globby';
 
@@ -136,7 +136,7 @@ export const heroImages = rawHeroImages.map(image => ({
   console.log('Hero images data exported to heroImages.ts');
 
   // Run ESLint on the generated file to strip the quotes from keys
-  exec('npx eslint --cache src/assets/javascripts/hero/imageshuffle/data/index.ts --fix', (error, stdout, stderr) => {
+  exec('eslint --cache src/assets/javascripts/hero/imageshuffle/data/index.ts --fix', (error, stdout, stderr) => {
     if (error) {
       console.error(`Error running ESLint: ${error.message}`);
       return;
@@ -306,10 +306,6 @@ async function buildAll() {
       complete: () => console.log(`Build for ${project.platform} completed`)
     });
   };
-
-  for (const project of GHActions) {
-    await handleSubscription(project);
-  }
 
   await clearDirs();
   console.log('Directories cleared');

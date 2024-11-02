@@ -1,12 +1,12 @@
 {
-  "name": "plain-license-mpl-2.0",
+  "name": "plain-license-{{SPDX_ID}}",
   "version": "0.1.0",
   "private": true,
-  "description": "Plain language version of MPL 2.0",
+  "description": "Plain language version of {{Original Name}}",
   "scripts": {
     "release": "semantic-release"
   },
-  "main": "../../docs/licenses/copyleft/mpl-2.0/index.md",
+  "main": "../../docs/licenses/{{category}}/{{SPDX_ID}}/index.md",
   "devDependencies": {
     "@commitlint/cli": "^19.5.0",
     "@semantic-release/changelog": "^6.0.3",
@@ -39,15 +39,15 @@
       [
         "@semantic-release/changelog",
         {
-          "changelogFile": "../changelogs/mpl-2.0.md",
-          "changelogTitle": "Plain MPL 2.0 Changelog"
+          "changelogFile": "../changelogs/{{SPDX_ID}}.md",
+          "changelogTitle": "Plain {{LICENSE_NAME}} Changelog"
         }
       ],
       [
         "@semantic-release/git",
         {
           "assets": [
-            "../changelogs/mpl-2.0.md"
+            "../changelogs/elastic-2.0.md"
           ]
         }
       ]

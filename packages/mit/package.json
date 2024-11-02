@@ -7,7 +7,7 @@
     "release": "semantic-release"
   },
   "main": "../../docs/licenses/permissive/mit/index.md",
-  "dependencies": {
+  "devDependencies": {
     "@commitlint/cli": "^19.5.0",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/commit-analyzer": "^13.0.0",
@@ -33,10 +33,7 @@
             { "type": "subs", "release": "minor" },
             { "type": "admin", "release": "patch" },
             { "type": "bot", "release": false }
-          ],
-          "parserOpts": {
-            "noteKeywords": ["BREAKING CHANGE", "BREAKING CHANGES", "BREAKING", "BREAKING-CHANGE"]
-          }
+          ]
         }
       ],
       [

@@ -1,12 +1,10 @@
 {
-  "name": "plain-license",
+  "name": "plain-license-site",
   "version": "0.0.0-development",
   "description": "Plain language versions of popular licenses",
   "private": true,
   "main": "../../mkdocs.yml",
-  "bin": {
-    "generate-changelog": "../../.github/src/generate-changelog.ts"
-  },
+  "bin": {},
   "directories": {
     "build-source": "../../src/build",
     "ci": "../../.github",
@@ -47,9 +45,13 @@
     "focus-visible": "^5.2.1",
     "fuzzaldrin-plus": "^0.6.0",
     "gsap": "^3.12.5",
-    "lerna": "^8.1.8",
+    "lerna": "^8.1.9",
     "lunr": "^2.3.9",
     "lunr-languages": "^1.14.0",
+    "plain-license-elastic-2.0": "workspace:plain-license-elastic-2.0",
+    "plain-license-mit": "workspace:plain-license-mit",
+    "plain-license-mpl-2.0": "workspace:plain-license-mpl-2.0",
+    "plain-license-unlicense": "workspace:plain-license-unlicense",
     "rxjs": "^7.8.1",
     "tablesort": "^5.3.0"
   },
@@ -112,11 +114,6 @@
     "typescript-eslint": "^8.12.2",
     "uglify": "^0.1.5"
   },
-  "husky": {
-    "hooks": {
-      "commit-msg": "commitlint --edit $1"
-    }
-  },
   "engines": {
     "node": "> 19"
   },
@@ -139,7 +136,6 @@
             { "type": "fix", "release": "patch" },
             { "type": "refactor", "release": "patch" },
             { "type": "new", "scope": "content", "release": "minor" },
-            { "type": "new", "scope": "ui", "release": "patch" },
             { "type": "new", "release": "patch" },
             { "scope": "scripts", "release": "patch" },
             { "type": "bot", "release": false },
@@ -147,18 +143,7 @@
             { "scope": "infra", "release": false },
             { "scope": "deps", "release": false },
             { "scope": "blog", "release": false }
-          ],
-          "parserOpts": {
-            "noteKeywords": ["BREAKING CHANGE", "BREAKING CHANGES", "BREAKING", "BREAKING-CHANGE"]
-          }
-        }
-      ],
-      [
-        "@semantic-release/release-notes-generator",
-        {
-          "parserOpts": {
-            "noteKeywords": ["BREAKING CHANGE", "BREAKING CHANGES", "BREAKING", "BREAKING-CHANGE"]
-          }
+          ]
         }
       ],
       [
