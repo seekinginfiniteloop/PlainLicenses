@@ -13,7 +13,6 @@ git-doc \
 nano \
 python3 \
 python3-dev \
-ripgrep \
 zsh-autosuggestions \
 zsh-syntax-highlighting \
 libcairo2 \
@@ -37,7 +36,6 @@ openssl \
 readline-common \
 libreadline-dev \
 libffi-dev \
-rustup \
 sqlite3 \
 shellcheck \
 sqlite-utils &&
@@ -48,21 +46,21 @@ export UV_PYTHON_DOWNLOADS="automatic"
 # sync and install tools
 curl -LsSf https://astral.sh/uv/install.sh | sh &&
 curl -fsSL https://bun.sh/install | bash &&
-curl https://sh.rustup.rs -sSf | sh &&
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y &&
 
-. "$HOME"/.cargo/env &&
+source "$HOME/.cargo/env" &&
 export PATH="$HOME/bin:$HOME/sbin:$HOME/.local/sbin:$HOME/.cargo/bin:$PATH:/opt/bin:/opt/sbin:/opt/local/bin:opt/local/sbin"
 echo "This is the path: $PATH"
 
-# Define the block of code as a variable
+# Define the block of rc scripting as a variable
 CONFIG_BLOCK=$(cat << 'EOF'
 export BUN_INSTALL="/home/vscode/.bun"
-alias rg="rg --no-ignore-vcs --stats --trim --color=always --colors \"match:fg:white\" --colors \"path:fg:blue\" --smart-case --search-zip"
-alias rgf="rg --files"
-alias rgp="rg --pretty"
-alias rgc="rg --count"
-alias ll="ls -alF"
-alias node="bun run"
+alias rg='rg --no-ignore-vcs --stats --trim --color=always --colors "match:fg:white" --colors "path:fg:blue" --smart-case --search-zip'
+alias rgf='rg --files'
+alias rgp='rg --pretty'
+alias rgc='rg --count'
+alias ll='ls -alF'
+alias node='bun run'
 export PATH="$BUN_INSTALL/bin:$HOME/.cargo/bin:$HOME/bin:$HOME/sbin:$PATH:/opt/bin:/opt/sbin:/opt/local/bin:/opt/local/sbin"
 export UV_PYTHON_DOWNLOADS="automatic"
 export UV_COLOR="always"
@@ -75,20 +73,21 @@ autoload -Uz compinit
 zstyle ':completion:*' menu select
 EOF
 )
-# Write the block of stuff to .zshrc and .bashrc
-echo "$CONFIG_BLOCK" >> ~/.zshrc
-echo "$CONFIG_BLOCK" >> ~/.bashrc
-echo "$ZCONFIG_BLOCK" >> ~/.zshrc
-source ~/.bashrc
-bash_completion=~/.local/share/bash-completion/completions
-mkdir -p $bash_completion
-mkdir -p ~/.zfunc
-"$HOME/.rustup/bin/rustup completions" zsh > ~/.zfunc/_rustup
-"$HOME/.rustup/bin/rustup completions" bash > $bash_completion/rustup
-"$HOME/.cargo/bin/rustup completions" cargo zsh > ~/.zfunc/_cargo
-"$HOME/.cargo/bin/rustup completions" cargo bash > $bash_completion/cargo
-/usr/bin/rg --generate zsh >> ~/.zfunc/_rg
-/usr/bin/rg --generate bash >> $bash_completion/_rg
+# Write the block of rc scripting to .zshrc and .bashrc
+echo "$CONFIG_BLOCK" >> "$HOME/.zshrc"
+echo "$CONFIG_BLOCK" >> "$HOME/.bashrc"
+echo "$ZCONFIG_BLOCK" >> "$HOME/.zshrc"
+source "$HOME/.bashrc"
+bash_completion="$HOME/.local/share/bash-completion/completions"
+mkdir -p "$bash_completion"
+mkdir -p "$HOME/.zfunc"
+"$HOME/.rustup/bin/rustup completions" zsh > "$HOME/.zfunc/_rustup"
+"$HOME/.rustup/bin/rustup completions" bash > "$bash_completion/rustup"
+"$HOME/.cargo/bin/rustup completions" cargo zsh > "$HOME/.zfunc/_cargo"
+"$HOME/.cargo/bin/rustup completions" cargo bash > "$bash_completion/cargo"
+"$HOME/.cargo/bin/rg" --generate zsh > "$HOME/.zfunc/_rg"
+"$HOME/.cargo/bin/rg" --generate bash > "$bash_completion/rg"
+/usr/bin/rg --generate bash >> "$bash_completion/_rg"
 
 function uv_install() {
     export UV_PYTHON_DOWNLOADS="automatic"
@@ -101,7 +100,7 @@ function uv_install() {
     source /workspaces/PlainLicense/.venv/bin/activate &&
     $uvloc sync --all-extras
     $uvloc generate-shell-completion zsh > ~/.zfunc/_uv
-    $uvloc generate-shell-completion bash > $bash_completion/uv
+    $uvloc generate-shell-completion bash > "$bash_completion"/uv
 }
 
 function bun_install() {
@@ -124,5 +123,16 @@ cargo install typos-cli &&
 uv_install &&
 bun_install &&
 sudo chsh -s /bin/zsh vscode
+
+# Create a marker file to indicate zshrc needs to be sourced after creation
+touch "$HOME/.source_zshrc"
+# shellcheck disable=SC2016
+echo '
+if [ -f "$HOME/.source_zshrc" ]; then
+    source "$HOME/.zshrc"
+    rm "$HOME/.source_zshrc"
+fi
+' >> "$HOME/.bashrc"
+
 # Source .zshrc to apply changes
-/bin/zsh -c "source ~/.zshrc"
+/bin/zsh -c "source $HOME/.zshrc"
