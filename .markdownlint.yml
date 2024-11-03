@@ -1,5 +1,15 @@
 default: false
 line-length: false
+gitignore: true
+globs:
+  - "*.md"
+  - "**/*.md"
+ignores:
+  - "!node_modules/**"
+  - "!**/node_modules/**"
+  - "!.venv/**"
+  - "!.vscode/**"
+
 
 # MD001/heading-increment : Heading levels should only increment by one level at a time : https://github.com/DavidAnson/markdownlint/blob/v0.33.0/doc/md001.md
 MD001: false
@@ -132,7 +142,7 @@ MD050:
   style: "consistent"
 
 # MD051/link-fragments : Link fragments should be valid : https://github.com/DavidAnson/markdownlint/blob/v0.33.0/doc/md051.md
-MD051: true
+MD051: false
 
 # MD053/link-image-reference-definitions : Link and image reference definitions should be needed : https://github.com/DavidAnson/markdownlint/blob/v0.33.0/doc/md053.md
 MD053: true

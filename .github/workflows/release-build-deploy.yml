@@ -6,6 +6,10 @@ on:
       - main
   workflow_dispatch:
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   release:
     name: Release
@@ -23,15 +27,32 @@ jobs:
         with:
           fetch-depth: 0
           submodules: recursive
-
-      - name: Install commitlint
-        run: npm install -g @commitlint/{cli,config-conventional}
-
-      - name: Update submodules
-        run: .github/scripts/update-submodules.sh
-
-      - name: Build changelog
-        run: export NODE_ENV=production && npm run generate-changelog
+      - name: Add build packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libcairo2 libcairo2-dev libfreetype6-dev libffi-dev libjpeg-dev libpng-dev libz-dev &&
+          chmod +x bin/*
+          bin/setup-repo.sh
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: setup UV
+        uses: astral-sh/setup-uv@v2
+        with:
+          version: "latest"
+          enable-cache: true
+          cache-local-path: .cache/uv
+          cache-dependency-glob: |
+            pyproject.toml
+      - run: |
+          bun install --no-interactive
+          bun install --no-interactive -g @linthtml/linthtml stylelint eslint prettier semantic-release-cli markdownlint-cli2 commitlint
+          uv python install 3.13 &&
+          uv venv --allow-existing .venv &&
+          source .venv/bin/activate &&
+          uv sync --all-extras &&
+          export NODE_ENV=production
 
       - name: Release project
         env:
@@ -40,7 +61,7 @@ jobs:
         with:
           timeout_minutes: 10
           max_attempts: 3
-          command: npx semantic-release
+          command: bunx -b semantic-release
 
       - name: Release individual licenses
         env:

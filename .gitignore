@@ -8,10 +8,10 @@
 .testbuild/*
 .testbuild/**/*
 .history
-.eslintcache
 
 # mkdocs
 .cache
+!.cache/uv/
 
 # Leave launch.json public
 !.vscode/launch.json
@@ -24,6 +24,8 @@
 
 # node
 node_modules
+node_modules/
+node_modules/**
 **/node_modules/**
 
 __pycache__/
@@ -77,7 +79,6 @@ x86/
 [Aa][Rr][Mm]/
 [Aa][Rr][Mm]64/
 bld/
-[Bb]in/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/

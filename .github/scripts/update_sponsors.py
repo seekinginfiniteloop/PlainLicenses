@@ -121,7 +121,7 @@ def main() -> None:
 
         updated_content = update_front_matter(content, total_amount)
 
-        with open("docs/donate.md", "w") as file:
+        with open("docs/helping/donate.md", "w") as file:
             file.write(updated_content)
 
 

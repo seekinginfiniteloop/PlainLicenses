@@ -1,10 +1,10 @@
 {
-  "packages": ["packages/*", "package.json"],
+  "packages": ["packages/*/package.json", "package.json"],
   "npmClient": "npm",
   "version": "independent",
   "command":{
     "publish": {
-      "allowBranch": ["main"],
+      "allowBranch": ["main", "dev"],
       "message": "chore(release): publish",
       "conventionalCommits": true
     }

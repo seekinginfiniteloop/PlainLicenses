@@ -29,7 +29,7 @@ async function getExistingLicenses(): Promise<(string | undefined)[]>{
   return possiblePaths.map(path => path.split("/").pop())
 }
 
-const existingLicenseScopes = async () => {
+const getExistingLicenseScopes = async () => {
   try {
     const licenses = await getExistingLicenses();
     return licenses.map(license => license?.toLowerCase().trim());
@@ -38,10 +38,11 @@ const existingLicenseScopes = async () => {
   }
 };
 
+const existingLicenseScopes = Promise.resolve(getExistingLicenseScopes()).then(scopes => scopes);
+
 const possibleLicenseScopes = async () => {
   const scopes = [readSpdxLicenseList(), /plain-[-.a-z0-9]+/];
-  const existingScopes = await existingLicenseScopes();
-
+  const existingScopes = await existingLicenseScopes;
   return scopes.filter(scope => {
     if (typeof scope === 'string' && scope !== "" && !existingScopes.includes(scope)) {
       return true;
@@ -57,7 +58,7 @@ const devTypes = ["fix", "new", "refactor", "chore", "bot"];
 const devScopes = ["content", "ui", "infra", "deps", "scripts", "blog"];
 
 const licenseTypedScopes = licenseTypes.map(type =>
-  type !== "new" ? { type: existingLicenseScopes } : { type: possibleLicenseScopes }
+  type !== "new" ? { type: existingLicenseScopes.then(scopes => scopes) } : { type: possibleLicenseScopes }
 );
 const devTypedScopes = devTypes.map(type => ({ type: devScopes }));
 
@@ -81,7 +82,7 @@ const Configuration: UserConfig = {
     settings: {},
     messages: {
       skip: 'Skip',
-      emptyWarning: "Can't be empty!",
+      emptyWarning: "You've gotta give us something to work with!",
     },
     questions: {
       type: {
@@ -131,7 +132,7 @@ const Configuration: UserConfig = {
       },
       scope: {
         description: `(required) What is the scope of your change?
-        For licenses, use the SPDX ID or its equivalent 'plain-<name>' if it is a Plain License original licenses. Existing license ids are: ${existingLicenseScopes().then((ids) => ids.join(", "))}.
+        For licenses, use the SPDX ID or its equivalent 'plain-<name>' if it is a Plain License original licenses. Existing license ids are: ${getExistingLicenseScopes().then((ids) => ids.join(", "))}.
 
         For everything else, use one of the following scopes: ${devScopes.join(", ")}.`,
       },

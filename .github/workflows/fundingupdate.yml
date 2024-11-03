@@ -36,4 +36,4 @@ jobs:
           git config --global user.email "action@github.com"
           git config --global user.name "GitHub Action"
           git add -A
-          git diff --quiet && git diff --staged --quiet || (git commit -m "bot(site): Update sponsors progress" && git push)
+          git diff --quiet && git diff --staged --quiet || (git commit -m "bot(content): update sponsors progress" && git push)

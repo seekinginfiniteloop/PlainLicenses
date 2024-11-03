@@ -17,9 +17,11 @@ If you believe you've identified a potential legal flaw in any of our licenses:
 2.  Click on "New Issue".
 3.  Use the title format: "Legal Concern: [License Name] - Brief Description"
 4.  In the body, provide:
-   - A clear explanation of the potential flaw
-   - The potential implications of this flaw
-   - Any suggested corrections or improvements
+
+    - A clear explanation of the potential flaw
+    - The potential implications of this flaw
+    - Any suggested corrections or improvements
+
 5.  Label the issue with "legal" and "critical" tags.
 
 We take these reports seriously and will review them promptly.

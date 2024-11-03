@@ -52,10 +52,10 @@ If a license talks about "contributors" as well as 'licensors' (or similar), we 
     - Avoid formal or stuffy language
     - Use "you" to address the reader directly. If you need to distinguish between different groups, a table can help. For example:
 
-If you are a developer... | If you are a user...
----------------------------|-------------------
-You can...                 | Please...
-&nbsp;&nbsp;&nbsp;&nbsp;be awesome!             | &nbsp;&nbsp;&nbsp;&nbsp;read the instructions.
+    If you are a developer... | If you are a user...
+    ---------------------------|-------------------
+    You can...                 | Please...
+    &nbsp;&nbsp;&nbsp;&nbsp;be awesome!             | &nbsp;&nbsp;&nbsp;&nbsp;read the instructions.
 
 4.  **Be Consistent**
 
@@ -101,10 +101,10 @@ You can...                 | Please...
 
 10.  **Test Your Writing**
 
-    - Read your text aloud to check flow
-    - Ask someone unfamiliar with the topic to read it
-    - Use readability tools to assess complexity
-    - Get feedback on the effectiveness of your visual elements
+     - Read your text aloud to check flow
+     - Ask someone unfamiliar with the topic to read it
+     - Use readability tools to assess complexity
+     - Get feedback on the effectiveness of your visual elements
 
 ## Resources
 
@@ -116,7 +116,8 @@ Plain License uses [MKDocs][mkdocshome] to generate our site. We write all site 
     {% set fullname = config.extra.extensions[extname].name | trim %}
     {% set exturl = config.extra.extensions[extname].url | trim %}
     {% set extdesc = config.extra.extensions[extname].description | trim %}
-- [{{ fullname | trim }}]({{ exturl | trim }}): {{ extdesc | trim }}
+
+-   [{{ fullname | trim }}]({{ exturl | trim }}): {{ extdesc | trim }}
 {% endif %}
 {% endfor %}
 

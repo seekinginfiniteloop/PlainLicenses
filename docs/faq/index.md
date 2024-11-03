@@ -14,7 +14,7 @@ hide:
 
 ## Is anything else different about your licenses?  :material-chat-question-outline:
 
-**Yes**. We make a few kinds of changes with all our licenses:
+**Yes**. We make a few changes with all our licenses:
 
 -   **Style**. We make consistent style changes to our licenses for clarity and consistency. We use the following conventions:
 
@@ -97,5 +97,4 @@ We use something similar to [semantic versioning][semantic versioning], but we d
 [plainlanguage.gov]: https://www.plainlanguage.gov/ "Plainlanguage.gov"
 [semantic versioning]: https://semver.org/ "Semantic Versioning"
 [separate versioning]: #whats-the-difference-between-the-version-numbers-for-original-version-and-plain-version-in-your-licenses "the difference between 'original' and 'plain' version numbers"
-[how we version]: #how-does-your-versioning-work "how we version our licenses"
 [what we change]: #is-anything-else-different-about-your-licenses "how we change the licenses"

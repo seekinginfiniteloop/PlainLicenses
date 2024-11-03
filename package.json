@@ -4,7 +4,7 @@
   "description": "Plain language versions of popular licenses",
   "private": true,
   "workspaces": [
-    "packages/*"
+    "packages/*/package.json"
   ],
   "main": "packages/plainlicense",
   "bin": {
@@ -20,14 +20,18 @@
     "dev-container": ".devcontainer"
   },
   "scripts": {
-    "commit": "git-cz",
-    "release": "semantic-release",
+    "commit": "bun run -b git-cz",
+    "release": "bun run -b semantic-release",
+    "check": "bun run check:build && bun run check:style:css && bun run check:style:ts && bun run check:style:markdown",
     "check:build": "tsc --noEmit",
-    "check:style:css": "stylelint \"src/**/*.css\"",
-    "check:style:ts": "eslint --cache \"**/*.ts\"",
-    "fix:style:css": "stylelint --fix \"src/**/*.css\"",
-    "fix:style:ts": "eslint --cache \"**/*.ts\" --fix",
+    "check:style:css": "bun run -b stylelint \"src/**/*.css\"",
+    "check:style:ts": "bun run -b eslint --cache \"src/**/*.ts\" \"*.ts\" \"*.mjs\"",
+    "check:style:markdown": "bunx -b markdownlint-cli2 --fix --config .markdownlint.yml \"*.md\" \"docs/**/*.md\" \"docs/*.md\" \"packages/changelogs/*.md\"",
+    "fix": "bun run fix:style:css && bun run fix:style:ts",
+    "fix:style:css": "bun run -b stylelint --fix \"src/**/*.css\"",
+    "fix:style:ts": "bun run -b eslint --cache --fix \"src/**/*.ts\" \"*.ts\" \"*.mjs\"",
     "build": "bun run src/build/index.ts",
+    "runall": "bun run check && bun run fix && bun run build",
     "upgrade": "bun update"
   },
   "repository": {
@@ -46,11 +50,6 @@
     "email": "adam@plainlicense.org"
   },
   "license": "Plain Unlicense",
-  "husky": {
-    "hooks": {
-      "commit-msg": "commitlint --edit $1"
-    }
-  },
   "bugs": {
     "url": "https://github.com/seekinginfiniteloop/PlainLicense/issues",
     "email": "adam@plainlicense.org"
@@ -58,7 +57,7 @@
   "engines": {
     "node": ">= 20"
   },
-  "dependencies": {
+  "devDependencies": {
     "@commitlint/cli": "^19.5.0",
     "@commitlint/config-conventional": "^19.5.0",
     "@commitlint/cz-commitlint": "^19.5.0",
@@ -70,6 +69,8 @@
     "inquirer": "^9.3.7",
     "issue-parser": "^7.0.1",
     "lerna": "^8.1.9",
+    "markdownlint-cli2": "^0.14.0",
+    "node": "^22.11.0",
     "semantic-release": "^24.2.0"
   },
   "peerDependencies": {
@@ -91,20 +92,64 @@
         "@semantic-release/commit-analyzer",
         {
           "releaseRules": [
-            { "type": "stable", "release": "major" },
-            { "type": "subs", "release": "minor" },
-            { "type": "admin", "release": "patch" },
-            { "type": "fix", "release": "patch" },
-            { "type": "refactor", "release": "patch" },
-            { "type": "new", "scope": "content", "release": "minor" },
-            { "type": "new", "scope": "ui", "release": "patch" },
-            { "type": "new", "release": "patch" },
-            { "scope": "scripts", "release": "patch" },
-            { "type": "bot", "release": false },
-            { "type": "chore", "release": false },
-            { "scope": "infra", "release": false },
-            { "scope": "deps", "release": false },
-            { "scope": "blog", "release": false }
+            {
+              "type": "stable",
+              "release": "major"
+            },
+            {
+              "type": "subs",
+              "release": "minor"
+            },
+            {
+              "type": "admin",
+              "release": "patch"
+            },
+            {
+              "type": "fix",
+              "release": "patch"
+            },
+            {
+              "type": "refactor",
+              "release": "patch"
+            },
+            {
+              "type": "new",
+              "scope": "content",
+              "release": "minor"
+            },
+            {
+              "type": "new",
+              "scope": "ui",
+              "release": "patch"
+            },
+            {
+              "type": "new",
+              "release": "patch"
+            },
+            {
+              "scope": "scripts",
+              "release": "patch"
+            },
+            {
+              "type": "bot",
+              "release": false
+            },
+            {
+              "type": "chore",
+              "release": false
+            },
+            {
+              "scope": "infra",
+              "release": false
+            },
+            {
+              "scope": "deps",
+              "release": false
+            },
+            {
+              "scope": "blog",
+              "release": false
+            }
           ]
         }
       ],

@@ -17,17 +17,21 @@ To contribute a new license, you'll use our `LICENSE_TEMPLATE.md` file. This tem
 
 ### Option 1: Using Git and GitHub
 
-1. Fork the Plain License repository on GitHub.
-2. Clone your fork to your local machine.
-3. Copy the `LICENSE_TEMPLATE.md` file and rename it to match your new license (e.g., `NEW-LICENSE.md`).
-4. Fill out the front matter in your new file. This includes:
-   - License metadata (name, SPDX identifier, etc.)
-   - The full text of the license
-   - Any additional notes or explanations
-5.  Commit your changes with a message following [our commit format][commits], `SPDX-ID` should be the [SPDX id][spdx] of the license you're adding:
-   ```git
-   subs(SPDX-ID): Add SPDX-ID to Plain License
-   ```
+1.  Fork the Plain License repository on GitHub.
+2.  Clone your fork to your local machine.
+3.  Copy the `LICENSE_TEMPLATE.md` file and rename it to match your new license (e.g., `NEW-LICENSE.md`).
+4.  Fill out the front matter in your new file. This includes:
+
+     - License metadata (name, SPDX identifier, etc.)
+     - The full text of the license
+     - Any additional notes or explanations
+
+5.  Commit your changes with a message following [our commit format][commits], `SPDX-ID` should be the [SPDX identifier][spdx] of the license you're adding:
+
+      ```git
+      subs(spdx-id): Add SPDX-ID to Plain License
+      ```
+
 6.  Push your changes to your fork on GitHub.
 7.  Create a Pull Request from your fork to the main Plain License repository.
 

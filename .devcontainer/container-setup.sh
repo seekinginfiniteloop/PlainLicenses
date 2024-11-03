@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC1091
 
 # Update and install packages
 cd /workspaces/PlainLicense || return
@@ -35,7 +36,6 @@ libssl-dev \
 openssl \
 readline-common \
 libreadline-dev \
-libffi-dev \
 sqlite3 \
 shellcheck \
 sqlite-utils &&
@@ -47,7 +47,6 @@ export UV_PYTHON_DOWNLOADS="automatic"
 curl -LsSf https://astral.sh/uv/install.sh | sh &&
 curl -fsSL https://bun.sh/install | bash &&
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y &&
-
 source "$HOME/.cargo/env" &&
 export PATH="$HOME/bin:$HOME/sbin:$HOME/.local/sbin:$HOME/.cargo/bin:$PATH:/opt/bin:/opt/sbin:/opt/local/bin:opt/local/sbin"
 echo "This is the path: $PATH"
@@ -60,7 +59,6 @@ alias rgf='rg --files'
 alias rgp='rg --pretty'
 alias rgc='rg --count'
 alias ll='ls -alF'
-alias node='bun run'
 export PATH="$BUN_INSTALL/bin:$HOME/.cargo/bin:$HOME/bin:$HOME/sbin:$PATH:/opt/bin:/opt/sbin:/opt/local/bin:/opt/local/sbin"
 export UV_PYTHON_DOWNLOADS="automatic"
 export UV_COLOR="always"
@@ -77,6 +75,7 @@ EOF
 echo "$CONFIG_BLOCK" >> "$HOME/.zshrc"
 echo "$CONFIG_BLOCK" >> "$HOME/.bashrc"
 echo "$ZCONFIG_BLOCK" >> "$HOME/.zshrc"
+# shellcheck disable=SC1090
 source "$HOME/.bashrc"
 bash_completion="$HOME/.local/share/bash-completion/completions"
 mkdir -p "$bash_completion"
@@ -106,14 +105,7 @@ function uv_install() {
 function bun_install() {
     local bunloc=/home/vscode/.bun/bin/bun
     $bunloc install "${BUNOPTS}" &&
-    $bunloc install -g "${BUNOPTS}" '@linthtml/linthtml'
-    $bunloc install -g "${BUNOPTS}" 'stylelint'
-    $bunloc install -g "${BUNOPTS}" 'eslint'
-    $bunloc install -g "${BUNOPTS}" 'prettier'
-    $bunloc install -g "${BUNOPTS}" 'semantic-release-cli'
-    $bunloc install -g "${BUNOPTS}" 'markdownlint-cli2'
-    $bunloc install -g "${BUNOPTS}" 'commitizen'
-    $bunloc install -g "${BUNOPTS}" 'commitlint'
+    $bunloc install -g "${BUNOPTS}" @linthtml/linthtml stylelint eslint prettier semantic-release-cli markdownlint-cli2 commitizen commitlint node
 }
 
 export BUNOPTS="--no-interactive --silent"
@@ -132,7 +124,4 @@ if [ -f "$HOME/.source_zshrc" ]; then
     source "$HOME/.zshrc"
     rm "$HOME/.source_zshrc"
 fi
-' >> "$HOME/.bashrc"
-
-# Source .zshrc to apply changes
-/bin/zsh -c "source $HOME/.zshrc"
+' >> "$HOME/.zshrc"

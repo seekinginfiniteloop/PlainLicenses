@@ -81,9 +81,3 @@ When people understand licenses, they share and create more. With Plain License,
 Do you want to make your terms easy for everyone to understand? [Look at our licenses][licenses] and join us. **Let's make "terms for everyone" real.**
 
 [licenses]: ../../licenses/index.md "Our Licenses"
-[publicdomain]: ../../licenses/public-domain/index.md "Public Domain Dedications"
-[permissive]: ../../licenses/permissive/index.md "Permissive Licenses"
-[copyleft]: ../../licenses/copyleft/index.md "Copyleft Licenses"
-[source available]: ../../licenses/source-available/index.md "Source Available Licenses"
-[helping]: ../../helping/index.md "Helping Plain License"
-[legal]: ../../helping/legal.md "Legal Help"

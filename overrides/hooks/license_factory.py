@@ -38,6 +38,29 @@ if not hasattr(__name__, "assembly_logger"):
         _assembly_log_level,
     )
 
+def find_repo_root() -> Path:
+    """
+    Find the repository's root directory by looking for the .git directory.
+
+    Returns:
+        Path: The path to the repository's root directory.
+
+    Raises:
+        FileNotFoundError: If the repository root directory cannot be found.
+    """
+    current_path = Path.cwd()
+    while not (current_path / ".git").exists():
+        if (
+            current_path.parent == current_path
+            and current_path.stem != "PlainLicense"
+        ):
+            raise FileNotFoundError("Could not find the repository root directory.")
+        elif current_path.stem == "PlainLicense":
+            return current_path
+        current_path = current_path.parent
+    return current_path
+
+
 def clean_content(content: dict[str, Any]) -> dict[str, Any] | None:
     """
     Strips whitespace from string values in a dictionary, and from strings in lists.
@@ -96,7 +119,7 @@ def get_extra_meta(spdx_id: str) -> dict[str, Any]:
 def render_mapping(mapping: dict[str, Any], context: dict) -> dict[str, str]:
     """Renders a dict/mapping with a context."""
 
-    def render_value(value: str) -> str:
+    def render_value(value: Any) -> Any:
         """Recursively render a value."""
         if isinstance(value, str):
             try:
@@ -232,21 +255,10 @@ def on_files(files: Files, config: MkDocsConfig) -> Files:
             continue
         page.read_source(config)
         assembly_logger.debug("Processing license page %s")
-        parent_path = "/".join(file.src_uri.split("/")[:-1])
-        changelog_file = next(
-            (f for f in files if f.src_uri == f"{parent_path}/CHANGELOG.md"),
-            File.generated(
-                config,
-                f"{parent_path}/CHANGELOG.md",
-                content="",
-                inclusion=InclusionLevel.EXCLUDED,
-            ),
-        )
-        page.meta["changelog"] = (
-            changelog_file.content_string
-            or "## such empty, much void :nounproject-doge:"
-        )
-        changelog_file.inclusion = InclusionLevel.EXCLUDED
+        root_path = find_repo_root()
+        changelog_file = root_path / "docs" / "changelog" / f"{page.meta['spdx_id']}.md"
+        changelog_content = changelog_file.read_text() if changelog_file.exists() else "## such empty, much void :nounproject-doge:"
+        page.meta["changelog"] = changelog_content
         updated_page = assemble_license_page(config, page, file)
         new_file = create_new_file(updated_page, file, config)
         new_license_files.extend(
@@ -419,26 +431,25 @@ class LicenseContent:
 
     def get_plain_version(self) -> str:
         """
-        Retrieves the plain version of the package from a JSON file.
-        This function checks for the existence of a `package.json` file in the same directory as the page URL,
-        and extracts the version information, returning a default value if the file does not exist or if the version is not valid.
+        Checks the version information in the license's corresponding package.json file and returns the version string.
 
         Returns:
             str: The version string from the package, or "0.0.0" if the file is missing or the version is not valid.
         """
-        path = Path(self.page.file.src_uri)
-        path = "docs" / path.parent / "package.json"
-        if not path.exists():
+        spdx_id = self.meta["spdx_id"].lower()
+        package_path = find_repo_root() / "packages" / spdx_id / "package.json"
+        if not package_path.exists():
             return "0.0.0"
-        if path.exists():
-            package = load_json(path)
+        if package_path.exists():
+            package = load_json(package_path)
             version = package.get("version")
             if not version:
                 return "0.0.0"
             if "development" in version and Status.production_status:
                 package["version"] = "0.1.0"
-                write_json(path, package)
+                write_json(package_path, package)
                 return "0.1.0"
+            return version
         return "0.0.0"
 
     def transform_text_to_footnotes(self, text: str) -> str:
