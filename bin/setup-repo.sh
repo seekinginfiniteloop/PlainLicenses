@@ -122,6 +122,8 @@ setup_tools() {
     echo "UV location: $uvloc"
     install_bun_tools || error_exit "Failed to install bun tools"
     install_uv_tools || error_exit "Failed to install uv tools"
+    chmod +x bin/install-hooks.sh
+    bin/install-hooks.sh || error_exit "Failed to install hooks"
 }
 
 update_submodules || error_exit "Failed to update submodules"

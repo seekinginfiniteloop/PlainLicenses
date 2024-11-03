@@ -1,10 +1,4 @@
 repos:
-  - repo: https://github.com/DavidAnson/markdownlint-cli2
-    rev: v0.14.0
-    hooks:
-      - id: markdownlint-cli2
-        args: [--config, .markdownlint.yml, --fix]
-        stages: [pre-commit]
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
@@ -15,14 +9,16 @@ repos:
         stages: [pre-commit]
       - id: check-yaml
         stages: [pre-commit]
+        types: [yaml]
       - id: check-added-large-files
         stages: [pre-commit]
-  - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
-    rev: <latest tag>
+  - repo: https://github.com/DavidAnson/markdownlint-cli2
+    rev: v0.14.0
     hooks:
-      - id: commitlint
-        stages: [commit-msg]
-        args: [--config, commitlint.config.ts]
+      - id: markdownlint-cli2
+        args: [--config, .markdownlint.yml, --fix, "*.md","docs/*.md", "docs/**/*.md", "packages/changelogs/*.md"]
+        stages: [pre-commit]
+        types: [markdown]
   - repo: https://github.com/crate-ci/typos
     rev: v1.27.0
     hooks:
@@ -35,9 +31,36 @@ repos:
           - .pre-commit-config.yaml
           - '--ignore'
           - .markdownlint.yml
+        types_or: [text]
   - repo: https://github.com/koalaman/shellcheck-precommit
     rev: v0.7.2
     hooks:
       - id: shellcheck
         stages: [pre-commit]
-        args: ["--severity=warning"]
+        args: ["--severity=warning", "--external-sources"]
+        types: [shell]
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.7.2
+    hooks:
+      - id: ruff
+        args: ["--fix"]
+        stages: [pre-commit]
+        types: [python]
+      - id: ruff-format
+        stages: [pre-commit]
+        types: [python]
+  - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
+    rev: <latest tag>
+    hooks:
+      - id: commitlint
+        stages: [commit-msg]
+        args: [--config, commitlint.config.ts]
+# A local hook must define id, name, language, entry, and files / types as specified under Creating new hooks.
+  - id: build
+    name: Build
+    language: system
+    entry: "bun run -b build"
+    files: src/assets/**/*.ts
+    types: [ts]
+    stages: [pre-commit]
+  

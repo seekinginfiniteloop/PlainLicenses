@@ -8,7 +8,8 @@
   ],
   "main": "packages/plainlicense",
   "bin": {
-    "setup-repo": "bin/setup-repo.sh"
+    "setup-repo": "bin/setup-repo.sh",
+    "install-hooks": "bin/install-hooks.sh",
   },
   "directories": {
     "site": "docs",
@@ -31,8 +32,8 @@
     "fix:style:css": "bun run -b stylelint --fix \"src/**/*.css\"",
     "fix:style:ts": "bun run -b eslint --cache --fix \"src/**/*.ts\" \"*.ts\" \"*.mjs\"",
     "build": "bun run src/build/index.ts",
-    "runall": "bun run check && bun run fix && bun run build",
-    "upgrade": "bun update"
+    "runall": "pre-commit run -a && bun run check && bun run fix && bun run build",
+    "upgrade": "bun update && uv sync --upgrade && pre-commit autoupdate"
   },
   "repository": {
     "type": "git",

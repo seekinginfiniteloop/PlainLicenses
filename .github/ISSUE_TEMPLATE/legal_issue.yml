@@ -1,7 +1,7 @@
 name: Legal Flaw Report
 description: Let us know about a legal flaw you've found.
 title: "[LegalFlaw]: "
-labels: ["bug", "triage"]
+labels: ["bug", "triage", "legal"]
 assignees:
   - seekinginfiniteloop
 body:

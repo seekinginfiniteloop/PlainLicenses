@@ -116,6 +116,9 @@ uv_install &&
 bun_install &&
 sudo chsh -s /bin/zsh vscode
 
+chmod +x bin/install-hooks.sh
+install-hooks.sh || exit 1
+
 # Create a marker file to indicate zshrc needs to be sourced after creation
 touch "$HOME/.source_zshrc"
 # shellcheck disable=SC2016
