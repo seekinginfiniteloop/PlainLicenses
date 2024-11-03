@@ -9,7 +9,7 @@
   "main": "packages/plainlicense",
   "bin": {
     "setup-repo": "bin/setup-repo.sh",
-    "install-hooks": "bin/install-hooks.sh",
+    "install-hooks": "bin/install-hooks.sh"
   },
   "directories": {
     "site": "docs",

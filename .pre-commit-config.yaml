@@ -31,6 +31,12 @@ repos:
           - .pre-commit-config.yaml
           - '--ignore'
           - .markdownlint.yml
+        exclude: |
+          (?x)^(
+            node_modules/|
+            packages/.*?/node_modules|
+            external/|
+            eslint.config.mjs)
         types_or: [text]
   - repo: https://github.com/koalaman/shellcheck-precommit
     rev: v0.7.2
@@ -59,8 +65,50 @@ repos:
   - id: build
     name: Build
     language: system
-    entry: "bun run -b build"
-    files: src/assets/**/*.ts
+    entry: bun run -b build
+    files: src/**/*.ts
     types: [ts]
     stages: [pre-commit]
-  
+  - id: stylelint
+    name: Stylelint
+    language: system
+    files: src/**/*.css
+    types: [css]
+    entry: bun run -b stylelint --fix
+    stages: [pre-commit]
+  - id: eslint
+    name: ESLint
+    language: system
+    types: [ts, javascript]
+    exclude: |
+      (?x)^(
+        node_modules/|
+        packages/.*?/node_modules|
+        .vscode/|
+        external/|
+        docs/)
+    entry: bun run -b eslint --fix
+    stages: [pre-commit]
+  - id: prettier
+    name: Prettier
+    language: system
+    types: [json, yaml, toml]
+    exclude: |
+      (?x)^(
+        node_modules/|
+        packages/.*?/node_modules|
+        external/)
+    entry: bun run -b prettier --write
+    stages: [pre-commit]
+  - id: commitizen
+    name: Commitizen
+    language: system
+    exclude: |
+      (?x)^(
+        node_modules/|
+        packages/.*?/node_modules|
+        external/)
+    entry: bun run -b git-cz
+    stages: [prepare-commit-msg]
+    type: [file]
+    always_run: true
