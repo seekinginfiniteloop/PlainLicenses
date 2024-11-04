@@ -25,9 +25,8 @@ if [[ ! -f pre-push.sample ]]; then
     pre-commit install || exit 1
 fi
 
-
 cd .git/hooks || exit 1
-if [ ! -f pre-commit ]; then
+if [[ ! -f pre-commit ]]; then
     cat << 'EOF' > pre-commit
 # Get the directory of this script
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )

@@ -64,7 +64,7 @@ export PATH="$BUN_INSTALL/bin:$HOME/.cargo/bin:$HOME/bin:$HOME/sbin:$PATH:/opt/b
 export UV_PYTHON_DOWNLOADS="automatic"
 export UV_COLOR="always"
 export FILEHANDLER_ENABLED="true"
-export LOG_PATH="$HOME/logs
+export LOG_PATH="$HOME/logs"
 source "/workspaces/PlainLicense/.venv/bin/activate"
 EOF
 )
@@ -119,15 +119,14 @@ uv_install &&
 bun_install &&
 sudo chsh -s /bin/zsh vscode
 
-chmod +x bin/install-hooks.sh
-install-hooks.sh || exit 1
-
 # Create a marker file to indicate zshrc needs to be sourced after creation
 touch "$HOME/.source_zshrc"
 # shellcheck disable=SC2016
 echo '
 if [ -f "$HOME/.source_zshrc" ]; then
+    chmod +x /workspaces/PlainLicense/bin/install-hooks.sh
     source "$HOME/.zshrc"
     rm "$HOME/.source_zshrc"
+    /workspaces/PlainLicense/bin/install-hooks.sh || source "$HOME/.zshrc"
 fi
 ' >> "$HOME/.zshrc"
