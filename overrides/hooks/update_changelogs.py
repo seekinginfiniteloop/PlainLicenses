@@ -9,10 +9,10 @@ from mkdocs.structure.pages import Page
 from mkdocs.structure.files import Files, InclusionLevel
 from mkdocs.plugins import event_priority
 
-from _utils import is_license_page
+from _utils import is_license_page, find_repo_root
 
-if not hasattr("CHANGELOGS", "changelog_logger"):
-    changelog_logger = get_logger(__name__, logging.WARNING)
+if not hasattr(__name__, "changelog_logger"):
+    changelog_logger = get_logger("CHANGELOG", logging.WARNING)
 
 @event_priority(50)
 def on_pre_page(page: Page, config: MkDocsConfig, files: Files) -> Page:
@@ -22,10 +22,9 @@ def on_pre_page(page: Page, config: MkDocsConfig, files: Files) -> Page:
     """
     if not is_license_page(page):
         return page
-    license_dir = Path(page.file.src_uri).parent
-    changelog_logger.info("Updating changelogs and tags for license %s.", str(license_dir).split("/")[-1])
-    if changelog := files.get_file_from_path(f"{license_dir}/CHANGELOG.md"):
-        changelog_content = changelog.content_string
-        page.meta["changelog"] = changelog_content
-        setattr(changelog, "inclusion", InclusionLevel.EXCLUDED)
+    license_name = page.meta.get("spdx_id", page.url.split("/")[-2])
+    changelog_path = find_repo_root() / "packages" / "changelogs" / f"{license_name}.md"
+    changelog_content = changelog_path.read_text() if changelog_path.exists() else "## such empty, much void :nounproject-doge:"
+    changelog_logger.info("Updating changelog for %s", license_name)
+    page.meta["changelog"] = changelog_content
     return page

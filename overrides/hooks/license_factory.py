@@ -15,19 +15,18 @@ from datetime import datetime, timezone
 from functools import cached_property
 from pathlib import Path
 from re import Match, Pattern
-from textwrap import dedent, indent
+from textwrap import dedent, wrap
 from typing import Any, ClassVar, Literal
 
 import ez_yaml
+import pyperclip
 from hook_logger import get_logger
 from jinja2 import Template, TemplateError
 from mkdocs.config.base import Config as MkDocsConfig
-from mkdocs.plugins import event_priority
 from mkdocs.structure.files import File, Files, InclusionLevel
-from mkdocs.structure.nav import Navigation
 from mkdocs.structure.pages import Page
 
-from _utils import Status
+from _utils import Status, find_repo_root
 
 # Change logging level here
 _assembly_log_level = logging.DEBUG
@@ -37,29 +36,6 @@ if not hasattr(__name__, "assembly_logger"):
         "ASSEMBLER",
         _assembly_log_level,
     )
-
-def find_repo_root() -> Path:
-    """
-    Find the repository's root directory by looking for the .git directory.
-
-    Returns:
-        Path: The path to the repository's root directory.
-
-    Raises:
-        FileNotFoundError: If the repository root directory cannot be found.
-    """
-    current_path = Path.cwd()
-    while not (current_path / ".git").exists():
-        if (
-            current_path.parent == current_path
-            and current_path.stem != "PlainLicense"
-        ):
-            raise FileNotFoundError("Could not find the repository root directory.")
-        elif current_path.stem == "PlainLicense":
-            return current_path
-        current_path = current_path.parent
-    return current_path
-
 
 def clean_content(content: dict[str, Any]) -> dict[str, Any] | None:
     """
@@ -75,7 +51,7 @@ def clean_content(content: dict[str, Any]) -> dict[str, Any] | None:
         cleaned_content = clean_content({"title": "  Example Title  ", "tags": ["  tag1  ", "tag2 "]})
     """
 
-    def cleaner(value: Any) -> str:
+    def cleaner(value: Any) -> Any:
         """Strips whitespace from a string."""
         if isinstance(value, dict):
             return {k: cleaner(v) for k, v in value.items()}
@@ -86,7 +62,6 @@ def clean_content(content: dict[str, Any]) -> dict[str, Any] | None:
         return value
 
     cleaned_content = {k: cleaner(v) if v else "" for k, v in content.items()}
-    assembly_logger.debug("Cleaned content: %s", cleaned_content)
     return cleaned_content
 
 
@@ -102,17 +77,15 @@ def get_extra_meta(spdx_id: str) -> dict[str, Any]:
         raw_text = file.read_text()
         if match := re.search(r"---\n(.*?)\n---", raw_text, re.DOTALL):
             frontmatter = ez_yaml.to_object(match[1])
-            new_meta |= clean_content(
-                {f"cal_{k}": v for k, v in frontmatter.items() if v and k != "using"}
-                | frontmatter.get("using", {})
-            )
+            if cleaned_frontmatter := clean_content(frontmatter):
+                new_meta |= {f"cal_{k}": v for k, v in cleaned_frontmatter.items() if v and k != "using"} | cleaned_frontmatter.get("using", {})
     spdx_files = list(Path("external/license-list-data/json/details").glob("*.json"))
     if file := next(
         (f for f in spdx_files if (f.stem.lower() == spdx_id.lower())), None
     ):
         assembly_logger.debug("Found SPDX file: %s", file)
-        new_meta |= clean_content(load_json(file))
-    assembly_logger.debug("Extra metadata: %s", new_meta)
+        if cleaned_spdx := clean_content(load_json(file)):
+            new_meta |= cleaned_spdx
     return new_meta
 
 
@@ -139,8 +112,12 @@ def render_mapping(mapping: dict[str, Any], context: dict) -> dict[str, str]:
 
 def assemble_license_page(config: MkDocsConfig, page: Page, file: File) -> Page:
     """Returns the rendered boilerplate from the config."""
-    page.meta = clean_content(page.meta)
-    boilerplate: dict[str, str] = config.extra["boilerplate"]
+    if not page.meta:
+        assembly_logger.error("No metadata found for %s", page.title)
+        return page
+    page.meta = clean_content(dict(page.meta))
+
+    boilerplate: dict[str, str] = config["extra"]["boilerplate"]
     boilerplate["year"] = boilerplate.get(
         "year", datetime.now(timezone.utc).strftime("%Y")
     ).strip()
@@ -254,11 +231,7 @@ def on_files(files: Files, config: MkDocsConfig) -> Files:
             assembly_logger.error("No page found for file %s", file.src_uri)
             continue
         page.read_source(config)
-        assembly_logger.debug("Processing license page %s")
-        root_path = find_repo_root()
-        changelog_file = root_path / "docs" / "changelog" / f"{page.meta['spdx_id']}.md"
-        changelog_content = changelog_file.read_text() if changelog_file.exists() else "## such empty, much void :nounproject-doge:"
-        page.meta["changelog"] = changelog_content
+        assembly_logger.debug("Processing license page %s", page.title)
         updated_page = assemble_license_page(config, page, file)
         new_file = create_new_file(updated_page, file, config)
         new_license_files.extend(
@@ -268,31 +241,6 @@ def on_files(files: Files, config: MkDocsConfig) -> Files:
             )
         )
     return replace_files(files, Files(new_license_files))
-
-
-@event_priority(-90)
-def on_page_markdown(
-    markdown_content: str, page: Page, config: MkDocsConfig, files: list[File]
-) -> str:
-    """
-    It just logs.
-    """
-    assembly_logger.debug("On page markdown: %s", page.title)
-    if not page.meta:
-        assembly_logger.debug("No page metadata found for %s", page.title)
-    return markdown_content
-
-
-def on_page_context(
-    context: dict[str, Any], page: Page, config: MkDocsConfig, nav: Navigation
-) -> dict[str, Any]:
-    """Logs the page context."""
-    assembly_logger.debug("On page context: %s", page.title)
-    if not page.meta:
-        assembly_logger.debug("No page metadata found for %s", page.title)
-        assembly_logger.debug("Page context: %s", context)
-    return context
-
 
 def load_json(path: Path) -> dict[str, Any]:
     """Loads a JSON"""
@@ -310,7 +258,7 @@ class LicenseContent:
     """
     Represents a license's content and metadata, including the license text and associated attributes. All license text processing happens here.
 
-    TODO: Break this class up into smaller classes
+    TODO: Break this monster class up into smaller classes
     """
 
     _year_pattern: ClassVar[Pattern[str]] = re.compile(r"\{\{\s{1,2}year\s{1,2}\}\}")
@@ -333,9 +281,7 @@ class LicenseContent:
         self.license_type = self.get_license_type()
         self.title = f"The {self.meta['plain_name']}"
         self.year = str(datetime.now().strftime("%Y"))
-        self.reader_license_text: str = dedent(
-            self.replace_year(self.meta["reader_license_text"])
-        )
+        self.reader_license_text: str = self.replace_year(self.meta["reader_license_text"])
         self.markdown_license_text = self.process_mkdocs_to_markdown()
         self.plaintext_license_text = self.process_markdown_to_plaintext()
         self.changelog_text = self.meta.get(
@@ -410,19 +356,10 @@ class LicenseContent:
             for match in matches:
                 term = match.group("term")
                 def_text = match.group("def")
-                replacement = (
-                    dedent(f"""
-                    {term.replace('`', '')}
-                        - {def_text}
-                    """)
-                    if plaintext
-                    else dedent(
-                        f"""
-                        {term}:
-                    {def_text}
-                    """
-                    )
-                )
+                if plaintext:
+                    replacement = dedent(f"""{term.replace('`', '')} - {def_text}""")
+                else:
+                    replacement = dedent(f"""{term}:\n{def_text}""")
                 text = text.replace(match.group(0), replacement)
         if matches := re.findall(r"\{\s?\.\w+\s?\}", text):
             for match in matches:
@@ -445,7 +382,7 @@ class LicenseContent:
             version = package.get("version")
             if not version:
                 return "0.0.0"
-            if "development" in version and Status.production_status:
+            if "development" in version and Status.production:
                 package["version"] = "0.1.0"
                 write_json(package_path, package)
                 return "0.1.0"
@@ -486,8 +423,8 @@ class LicenseContent:
         if footnotes:
             transformed_text += "\n\n"
             for i, footnote in enumerate(footnotes, 1):
-                transformed_text += f"[^{i}]: {footnote}\n"
-        return transformed_text
+                transformed_text += f"[^{i}]: {footnote}\n\n"
+        return transformed_text + "\n\n"
 
     def replace_year(self, text: str) -> str:
         """
@@ -500,6 +437,24 @@ class LicenseContent:
             str: The text with the year placeholder replaced by the current year.
         """
         return type(self)._year_pattern.sub(self.year, text)
+
+    def replace_code_blocks(self, text: str) -> str:
+        """
+        Replaces code blocks in the provided text with a placeholder to prevent Markdown processing.
+
+        Args:
+            text (str): The text to process and replace code blocks.
+
+        Returns:
+            str: The text with code blocks replaced by a placeholder.
+        """
+        while match := re.search(r"(`{3}.*?`{3})", text, re.DOTALL):
+            match_text = match[0].replace("markdown\n", "").replace("plaintext\n", "")
+            lines = match_text.split("\n")
+            lines = [f"> {line}" for line in lines]
+            replacement = "\n".join(lines)
+            text = text.replace(match[0], replacement)
+        return text.replace("```", "").replace("markdown", "").replace("plaintext", "")
 
     def process_mkdocs_to_markdown(self) -> str:
         """
@@ -514,11 +469,11 @@ class LicenseContent:
             "Processing mkdocs-style markdown to regular markdown for %s",
             self.meta["plain_name"],
         )
-        assembly_logger.debug("Reader content: ", self.reader_license_text)
         header_pattern: Pattern[str] = re.compile(
             r'<h2 class="license-first-header">(.*?)</h2>'
         )
         text = self.reader_license_text
+        text = self.replace_code_blocks(text)
         text = self.transform_text_to_footnotes(text)
         text = header_pattern.sub(r"## \1", text)
         return self.process_definitions(text)
@@ -560,8 +515,8 @@ class LicenseContent:
 
         The block format will match:
         /// kind | title
-        option1: value
-        option2: { key1: value1, key2: value2 }
+            option1: value
+            option2: { key1: value1, key2: value2 }
 
         text content
         ///
@@ -575,11 +530,11 @@ class LicenseContent:
                     dict_block = (
                         "{ " + ", ".join([f"{k}: {v}" for k, v in v.items()]) + " }"
                     )
-                    option_block += f"{k}: {dict_block}\n"
-                else:
-                    option_block += f"{k}: {v}\n"
+                    option_block += f"{' ' * (separator_count + 1)}{k}: {dict_block}\n"
+                elif v:
+                    option_block += f"{' ' * (separator_count + 1)}{k}: {v}\n"
 
-        return f"""{separator} {kind} | {title}{indent(option_block, ' ' * (separator_count + 1))}{text}{separator}""".strip()
+        return f"""\n{separator} {kind} | {title}\n{option_block}\n{text}\n{separator}\n"""
 
     def interpretation_block(self, kind: str) -> str:
         """Returns the interpretation block for the license."""
@@ -594,10 +549,8 @@ class LicenseContent:
             )
         if kind == "markdown":
             return (
-                f"\n### {self.meta.get('interpretation_title')}{dedent(self.meta.get('interpretation_text', ''))}"
-                ""
-            )
-        return f"""\nNOTE: {self.meta.get('interpretation_title')}{dedent(self.meta.get('interpretation_text', ''))}\n"""
+                f"\n### {self.meta.get('interpretation_title')}\n\n" + self.wrap_it(dedent(self.meta.get('interpretation_text', ''))))
+        return f"""\nNOTE: {self.meta.get('interpretation_title')}\n\n""" + dedent(self.meta.get('interpretation_text', ''))
 
     def get_header_block(self, kind: Literal["reader", "markdown", "plaintext"]) -> str:
         """Returns the version block for the license."""
@@ -610,47 +563,51 @@ class LicenseContent:
             """Constructs the version info block for the license."""
             if original_version:
                 if format_type == "reader":
-                    return f"""<div class='version-info'><span class="original-version">original version: {original_version}</span>\n\n<span class="plain-version">plain version: {plain_version}</span></div>"""
+                    return f"""\n<div class='version-info'><span class="original-version">original version: {original_version}</span>\n\n<span class="plain-version">plain version: {plain_version}</span></div>\n"""
                 elif format_type == "markdown":
-                    return dedent(f"""
+                    return dedent(f"""\
                         > original version: {original_version}
-                        > plain version: {plain_version} \
-                        """)
+                        > plain version: {plain_version}""")
                 else:
-                    return dedent(f"""
+                    return dedent(f"""\
                         original version: {original_version} | plain version: {plain_version}
                         """)
             else:
                 if format_type == "reader":
-                    return f"""<div class='version-info'><span class="plain-version">plain version: {plain_version}</span></div>"""
+                    return f"""\n<div class='version-info'><span class="plain-version">plain version: {plain_version}</span></div>\n"""
                 elif format_type == "markdown":
                     return f"""> plain version: {plain_version}"""
                 else:
-                    return """plain version: {plain_version}"""
+                    return f"""plain version: {plain_version}"""
 
         original_version: str = self.meta.get("original_version", "")
         plain_version: str = self.meta.get("plain_version", "")
 
         if kind == "reader":
-            title = f"<h1 class='license-title'>{self.meta['plain_name']}</h1>"
+            title = f"\n<h1 class='license-title'>{self.meta['plain_name']}</h1>"
             version_info = construct_version_info(
                 original_version, plain_version, "reader"
             )
             return f"""<div class="license-header">{title}{version_info}</div>"""
         elif kind == "markdown":
-            title = f"# {self.meta.get('plain_name')}" ""
+            title = f"\n# {self.meta.get('plain_name')}" ""
             version_info = construct_version_info(
                 original_version, plain_version, "markdown"
             )
-            return f"{title}{version_info}"
+            return f"{version_info}\n{title}"
         else:
-            title = dedent(f"""
-                {self.meta.get('plain_name').upper()}
-                """)
+            title = self.meta.get('plain_name').upper()
             version_info = construct_version_info(
                 original_version, plain_version, "plaintext"
             )
-            return f"{title}{version_info}"
+            return f"{version_info}{title}"
+
+    @staticmethod
+    def wrap_it(text: str) -> str:
+        """Takes text, preserves newlines, and wraps it to 70 characters."""
+        chunks = text.split("\n\n")
+        wrapped_chunks = ["\n".join(wrap(chunk, 70, break_long_words=False)) for chunk in chunks]
+        return "\n\n".join(wrapped_chunks)
 
     @cached_property
     def attributes(self) -> dict[str, Any | int | str]:
@@ -712,7 +669,7 @@ class LicenseContent:
     @property
     def not_advice_text(self) -> str:
         """Returns the not advice text for the license."""
-        return dedent(f"""
+        return dedent(f"""\
             We are not lawyers. This is not legal advice. You use this license at your own risk. If you need legal advice, talk to a lawyer.\nWe are normal people who want to make licenses accessible for everyone. We hope that our plain language helps you and anyone else (including lawyers) understand this license. If you see a mistake or want to suggest a change, please [submit an issue on GitHub]({self.meta.get("github_issues_link")} "Submit an issue on GitHub") or [submit edits to this page]({self.meta.get("github_edit_link")} "edit on GitHub").
             """)
 
@@ -720,10 +677,10 @@ class LicenseContent:
     def not_official_text(self) -> str:
         """Returns the not official text for the license."""
         if self.has_official:
-            return dedent(f"""
+            return dedent(f"""\
             Plain License is not affiliated with the original {self.meta['original_name'].strip()} authors or {self.meta['original_organization'].strip()}. **Our plain language versions are not official** and are not endorsed by the original authors. Our licenses may also include different terms or additional information. We try to capture the *legal meaning* of the original license, but we can't guarantee our license provides the same legal protections.
 
-            If you want to use the {self.meta['plain_name'].strip()}, you should refer to the original license text so you understand how it might be different. You can find the official {self.meta['original_name'].strip()} [here]({self.meta['original_url'].strip()} "check out the official {self.meta['original_name'].strip()}").
+            If you want to use the {self.meta['plain_name'].strip()}, you should refer to the original {self.meta['original_name'].strip()} license text so you understand how it might be different. You can find the official {self.meta['original_name'].strip()} [here]({self.meta['original_url'].strip()} "check out the official {self.meta['original_name'].strip()}").
             """)
         return ""
 
@@ -756,7 +713,8 @@ class LicenseContent:
         if self.has_official:
             text = dedent(f"""
                 {header_block}
-                {self.reader_license_text}{self.interpretation_block("reader")}
+                {self.reader_license_text}
+                {self.interpretation_block("reader")}
                 {self.disclaimer_block}
                 """)
         else:
@@ -771,33 +729,17 @@ class LicenseContent:
     def markdown(self) -> str:
         """Returns the markdown block for the license."""
         header_block = self.get_header_block("markdown")
-        text = dedent(f"""
-            ```markdown
-
-            {header_block}
-            {self.markdown_license_text}{self.interpretation_block("markdown")}
-
-            ```
-
-            {self.disclaimer_block}
-            """)
-        return self.blockify(text, "tab", f"markdown {self.icon_map['markdown']}")
+        body = self.wrap_it(dedent(f"\n{self.markdown_license_text}\n"))
+        text = f"\n```markdown\n\n{header_block}\n\n{body}\n{self.interpretation_block('markdown')}\n```\n\n{self.disclaimer_block}\n"
+        return self.blockify(f"\n{text.strip()}\n", "tab", f"markdown {self.icon_map['markdown']}")
 
     @property
     def plaintext(self) -> str:
         """Returns the plaintext block for the license."""
         header_block = self.get_header_block("plaintext")
-        text = dedent(f"""
-            ```plaintext
-
-            {header_block}
-            {self.plaintext_license_text}
-            {self.interpretation_block("plaintext")}
-
-            ```
-            {self.disclaimer_block}
-            """)
-        return self.blockify(text, "tab", f"plaintext {self.icon_map['plaintext']}")
+        body = self.wrap_it(dedent(f"\n{self.plaintext_license_text}\n"))
+        text = f"\n```plaintext\n\n{header_block}\n\n{body}\n{self.interpretation_block('plaintext')}\n```\n\n{self.disclaimer_block}\n"
+        return self.blockify(f"\n{text.strip()}\n", "tab", f"plaintext {self.icon_map['plaintext']}")
 
     @property
     def changelog(self) -> str:
@@ -947,19 +889,22 @@ class LicenseContent:
     @property
     def license_content(self) -> str:
         """Returns the content for a license page"""
-        tabs = (
-            self.reader + self.embed + self.markdown + self.plaintext + self.changelog
+        tabs = "\n".join(
+            [self.reader, self.embed, self.markdown, self.plaintext, self.changelog]
         )
         if self.has_official:
-            tabs += self.official
-        outro = self.meta.get("outro", "")
-        return (
+            tabs += f"\n{self.official}"
+        outro = ("\n\n" + self.meta.get("outro", "") + "\n") if self.meta.get("outro") else "\n"
+        content = (
             self.blockify(
-                f"{tabs}{outro}",
+                f"{tabs}",
                 "admonition",
                 f"Plain License: <span class='detail-title-highlight'>The {self.meta.get('plain_name')}</span>",
                 6,
                 options={"type": "license"},
             )
-            + f"\n\n{outro}"
-        )
+        ) + outro
+        if "mit" in self.meta["spdx_id"].lower():
+            assembly_logger.debug("License content: %s", content)
+            pyperclip.copy(content)
+        return content

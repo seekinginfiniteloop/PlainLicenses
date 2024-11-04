@@ -11,6 +11,7 @@ hooks:
   - overrides/hooks/license_factory.py # Assembles licenses from frontmatter and boilerplate (boilerplate here in the config)
   - overrides/hooks/env_settings.py # Adds to the jinja environment
   - overrides/hooks/update_site_license.py # Updates the site license to match the latest Plain Unlicense
+  - overrides/hooks/shame_counter.py # Counts the number of 'shame words' in a license
 site_description: >
   Plain License: Terms for Everyone.
 nav:

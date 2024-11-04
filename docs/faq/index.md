@@ -10,7 +10,7 @@ hide:
 
 ## Why do your licenses look different from the originals?  :material-chat-question-outline:
 
-***We recraft licenses*** to make them easier to understand. We strive to capture the *intent* of the original license, and want to make the *legal meaning* as clear as we can. We prioritize accuracy and clarity. [We make changes to make the license as clear as possible][what we change].
+***We ^^recraft^^ licenses*** to make them easier to understand. We strive to capture the *intent* of the original license, and want to make the *legal meaning* as clear as we can. We prioritize accuracy and clarity. [We make changes to make the license as clear as possible][what we change].
 
 ## Is anything else different about your licenses?  :material-chat-question-outline:
 
@@ -18,10 +18,10 @@ hide:
 
 -   **Style**. We make consistent style changes to our licenses for clarity and consistency. We use the following conventions:
 
-     Our Words | 'Legalese'
+     Our Words | Legal Words
     -----------|-------------
      you        | licensee, recipient
-     we, authors | licensor, provider, owner, author, developer, contributor
+     we, authors | licensor, provider, owner, author, developer, contributor, company
      the work  | licensed work, software, creation, covered work, library, materials
 
     If a license talks about "contributors" as well as 'licensors' (or similar), we use 'contributors' when we talk about the people who contribute to the work and "authors" to talk about the people who license the work. Authors and contributors are often the same people, but the license may treat them differently.
@@ -36,14 +36,14 @@ hide:
 **Yes!** Our licenses are in the public domain (1), so you can use them for any project. We want to make it easier for people to understand the licenses that cover their work, so we're happy to see our licenses used for real projects. You can change them however you like, and you don't have to give us credit. If you appreciate Plain License and our message, then please tell people about us. Our licenses don't replace the original licenses, but compliment them. Every plain license includes an interpretation statement that makes it clear that the plain language version is based on the original license and that you can refer to the original license if you are unclear about the legal meaning of the plain language version.
 { .annotate }
 
-1. We use the [Plain Unlicense][plain unlicense] for our licenses. Some licenses we recraft require us to give credit to the author; those licenses cannot but licensed under the Unlicense.
+1. We use the [Plain Unlicense][plain unlicense] for our licenses when we can. Unfortunately, we can't use the Plain Unlicense for all our licenses because some original licenses are licensed under terms that don't allow us to use the Plain Unlicense. In those cases, we use the most permissive license we can and make it clear that the license is not in the public domain.
 
 While we believe plain language helps *everyone* (1) better understand your intent, **we can't guarantee that our licenses will work for your project or will hold up in court**. We're not lawyers, and we can't provide legal advice. If you have questions about how to use our licenses, we recommend you talk to a lawyer. If you choose to use one of our licenses, you use it at your own risk.
 { .annotate }
 
 1. "Everyone" includes lawyers and judges, who *are* real people. We promise. :briefcase: :woman_judge:
 
-**Plain License uses the [Plain Unlicense][plain unlicense]** for most of its content, and we hope you find our licenses useful for yours. We also welcome feedback to help us improve them, and *love* legal feedback to help refine our interpretations.
+**We use the [Plain Unlicense][plain unlicense]** for most of our content, so we use our licenses. We hope you find our licenses useful for your project. We welcome feedback to help us improve them, and *love* legal feedback to help us improve our interpretations.
 
 ## Is this another open source advocacy project?  :material-chat-question-outline:
 
@@ -70,19 +70,19 @@ Take it from us, **it's hard to write clearly.** Taking complex ideas and making
 **There are a lot of licenses out there, and that can be confusing.** We think that's a problem, especially when the licenses are hard to understand. For example, the Free Software Foundation's GPL 3 requires [a very long faq][gpl-faq] just to explain how to use the license. (1)
 { .annotate }
 
-1. The GPL 3 is a great license, but it's very hard to understand. We applaud the FSF for their work providing clear answers to questions about the license. We think that's a great step in the right direction.
+1. The GPL 3 is a great license, but it's very hard to understand. We applaud the FSF for their work providing clear answers to questions about the license. We think that's a great step in the right direction. :thumbsup:
 
 We think our licenses stand out because they're clear and easy to read. We hope that by making licenses easier to understand, we can help people make better decisions about how to license their work. We can't fix the problem of too many licenses. We can only offer our licenses to compliment and clarify the licenses people use. Maybe one day we'll see a world where all licenses are written in plain language.
 
 ## What's the difference between the version numbers for 'original version' and 'plain version' in your licenses? :material-chat-question-outline:
 
-**We version our licenses separately from the original licenses.** We do this to make it clear when we've made changes to the license. We want to be transparent about what we've changed, so we version our licenses separately. We provide the original license version to tell you what version ours is based on, for example, the Apache 2.0 license has an original version of `2.0`.  We version our licenses with a major, minor, and patch version number, for example, `1.0.0`. You can see the version of the original license and the version of our license in the license text immediately below the title.
+**We version our licenses separately from the original licenses.** We want to make it clear when we've made changes to the license, and communicate what we've changed. We version our licenses separately to make it clear. We provide the original license version to tell you what version ours is based on, for example, the Apache 2.0 license has an `original version` of `2.0`.  We version our licenses with a major, minor, and patch version number, for example, `1.0.0`. You can see the version of the original license and the version of our license in the license text near the top of the license.
 
 On every license page, we provide a link to the changelog for that license. The changelog tells you what we've changed in each version of the license. The link is in the tabs above the license text.
 
 ## How does your versioning work?  :material-chat-question-outline:
 
-We use something similar to [semantic versioning][semantic versioning], but we don't follow it exactly. Like our licenses, we adapted semantic versioning to make it clear for use with licenses. We version our licenses [separately from the original licenses][separate versioning], and we use the following format: `<major>.<minor>.<patch>`.
+We use something similar to [semantic versioning][semantic versioning], but we don't follow it exactly. Like our licenses, we adapted semantic versioning to make it easier to understand for license content. We version our licenses [separately from the original licenses][separate versioning], and we use the following format: `<major>.<minor>.<patch>`.
 
 - **Major**: We increment to version 1.0 when we are confident the license is accurate and clear, and accurately reflects the legal intent of the original license. We will only increment to other major versions if we find a significant error in the license that requires a major change.
 - **Minor**: We increment minor versions when we make significant changes to the license, such as adding or removing terms, or changing the structure of the license. We also increment the minor version when we make substantial changes to the style or formatting of the license.

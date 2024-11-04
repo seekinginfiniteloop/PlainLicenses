@@ -50,8 +50,7 @@ deps:
 
 scripts:
   - changed-files:
-    - any-glob-to-any-files: ['*.js', '*.ts', '*scripts/**', '*.sh', 'overrides/hooks/**', '*.py', '*.mjs']
-
+    - any-glob-to-any-files: ['*.js', '*.ts', '**/scripts/*', 'bin/**', '*.sh', 'overrides/hooks/**', '*.py', '*.mjs']
 
 ui:
   - changed-files:

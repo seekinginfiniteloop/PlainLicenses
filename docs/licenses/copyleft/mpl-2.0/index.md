@@ -128,14 +128,16 @@ reader_license_text: |
 
     ## How to Provide Notices
 
-    If you distribute the work in a way that is not compatible with other licenses, you must include a notice that the work is incompatible with other licenses (see [Notice B][#notice-b---incompatible-license-notice]). You also must include a notice that the work is licensed under the Plain MPL (see [Notice A][#notice-a---license-notice]). **Where you can, include these notices in the individual parts of the work.** If you can't, include them in a LICENSE file or in a similar way.
+    If you distribute the work in a way that is not compatible with other licenses, you must include a notice that the work is incompatible with other licenses (see [Notice B][#notice-b--incompatible-license-notice]). You also must include a notice that the work is licensed under the Plain MPL (see [Notice A][#notice-a--license-notice]). **Where you can, include these notices in the individual parts of the work.** If you can't, include them in a LICENSE file or in a similar way.
 
     ### Notice A - License Notice
+
 
     ```markdown
 
     This work is licensed under the Plain MPL. If you didn't get a copy of the license
-    with this work, you can find it at [plainlicense.org{{ plain_url | trim('" ') }}](https://plainlicense.org{{ plain_url | trim('" ') }}.
+    with this work, you can find it at:
+    [plainlicense.org/{{ plain_url | trim('" ') }}](https://plainlicense.org/{{ plain_url | trim('" ') }}).
 
     ```
 
@@ -169,6 +171,7 @@ reader_license_text: |
     `the work`
 
     :    The materials provided under this license
+
 official_license_text: |
     # Mozilla Public License Version 2.0
 

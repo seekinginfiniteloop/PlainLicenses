@@ -38,6 +38,7 @@ readline-common \
 libreadline-dev \
 sqlite3 \
 shellcheck \
+xclip \
 sqlite-utils &&
 
 export BUN_INSTALL="/home/vscode/.bun"
@@ -62,6 +63,8 @@ alias ll='ls -alF'
 export PATH="$BUN_INSTALL/bin:$HOME/.cargo/bin:$HOME/bin:$HOME/sbin:$PATH:/opt/bin:/opt/sbin:/opt/local/bin:/opt/local/sbin"
 export UV_PYTHON_DOWNLOADS="automatic"
 export UV_COLOR="always"
+export FILEHANDLER_ENABLED="true"
+export LOG_PATH="$HOME/logs
 source "/workspaces/PlainLicense/.venv/bin/activate"
 EOF
 )

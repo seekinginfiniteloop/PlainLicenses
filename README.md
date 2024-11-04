@@ -4,13 +4,12 @@
 
 **Plain License** is an initiative to rewrite popular software and creative licenses in plain, approachable language. Our goal is to make common licenses easy to understand for an average person with no legal background. We seek to recraft licenses in a way that is accessible, clear, and concise while maintaining the legal integrity and enforceability of the original licenses.
 
-## Planned Features for Future Releases
+## To-Do Before Launch
 
-1. [ ] Sleeker UI
-2. [ ] Develop a standard graphic for simple license comparison
-3. [ ] License comparison tool
-4. [ ] More information on choosing a license
-5. [ ] Eventually, generate your own license; modular approach with pydantic-like validation
+1. [ ] Debug license page styling issues
+2. [ ] Debug launch page animation issues
+3. [ ] Rewrite/update github actions
+4. [ ] Trial run release process
 
 ### License To-Do List
 

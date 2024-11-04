@@ -77,7 +77,7 @@ class SiteLicense:
             context (TemplateContext): The current template context for rendering.
             page (Page): The page object containing metadata and content related to the license.
         """
-        self.logger = get_logger(__name__, _site_license_log_level)
+        self.logger = get_logger("SITELICENSE", _site_license_log_level)
         self.logger.info("Creating SiteLicense object")
         self.context = context
         self.self_location = "UNLICENSE"
@@ -98,7 +98,7 @@ class SiteLicense:
         self.original_url = page.meta.get("original_url", "").strip()
         self._preamble = self.preamble
         self.full_text = f"{self._preamble}\n\n{self.title}\n\n{self.version_text}\n\n{self.text}\n\n{self.interpretation_section}\n\nOfficial Unlicense: [Unlicense.org]({self.original_url})"
-        self.logger = get_logger(__name__, _site_license_log_level)
+        self.logger = get_logger("SITELICENSE", _site_license_log_level)
 
         self.logger.debug("license full text: %s", self.full_text)
 

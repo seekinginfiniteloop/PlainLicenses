@@ -12,7 +12,7 @@ from mkdocs.structure.pages import Page
 from hook_logger import get_logger
 
 if not hasattr("SOCIAL", "social_logger"):
-    social_logger = get_logger(__name__, logging.WARNING)
+    social_logger = get_logger("SOCIAL", logging.WARNING)
 
 @event_priority(-100)  # run last
 def on_page_markdown(

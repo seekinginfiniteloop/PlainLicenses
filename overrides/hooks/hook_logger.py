@@ -5,13 +5,14 @@ Centralized logging configuration for all hooks.
 You can force the global log level to a lower level (more verbose) by setting the LOG_LEVEL_OVERRIDE environment variable as an integer. If you are only interested in a special logger, set that logger's level to the desired level... the lower level will be used.
 """
 
+from email import message
+from email.mime import base
 import logging
 import os
 import sys
 from pathlib import Path
 from pprint import pformat
 from datetime import datetime, timezone
-from typing import Literal
 
 import click
 
@@ -28,18 +29,19 @@ from _utils import Status, MkDocsCommand # initialize the Status singleton
 # Configuration
 override = os.getenv("LOG_LEVEL_OVERRIDE")
 LOG_LEVEL_OVERRIDE = int(override) if override else logging.WARNING
-PRODUCTION = Status.status.production
+PRODUCTION = Status.production
 FILEHANDLER_ENABLED = (
     os.getenv("FILEHANDLER_ENABLED", "false").lower() == "true" or not PRODUCTION
 )
 STREAMHANDLER_ENABLED = (
     os.getenv("STREAMHANDLER_ENABLED", "true").lower() == "true"
 )
-
 if FILEHANDLER_ENABLED:
-    LOG_SAVE_PATH = Path(
-        f".workbench/logs/pl_build_log_{datetime.now(timezone.utc).isoformat(timespec='seconds')}.log"
-    )
+    base_path = Path(os.getenv("LOG_PATH", ".workbench/logs"))
+
+    filename = f"pl_build_log_{datetime.now(timezone.utc).isoformat(timespec='seconds')}.log"
+
+    LOG_SAVE_PATH = Path(f"{base_path}/{filename}")
     LOG_SAVE_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 # Global variables
@@ -65,21 +67,24 @@ class ColorFormatter(logging.Formatter):
             The formatted record as a string
 
         """
-        if len(record.message.splitlines()) > 1:
-            log_message = super().format(pformat(record))
-        else:
-            log_message = super().format(record)
-        if record.name == "CANARY":
-            module_color = {"fg": "bright_yellow", "bg": "bright_blue", "bold": True}
-        else:
-            module_color = {"fg": "bright_blue"}
-        return (
-            click.style(
-                f"{record.levelname:<8} ", fg=self.COLORS.get(record.levelname, "white")
+        try:
+            record.message = record.getMessage()
+            if record.message and len(record.message.splitlines()) > 1:
+                if message := record.getMessage():
+                    record.message = "\n" + pformat(message, indent=2, width=80)
+            if record.name == "CANARY":
+                module_color = {"fg": "bright_yellow", "bg": "bright_blue", "bold": True}
+            else:
+                module_color = {"fg": "bright_blue"}
+            return (
+                click.style(
+                    f"{record.levelname:<8} ", fg=self.COLORS.get(record.levelname, "white")
+                )
+                + click.style(f"{record.name:<12} ", **module_color)
+                + click.style(record.message or super().format(record), fg=(self.COLORS.get(record.levelname, "white")), bg="bright_blue" if record.name == "CANARY" else None) + f" logger: {record.filename}"
             )
-            + click.style(f"{record.name:<12} ", **module_color)
-            + click.style(log_message, fg=(self.COLORS.get(record.levelname, "white")), bg="bright_blue" if record.name == "CANARY" else None) + f" logger: {record.filename}"
-        ) # Assuming a default path for demonstration
+        except TypeError:
+            return super().format(record)
 
 def configure_handler(handler: logging.Handler, format: logging.Formatter, level: int) -> logging.Handler:
     """Configures a handler with the specified format and level."""
