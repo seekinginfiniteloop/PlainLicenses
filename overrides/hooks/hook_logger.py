@@ -5,26 +5,21 @@ Centralized logging configuration for all hooks.
 You can force the global log level to a lower level (more verbose) by setting the LOG_LEVEL_OVERRIDE environment variable as an integer. If you are only interested in a special logger, set that logger's level to the desired level... the lower level will be used.
 """
 
-from email import message
-from email.mime import base
 import logging
 import os
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 from pprint import pformat
-from datetime import datetime, timezone
 
 import click
-
+from _utils import MkDocsCommand, Status  # initialize the Status singleton
 from jinja2 import Environment
-from mkdocs.config.base import Config as MkDocsConfig
+from mkdocs.config.defaults import MkDocsConfig
 from mkdocs.plugins import event_priority
-from mkdocs.structure.pages import Page
 from mkdocs.structure.files import Files
 from mkdocs.structure.nav import Navigation
-
-from _utils import Status, MkDocsCommand # initialize the Status singleton
-
+from mkdocs.structure.pages import Page
 
 # Configuration
 override = os.getenv("LOG_LEVEL_OVERRIDE")
@@ -33,13 +28,13 @@ PRODUCTION = Status.production
 FILEHANDLER_ENABLED = (
     os.getenv("FILEHANDLER_ENABLED", "false").lower() == "true" or not PRODUCTION
 )
-STREAMHANDLER_ENABLED = (
-    os.getenv("STREAMHANDLER_ENABLED", "true").lower() == "true"
-)
+STREAMHANDLER_ENABLED = os.getenv("STREAMHANDLER_ENABLED", "true").lower() == "true"
 if FILEHANDLER_ENABLED:
     base_path = Path(os.getenv("LOG_PATH", ".workbench/logs"))
 
-    filename = f"pl_build_log_{datetime.now(timezone.utc).isoformat(timespec='seconds')}.log"
+    filename = (
+        f"pl_build_log_{datetime.now(timezone.utc).isoformat(timespec='seconds')}.log"
+    )
 
     LOG_SAVE_PATH = Path(f"{base_path}/{filename}")
     LOG_SAVE_PATH.parent.mkdir(parents=True, exist_ok=True)
@@ -47,8 +42,10 @@ if FILEHANDLER_ENABLED:
 # Global variables
 ROOT_LOGGER = None
 
+
 class ColorFormatter(logging.Formatter):
     """Formats log messages"""
+
     COLORS = {
         "DEBUG": "cyan",
         "INFO": "green",
@@ -73,20 +70,33 @@ class ColorFormatter(logging.Formatter):
                 if message := record.getMessage():
                     record.message = "\n" + pformat(message, indent=2, width=80)
             if record.name == "CANARY":
-                module_color = {"fg": "bright_yellow", "bg": "bright_blue", "bold": True}
+                module_color = {
+                    "fg": "bright_yellow",
+                    "bg": "bright_blue",
+                    "bold": True,
+                }
             else:
                 module_color = {"fg": "bright_blue"}
             return (
                 click.style(
-                    f"{record.levelname:<8} ", fg=self.COLORS.get(record.levelname, "white")
+                    f"{record.levelname:<8} ",
+                    fg=self.COLORS.get(record.levelname, "white"),
                 )
                 + click.style(f"{record.name:<12} ", **module_color)
-                + click.style(record.message or super().format(record), fg=(self.COLORS.get(record.levelname, "white")), bg="bright_blue" if record.name == "CANARY" else None) + f" logger: {record.filename}"
+                + click.style(
+                    record.message or super().format(record),
+                    fg=(self.COLORS.get(record.levelname, "white")),
+                    bg="bright_blue" if record.name == "CANARY" else None,
+                )
+                + f" logger: {record.filename}"
             )
         except TypeError:
             return super().format(record)
 
-def configure_handler(handler: logging.Handler, format: logging.Formatter, level: int) -> logging.Handler:
+
+def configure_handler(
+    handler: logging.Handler, format: logging.Formatter, level: int
+) -> logging.Handler:
     """Configures a handler with the specified format and level."""
     handler.setFormatter(format)
     if isinstance(handler, logging.FileHandler):
@@ -94,11 +104,14 @@ def configure_handler(handler: logging.Handler, format: logging.Formatter, level
     handler.setLevel(level)
     return handler
 
+
 def configure_root_logger() -> logging.Logger:
     """Configures the root logger with predefined settings."""
+
     def set_override() -> int:
         """Set the override level"""
         return LOG_LEVEL_OVERRIDE
+
     root_logger = logging.getLogger()
     log_level = logging.NOTSET
     if FILEHANDLER_ENABLED:
@@ -107,13 +120,20 @@ def configure_root_logger() -> logging.Logger:
         )
         if LOG_LEVEL_OVERRIDE < logging.INFO:
             log_level = set_override()
-        root_logger.addHandler(configure_handler(logging.FileHandler(LOG_SAVE_PATH), file_format, log_level))
+        root_logger.addHandler(
+            configure_handler(
+                logging.FileHandler(LOG_SAVE_PATH), file_format, log_level
+            )
+        )
     if STREAMHANDLER_ENABLED:
         formatter = ColorFormatter("%(asctime)s - %(message)s")
         if LOG_LEVEL_OVERRIDE < logging.INFO:
             log_level = set_override()
-        root_logger.addHandler(configure_handler(logging.StreamHandler(sys.stdout), formatter, log_level))
+        root_logger.addHandler(
+            configure_handler(logging.StreamHandler(sys.stdout), formatter, log_level)
+        )
     return root_logger
+
 
 def get_logger(name: str, level: int = logging.WARNING) -> logging.Logger:
     """
@@ -126,6 +146,7 @@ def get_logger(name: str, level: int = logging.WARNING) -> logging.Logger:
     logger.propagate = True
     return logger
 
+
 # MkDocs plugin hooks
 @event_priority(100)
 def on_startup(command: MkDocsCommand, dirty: bool) -> None:
@@ -135,16 +156,19 @@ def on_startup(command: MkDocsCommand, dirty: bool) -> None:
     logger = get_logger("MkDocs", logging.DEBUG)
     logger.info("Starting %s command", command)
 
+
 def on_config(config: MkDocsConfig) -> MkDocsConfig:
     """log on_config"""
     logger = get_logger("MkDocs")
     logger.debug("Processing configuration, %s", config)
     return config
 
+
 def on_pre_build(config: MkDocsConfig) -> None:
     """log on_pre_build"""
     logger = get_logger("MkDocs")
     logger.debug("Starting pre-build phase")
+
 
 def on_files(files: Files, config: MkDocsConfig) -> Files:
     """Log files"""
@@ -153,17 +177,20 @@ def on_files(files: Files, config: MkDocsConfig) -> Files:
     logger.debug("Files: %s", files)
     return files
 
+
 def on_env(env: Environment, config: MkDocsConfig, files: Files) -> Environment:
     """log on_env"""
     logger = get_logger("MkDocs")
     logger.debug("Processing Jinja2 environment")
     return env
 
+
 def on_nav(nav: Navigation, config: MkDocsConfig, files: Files) -> Navigation:
     """log nav"""
     logger = get_logger("MkDocs")
     logger.debug("Processing navigation")
     return nav
+
 
 def on_pre_page(page: Page, config: MkDocsConfig, files: Files) -> Page:
     """log on_pre_page"""

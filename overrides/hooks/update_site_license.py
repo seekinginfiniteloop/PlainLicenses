@@ -4,19 +4,17 @@ Hook that updates the site license to match the current version of the Plain Unl
 
 import logging
 from pathlib import Path
-from pprint import pformat
 from textwrap import wrap
-import re
 
+from _utils import is_license_page
 from hook_logger import get_logger
-from mkdocs.config.base import Config as MkDocsConfig
+from mkdocs.config.defaults import MkDocsConfig
 from mkdocs.structure.nav import Navigation
 from mkdocs.structure.pages import Page
 from mkdocs.utils.templates import TemplateContext
 
-from _utils import is_license_page
-
 _site_license_log_level = logging.WARNING
+
 
 def on_page_context(
     context: TemplateContext, page: Page, config: MkDocsConfig, nav: Navigation
@@ -40,7 +38,7 @@ def on_page_context(
         return context
     logger.debug("site license checking license %s if it's an unlicense", license)
     meta = page.meta
-    if meta and 'original_name' not in meta:
+    if meta and "original_name" not in meta:
         return context
     if (original_name := meta["original_name"].strip().lower()) and (
         "unlicense" in original_name or original_name == "unlicense"

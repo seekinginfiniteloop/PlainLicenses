@@ -22,7 +22,7 @@ import ez_yaml
 import pyperclip
 from hook_logger import get_logger
 from jinja2 import Template, TemplateError
-from mkdocs.config.base import Config as MkDocsConfig
+from mkdocs.config.defaults import MkDocsConfig
 from mkdocs.structure.files import File, Files, InclusionLevel
 from mkdocs.structure.pages import Page
 
@@ -77,7 +77,7 @@ def get_extra_meta(spdx_id: str) -> dict[str, Any]:
         raw_text = file.read_text()
         if match := re.search(r"---\n(.*?)\n---", raw_text, re.DOTALL):
             frontmatter = ez_yaml.to_object(match[1])
-            if cleaned_frontmatter := clean_content(frontmatter):
+            if isinstance(frontmatter, dict) and (cleaned_frontmatter := clean_content(frontmatter)):
                 new_meta |= {f"cal_{k}": v for k, v in cleaned_frontmatter.items() if v and k != "using"} | cleaned_frontmatter.get("using", {})
     spdx_files = list(Path("external/license-list-data/json/details").glob("*.json"))
     if file := next(
@@ -89,7 +89,7 @@ def get_extra_meta(spdx_id: str) -> dict[str, Any]:
     return new_meta
 
 
-def render_mapping(mapping: dict[str, Any], context: dict) -> dict[str, str]:
+def render_mapping(mapping: dict[str, Any], context: dict) -> dict[str, Any]:
     """Renders a dict/mapping with a context."""
 
     def render_value(value: Any) -> Any:
@@ -115,21 +115,26 @@ def assemble_license_page(config: MkDocsConfig, page: Page, file: File) -> Page:
     if not page.meta:
         assembly_logger.error("No metadata found for %s", page.title)
         return page
-    page.meta = clean_content(dict(page.meta))
+    meta = dict(page.meta)
+    meta = clean_content(meta)
 
     boilerplate: dict[str, str] = config["extra"]["boilerplate"]
     boilerplate["year"] = boilerplate.get(
         "year", datetime.now(timezone.utc).strftime("%Y")
     ).strip()
-    boilerplate = clean_content(boilerplate)
+    boilerplate = clean_content(boilerplate) or {}
     license = LicenseContent(page)
-    page.meta |= license.attributes
-    extra_meta = get_extra_meta(page.meta["spdx_id"])
-    page.meta |= extra_meta
+    if meta:
+        meta |= license.attributes
+        extra_meta = get_extra_meta(page.meta["spdx_id"])
+        meta |= extra_meta
     assembly_logger.debug("Rendering boilerplate for %s", page.title)
-    rendered_boilerplate = render_mapping(boilerplate, page.meta)
-    page.meta |= rendered_boilerplate
+    if meta is None:
+        meta = {}
+    rendered_boilerplate = render_mapping(boilerplate, meta)
+    meta |= rendered_boilerplate
     markdown = (page.markdown or "") + license.license_content
+    page.meta = meta
     page.markdown = Template(markdown).render(**page.meta)
     return page
 
@@ -596,7 +601,7 @@ class LicenseContent:
             )
             return f"{version_info}\n{title}"
         else:
-            title = self.meta.get('plain_name').upper()
+            title = self.meta.get('plain_name', "").upper()
             version_info = construct_version_info(
                 original_version, plain_version, "plaintext"
             )

@@ -124,9 +124,7 @@ touch "$HOME/.source_zshrc"
 # shellcheck disable=SC2016
 echo '
 if [ -f "$HOME/.source_zshrc" ]; then
-    chmod +x /workspaces/PlainLicense/bin/install-hooks.sh
-    source "$HOME/.zshrc"
     rm "$HOME/.source_zshrc"
-    /workspaces/PlainLicense/bin/install-hooks.sh || source "$HOME/.zshrc"
+    source "$HOME/.zshrc"
 fi
 ' >> "$HOME/.zshrc"

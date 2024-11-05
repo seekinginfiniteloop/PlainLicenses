@@ -3,8 +3,7 @@ Utility functions for hooks.
 """
 import os
 from pathlib import Path
-from re import M
-from typing import Literal, ClassVar, Literal, Self
+from typing import Literal, ClassVar, Self
 
 from mkdocs.structure.pages import Page
 
@@ -62,17 +61,20 @@ def is_license_page(page: Page) -> bool:
         if len(page.url.split("/")) > 2
         else ""
     )
-    return bool(page_name and page_name in _status.expected_licenses)
+    try:
+        return bool(page_name and page_name in _status.expected_licenses) # type: ignore
+    except AttributeError as e:
+        raise e
 
 class Status:
     """
     Simple singleton class to store global status information.
     """
 
-    _instance: ClassVar[Self | None] = None
+    _instance: ClassVar["Status | None"] = None
     _initialized: ClassVar[bool] = False
 
-    def __new__(cls: "type[Status]", cmd: MkDocsCommand) -> "Status":
+    def __new__(cls: type[Self], cmd: MkDocsCommand) -> "Status":
         if cls._instance is None:
             cls._instance = super().__new__(cls)
         return cls._instance
@@ -86,6 +88,7 @@ class Status:
         self._expected_licenses: tuple[str, ...] | None = None
 
         type(self)._initialized = True
+
     @property
     def expected_licenses(self) -> tuple[str, ...]:
         """
@@ -116,7 +119,7 @@ class Status:
         return self._production
 
     @classmethod
-    def status(cls) -> Self | None:
+    def status(cls) -> "Status | None":
         """
         Returns the instance
         """
