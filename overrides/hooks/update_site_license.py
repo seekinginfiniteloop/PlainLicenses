@@ -4,9 +4,8 @@ Hook that updates the site license to match the current version of the Plain Unl
 
 import logging
 from pathlib import Path
-from textwrap import wrap
 
-from _utils import is_license_page
+from _utils import is_license_page, wrap_text
 from hook_logger import get_logger
 from mkdocs.config.defaults import MkDocsConfig
 from mkdocs.structure.nav import Navigation
@@ -50,6 +49,7 @@ def on_page_context(
         logger.debug("license: %s", license.full_text)
     return context
 
+# TODO: We can probably replace most of this by pulling from license_factory.py
 
 class SiteLicense:
     """
@@ -84,9 +84,9 @@ class SiteLicense:
         self.name = page.meta.get("plain_name", "Plain Unlicense").strip()
         self.title = f"\n# {self.name}"
         self.raw_text = page.meta.get("markdown_license_text", "").strip()
-        self.text = self.wrap_text(self.raw_text)
+        self.text = wrap_text(self.raw_text)
         self.interpretation_text_raw = page.meta.get("interpretation_text", "").strip()
-        self.interpretation_text = self.wrap_text(self.interpretation_text_raw)
+        self.interpretation_text = wrap_text(self.interpretation_text_raw)
         self.interpretation_title = page.meta.get("interpretation_title", "").strip()
         self.interpretation_section = (
             f"### {self.interpretation_title}\n\n{self.interpretation_text}"
@@ -100,54 +100,12 @@ class SiteLicense:
 
         self.logger.debug("license full text: %s", self.full_text)
 
-    def wrap_text(self, text: str) -> str:
-        """
-        Wraps the provided text into formatted paragraphs, handling bullet points separately.
-        This method processes the input text by splitting it into paragraphs and wrapping each
-        paragraph to a specified width, ensuring that bullet points are formatted correctly.
-
-        Args:
-            text (str): The text to be wrapped into formatted paragraphs.
-
-        Returns:
-            str: The wrapped text with paragraphs and bullet points formatted appropriately.
-
-        Examples:
-            wrapped = wrap_text("Some text\n\n- Bullet 1\n- Bullet 2")
-        """
-        paragraphs = text.split("\n\n")
-        bullet_paragraphs = []
-        for i, paragraph in enumerate(paragraphs):
-            if paragraph.strip().startswith("-"):
-                bullets = paragraph.split("\n")
-                bullets = [
-                    wrap(bullet, width=80, break_long_words=False) for bullet in bullets
-                ]
-                bullet_paragraphs.append((i, bullets))
-        paragraphs = [
-            paragraph
-            for i, paragraph in enumerate(paragraphs)
-            if i not in [i for i, _ in bullet_paragraphs]
-        ]
-        wrapped_paragraphs = [
-            "\n".join(wrap(paragraph, width=80, break_long_words=False))
-            for paragraph in paragraphs
-        ]
-        for i, bullets in bullet_paragraphs:
-            bullets = ["\n".join(bullet) for bullet in bullets]
-            wrapped_paragraphs.insert(i, "\n".join(bullets))
-        return "\n\n".join(wrapped_paragraphs)
-
-    def __str__(self) -> str:
-        """It's... a string!"""
-        return self.full_text
-
     @property
     def preamble(self) -> str:
         """
         Returns the preamble for the license, which is a comment block indicating the license's status.
         """
-        return """<!---\nAll original content on plainlicense.org is in the public domain.\nSome content may be subject to other licenses. Importantly, the site itself was built using Martin Donath's [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/) under the MIT license,\n and Tom Christy's [MkDocs](https://www.mkdocs.org/) under the BSD-2 license.\n For any other parts of the site under a different license, we try make it clear.\n--->"""
+        return """<!---\nAll original content on plainlicense.org is in the public domain.\nSome content may be subject to other licenses.\nThe site itself was built using Martin Donath's [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/) under the MIT license,\n and Tom Christy's [MkDocs](https://www.mkdocs.org/) under the BSD-2 license.\n For any other parts of the site under a different license, we try make it clear.\n--->"""
 
     def check_for_updates(self) -> None:
         """

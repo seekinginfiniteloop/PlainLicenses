@@ -161,10 +161,14 @@ markdown_extensions:
   - pymdownx.blocks.html
   - pymdownx.blocks.tab:
       alternate_style: true
-      slugify: true
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
+          percent_encode: true
+
   - pymdownx.emoji:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
-      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+      emoji_generator: !!python/name:pymdownx.emoji.to_png
       options:
         custom_icons:
           - overrides/.icons
@@ -217,6 +221,10 @@ markdown_extensions:
       toc_depth: 3
       permalink_title: An anchor link you can use to share this section
       permalink: true
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
+          percent_encode: true
 watch:
   - includes
   - overrides

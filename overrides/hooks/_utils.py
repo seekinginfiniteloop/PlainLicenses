@@ -3,11 +3,49 @@ Utility functions for hooks.
 """
 import os
 from pathlib import Path
+from textwrap import wrap
 from typing import Literal, ClassVar, Self
 
+from funcy import rpartial
 from mkdocs.structure.pages import Page
 
 type MkDocsCommand = Literal['gh-deploy', 'serve', 'build']
+
+def wrap_text(text: str) -> str:
+    """
+    Wraps the provided text into formatted paragraphs, handling bullet points separately.
+
+    Args:
+        text (str): The text to be wrapped into formatted paragraphs.
+
+    Returns:
+        str: The wrapped text with paragraphs and bullet points formatted appropriately.
+    """
+    wrapper = rpartial(wrap, width=80, break_long_words=False)
+    paragraphs = text.split("\n\n")
+    bullet_paragraphs = []
+    for i, paragraph in enumerate(paragraphs):
+        if paragraph.strip().startswith("-"):
+            bullets = paragraph.split("\n")
+            bullets = [
+                wrapper(bullet) for bullet in bullets
+            ]
+            bullet_paragraphs.append((i, bullets))
+        else:
+            bullet_paragraphs.append((i, [wrapper(paragraph)]))
+    paragraphs = [
+        paragraph
+        for i, paragraph in enumerate(paragraphs)
+        if i not in [i for i, _ in bullet_paragraphs]
+    ]
+    wrapped_paragraphs = [
+        "\n".join(wrapper(paragraph))
+        for paragraph in paragraphs
+    ]
+    for i, bullets in bullet_paragraphs:
+        bullets = ["\n".join(bullet) for bullet in bullets]
+        wrapped_paragraphs.insert(i, "\n".join(bullets))
+    return "\n\n".join(wrapped_paragraphs)
 
 def strip_markdown(text: str) -> str:
     """

@@ -13,14 +13,8 @@ from pathlib import Path
 from pprint import pformat
 
 import click
-from _utils import MkDocsCommand, Status  # initialize the Status singleton
-from jinja2 import Environment
-from mkdocs.config.defaults import MkDocsConfig
+from _utils import MkDocsCommand, Status
 from mkdocs.plugins import event_priority
-from mkdocs.structure.files import Files
-from mkdocs.structure.nav import Navigation
-from mkdocs.structure.pages import Page
-
 # Configuration
 override = os.getenv("LOG_LEVEL_OVERRIDE")
 LOG_LEVEL_OVERRIDE = int(override) if override else logging.WARNING
@@ -82,7 +76,7 @@ class ColorFormatter(logging.Formatter):
                     f"{record.levelname:<8} ",
                     fg=self.COLORS.get(record.levelname, "white"),
                 )
-                + click.style(f"{record.name:<12} ", **module_color)
+                + click.style(f"{record.name:<12} ", **module_color) # type: ignore
                 + click.style(
                     record.message or super().format(record),
                     fg=(self.COLORS.get(record.levelname, "white")),
@@ -141,6 +135,11 @@ def get_logger(name: str, level: int = logging.WARNING) -> logging.Logger:
     """
     global ROOT_LOGGER
     ROOT_LOGGER = ROOT_LOGGER or configure_root_logger()
+    if child := next((child for child in ROOT_LOGGER.getChildren() if child and child.name == name), None):
+        if bland_handler := next((handler for handler in child.handlers if child.handlers and isinstance(handler, logging.StreamHandler) and (not handler.formatter or not isinstance(handler.formatter, ColorFormatter))), None):
+            child.removeHandler(bland_handler)
+            child.addHandler(configure_handler(logging.StreamHandler(sys.stdout), ColorFormatter("%(asctime)s - %(message)s"), level))
+        return child
     logger = ROOT_LOGGER.getChild(name)
     logger.setLevel(min(level, LOG_LEVEL_OVERRIDE))
     logger.propagate = True
@@ -155,52 +154,3 @@ def on_startup(command: MkDocsCommand, dirty: bool) -> None:
     logging.captureWarnings(True)
     logger = get_logger("MkDocs", logging.DEBUG)
     logger.info("Starting %s command", command)
-
-
-def on_config(config: MkDocsConfig) -> MkDocsConfig:
-    """log on_config"""
-    logger = get_logger("MkDocs")
-    logger.debug("Processing configuration, %s", config)
-    return config
-
-
-def on_pre_build(config: MkDocsConfig) -> None:
-    """log on_pre_build"""
-    logger = get_logger("MkDocs")
-    logger.debug("Starting pre-build phase")
-
-
-def on_files(files: Files, config: MkDocsConfig) -> Files:
-    """Log files"""
-    logger = get_logger("MkDocs")
-    logger.debug("Processing %s files", str(len(files)))
-    logger.debug("Files: %s", files)
-    return files
-
-
-def on_env(env: Environment, config: MkDocsConfig, files: Files) -> Environment:
-    """log on_env"""
-    logger = get_logger("MkDocs")
-    logger.debug("Processing Jinja2 environment")
-    return env
-
-
-def on_nav(nav: Navigation, config: MkDocsConfig, files: Files) -> Navigation:
-    """log nav"""
-    logger = get_logger("MkDocs")
-    logger.debug("Processing navigation")
-    return nav
-
-
-def on_pre_page(page: Page, config: MkDocsConfig, files: Files) -> Page:
-    """log on_pre_page"""
-    logger = get_logger("MkDocs")
-    logger.debug("Processing page %s", page.file.src_path)
-    logger.debug("Page meta: %s", page.meta)
-    return page
-
-
-def on_post_build(config: MkDocsConfig) -> None:
-    """log on_post_build"""
-    logger = get_logger("MkDocs")
-    logger.info("Build completed")
