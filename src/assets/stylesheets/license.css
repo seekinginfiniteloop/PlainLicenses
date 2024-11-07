@@ -11,7 +11,7 @@
 .md-typeset details.license {
   border-color: var(--emerald);
 }
-
+/*
 .md-typeset .admonition.license> .admonition-title {
   font-size: 1.25em;
 }
@@ -23,7 +23,7 @@
 .license div.tabbed-set.tabbed-alternate div.tabbed-content div.tabbed-block div.result p {
   font-size: 0.7rem;
 }
-
+*/
 .md-typeset .license> .admonition-title,
 .md-typeset .license> summary {
   background-color: rgba(var(--dark-emerald-adj), 0.1);
@@ -38,12 +38,12 @@
 .license div.tabbed-set.tabbed-alternate div.tabbed-labels.tabbed-labels--linked {
   padding-left: 0.5em;
 }
-
+/*
 .license div.tabbed-set.tabbed-alternate div.tabbed-labels.tabbed-labels--linked::before {
   border-bottom: 0.125em solid var(--emerald);
 }
 
-/* Styling for definitions in license tabbed blocks */
+/* Styling for definitions in license tabbed blocks
 .license div.tabbed-set.tabbed-alternate div.tabbed-content div.tabbed-block p,
 .license div.tabbed-set.tabbed-alternate div.tabbed-content div.tabbed-block ul {
   font-size: 1rem;
@@ -63,7 +63,7 @@
   font-size: 0.97rem !important;
   font-weight: 500 !important;
 }
-
+*/
 [data-md-color-scheme="slate"] .md-typeset .tabbed-block dl dt code.highlight {
   color: var(--ecru) !important;
 }
@@ -82,13 +82,13 @@
   font-weight: 600;
   color: var(--emerald);
 }
-
+/*
 div.admonition.license p.admonition-title.detail-title-highlight {
   font-size: 1.25em;
 }
-
+*/
 h1.license-title {
-  font-size: 1.5rem;
+ /* font-size: 1.5rem;*/
   font-weight: 700;
   vertical-align: middle;
 }
@@ -163,13 +163,17 @@ h1.license-title {
 
 .version-info {
   place-self: flex-start normal;
-  padding: 0.65em;
-  margin: 1.875em 0.313em 0.313em 0.938em;
+  padding: 0.1em;
+  margin: 0.3em 0.313em 0.313em 0.938em;
   font-size: 0.85em;
-  color: #ffffff;
+  color: var(--white);
   text-align: center;
-  background-color: var(--air-superiority-blue);
+  background-color: var(--zaffre);
   border-radius: 0.313em;
+}
+
+[data-md-color-scheme="slate"] .version-info {
+  background-color: var(--emerald);
 }
 
 .version-info {
@@ -238,6 +242,15 @@ h1.license-title {
   background-color: var(--selected-color);
 }
 
+.tabbed-labels:has([href="#html"]:target) [href="#html"],
+.quick_links:has([href="#html"]:target) [href="#html"] {
+  color: var(--selected-color);
+}
+
+.tabbed-labels:has([href="#html"]:target) [href="#html"]::before,
+.quick_links:has([href="#html"]:target) [href="#html"]::before {
+  background-color: var(--selected-color);
+
 .tabbed-labels:has([href="#markdown"]:target) [href="#markdown"],
 .quick_links:has([href="#markdown"]:target) [href="#markdown"] {
   color: var(--selected-color);
@@ -285,18 +298,12 @@ h1.license-title {
   margin-bottom: 0.5em;
 }
 
-.md-typeset .tabbed-labels--linked> label> a {
-
-  /* tab font */
-  font-size: 1.1em;
-}
 
 p.md-nav__description.license {
   position: relative;
   min-height: 3em;
   padding-top: 1.5em;
   margin-top: 1em;
-  font-size: 1em;
   font-weight: 700;
   font-size-adjust: calc(1em + 1vw);
   color: var(--md-default-fg-color--lighter);
@@ -369,7 +376,6 @@ p.md-nav__description.license {
   gap: 0.5em;
   align-items: center;
   padding: 0.3125em 0.125em;
-  font-size: 0.64rem;
   font-size: min(0.8em, 0.64rem);
   font-weight: 700;
   line-height: 1.6;

@@ -19,7 +19,6 @@ from textwrap import dedent
 from typing import Any, ClassVar, Literal
 
 import ez_yaml
-import pyperclip
 from hook_logger import get_logger
 from jinja2 import Template, TemplateError
 from mkdocs.config.defaults import MkDocsConfig
@@ -91,7 +90,6 @@ def get_extra_meta(spdx_id: str) -> dict[str, Any]:
 
 def render_mapping(mapping: dict[str, Any], context: dict) -> dict[str, Any]:
     """Renders a dict/mapping with a context."""
-
     def render_value(value: Any) -> Any:
         """Recursively render a value."""
         if isinstance(value, str):
@@ -347,7 +345,10 @@ class LicenseContent:
         """
         text = text or self.markdown_license_text
         text = self.process_definitions(text, plaintext=True)
-        text = type(self)._header_pattern.sub(r"\1".upper(), text)  # Remove headers
+        headers = self._header_pattern.finditer(text)
+        if headers:
+            for header in headers:
+                text = text.replace(header.group(0), f"{header.group(1).upper()}\n")
         text = type(self)._markdown_pattern.sub(r"\2", text) # Remove headers, bold, italic, inline code
         text = type(self)._link_pattern.sub(r"\1 (\2)", text)  # Handle links
         text = type(self)._image_pattern.sub(r"\1 (\2)", text)  # Handle images
@@ -560,7 +561,9 @@ class LicenseContent:
                 f"### {self.meta.get('interpretation_title')}\n\n" + wrap_text(dedent(self.meta.get('interpretation_text', ''))))
             case "plaintext":
                 as_plaintext = self.process_markdown_to_plaintext(self.meta.get('interpretation_text', ''))
-                return f"""NOTE: {self.meta.get('interpretation_title')}\n\n""" + wrap_text(dedent(as_plaintext))
+                title = self.meta.get('interpretation_title', "")
+                title = re.sub(r"\{\{\s{1,2}plain_name\s\|\strim\s{1,2}\}\}", self.meta.get("plain_name", "").upper(), title)
+                return f"""{title.upper()}\n\n""" + wrap_text(dedent(as_plaintext))
         return ""
 
     def get_header_block(self, kind: Literal["reader", "markdown", "plaintext"]) -> str:
@@ -573,7 +576,7 @@ class LicenseContent:
             case "reader":
                 title = f"\n<h1 class='license-title'>{self.meta['plain_name']}</h1>"
                 if original_version:
-                    version_info = """\n<div class='version-info'><span class="original-version">original version: {original_version}</span>\n\n<span class="plain-version">plain version: {plain_version}</span></div>\n"""
+                    version_info = f"""\n<div class='version-info'><span class="original-version">original version: {original_version}</span><br /><span class="plain-version">plain version: {plain_version}</span></div>\n"""
                 else:
                     version_info = f"""\n<div class='version-info'><span class="plain-version">plain version: {plain_version}</span></div>\n"""
                 return f"""<div class="license-header">{title}{version_info}</div>"""
@@ -587,7 +590,7 @@ class LicenseContent:
                     version_info = f"> plain version: {plain_version}"
                 return f"{version_info}\n{title}"
             case _:
-                title = f"\n# {self.meta.get('plain_name')}"
+                title = f"\n{self.meta.get('plain_name', "").upper()}"
                 if original_version:
                     version_info = dedent(f"""\
                         original version: {original_version} | plain version: {plain_version}""")
@@ -675,7 +678,7 @@ class LicenseContent:
     @property
     def disclaimer_block(self) -> str:
         """Returns the disclaimer block for the license."""
-        not_advice_title = "This is not legal advice."
+        not_advice_title = "legal advice"
         not_advice = self.blockify(
             self.not_advice_text,
             "tab" if self.has_official else "warning",
@@ -685,13 +688,13 @@ class LicenseContent:
         if not self.has_official:
             return not_advice
         not_official_title = (
-            f"This is not the official {self.meta.get("original_name")}"
+            f"the official {self.meta.get("original_name")}"
         )
         not_official = self.blockify(
             self.not_official_text, "tab", not_official_title, 3
         )
         return self.blockify(
-            f"{not_advice}{not_official}", "details", "", 4, {"open": "True", "type": "warning"}
+            f"{not_advice}{not_official}", "admonition", f"The {self.meta.get("plain_name", "")} isn't...", 4, {"type": "warning"}
         )
 
     @property
@@ -888,7 +891,7 @@ class LicenseContent:
             self.blockify(
                 f"{tabs}",
                 "admonition",
-                f"Plain License: <span class='detail-title-highlight'>The {self.meta.get('plain_name')}</span>",
+                f"<span class='detail-title-highlight'>The {self.meta.get('plain_name')}</span>",
                 6,
                 options={"type": "license"},
             )

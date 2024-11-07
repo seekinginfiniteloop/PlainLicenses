@@ -34,7 +34,7 @@ limitations:
     - warranty
 outro: null
 extra_how: |
-    The MPL requires you include notices in parts of your work if you can. There are two notices you can include. You should always include [Notice A](#notice-a-license-notice), which tells people that the work is licensed under the Plain MPL. If you distribute the work in a way that isn't compatible with other licenses, you must also include [Notice B](#notice-B-incompatible-license-notice).
+    The MPL requires you include notices in parts of your work if you can. There are two notices you can include. You should always include <a href='#notice-a---license-notice' title="notice a">notice a</a>, which tells people that the work is licensed under the Plain MPL. If you distribute the work in a way that isn't compatible with other licenses, you must also include  <a href='#notice-b---incompatible-license-notice' title='notice b'>notice b</a>.
 reader_license_text: |
     <h2 class="license-first-header">We Give You a License to Use, Change, and Share This Work</h2>
 
@@ -107,7 +107,7 @@ reader_license_text: |
     **This license is a plain language translation of the Mozilla Public License 2.0. You should consider the Plain MPL to have the same terms as the Mozilla Public License 2.0.** You can also distribute the work under the terms of the [Mozilla Public License 2.0](https://www.mozilla.org/en-US/MPL/2.0/) or any later version published by the [Mozilla Foundation](https://foundation.mozilla.org/).(1) Plain License does not claim that the Mozilla Foundation or anyone else endorses this license or agrees to its compatibility with the Mozilla Public License 2.0.
     { .annotate }
 
-    1. **Don't relicense an existing work to the Plain MPL if the existing work is already licensed under the Mozilla Public License 2.0**. If the [Mozilla Foundation](https://foundation.mozilla.org/) ever clarifies that the Plain MPL is compatible with the Mozilla Public License 2.0, then you may treat the two licenses as compatible.
+    4. **Don't relicense an existing work to the Plain MPL if the existing work is already licensed under the Mozilla Public License 2.0**. If the [Mozilla Foundation](https://foundation.mozilla.org/) ever clarifies that the Plain MPL is compatible with the Mozilla Public License 2.0, then you may treat the two licenses as compatible.
 
     ## You Must Clearly Describe Any Limitations on Your Compliance with this License
 

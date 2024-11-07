@@ -8,7 +8,7 @@ hooks:
   - overrides/hooks/hook_logger.py # Central logger for hooks (can also do plugins)
   - overrides/hooks/socialmedia.py # Material hook for social media cards
   - overrides/hooks/update_changelogs.py # Handles changelog updates for individual licenses
-  - overrides/hooks/license_factory.py # Assembles licenses from frontmatter and boilerplate (boilerplate here in the config)
+  - overrides/hooks/license_factory.py # Assembles licenses from frontmatter and boilerplate (boilerplate below)
   - overrides/hooks/env_settings.py # Adds to the jinja environment
   - overrides/hooks/update_site_license.py # Updates the site license to match the latest Plain Unlicense
   - overrides/hooks/shame_counter.py # Counts the number of 'shame words' in a license
@@ -165,10 +165,9 @@ markdown_extensions:
         kwds:
           case: lower
           percent_encode: true
-
   - pymdownx.emoji:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
-      emoji_generator: !!python/name:pymdownx.emoji.to_png
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
       options:
         custom_icons:
           - overrides/.icons
@@ -265,9 +264,9 @@ extra:
     interpretation_title: >
       Legally Interpreting the {{ plain_name | trim }}
     interpretation_text: |
-      The {{ plain_name | trim }} is a plain language adaptation of the {{ original_name | trim }}. We made the {{ plain_name | trim }} to make the {{ original_name | trim }} more accessible and understandable. We tried to match the {{ original_name | trim }}'s legal intent exactly. **If you think the {{ plain_name | trim }}'s terms are legally unclear, use the official {{ official_link | trim }} to clarify the terms.**
+      The {{ plain_name | trim }} is a plain language version of the {{ original_name | trim }}. We wrote it to make the {{ original_name | trim }} more accessible and understandable. We tried to match the {{ original_name | trim }}'s legal intent. We didn't intend any differences in meaning. **If you are using the {{ plain_name | trim }} in a legal context, you should refer to the official {{ original_name | trim }} for clarification.**
 
-      If a court finds that any part of this {{ license_type | trim }} cannot be enforced, the rest of the {{ license_type | trim }} will still apply.
+      If a court finds that any part of this {{ license_type | trim }} can't be enforced, the rest of the {{ license_type | trim }} terms still apply.
     how: |
       <p>Create a LICENSE or LICENSE.md file in the base of your project. If your project is on Github or another platform that uses markdown, copy the <a class="how_link" href=#markdown>markdown version</a> using the copy icon. If your platform doesn't support markddown, use the <a class="how_link" href="#plaintext">plaintext version</a>, or provide a link to our <a class="how_link" href="#reader">reader version</a>.</p> <p><strong>Notices</strong>: the licensing community usually recommends adding a short notice to each part of your project telling readers how the work is licensed and how they can use it. For software projects, this is at the top of each module or file.</p>
     tag_text: # These values map to each of the tags in the license frontmatter, and are used for tooltips.
@@ -278,7 +277,7 @@ extra:
       can-change: >
         Change freely: You can change any work that uses this {{ license_type | trim }} however you want.
       can-revoke: >
-        Taksies-backsies: You can revoke this license from any work that uses it at any time if you hold the copyright.
+        Take-backs: You can revoke this license from any work that uses it at any time if you hold the copyright.
       relicense: >
         Relicense: You can change the {{ license_type | trim }} to a different license if you want. You may need to follow certain rules, like giving credit to the original author.
       share-alike (strict): >
