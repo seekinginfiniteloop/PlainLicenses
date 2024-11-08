@@ -54,6 +54,7 @@ pip-delete-this-directory.txt
 
 
 # Tran
+.eslintcache
 ipython_config.py
 
 # Environments

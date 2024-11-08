@@ -32,20 +32,19 @@ limitations:
   - warranty
 
 outro: |
-  /// details |  <span class="detail-title-highlight">Elastic:</span> We think you're pretty special! :heart:
+  /// details |  Elastic: We think you're pretty special! :heart:
       type: note
 
   **We commend the folks at [Elastic](https://www.elastic.co/)** for creating a license that's pretty clear. We can tell you worked hard to make your license terms accessible, and we appreciate it. We've just made it clearer. **Thanks for leading by example.**
 
-  We know the Elastic License isn't widely used (besides by Elastic...), but our research found **the Elastic License offers unique terms among source-available licenses**. Most source-available licenses cccccbkbkukrfrntvkrcirvlbtvcvtudlhgtftfhvudc
-  fall into two groups:
+  We know the Elastic License isn't widely used (besides by Elastic...), but our research found **the Elastic License offers unique terms among source-available licenses**. Most source-available licenses fall into two groups:
 
   1. *Copyleft-style* licenses like the Server Side Public License (SSPL) that require competitors to open source their entire stack (not just the changes they made to the original work).
   2. *Delayed permissive* licenses like the Functional Source License (FSL), which forbid competitors from offering the work as a service for a 2-4 year period (2 years for FSL). After that period, the work becomes permissively licensed (e.g., MIT, Apache 2.0). For everyone else, the work is permissively licensed from the start.
 
   The Elastic License falls between those two approaches. It resembles a permissive license, but with restrictions on competition. Non-competitors can use the work permissively, but competitors can never use it. **We created this Plain Elastic License to help more people understand and use it because we think it's a good option for some projects. It lets you share without compromising protection from competitors.**
 
-  We found other licenses with similar terms to the Elastic License 2.0, such as the Redis Source Available License 2.0. Because the Elastic License's terms were already clearer than most, we thought it was the best candidate for a Plain Language License. We hope this helps more people understand and use the Elastic License.
+  We found other licenses with similar terms to the Elastic License, such as the Redis Source Available License 2.0. Because the Elastic License's terms were already clearer than most, we thought it was the best candidate for a Plain Language License. We hope this helps more people understand and use the Elastic License.
 
   ///
 

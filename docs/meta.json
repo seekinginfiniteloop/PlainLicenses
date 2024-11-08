@@ -329,13 +329,13 @@
       ],
       "exports": []
     },
-    "docs/assets/stylesheets/bundle.63D6A3RY.css.map": {
-      "bytes": 332841,
+    "docs/assets/stylesheets/bundle.W5GXNQ4W.css.map": {
+      "bytes": 332617,
       "inputs": [],
       "exports": []
     },
-    "docs/assets/stylesheets/bundle.63D6A3RY.css": {
-      "bytes": 182674,
+    "docs/assets/stylesheets/bundle.W5GXNQ4W.css": {
+      "bytes": 182483,
       "inputs": [
         "external/mkdocs-material/material/templates/assets/stylesheets/palette.06af60db.min.css",
         "external/mkdocs-material/material/templates/assets/stylesheets/main.0253249f.min.css",
