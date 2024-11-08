@@ -35,35 +35,14 @@
   mask-image: var(--md-admonition-icon--license);
 }
 
+.md-typeset .license> code {
+  overflow-wrap: break-word;
+}
+
 .license div.tabbed-set.tabbed-alternate div.tabbed-labels.tabbed-labels--linked {
   padding-left: 0.5em;
 }
-/*
-.license div.tabbed-set.tabbed-alternate div.tabbed-labels.tabbed-labels--linked::before {
-  border-bottom: 0.125em solid var(--emerald);
-}
 
-/* Styling for definitions in license tabbed blocks
-.license div.tabbed-set.tabbed-alternate div.tabbed-content div.tabbed-block p,
-.license div.tabbed-set.tabbed-alternate div.tabbed-content div.tabbed-block ul {
-  font-size: 1rem;
-}
-
-.license div.tabbed-set.tabbed-alternate div.tabbed-content div.tabbed-block h2 {
-  font-size: 1.25rem;
-  font-weight: 700;
-}
-
-.license div.tabbed-set.tabbed-alternate div.tabbed-content div.tabbed-block h3 {
-  font-size: 1.1rem;
-  font-weight: 600;
-}
-
-.md-typeset .tabbed-block dl dt code.highlight {
-  font-size: 0.97rem !important;
-  font-weight: 500 !important;
-}
-*/
 [data-md-color-scheme="slate"] .md-typeset .tabbed-block dl dt code.highlight {
   color: var(--ecru) !important;
 }
@@ -104,7 +83,7 @@ h1.license-title {
 }
 
 .md-typeset .tabbed-block h2.license-first-header {
-  padding: 0;
+  padding: 0 0 -.5em 0;
   margin: 0.5em 0 0 0.5em;
   text-align: left;
 }
@@ -114,7 +93,7 @@ h1.license-title {
   align-items: center;
   justify-content: space-between;
   padding: 0;
-  margin: 0.313em 0.938em 0 0;
+  margin: 0.1em 0.938em 0 0;
 }
 
 .license-title {
@@ -130,7 +109,7 @@ h1.license-title {
   right: 1rem;
   z-index: 10;
   padding: 0.75rem;
-  font-size: 0.875rem;
+  font-size: 0.9rem;
   line-height: 1.4;
 
   /* Glass effect */
@@ -163,8 +142,8 @@ h1.license-title {
 
 .version-info {
   place-self: flex-start normal;
-  padding: 0.1em;
-  margin: 0.3em 0.313em 0.313em 0.938em;
+  padding: 0.3em;
+  margin: 0.01em 0.02em 0.02em 0.938em;
   font-size: 0.85em;
   color: var(--white);
   text-align: center;
@@ -188,11 +167,31 @@ h1.license-title {
 .version-info .plain_version {
   font-weight: 600;
 }
+/*
+.md-typeset .tabbed-labels::before {
+  border-bottom: 1em solid var(--emerald);
+}
+.md-typeset .tabbed-labels>label>[href]:first-child:hover {
+  color: var(--hover-color);
+  margin-bottom: 0.5em;
 
-/* When tab link is hovered, style both the tab and its corresponding icon */
+}
+.md-typeset div.admonition.license div.tabbed-set.tabbed-alternate input ~ :checked {
+  color: var(--hover-color);
+}
+
+.md-typeset .tabbed-set>input:checked~.tabbed-labels>:nth-of-type(n) ::before {
+  background-color: var(--blue-blue);
+}
+
+[data-md-color-scheme="slate"] .md-typeset .tabbed-set>input>:nth-of-type(n)~.tabbed-labels>:nth-of-type(n) ::before {
+  background-color: var(--emerald);
+}
+
+/* When tab link is hovered, style both the tab and its corresponding icon
 .tabbed-labels:has([href="#reader"]:hover) [href="#reader"],
 .quick_links:has([href="#reader"]:hover) [href="#reader"],
-/* Also style when the icon is hovered */
+/* Also style when the icon is hovered
 .quick_links:has([href="#reader"]:hover) [href="#reader"],
 .tabbed-labels:has([href="#reader"]:hover) [href="#reader"] {
   color: var(--hover-color);
@@ -231,7 +230,7 @@ h1.license-title {
   fill: var(--hover-color);
 }
 
-/* When tab link is selected, style both the tab and its corresponding icon */
+/* When tab link is selected, style both the tab and its corresponding icon
 .tabbed-labels:has([href="#reader"]:target) [href="#reader"],
 .quick_links:has([href="#reader"]:target) [href="#reader"] {
   color: var(--selected-color);
@@ -250,6 +249,7 @@ h1.license-title {
 .tabbed-labels:has([href="#html"]:target) [href="#html"]::before,
 .quick_links:has([href="#html"]:target) [href="#html"]::before {
   background-color: var(--selected-color);
+}
 
 .tabbed-labels:has([href="#markdown"]:target) [href="#markdown"],
 .quick_links:has([href="#markdown"]:target) [href="#markdown"] {
@@ -292,11 +292,7 @@ h1.license-title {
 }
 
 /* Styling for the license tabbed labels in the license reader view */
-.md-typeset .tabbed-labels> label> [href]:first-child {
 
-  /* the tab bar */
-  margin-bottom: 0.5em;
-}
 
 
 p.md-nav__description.license {
@@ -320,7 +316,7 @@ p.md-nav__description.license {
   align-self: flex-end;
   justify-content: space-evenly;
   width: 100%;
-  min-height: 3em;
+  min-height: 4em;
   padding: 0.01em;
   margin: 0.5em 0.2em;
 }
@@ -366,7 +362,7 @@ p.md-nav__description.license {
   align-self: center;
   justify-content: space-evenly;
   width: 100%;
-  min-height: 3em;
+  min-height: 4em;
   margin-top: 0.5em;
   margin-bottom: 0.75em;
 }
@@ -382,6 +378,11 @@ p.md-nav__description.license {
   letter-spacing: normal;
   background: var(--md-default-fg-color--lightest);
   border-radius: 2.4rem;
+}
+
+#license-sidebar-inner .md-tag[href] path {
+  min-height: 1em;
+  min-width: 1em;
 }
 
 #license-sidebar-inner .md-tag[href] {
@@ -414,16 +415,25 @@ p.md-nav__description.license {
 .section-header::before {
   position: absolute;
   top: 0.625em;
-  width: 1rem;
-  height: 1rem;
+  width: 1.2rem;
+  height: 1.2rem;
   content: "";
   background-color: currentcolor;
-  mask-image: var(--md-details-icon);
+      mask-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAyNCAyNCc+PHBhdGggZD0nbTE1LjE0NiAxMi4zNTQtNS43OTIgNS43OTJhLjUuNSAwIDAgMS0uODU0LS4zNTNWNi4yMDdhLjUuNSAwIDAgMSAuODU0LS4zNTNsNS43OTIgNS43OTJhLjUuNSAwIDAgMSAwIC43MDgnLz48L3N2Zz4=");
+      mask-repeat: no-repeat;
+      mask-position: center;
+      mask-size: contain;
+      content: "";
+      display: inline-block;
   mask-repeat: no-repeat;
   mask-position: center;
   mask-size: contain;
   transition: transform 250ms ease;
   transform: rotate(0);
+}
+
+.section-header::before path {
+  fill: var(--emerald);
 }
 
 [data-md-color-scheme="slate"] .section-header {
@@ -438,6 +448,7 @@ p.md-nav__description.license {
   display: flex;
   align-items: center;
   cursor: pointer;
+  min-height: 5em;
 }
 
 .section-content {

@@ -36,11 +36,12 @@ header#header-target.md-header {
   top: var(--header-height);
   left: 0;
   z-index: 1000;
+  display: inline-flex;
+  padding: 0.1em;
   align-self: flex-start;
   margin-top: calc(var(--nav-height) - 0.2rem);
   background: var(--zaffre);
 }
-
 /** Hero section */
 
 .hero {

@@ -21,18 +21,18 @@ def wrap_text(text: str) -> str:
     Returns:
         str: The wrapped text with paragraphs and bullet points formatted appropriately.
     """
-    wrapper = rpartial(wrap, width=80, break_long_words=False)
+    wrapper = rpartial(wrap, width=70, break_long_words=False)
     paragraphs = text.split("\n\n")
     bullet_paragraphs = []
     for i, paragraph in enumerate(paragraphs):
         if paragraph.strip().startswith("-"):
             bullets = paragraph.split("\n")
-            bullets = [
-                wrapper(bullet) for bullet in bullets
-            ]
+            bullets = [wrapper(bullet) for bullet in bullets if bullet]
             bullet_paragraphs.append((i, bullets))
         else:
-            bullet_paragraphs.append((i, [wrapper(paragraph)]))
+            lines = paragraph.split("\n")
+            wrapped_lines = [wrapper(line) for line in lines if line]
+            bullet_paragraphs.append((i, wrapped_lines))
     paragraphs = [
         paragraph
         for i, paragraph in enumerate(paragraphs)
@@ -43,7 +43,7 @@ def wrap_text(text: str) -> str:
         for paragraph in paragraphs
     ]
     for i, bullets in bullet_paragraphs:
-        bullets = ["\n".join(bullet) for bullet in bullets]
+        bullets = ["\n".join(bullet) for bullet in bullets if bullet]
         wrapped_paragraphs.insert(i, "\n".join(bullets))
     return "\n\n".join(wrapped_paragraphs)
 

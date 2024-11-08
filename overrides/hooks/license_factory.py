@@ -375,9 +375,9 @@ class LicenseContent:
                 term = match.group("term")
                 def_text = match.group("def")
                 if plaintext:
-                    replacement = dedent(f"""{term.replace('`', '')} - {def_text}""")
+                    replacement = "\n" + dedent(f"""{term.replace('`', '')} - {def_text}""") + "\n"
                 else:
-                    replacement = dedent(f"""{term}:\n{def_text}""")
+                    replacement ="\n" + dedent(f"""{term}:\n{def_text}""") + "\n"
                 text = text.replace(match.group(0), replacement)
         if matches := re.findall(r"\{\s?\.\w+\s?\}", text):
             for match in matches:

@@ -18,8 +18,10 @@
   }
 }
 
-.md-typeset details {
-  font-size: 0.8rem;
+.md-typeset div.details,.md-typeset div.admonition,
+.md-typeset div.summary, .md-typeset div.admonition>label,
+.md-typeset div.details>label, .md-typeset div.summary>label {
+  font-size: 0.9em;
 }
 
 [data-md-color-scheme="slate"] {
@@ -39,15 +41,11 @@
   transition: all ease-out 200ms;
 }
 
+
 .md-typeset dl p {
   font-family: Inter, "Noto Sans", "Open Sans", Lato, Helvetica, Arial, system-ui, sans-serif;
   font-size: 0.95rem;
   line-height: 1.6em;
-}
-
-.md-typeset summary {
-  font-size: 1rem;
-  font-weight: 500;
 }
 
 .md-typeset h1,
@@ -57,6 +55,17 @@
 .md-typeset h5,
 .md-typeset h6 {
   font-family: Inter, "Noto Sans", "Open Sans", Lato, Helvetica, Arial, system-ui, sans-serif;
+  color: var(--blue-blue);
+}
+
+[data-md-color-scheme="slate"]
+.md-typeset h1,
+.md-typeset h2,
+.md-typeset h3,
+.md-typeset h4,
+.md-typeset h5,
+.md-typeset h6 {
+  color: var(--ecru);
 }
 
 .md-typeset {
@@ -65,7 +74,7 @@
 }
 
 body {
-  font-size: 0.6rem;
+  font-size: 0.8rem;
 }
 
 .md-typeset h1 {
@@ -125,14 +134,12 @@ body {
 
 .md-typeset .md-typeset__table th {
   padding: 1em;
-  font-size: 1.4em;
   font-weight: 600;
   text-align: center;
 }
 
 .md-typeset .md-typeset__table td {
   padding: 1em;
-  font-size: 1.2em;
   text-align: left;
 }
 
@@ -156,13 +163,12 @@ a.md-header__button.md-logo img {
 .md-tabs {
   display: flex;
   height: 3em;
-  text-align: center;
+  text-align: left;
 }
 
 .md-tabs__link {
   align-items: baseline;
   margin: 0.3em 1em;
-  font-size: 1.7em;
   font-weight: 500;
   transition: all ease-out 200ms;
 }
@@ -173,12 +179,10 @@ li.md-tabs__item a.md-tabs__link:hover {
 
 .md-ellipsis {
   margin-bottom: 0.5em;
-  font-size: 1.2em;
 }
 
 .md-nav__container a.md-nav__link {
   margin: 0.02em 0;
-  font-size: 1.2em;
   font-weight: 500;
 }
 
@@ -222,10 +226,6 @@ a.md-nav__link--active:nth-child(3)> span:nth-child(1) {
 nav.md-nav ul.md-nav__list li.md-nav__item a.md-nav__link span.md-ellipsis {
   margin-top: 0.01em;
   margin-left: 0.5em;
-}
-
-.md-typeset .admonition {
-  font-size: 0.8em;
 }
 
 @media screen and (max-width: 76.2344em) {

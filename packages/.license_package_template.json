@@ -28,11 +28,26 @@
         "@semantic-release/commit-analyzer",
         {
           "releaseRules": [
-            { "type": "stable", "release": "major" },
-            { "type": "new", "release": "minor" },
-            { "type": "subs", "release": "minor" },
-            { "type": "admin", "release": "patch" },
-            { "type": "bot", "release": false }
+            {
+              "type": "stable",
+              "release": "major"
+            },
+            {
+              "type": "new",
+              "release": "minor"
+            },
+            {
+              "type": "subs",
+              "release": "minor"
+            },
+            {
+              "type": "admin",
+              "release": "patch"
+            },
+            {
+              "type": "bot",
+              "release": false
+            }
           ]
         }
       ],
@@ -47,7 +62,7 @@
         "@semantic-release/git",
         {
           "assets": [
-            "../changelogs/elastic-2.0.md"
+            "../changelogs/{{LICENSE_NAME}}.md"
           ]
         }
       ]
