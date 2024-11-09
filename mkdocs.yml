@@ -57,8 +57,8 @@ theme:
     - content.footnote.tooltips
     - navigation.footer
     - navigation.indexes
-    - navigation.instant
-    - navigation.instant.progress
+    # - navigation.instant
+    # - navigation.instant.progress
     - navigation.path
     - navigation.sections
     - navigation.tabs
@@ -150,10 +150,10 @@ plugins:
   - git-authors
 markdown_extensions:
   - abbr
-  - attr_list
   - def_list
-  - md_in_html
   - footnotes
+  - attr_list
+  - md_in_html
   - markdown.extensions.meta
   - pymdownx.blocks.admonition
   - pymdownx.blocks.definition

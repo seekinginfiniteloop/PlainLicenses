@@ -6,40 +6,41 @@ cd /workspaces/PlainLicense || return
 sudo apt update &&
 sudo apt upgrade -y &&
 sudo apt install -y --no-install-recommends \
-zsh \
 bash \
 curl \
 git \
 git-doc \
-nano \
-python3 \
-python3-dev \
-zsh-autosuggestions \
-zsh-syntax-highlighting \
+gnupg2 \
+gpg \
 libcairo2 \
 libcairo2-dev \
-libfreetype6-dev \
 libffi-dev \
+libfreetype6-dev \
+libgdm-dev \
 libjpeg-dev \
 libpng-dev \
+libreadline-dev \
+libssl-dev \
 libz-dev \
-unzip \
-gpg \
-gnupg2 \
-nodejs \
+nano \
 ncurses-base \
 ncurses-bin \
+nodejs \
+openssl \
+pngquant \
+python3 \
+python3-dev \
+readline-common \
+shellcheck \
+sqlite-utils \
+sqlite3 \
+unzip \
+xclip \
 zlib1g \
 zlib1g-dev \
-libgdm-dev \
-libssl-dev \
-openssl \
-readline-common \
-libreadline-dev \
-sqlite3 \
-shellcheck \
-xclip \
-sqlite-utils &&
+zsh \
+zsh-autosuggestions \
+zsh-syntax-highlighting
 
 export BUN_INSTALL="/home/vscode/.bun"
 export BUNOPTS="--no-interactive --silent"
@@ -61,6 +62,9 @@ alias ll='ls -alFh'
 alias llr='ls -alFhR'
 alias lld='ls -alFhd'
 alias lldr='ls -alFhdR'
+alias locate='lolcate'
+alias updatedb='lolcate --update'
+lolcate --update
 export PATH="$BUN_INSTALL/bin:$HOME/.cargo/bin:$HOME/bin:$HOME/sbin:$PATH:/opt/bin:/opt/sbin:/opt/local/bin:/opt/local/sbin"
 export UV_PYTHON_DOWNLOADS="automatic"
 export UV_COLOR="always"
@@ -84,6 +88,56 @@ echo "$CONFIG_BLOCK" >> "$HOME/.bashrc"
 echo "$ZCONFIG_BLOCK" >> "$HOME/.zshrc"
 # shellcheck disable=SC1090
 source "$HOME/.bashrc"
+
+LOLCATE_CONFIG=$(cat << 'EOF'
+description = ""
+
+# Directories to index.
+dirs = [
+    "/bin",
+    "/etc",
+    "/sbin",
+    "/sys/module",
+    "/usr/bin",
+    "/usr/lib",
+    "/usr/lib64",
+    "/usr/local",
+    "/usr/sbin",
+    "/usr/share",
+    "/usr/share",
+    "/usr/src",
+    "/var/lib",
+    "/var/local",
+    "/var/log",
+    "/vscode"
+    "/vscode",
+    "/workspaces",
+    "~/",
+]
+
+# Set to "Dirs" or "Files" to skip directories or files.
+# If unset, or set to "None", both files and directories will be included.
+# skip = "Dirs"
+
+# Set to true if you want skip symbolic links
+ignore_symlinks = false
+
+# Set to true if you want to ignore hidden files and directories
+ignore_hidden = false
+
+# Set to true to read .gitignore files and ignore matching files
+gitignore = false
+EOF
+)
+
+LOLCATE_IGNORES=$(cat << 'EOF'
+.ssh
+.cache
+id_*
+.git
+EOF
+)
+
 
 
 function uv_install() {
@@ -123,6 +177,13 @@ export BUNOPTS="--no-interactive --silent"
 # Execute functions
 cargo install --all-features ripgrep &&
 cargo install typos-cli &&
+cargo install --git https://github.com/ngirard/lolcate-rs &&
+mkdir -p "$HOME/logs" &&
+mkdir -p $HOME/.config/lolcate/default &&
+echo "$LOLCATE_CONFIG" > $HOME/.config/lolcate/default/config.toml &&
+echo "$LOLCATE_IGNORES" > $HOME/.config/lolcate/default/ignores &&
+echo "lolcate --update" | sudo tee /etc/cron.daily/lolcate &&
+sudo chmod +x /etc/cron.daily/lolcate &&
 set_completions &&
 uv_install &&
 bun_install &&

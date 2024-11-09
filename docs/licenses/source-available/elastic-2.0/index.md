@@ -44,7 +44,7 @@ outro: |
 
   The Elastic License falls between those two approaches. It resembles a permissive license, but with restrictions on competition. Non-competitors can use the work permissively, but competitors can never use it. **We created this Plain Elastic License to help more people understand and use it because we think it's a good option for some projects. It lets you share without compromising protection from competitors.**
 
-  We found other licenses with similar terms to the Elastic License, such as the Redis Source Available License 2.0. Because the Elastic License's terms were already clearer than most, we thought it was the best candidate for a Plain Language License. We hope this helps more people understand and use the Elastic License.
+  We found other licenses with similar terms to the Elastic License, such as the Redis Source Available License 2.0. Because the Elastic License's terms were already clearer than most, we thought it was the best candidate for a plain language license. We hope this helps more people understand and use the Elastic License.
 
   ///
 

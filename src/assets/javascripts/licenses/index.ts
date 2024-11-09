@@ -6,13 +6,16 @@
  */
 import { Observable, Subscription, fromEvent, merge } from "rxjs"
 import { filter, map, startWith, tap } from "rxjs/operators"
+import { mountContentTabs } from "~/components"
 
 import { logger } from "~/log"
 import { mergedSubscriptions } from "~/utils"
 
-const { location$ } = window
+const { location$, viewport$, target$ } = window
 
 const subscriptions: Subscription[] = []
+
+mountContentTabs(viewport$, target$).subscribe()
 
 const updateTabStyles = (hash: string): void => {
     logger.info("updating tab styles, hash:", hash)

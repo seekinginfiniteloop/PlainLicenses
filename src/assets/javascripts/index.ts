@@ -1,5 +1,5 @@
 /**
- * @license Plain Unlicense (Public Domain)
+ * Plain Unlicense (Public Domain)
  * @copyright No rights reserved. Created by and for Plain License www.plainlicense.org
  */
 import "@/bundle" // we import mkdocs-material's scripts as a side effect

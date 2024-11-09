@@ -28,13 +28,14 @@ from mkdocs.structure.pages import Page
 from _utils import Status, find_repo_root, wrap_text
 
 # Change logging level here
-_assembly_log_level = logging.DEBUG
+_assembly_log_level = logging.WARNING
 
 if not hasattr(__name__, "assembly_logger"):
     assembly_logger = get_logger(
         "ASSEMBLER",
         _assembly_log_level,
     )
+
 
 def clean_content(content: dict[str, Any]) -> dict[str, Any] | None:
     """
@@ -76,8 +77,14 @@ def get_extra_meta(spdx_id: str) -> dict[str, Any]:
         raw_text = file.read_text()
         if match := re.search(r"---\n(.*?)\n---", raw_text, re.DOTALL):
             frontmatter = ez_yaml.to_object(match[1])
-            if isinstance(frontmatter, dict) and (cleaned_frontmatter := clean_content(frontmatter)):
-                new_meta |= {f"cal_{k}": v for k, v in cleaned_frontmatter.items() if v and k != "using"} | cleaned_frontmatter.get("using", {})
+            if isinstance(frontmatter, dict) and (
+                cleaned_frontmatter := clean_content(frontmatter)
+            ):
+                new_meta |= {
+                    f"cal_{k}": v
+                    for k, v in cleaned_frontmatter.items()
+                    if v and k != "using"
+                } | cleaned_frontmatter.get("using", {})
     spdx_files = list(Path("external/license-list-data/json/details").glob("*.json"))
     if file := next(
         (f for f in spdx_files if (f.stem.lower() == spdx_id.lower())), None
@@ -90,6 +97,7 @@ def get_extra_meta(spdx_id: str) -> dict[str, Any]:
 
 def render_mapping(mapping: dict[str, Any], context: dict) -> dict[str, Any]:
     """Renders a dict/mapping with a context."""
+
     def render_value(value: Any) -> Any:
         """Recursively render a value."""
         if isinstance(value, str):
@@ -121,7 +129,7 @@ def assemble_license_page(config: MkDocsConfig, page: Page, file: File) -> Page:
         "year", datetime.now(timezone.utc).strftime("%Y")
     ).strip()
     boilerplate = clean_content(boilerplate) or {}
-    page.meta = meta | boilerplate # type: ignore
+    page.meta = meta | boilerplate  # type: ignore
     license = LicenseContent(page)
     if meta:
         meta |= license.attributes
@@ -249,6 +257,7 @@ def on_files(files: Files, config: MkDocsConfig) -> Files:
         )
     return replace_files(files, Files(new_license_files))
 
+
 def load_json(path: Path) -> dict[str, Any]:
     """Loads a JSON"""
     return json.loads(path.read_text())
@@ -269,23 +278,30 @@ class LicenseContent:
     """
 
     _year_pattern: ClassVar[Pattern[str]] = re.compile(r"\{\{\s{1,2}year\s{1,2}\}\}")
-    _code_pattern: ClassVar[Pattern[str]] = re.compile(r"(`{3}markdown|`{3}plaintext(.*?)`{3})", re.DOTALL)
+    _code_pattern: ClassVar[Pattern[str]] = re.compile(
+        r"(`{3}markdown|`{3}plaintext(.*?)`{3})", re.DOTALL
+    )
     _definition_pattern = re.compile(
-            r"(?P<term>`[\w\s]+`)\s*?\n{1,2}[:]\s{1,4}(?P<def>[\w\s]+)\n{2}",
-            re.MULTILINE,
-        )
+        r"(?P<term>`[\w\s]+`)\s*?\n{1,2}[:]\s{1,4}(?P<def>[\w\s]+)\n{2}",
+        re.MULTILINE,
+    )
     _annotation_pattern: ClassVar[Pattern[str]] = re.compile(
-            r"(?P<citation>\([123]\)).*?(?P<class>\{\s\.annotate\s\})[\n\s]{1,4}[123]\.\s{1,2}(?P<annotation>.+?)\n",
-            re.MULTILINE | re.DOTALL,
-        )
+        r"(?P<citation>\([123]\)).*?(?P<class>\{\s\.annotate\s\})[\n\s]{1,4}[123]\.\s{1,2}(?P<annotation>.+?)\n",
+        re.MULTILINE | re.DOTALL,
+    )
     _reader_header_pattern: ClassVar[Pattern[str]] = re.compile(
-            r'<h2 class="license-first-header">(.*?)</h2>'
-        )
+        r'<h2 class="license-first-header">(.*?)</h2>'
+    )
     _header_pattern: ClassVar[Pattern[str]] = re.compile(r"#+ (\w+?)\n")
-    _markdown_pattern: ClassVar[Pattern[str]] = re.compile(r"#+ |(\*\*|\*|`)(.*?)\1",re.MULTILINE)
-    _link_pattern: ClassVar[Pattern[str]] = re.compile(r"\[(.*?)\]\((.*?)\)", re.MULTILINE)
-    _image_pattern: ClassVar[Pattern[str]] = re.compile(r"!\[(.*?)\]\((.*?)\)", re.MULTILINE)
-
+    _markdown_pattern: ClassVar[Pattern[str]] = re.compile(
+        r"#+ |(\*\*|\*|`)(.*?)\1", re.MULTILINE
+    )
+    _link_pattern: ClassVar[Pattern[str]] = re.compile(
+        r"\[(.*?)\]\((.*?)\)", re.MULTILINE
+    )
+    _image_pattern: ClassVar[Pattern[str]] = re.compile(
+        r"!\[(.*?)\]\((.*?)\)", re.MULTILINE
+    )
 
     def __init__(self, page: Page) -> None:
         """
@@ -304,7 +320,9 @@ class LicenseContent:
         self.license_type = self.get_license_type()
         self.title = f"The {self.meta['plain_name']}"
         self.year = str(datetime.now().strftime("%Y"))
-        self.reader_license_text: str = self.replace_year(self.meta["reader_license_text"])
+        self.reader_license_text: str = self.replace_year(
+            self.meta["reader_license_text"]
+        )
         self.markdown_license_text = self.process_mkdocs_to_markdown()
         self.plaintext_license_text = self.process_markdown_to_plaintext()
         self.changelog_text = self.meta.get(
@@ -349,7 +367,9 @@ class LicenseContent:
         if headers:
             for header in headers:
                 text = text.replace(header.group(0), f"{header.group(1).upper()}\n")
-        text = type(self)._markdown_pattern.sub(r"\2", text) # Remove headers, bold, italic, inline code
+        text = type(self)._markdown_pattern.sub(
+            r"\2", text
+        )  # Remove headers, bold, italic, inline code
         text = type(self)._link_pattern.sub(r"\1 (\2)", text)  # Handle links
         text = type(self)._image_pattern.sub(r"\1 (\2)", text)  # Handle images
         text = type(self)._code_pattern.sub(r"===\1===", text)  # Remove code blocks
@@ -375,9 +395,13 @@ class LicenseContent:
                 term = match.group("term")
                 def_text = match.group("def")
                 if plaintext:
-                    replacement = "\n" + dedent(f"""{term.replace('`', '')} - {def_text}""") + "\n"
+                    replacement = (
+                        "\n"
+                        + dedent(f"""{term.replace('`', '')} - {def_text}""")
+                        + "\n"
+                    )
                 else:
-                    replacement ="\n" + dedent(f"""{term}:\n{def_text}""") + "\n"
+                    replacement = "\n" + dedent(f"""{term}:\n{def_text}""") + "\n"
                 text = text.replace(match.group(0), replacement)
         if matches := re.findall(r"\{\s?\.\w+\s?\}", text):
             for match in matches:
@@ -536,13 +560,15 @@ class LicenseContent:
             for k, v in options.items():
                 if isinstance(v, dict):
                     dict_block = (
-                        "{ " + ", ".join([f"{k}: {v}" for k, v in v.items()]) + " }"
+                        "{ " + ", ".join([f"{kk}: {vv}" for kk, vv in v.items()]) + " }"
                     )
-                    option_block += f"{' ' * (separator_count + 1)}{k}: {dict_block}\n"
+                    option_block += f"{' ' * (separator_count + 1)} {k}: {dict_block}\n"
                 elif v:
                     option_block += f"{' ' * (separator_count + 1)}{k}: {v}\n"
 
-        return f"""\n{separator} {kind} | {title}\n{option_block}\n{text}\n{separator}\n"""
+        return (
+            f"""\n{separator} {kind} | {title}\n{option_block}\n{text}\n{separator}\n"""
+        )
 
     def interpretation_block(self, kind: str) -> str:
         """Returns the interpretation block for the license."""
@@ -551,19 +577,26 @@ class LicenseContent:
         match kind:
             case "reader":
                 return self.blockify(
-                dedent(self.meta.get("interpretation_text", "")),
-                "note",
-                self.meta.get("interpretation_title", ""),
-                4,
-            )
+                    dedent(self.meta.get("interpretation_text", "")),
+                    "note",
+                    self.meta.get("interpretation_title", ""),
+                    4,
+                )
             case "markdown":
-                return (
-                f"### {self.meta.get('interpretation_title')}\n\n" + wrap_text(dedent(self.meta.get('interpretation_text', ''))))
+                return f"### {self.meta.get('interpretation_title')}\n\n" + wrap_text(
+                    dedent(self.meta.get("interpretation_text", ""))
+                )
             case "plaintext":
-                as_plaintext = self.process_markdown_to_plaintext(self.meta.get('interpretation_text', ''))
-                title = self.meta.get('interpretation_title', "")
-                title = re.sub(r"\{\{\s{1,2}plain_name\s\|\strim\s{1,2}\}\}", self.meta.get("plain_name", "").upper(), title)
-                return f"""{title.upper()}\n\n""" + wrap_text(dedent(as_plaintext))
+                as_plaintext = self.process_markdown_to_plaintext(
+                    self.meta.get("interpretation_text", "")
+                )
+                title = self.meta.get("interpretation_title", "")
+                title = re.sub(
+                    r"\{\{\s{1,2}plain_name\s\|\strim\s{1,2}\}\}",
+                    self.meta.get("plain_name", "").upper(),
+                    title,
+                )
+                return f"{title.upper()}\n\n" + dedent(as_plaintext)
         return ""
 
     def get_header_block(self, kind: Literal["reader", "markdown", "plaintext"]) -> str:
@@ -584,10 +617,9 @@ class LicenseContent:
                 title = f"\n# {self.meta.get('plain_name')}" ""
                 if original_version:
                     version_info = dedent(f"""\
-                        > original version: {original_version}
-                        > plain version: {plain_version}""")
+                        > original version: {original_version}  |  plain version: {plain_version}""")
                 else:
-                    version_info = f"> plain version: {plain_version}"
+                    version_info = f"plain version: {plain_version}"
                 return f"{version_info}\n{title}"
             case _:
                 title = f"\n{self.meta.get('plain_name', "").upper()}"
@@ -687,14 +719,16 @@ class LicenseContent:
         )
         if not self.has_official:
             return not_advice
-        not_official_title = (
-            f"the official {self.meta.get("original_name")}"
-        )
+        not_official_title = f"the official {self.meta.get("original_name")}"
         not_official = self.blockify(
             self.not_official_text, "tab", not_official_title, 3
         )
         return self.blockify(
-            f"{not_advice}{not_official}", "admonition", f"The {self.meta.get("plain_name", "")} isn't...", 4, {"type": "warning"}
+            f"{not_advice}{not_official}",
+            "admonition",
+            f"The {self.meta.get("plain_name", "")} isn't...",
+            4,
+            {"type": "warning"},
         )
 
     @property
@@ -721,16 +755,20 @@ class LicenseContent:
         """Returns the markdown block for the license."""
         header_block = self.get_header_block("markdown")
         body = wrap_text(dedent(f"\n{self.markdown_license_text}\n"))
-        text = f"\n```markdown\n\n{header_block}\n\n{body}{self.interpretation_block('markdown')}\n```\n\n{self.disclaimer_block}\n"
-        return self.blockify(f"\n{text.strip()}\n", "tab", f"markdown {self.icon_map['markdown']}")
+        text = f"""\n\n```markdown title="{self.meta.get('plain_name', '')} in Github-style markdown"\n\n{header_block}\n\n{body}{wrap_text(self.interpretation_block('markdown'))}\n```\n\n{self.disclaimer_block}\n"""
+        return self.blockify(
+            f"\n{text.strip()}\n", "tab", f"markdown {self.icon_map['markdown']}"
+        )
 
     @property
     def plaintext(self) -> str:
         """Returns the plaintext block for the license."""
         header_block = self.get_header_block("plaintext")
         body = wrap_text(dedent(f"\n{self.plaintext_license_text}\n"))
-        text = f"\n```plaintext\n\n{header_block}\n\n{body}{self.interpretation_block('plaintext')}\n```\n\n{self.disclaimer_block}\n"
-        return self.blockify(f"\n{text.strip()}\n", "tab", f"plaintext {self.icon_map['plaintext']}")
+        text = f"""\n\n```plaintext title="{self.meta.get('plain_name', '')} in plain text"\n\n{header_block}\n\n{body}{wrap_text(self.interpretation_block('plaintext'))}\n```\n\n{self.disclaimer_block}\n"""
+        return self.blockify(
+            f"\n{text.strip()}\n", "tab", f"plaintext {self.icon_map['plaintext']}"
+        )
 
     @property
     def changelog(self) -> str:
@@ -755,14 +793,15 @@ class LicenseContent:
     def embed_link(self) -> str:
         """Returns the embed link for the license."""
         return dedent(f"""
-            # HTML for Your Site
-            ```html
+
+            ```html title="add this to your site's html"
 
             <iframe src="https://plainlicense.org/embed/{self.meta['spdx_id']}.html"
-            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%
+            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             border: 1px solid #E4C580; border-radius: 8px; overflow: hidden auto;"
             title="{self.title}" loading="lazy" sandbox="allow-scripts"
-            onload="if(this.contentDocument.body.scrollHeight > 400) this.style.height = this.contentDocument.body.scrollHeight + 'px';"
+            onload="if(this.contentDocument.body.scrollHeight > 400)
+            this.style.height = this.contentDocument.body.scrollHeight + 'px';"
             referrerpolicy="no-referrer-when-downgrade">
                 <p>Your browser does not support iframes. View {self.title} at:
                     <a href="{self.page.url}">
@@ -772,7 +811,7 @@ class LicenseContent:
             </iframe>
 
             ```
-            """)
+        """).strip()
 
     @cached_property
     def embed_instructions(self) -> str:
@@ -824,7 +863,7 @@ class LicenseContent:
 
             You can optionally sync the license's light/dark theme to your site's theme. You will need to send the embedded license page a message to tell it what theme your site is currently using. You can include this code in your script bundle or HTML:
 
-            ```javascript
+            ```javascript title="sync the light/dark theme with your site"
 
             const syncTheme = () => {{
             const iframe = document.getElementById("license-embed");
@@ -838,7 +877,7 @@ class LicenseContent:
 
             Once your toggle switch is set up to send a `themeChange` event, you need to add a listener to dispatch the same message as before:
 
-            ```javascript
+            ```javascript title="toggle license theme with site theme"
 
             const syncTheme = () => {{
             const iframe = document.getElementById("license-embed");
@@ -886,7 +925,11 @@ class LicenseContent:
         )
         if self.has_official:
             tabs += f"\n{self.official}"
-        outro = ("\n\n" + self.meta.get("outro", "") + "\n") if self.meta.get("outro") else "\n"
+        outro = (
+            ("\n\n" + self.meta.get("outro", "") + "\n")
+            if self.meta.get("outro")
+            else "\n"
+        )
         content = (
             self.blockify(
                 f"{tabs}",
