@@ -13,12 +13,15 @@ import { Subscription, merge } from "rxjs"
 import { filter, map, mergeMap, switchMap, tap } from "rxjs/operators"
 import { cacheAssets } from "./cache"
 import { logger } from "~/log"
-import { mergedSubscriptions } from "~/utils"
+import { mergedUnsubscription$ } from "~/utils"
 // @ts-ignore
 import Tablesort from "tablesort"
 const { document$, location$ } = window
 
 const subscriptions: Subscription[] = []
+
+document.documentElement.classList.remove("no-js")
+document.documentElement.classList.add("js")
 
 // Assets to cache
 const styleAssets = document.querySelectorAll("link[rel=stylesheet][href*=stylesheets]")
@@ -27,7 +30,7 @@ const fontAssets = document.querySelectorAll("link[rel=stylesheet][href*=fonts]"
 
 subscriptions.push(document$.pipe(
   switchMap(() =>
-    cleanupCache(5000).pipe(
+    cleanupCache(8000).pipe(
       tap(() => logger.info("Attempting to clean up cache")),
       mergeMap(() =>
         merge(
@@ -87,7 +90,7 @@ subscriptions.push(
 // Cleanup subscriptions
 const customUrlFilter = (url: URL) => url.hostname !== "plainlicense.org" && url.protocol === "https:"
 
-mergedSubscriptions(customUrlFilter).subscribe({
+mergedUnsubscription$(customUrlFilter).subscribe({
   next: () => {
     subscriptions.forEach(sub => sub.unsubscribe())
     logger.info("Subscriptions cleaned up")

@@ -55,3 +55,7 @@
 {{ page.content }}
 
 {% endblock %}
+{% block scripts %}
+<script async fetch-priority="high" src="{{ js_bundle | url }}"></script>
+{% endblock %}
+

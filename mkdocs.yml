@@ -53,6 +53,7 @@ theme:
     - content.code.annotate
     - content.code.copy
     - content.code.select
+    - content.tabs.link
     - content.tooltips
     - content.footnote.tooltips
     - navigation.footer
@@ -159,12 +160,11 @@ markdown_extensions:
   - pymdownx.blocks.definition
   - pymdownx.blocks.details
   - pymdownx.blocks.html
-  - pymdownx.blocks.tab:
+  - pymdownx.tabbed:
       alternate_style: true
       slugify: !!python/object/apply:pymdownx.slugs.slugify
         kwds:
           case: lower
-          percent_encode: true
   - pymdownx.emoji:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
       emoji_generator: !!python/name:material.extensions.emoji.to_svg

@@ -19,9 +19,9 @@ import {
   shareReplay,
   throwError
 } from "rxjs"
-import { catchError, distinctUntilChanged, filter, first, map, mergeMap, switchMap, takeUntil, tap } from "rxjs/operators"
+import { catchError, distinctUntilChanged, filter, first, map, mergeMap, skipUntil, switchMap, takeUntil, tap } from "rxjs/operators"
 
-import { isElementVisible, mergedSubscriptions, setCssVariable } from "~/utils"
+import { isElementVisible, mergedUnsubscription$, setCssVariable } from "~/utils"
 import { getAsset } from "~/cache"
 import { heroImages } from "~/hero/imageshuffle/data"
 import { logger } from "~/log"
@@ -369,6 +369,10 @@ function setParallaxHeight(height: number) {
   setCssVariable("--parallax-height", `${parallaxHeight}px`)
 }
 
+
+function initImages() {
+  initializeImageGenerator()
+
 subscriptions.push(
   document$.pipe(
     switchMap(() => imageHeight$)
@@ -376,8 +380,6 @@ subscriptions.push(
     next: height => setParallaxHeight(height)
   })
 )
-
-initializeImageGenerator()
 
 subscriptions.push(loadFirstImage().pipe(
   tap(() => initSubscriptions()),
@@ -406,9 +408,15 @@ document$.pipe(
     complete: () => logger.info("Document initialization and image cycling completed")
   })
 
+}
+
+location$.pipe(skipUntil(location$.pipe(filter(loc => loc.pathname === "/" || loc.pathname === "/index.html" || loc.pathname === "/#")))).subscribe(() => { initImages() })
+
+
+
 const urlFilter = (url: URL) => (url.pathname !== "/" && url.pathname !== "/index.html" && url.pathname !== "/#") || (url.hostname !== "plainlicense.org" && url.protocol === "https:")
 
-mergedSubscriptions(urlFilter).subscribe({
+mergedUnsubscription$(urlFilter).subscribe({
   next: () => {
     subscriptions.forEach(sub => sub.unsubscribe())
   }

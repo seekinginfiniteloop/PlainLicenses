@@ -1,12 +1,12 @@
 {
   "metaOutput": {
-    "docs/assets/javascripts/index.AD7BRH54.js.map": {
-      "bytes": 1705498,
+    "docs/assets/javascripts/index.3QUY3LCM.js.map": {
+      "bytes": 1705480,
       "inputs": [],
       "exports": []
     },
-    "docs/assets/javascripts/index.AD7BRH54.js": {
-      "bytes": 248612,
+    "docs/assets/javascripts/index.3QUY3LCM.js": {
+      "bytes": 248530,
       "inputs": [
         "node_modules/focus-visible/dist/focus-visible.js",
         "node_modules/escape-html/index.js",
@@ -329,13 +329,13 @@
       ],
       "exports": []
     },
-    "docs/assets/stylesheets/bundle.7BN2WIX4.css.map": {
-      "bytes": 333380,
+    "docs/assets/stylesheets/bundle.DP2TNTOH.css.map": {
+      "bytes": 333835,
       "inputs": [],
       "exports": []
     },
-    "docs/assets/stylesheets/bundle.7BN2WIX4.css": {
-      "bytes": 182940,
+    "docs/assets/stylesheets/bundle.DP2TNTOH.css": {
+      "bytes": 183223,
       "inputs": [
         "external/mkdocs-material/material/templates/assets/stylesheets/palette.06af60db.min.css",
         "external/mkdocs-material/material/templates/assets/stylesheets/main.0253249f.min.css",

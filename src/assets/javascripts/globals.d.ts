@@ -17,17 +17,12 @@ declare global {
   type R = Type["R"]
 
   /** Type representing user interaction events. */
-  type InteractionEvent = MouseEvent | TouchEvent | KeyboardEvent
+  type InteractionEvent = MouseEvent | TouchEvent
 
   /** Type representing an interaction handler function. */
   type InteractionHandler<T, R> = (event: Observable<T>) => Observable<R>
 
-  /**
-   * Component
-   *
-   * @template T - Component type
-   * @template U - Reference type
-   */
+
   type Component<
     T extends {} = {},
     U extends HTMLElement = HTMLElement
@@ -43,17 +38,17 @@ declare global {
   // Interfaces for mkdocs-material's exported RxJs observables
   // (see Window interface below)
 
-  interface ViewPortOffset {
-    top: number
-    left: number
+  interface ViewportOffset {
+    x: number
+    y: number
   }
-  interface ViewPortSize {
+  interface ViewportSize {
     width: number
     height: number
   }
-  interface ViewPort {
-    offset: ViewPortOffset
-    size: ViewPortSize
+  interface Viewport {
+    offset: ViewportOffset
+    size: ViewportSize
   }
   interface Keyboard {
     mode: KeyboardMode
@@ -61,7 +56,8 @@ declare global {
     claim(): void
   }
 
-/** NOTE ON COMPONENTS (Window.component$)
+/**
+ * NOTE ON COMPONENTS (Window.component$)
  * see ComponentTypeMap for available components
  * can be used to mount and observe components
  * By default, they're all mounted in Material bundle.ts and available in component$
@@ -75,7 +71,7 @@ declare global {
     location$: Subject<URL>
     target$: Observable<HTMLElement>
     keyboard$: Observable<Keyboard>
-    viewport$: Observable<ViewPort>
+    viewport$: Observable<Viewport>
     tablet$: Observable<boolean> // (min-width: 960px)
     screen$: Observable<boolean> // (min-width: 1220px)
     print$: Observable<boolean>

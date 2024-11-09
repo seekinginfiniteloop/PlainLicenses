@@ -21,11 +21,12 @@ import {
   distinctUntilKeyChanged,
   filter,
   map,
+  skipUntil,
   tap,
   withLatestFrom
 } from "rxjs/operators"
 
-import { createInteractionObservable, mergedSubscriptions } from "~/utils"
+import { createInteractionObservable, mergedUnsubscription$ } from "~/utils"
 import { logger } from "~/log"
 gsap.registerPlugin(ScrollToPlugin)
 gsap.registerPlugin(ScrollTrigger)
@@ -37,7 +38,7 @@ const easterEgg = document.getElementById("the-egg")
 const infoBox = document.getElementById("egg-box") as HTMLDialogElement
 const storedLocationState = history.state
 
-const { location$ } = window
+const { document$, location$ } = window
 
 if (easterEgg && infoBox) {
   easterEgg.style.display = "block"
@@ -156,7 +157,7 @@ const smoothScroll$ = (el: Element): Observable<void> => {
 /** Subscribes to all user interaction observables and handles the corresponding actions. */
 const allSubscriptions = (): void => {
   // Observable for easter egg interactions
-  const eggFunction = (event$: Observable<InteractionEvent>): Observable<void> => {
+  const eggFunction = (event$: Observable<Event>): Observable<void> => {
     return event$.pipe(
       withLatestFrom(infoBoxVisible$),
       filter(([_, isVisible]) => !isVisible), // Proceed only if the info box is not visible
@@ -184,7 +185,7 @@ const allSubscriptions = (): void => {
 
   // Observable for info box interactions (closing the overlay)
   const eggBoxCloseFunc = (
-    event$: Observable<InteractionEvent>
+    event$: Observable<Event>
   ): Observable<void> => {
     return event$.pipe(
       withLatestFrom(infoBoxVisible$),
@@ -219,7 +220,7 @@ const allSubscriptions = (): void => {
   const heroSelectors = Array.from(document.querySelectorAll(".hero-target-selector"))
 
   // Observable for hero button interactions
-  const heroButtonFunc = (event$: Observable<InteractionEvent>): Observable<void> => {
+  const heroButtonFunc = (event$: Observable<Event>): Observable<void> => {
     return event$.pipe(
       filter(ev => {
         const target = ev.target as Element
@@ -372,21 +373,22 @@ if (!prefersReducedMotion) {
   subscriptions.push(of(createSpecialHighlight).subscribe())
 }
   subscriptions.push(location$.pipe(
-    filter((location: URL) => location.pathname === "/" || location.pathname === "/index.html"),
-    distinctUntilKeyChanged("hash"),
+    filter((location: URL) => location.pathname === "/" || location.pathname === "/index.html"), skipUntil(location$.pipe(filter((location: URL) => location.hash !== ""))),
     filter((location: URL) =>
-    location.hash === "#" || location.hash === "" || location.hash === "#pt3-hero-section-content"
+    location.hash === "#" || location.hash === "#pt3-hero-section-content"
     ),
   ).subscribe(() => {
   history.replaceState(storedLocationState, "", "/")
 }))
 }
 
-allSubscriptions()
+document$.pipe(skipUntil(location$.pipe(filter((location: URL) => location.pathname === "/" || location.pathname === "/index.html")))).subscribe(() => {
+  allSubscriptions()
+})
 
 const urlFilter = (url: URL) => (url.pathname !== "/" && url.pathname !== "/index.html" && url.pathname !== "/#") || (url.hostname !== "plainlicense.org" && url.protocol === "https:")
 
-mergedSubscriptions(urlFilter).subscribe({
+mergedUnsubscription$(urlFilter).subscribe({
   next: () => {
     subscriptions.forEach(sub => sub.unsubscribe())
   }

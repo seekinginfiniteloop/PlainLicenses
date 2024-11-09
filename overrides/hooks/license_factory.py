@@ -15,7 +15,7 @@ from datetime import datetime, timezone
 from functools import cached_property
 from pathlib import Path
 from re import Match, Pattern
-from textwrap import dedent
+from textwrap import dedent, indent
 from typing import Any, ClassVar, Literal
 
 import ez_yaml
@@ -28,7 +28,7 @@ from mkdocs.structure.pages import Page
 from _utils import Status, find_repo_root, wrap_text
 
 # Change logging level here
-_assembly_log_level = logging.WARNING
+_assembly_log_level = logging.DEBUG
 
 if not hasattr(__name__, "assembly_logger"):
     assembly_logger = get_logger(
@@ -139,9 +139,7 @@ def assemble_license_page(config: MkDocsConfig, page: Page, file: File) -> Page:
     if meta is None:
         meta = {}
     rendered_boilerplate = render_mapping(boilerplate, meta)
-    assembly_logger.debug("Rendered boilerplate: %s", rendered_boilerplate)
     meta |= rendered_boilerplate
-    assembly_logger.debug("Meta: %s", meta)
     markdown = (page.markdown or "") + license.license_content
     markdown = Template(markdown).render(**meta)
     page.meta = meta
@@ -333,6 +331,8 @@ class LicenseContent:
         self.tags = self.get_tags()
 
         self.has_official = bool(self.official_license_text)
+
+        assembly_logger.debug("License content: \n\n%s\n", self.license_content)
 
     def get_license_type(self) -> Literal["dedication", "license"]:
         """
@@ -536,6 +536,25 @@ class LicenseContent:
         return None
 
     @staticmethod
+    def tabify(text:str, title: str, level: int = 1, icon: str = "") -> str:
+        """
+        Returns a tabified block with the provided text.
+
+        Args:
+            text (str): The text content to include in the tab.
+            title (str): The title of the tab.
+            level (int, optional): The level of the tab. Defaults to 1.
+            icon (str, optional): The icon to include in the tab. Defaults to "".
+
+        Returns:
+            str: The tabified block with the provided text.
+        """
+        indentation = " " * 4 * level
+        title_indent = "" if level == 1 else " " + " " * 4 * (level - 1)
+        title = f"""{title_indent}=== "{icon} {title}" """
+        return f"""{title}\n\n{indent(dedent(text), indentation)}\n"""
+
+    @staticmethod
     def blockify(
         text: str,
         kind: str,
@@ -609,9 +628,11 @@ class LicenseContent:
             case "reader":
                 title = f"\n<h1 class='license-title'>{self.meta['plain_name']}</h1>"
                 if original_version:
-                    version_info = f"""\n<div class='version-info'><span class="original-version">original version: {original_version}</span><br /><span class="plain-version">plain version: {plain_version}</span></div>\n"""
+                    version_info = f"""\n
+                    <div class='version_info'><span class="original_version">original version: {original_version}</span><br /><span class="plain_version">plain version: {plain_version}</span></div>\n"""
                 else:
-                    version_info = f"""\n<div class='version-info'><span class="plain-version">plain version: {plain_version}</span></div>\n"""
+                    version_info = f"""\n
+                    <div class='version_info'><span class="plain_version">plain version: {plain_version}</span></div>\n"""
                 return f"""<div class="license-header">{title}{version_info}</div>"""
             case "markdown":
                 title = f"\n# {self.meta.get('plain_name')}" ""
@@ -711,17 +732,17 @@ class LicenseContent:
     def disclaimer_block(self) -> str:
         """Returns the disclaimer block for the license."""
         not_advice_title = "legal advice"
-        not_advice = self.blockify(
-            self.not_advice_text,
-            "tab" if self.has_official else "warning",
-            not_advice_title,
-            3,
-        )
         if not self.has_official:
-            return not_advice
+            return self.blockify(
+                self.not_advice_text,
+                "tab" if self.has_official else "warning",
+                not_advice_title,
+                3,
+            )
+        not_advice = self.tabify(self.not_advice_text, not_advice_title, 1)
         not_official_title = f"the official {self.meta.get("original_name")}"
-        not_official = self.blockify(
-            self.not_official_text, "tab", not_official_title, 3
+        not_official = self.tabify(
+            self.not_official_text, not_official_title, 1,
         )
         return self.blockify(
             f"{not_advice}{not_official}",
@@ -748,7 +769,7 @@ class LicenseContent:
                 {self.reader_license_text}
                 {self.disclaimer_block}
                 """)
-        return self.blockify(text, "tab", f"reader {self.icon_map['reader']}")
+        return self.tabify(text, "reader", 1, self.icon_map["reader"])
 
     @property
     def markdown(self) -> str:
@@ -756,9 +777,7 @@ class LicenseContent:
         header_block = self.get_header_block("markdown")
         body = wrap_text(dedent(f"\n{self.markdown_license_text}\n"))
         text = f"""\n\n```markdown title="{self.meta.get('plain_name', '')} in Github-style markdown"\n\n{header_block}\n\n{body}{wrap_text(self.interpretation_block('markdown'))}\n```\n\n{self.disclaimer_block}\n"""
-        return self.blockify(
-            f"\n{text.strip()}\n", "tab", f"markdown {self.icon_map['markdown']}"
-        )
+        return self.tabify(text, "markdown", 1, self.icon_map["markdown"])
 
     @property
     def plaintext(self) -> str:
@@ -766,15 +785,13 @@ class LicenseContent:
         header_block = self.get_header_block("plaintext")
         body = wrap_text(dedent(f"\n{self.plaintext_license_text}\n"))
         text = f"""\n\n```plaintext title="{self.meta.get('plain_name', '')} in plain text"\n\n{header_block}\n\n{body}{wrap_text(self.interpretation_block('plaintext'))}\n```\n\n{self.disclaimer_block}\n"""
-        return self.blockify(
-            f"\n{text.strip()}\n", "tab", f"plaintext {self.icon_map['plaintext']}"
-        )
+        return self.tabify(text, "plaintext", 1, self.icon_map["plaintext"])
 
     @property
     def changelog(self) -> str:
         """Returns the changelog block for the license."""
-        return self.blockify(
-            self.changelog_text, "tab", f"changelog {self.icon_map['changelog']}"
+        return self.tabify(
+            self.changelog_text, "changelog",1, self.icon_map['changelog']
         )
 
     @property
@@ -787,7 +804,7 @@ class LicenseContent:
             if self.meta.get("link_in_original")
             else f"{self.official_license_text}\n\n{self.meta.get("official_link")}"
         )
-        return self.blockify(text, "tab", f"official {self.icon_map['official']}")
+        return self.tabify(text, "official", 1, self.icon_map['official'])
 
     @cached_property
     def embed_link(self) -> str:
@@ -896,10 +913,9 @@ class LicenseContent:
     @property
     def embed(self) -> str:
         """Returns the embed block for the license."""
-        return self.blockify(
+        return self.tabify(
             f"{self.embed_link}{self.embed_instructions}",
-            "tab",
-            f"html {self.icon_map['embed']}",
+            "html", 1, self.icon_map["embed"]
         )
 
     @property

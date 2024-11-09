@@ -123,7 +123,10 @@ export default [{
         name: "xit",
         message: "Did you mean 'xit'?"
       }],
-
+      "no-unused-vars": [
+        "error",
+        { varsIgnorePattern: "^_", argsIgnorePattern: "^_" },
+      ],
       "no-return-await": "error",
       "no-sequences": "error",
       "no-shadow": "off",

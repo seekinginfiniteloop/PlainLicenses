@@ -1,6 +1,5 @@
 import { Observable, forkJoin, fromEvent, merge } from "rxjs"
 import { filter } from "rxjs/operators"
-
 const { location$ } = window
 
 /**
@@ -33,17 +32,16 @@ type InteractionHandler<E, R> = (events$: Observable<E>) => Observable<R>
 /**
  * Creates an observable from specified event targets and event types.
  * @function
- * @param evt - The event target or targets to observe.
+ * @param ev - The event target or targets to observe.
  * @param handler - An optional interaction handler function to apply to the observable. The handler must receive and return an observable.
  * @returns Observable<R | InteractionEvent> - An observable of the specified event type.
  * @template R - The type of the observable result.
  */
 export function createInteractionObservable<R>(
-  evt: EventTarget | EventTarget[],
+  ev: EventTarget | EventTarget[],
   handler?: InteractionHandler<Event, R>
 ): Observable<R | Event> {
-  const eventTargets = Array.isArray(evt) ? evt : [evt]
-  // eslint-disable-next-line no-null/no-null
+  const eventTargets = Array.isArray(ev) ? ev : [ev]
   const validEventTargets = eventTargets.filter(target => target != null)
 
   const click$ = merge(
@@ -54,11 +52,7 @@ export function createInteractionObservable<R>(
     ...validEventTargets.map(target => fromEvent<Event>(target, "touchend"))
   )
 
-  const keydown$ = fromEvent<KeyboardEvent>(document, "keydown").pipe(
-    filter(event => validEventTargets.includes(event.target as EventTarget))
-  )
-
-  const events$ = merge(click$, touchend$, keydown$)
+  const events$ = merge(click$, touchend$)
 
   return handler ? handler(events$) : events$
 }
@@ -78,11 +72,16 @@ export function setCssVariable(name: string, value: string) {
  * @param urlFilter - A function that filters URLs.
  * @returns An observable of merged location and beforeunload events.
  */
-export const mergedSubscriptions = (urlFilter: (url: URL) => boolean) => {
+export const mergedUnsubscription$ = (urlFilter: (url: URL) => boolean) => {
   const location: Observable<URL> = location$.pipe(
     filter(urlFilter))
 
   const beforeUnload: Observable<Event> = fromEvent(window, "beforeunload")
 
   return forkJoin([location, beforeUnload])
+}
+
+export const page$ = (urlFilter: (url: URL) => boolean) => {
+  return location$.pipe(
+    filter(urlFilter))
 }
