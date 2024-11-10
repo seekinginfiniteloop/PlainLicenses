@@ -7,7 +7,13 @@ sudo apt update &&
 sudo apt upgrade -y &&
 sudo apt install -y --no-install-recommends \
 bash \
+cmake \
+cmake-data \
+cmake-extras \
+extra-cmake-modules \
 curl \
+fontconfig \
+fonts-powerline \
 git \
 git-doc \
 gnupg2 \
@@ -20,6 +26,7 @@ libgdm-dev \
 libjpeg-dev \
 libpng-dev \
 libreadline-dev \
+librust-cmake-dev \
 libssl-dev \
 libz-dev \
 nano \
@@ -36,109 +43,69 @@ sqlite-utils \
 sqlite3 \
 unzip \
 xclip \
+xterm \
 zlib1g \
 zlib1g-dev \
 zsh \
 zsh-autosuggestions \
-zsh-syntax-highlighting
+zsh-syntax-highlighting &&
 
-export BUN_INSTALL="/home/vscode/.bun"
-export BUNOPTS="--no-interactive --silent"
-export UV_PYTHON_DOWNLOADS="automatic"
-# sync and install tools
-curl -LsSf https://astral.sh/uv/install.sh | sh &&
-curl -fsSL https://bun.sh/install | bash &&
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y &&
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
-source "$HOME/.cargo/env" &&
-export PATH="$HOME/bin:$HOME/sbin:$HOME/.local/sbin:$HOME/.cargo/bin:$PATH:/opt/bin:/opt/sbin:/opt/local/bin:opt/local/sbin"
-# Define the block of rc scripting as a variable
-CONFIG_BLOCK=$(cat << 'EOF'
-export BUN_INSTALL="/home/vscode/.bun"
-alias rgg='rg --no-ignore --trim --pretty --colors "match:fg:white" --colors "path:fg:blue" --smart-case --search-zip --hidden'
-alias rgf='rg --files | rgg'
-alias rgc='rgg --count'
-alias ll='ls -alFh'
-alias llr='ls -alFhR'
-alias lld='ls -alFhd'
-alias lldr='ls -alFhdR'
-alias locate='lolcate'
-alias updatedb='lolcate --update'
-lolcate --update
-export PATH="$BUN_INSTALL/bin:$HOME/.cargo/bin:$HOME/bin:$HOME/sbin:$PATH:/opt/bin:/opt/sbin:/opt/local/bin:/opt/local/sbin"
-export UV_PYTHON_DOWNLOADS="automatic"
-export UV_COLOR="always"
-export FORCE_COLOR=1
-export CLICOLOR_FORCE=1
-export FILEHANDLER_ENABLED="true"
-export LOG_PATH="$HOME/logs"
-EOF
-)
-ZCONFIG_BLOCK=$(cat << 'EOF'
-fpath+=~/.zfunc
-setopt extended_glob
-autoload -Uz compinit
-zstyle ':completion:*' menu select
-plugins=(bun git gitfast git-prompt gpg-agent pre-commit zsh-interactive-cd rust)
-EOF
-)
-# Write the block of rc scripting to .zshrc and .bashrc
-echo "$CONFIG_BLOCK" >> "$HOME/.zshrc"
-echo "$CONFIG_BLOCK" >> "$HOME/.bashrc"
-echo "$ZCONFIG_BLOCK" >> "$HOME/.zshrc"
-# shellcheck disable=SC1090
-source "$HOME/.bashrc"
+function initial_installs() {
+    export BUN_INSTALL="/home/vscode/.bun"
+    export UV_PYTHON_DOWNLOADS="automatic"
+    # sync and install tools
+    curl -fsSL https://bun.sh/install | bash &&
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y &&
+    source "$HOME/.cargo/env" &&
+    git clone --depth=1 https://gitee.com/romkatv/powerlevel10k.git "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k" &&
+    export PATH="$HOME/bin:$HOME/sbin:$HOME/.local/sbin:$HOME/.cargo/bin:$PATH:/opt/bin:/opt/sbin:/opt/local/bin:opt/local/sbin" &&
+    mkdir -p "$HOME/.fonts" &&
+    echo 'xterm*faceName: MesloLGS NF' > "$HOME/.Xresources" &&
+    cd "$HOME/.fonts" || return &&
+    curl -fsSLO --raw https://github.com/romkatv/powerlevel10k-media/blob/master/MesloLGS%20NF%20Bold%20Italic.ttf &&
+    curl -fsSLO --raw https://github.com/romkatv/powerlevel10k-media/blob/master/MesloLGS%20NF%20Bold.ttf &&
+    curl -fsSLO --raw https://github.com/romkatv/powerlevel10k-media/blob/master/MesloLGS%20NF%20Regular.ttf &&
+    curl -fsSLO --raw https://github.com/romkatv/powerlevel10k-media/blob/master/MesloLGS%20NF%20Bold%20Italic.ttf &&
+    curl -fsSLO --raw https://github.com/romkatv/powerlevel10k-media/blob/master/MesloLGS%20NF%20License.txt &&
+    fc-cache -vf "$HOME/.fonts" &&
+    cd /workspaces/PlainLicense || return
+}
 
-LOLCATE_CONFIG=$(cat << 'EOF'
-description = ""
+function set_configs() {
+    export bash_completion="$HOME/.local/share/bash-completion/completions"
 
-# Directories to index.
-dirs = [
-    "/bin",
-    "/etc",
-    "/sbin",
-    "/sys/module",
-    "/usr/bin",
-    "/usr/lib",
-    "/usr/lib64",
-    "/usr/local",
-    "/usr/sbin",
-    "/usr/share",
-    "/usr/share",
-    "/usr/src",
-    "/var/lib",
-    "/var/local",
-    "/var/log",
-    "/vscode"
-    "/vscode",
-    "/workspaces",
-    "~/",
-]
+    ZSHRC="/workspaces/PlainLicense/.devcontainer/.zshrc"
+    BASHRC="/workspaces/PlainLicense/.devcontainer/.bashrc"
+    P10K="/workspaces/PlainLicense/.devcontainer/.p10k.zsh"
+    LOLCATE_CONFIG="/workspaces/PlainLicense/.devcontainer/lolcate_config.toml"
+    LOLCATE_IGNORES="/workspaces/PlainLicense/.devcontainer/lolcate_ignores"
 
-# Set to "Dirs" or "Files" to skip directories or files.
-# If unset, or set to "None", both files and directories will be included.
-# skip = "Dirs"
+    cat "$ZSHRC" >> "$HOME/.zshrc"
+    cat "$BASHRC" >> "$HOME/.bashrc"
+    cat "$P10K" >> "$HOME/.p10k.zsh"
+    mkdir -p "$HOME/.config/lolcate/default"
+    cat "$LOLCATE_CONFIG" >> "$HOME/.config/lolcate/default/config.toml"
+    cat "$LOLCATE_IGNORES" >> "$HOME/.config/lolcate/default/ignores"
+    mkdir -p "$bash_completion"
 
-# Set to true if you want skip symbolic links
-ignore_symlinks = false
+    mkdir -p "$HOME/.zfunc"
 
-# Set to true if you want to ignore hidden files and directories
-ignore_hidden = false
-
-# Set to true to read .gitignore files and ignore matching files
-gitignore = false
-EOF
-)
-
-LOLCATE_IGNORES=$(cat << 'EOF'
-.ssh
-.cache
-id_*
-.git
-EOF
-)
+    mkdir -p "$HOME/logs" &&
+    mkdir -p /workspaces/PlainLicense/.workbench &&
+    ln -s "$HOME/logs" /workspaces/PlainLicense/.workbench/logs &&
+    echo "lolcate --update" | sudo tee /etc/cron.daily/lolcate &&
+    sudo chmod +x /etc/cron.daily/lolcate &&
+    chmod +x "$HOME/.oh-my-zsh/oh-my-zsh.sh"
+    touch "$HOME/.source_zshrc"
+}
 
 
+function setup_rust_helpers() {
+    cargo install --git https://github.com/astral-sh/uv uv &&
+    cargo install --all-features ripgrep &&
+    cargo install typos-cli &&
+    cargo install --git https://github.com/ngirard/lolcate-rs
+}
 
 function uv_install() {
     export UV_PYTHON_DOWNLOADS="automatic"
@@ -155,15 +122,13 @@ function uv_install() {
 }
 
 function bun_install() {
+    export BUNOPTS="--no-interactive --silent"
     local bunloc=/home/vscode/.bun/bin/bun
     $bunloc install "${BUNOPTS}" &&
     $bunloc install -g "${BUNOPTS}" @linthtml/linthtml stylelint eslint prettier semantic-release-cli markdownlint-cli2 commitizen commitlint node
 }
 
 function set_completions() {
-    bash_completion="$HOME/.local/share/bash-completion/completions"
-    mkdir -p "$bash_completion"
-    mkdir -p "$HOME/.zfunc"
     $HOME/.cargo/bin/rustup completions zsh > "$HOME/.zfunc/_rustup"
     $HOME/.cargo/bin/rustup completions bash > "$bash_completion/rustup"
     $HOME/.cargo/bin/rustup completions zsh cargo > "$HOME/.zfunc/_cargo"
@@ -172,29 +137,10 @@ function set_completions() {
     $HOME/.cargo/bin/rg --generate=complete-bash > "$bash_completion/rg"
 }
 
-export BUNOPTS="--no-interactive --silent"
-
-# Execute functions
-cargo install --all-features ripgrep &&
-cargo install typos-cli &&
-cargo install --git https://github.com/ngirard/lolcate-rs &&
-mkdir -p "$HOME/logs" &&
-mkdir -p $HOME/.config/lolcate/default &&
-echo "$LOLCATE_CONFIG" > $HOME/.config/lolcate/default/config.toml &&
-echo "$LOLCATE_IGNORES" > $HOME/.config/lolcate/default/ignores &&
-echo "lolcate --update" | sudo tee /etc/cron.daily/lolcate &&
-sudo chmod +x /etc/cron.daily/lolcate &&
+initial_installs &&
+setup_rust_helpers &&
+set_configs &&
 set_completions &&
 uv_install &&
 bun_install &&
 sudo chsh -s /bin/zsh vscode
-
-# Create a marker file to indicate zshrc needs to be sourced after creation
-touch "$HOME/.source_zshrc"
-# shellcheck disable=SC2016
-echo '
-if [ -f "$HOME/.source_zshrc" ]; then
-    rm "$HOME/.source_zshrc"
-    source "$HOME/.zshrc"
-fi
-' >> "$HOME/.zshrc"
