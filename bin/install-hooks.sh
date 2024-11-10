@@ -60,7 +60,7 @@ function check_env {
     fi
     if ! command -v uv > /dev/null || ! command -v bun > /dev/null; then
         chmod +x bin/setup-repo.sh
-        echo "it looks like you're missing some tools.  Let me install them for you."
+        echo "it looks like you're missing UV and Bun.  Let me try to install them for you."
         bin/setup-repo.sh --tool-install || error_exit "Failed to setup the repository."
     fi
     return 0
@@ -70,13 +70,12 @@ function check_env {
 REPO_ROOT=$(find_repo_root)
 cd "$REPO_ROOT" || error_exit "Failed to change to the repository root directory."
 
-# Your existing script logic
 ARGS+=(-- "$@")
 
 # Run environment checks
 check_env || error_exit "environment failed checks... exiting"
 if command -v pre-commit > /dev/null; then
-    exec pre-commit "${ARGS[@]}"
+    exec pre-commit run "${ARGS[@]}"
 else
     echo "\`pre-commit\` not found.  Did you forget to activate your virtualenv?" 1>&2
     error_exit "pre-commit not found"

@@ -109,7 +109,7 @@
     "[yaml]": {
     "diffEditor.ignoreTrimWhitespace": false,
     "editor.autoIndent": "keep",
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.defaultFormatter": "rvest.vs-code-prettier-eslint",
     "editor.formatOnType": true,
     "editor.insertSpaces": true,
     "editor.quickSuggestions": {

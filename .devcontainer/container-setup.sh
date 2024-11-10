@@ -75,12 +75,12 @@ function set_configs() {
     LOLCATE_CONFIG="/workspaces/PlainLicense/.devcontainer/lolcate_config.toml"
     LOLCATE_IGNORES="/workspaces/PlainLicense/.devcontainer/lolcate_ignores"
 
-    cat "$ZSHRC" >> "$HOME/.zshrc"
-    cat "$BASHRC" >> "$HOME/.bashrc"
-    cat "$P10K" >> "$HOME/.p10k.zsh"
+    cat "$ZSHRC" > "$HOME/.zshrc"
+    cat "$BASHRC" > "$HOME/.bashrc"
+    cat "$P10K" > "$HOME/.p10k.zsh"
     mkdir -p "$HOME/.config/lolcate/default"
-    cat "$LOLCATE_CONFIG" >> "$HOME/.config/lolcate/default/config.toml"
-    cat "$LOLCATE_IGNORES" >> "$HOME/.config/lolcate/default/ignores"
+    cat "$LOLCATE_CONFIG" > "$HOME/.config/lolcate/default/config.toml"
+    cat "$LOLCATE_IGNORES" > "$HOME/.config/lolcate/default/ignores"
     mkdir -p "$bash_completion"
     unalias ll
     mkdir -p "$HOME/.zfunc"
