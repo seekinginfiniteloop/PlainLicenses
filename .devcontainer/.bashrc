@@ -23,3 +23,5 @@ export FORCE_COLOR=1
 export CLICOLOR_FORCE=1
 export FILEHANDLER_ENABLED="true"
 export LOG_PATH="$HOME/logs"
+SIGNING_KEY="$(ssh-add -L)"
+export SIGNING_KEY

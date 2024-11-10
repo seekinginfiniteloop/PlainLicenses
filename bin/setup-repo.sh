@@ -20,15 +20,15 @@ fi
 declare -A submodules
 
 # Add submodules and their properties
-submodules["license-list-data,url"]="https://github.com/spdx/license-list-data.git"
+submodules["license-list-data,url"]="git@github.com/spdx/license-list-data.git"
 submodules["license-list-data,branch"]="main"
 submodules["license-list-data,sparse_paths"]="/json/licenses.json /json/details"
 
-submodules["mkdocs-material,url"]="https://github.com/squidfunk/mkdocs-material.git"
+submodules["mkdocs-material,url"]="git@github.com/squidfunk/mkdocs-material.git"
 submodules["mkdocs-material,branch"]="master"
 submodules["mkdocs-material,sparse_paths"]="/material/templates /material/overrides /src/templates /src/overrides tsconfig.json"
 
-submodules["choosealicense.com,url"]="https://github.com/github/choosealicense.com.git"
+submodules["choosealicense.com,url"]="git@github.com/github/choosealicense.com.git"
 submodules["choosealicense.com,branch"]="gh-pages"
 submodules["choosealicense.com,sparse_paths"]="/_data /_licenses"
 

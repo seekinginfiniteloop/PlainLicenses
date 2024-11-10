@@ -62,14 +62,16 @@ repos:
         stages: [commit-msg]
         args: [--config, commitlint.config.ts]
 # A local hook must define id, name, language, entry, and files / types as specified under Creating new hooks.
-  - id: build
+  - repo: local
+    id: build
     name: Build
     language: system
     entry: bun run -b build
     files: src/**/*.ts
     types: [ts]
     stages: [pre-commit]
-  - id: stylelint
+  - repo: local
+    id: stylelint
     name: Stylelint
     language: system
     files: src/**/*.css
@@ -77,6 +79,7 @@ repos:
     entry: bun run -b stylelint --fix
     stages: [pre-commit]
   - id: eslint
+    repo: local
     name: ESLint
     language: system
     types: [ts, javascript]
@@ -90,6 +93,7 @@ repos:
     entry: bun run -b eslint --fix
     stages: [pre-commit]
   - id: prettier
+    repo: local
     name: Prettier
     language: system
     types: [json, yaml, toml]
@@ -101,6 +105,7 @@ repos:
     entry: bun run -b prettier --write
     stages: [pre-commit]
   - id: commitizen
+    repo: local
     name: Commitizen
     language: system
     exclude: |

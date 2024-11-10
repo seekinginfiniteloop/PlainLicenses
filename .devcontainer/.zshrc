@@ -1,7 +1,6 @@
 
 # Path to your Oh My Zsh installation.
 export ZSH=$HOME/.oh-my-zsh
-
 zstyle ':omz:update' mode auto      # update automatically without asking
 zstyle ':omz:update' frequency 7
 
@@ -11,7 +10,6 @@ source $ZSH/oh-my-zsh.sh
 
 DISABLE_AUTO_UPDATE=true
 DISABLE_UPDATE_PROMPT=true
-zstyle :omz:plugins:ssh-agent helper ksshaskpass
 ZSH_THEME="powerlevel10k/powerlevel10k"
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
@@ -29,7 +27,7 @@ alias llr='ls -alFhR'
 alias lld='ls -alFhd'
 alias lldr='ls -alFhdR'
 alias locate='lolcate'
-alias updatedb='lolcate --update'
+alias updatedb='lolcate --update > /dev/null 2>&1 &'
 export PATH="$BUN_INSTALL/bin:$HOME/.cargo/bin:$HOME/bin:$HOME/sbin:$PATH:/opt/bin:/opt/sbin:/opt/local/bin:/opt/local/sbin"
 export UV_PYTHON_DOWNLOADS="automatic"
 export UV_CACHE_DIR="/workspaces/PlainLicense/.cache/uv"
@@ -42,13 +40,15 @@ export FORCE_COLOR=1
 export CLICOLOR_FORCE=1
 export FILEHANDLER_ENABLED="true"
 export LOG_PATH="$HOME/logs"
-
+SIGNING_KEY="$(ssh-add -L)"
+export SIGNING_KEY
+updatedb
 source $HOME/.oh-my-zsh/oh-my-zsh.sh
 fpath+=$HOME/.zfunc
 setopt extended_glob
 autoload -Uz compinit
 zstyle ':completion:*' menu select
-plugins=(bun git gitfast git-prompt gpg-agent pre-commit zsh-interactive-cd rust)
+plugins=(bun git gitfast git-prompt gpg-agent ssh-agent pre-commit zsh-interactive-cd rust)
 
 if [ -f "$HOME/.source_zshrc" ]; then
     rm "$HOME/.source_zshrc"

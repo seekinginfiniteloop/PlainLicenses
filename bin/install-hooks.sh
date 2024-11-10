@@ -71,7 +71,7 @@ REPO_ROOT=$(find_repo_root)
 cd "$REPO_ROOT" || error_exit "Failed to change to the repository root directory."
 
 # Your existing script logic
-ARGS+=(--hook-dir "$SCRIPT_DIR" -- "$@")
+ARGS+=(-- "$@")
 
 # Run environment checks
 check_env || error_exit "environment failed checks... exiting"

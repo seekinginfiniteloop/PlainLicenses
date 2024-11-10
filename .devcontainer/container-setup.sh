@@ -61,12 +61,7 @@ function initial_installs() {
     export PATH="$HOME/bin:$HOME/sbin:$HOME/.local/sbin:$HOME/.cargo/bin:$PATH:/opt/bin:/opt/sbin:/opt/local/bin:opt/local/sbin" &&
     mkdir -p "$HOME/.fonts" &&
     echo 'xterm*faceName: MesloLGS NF' > "$HOME/.Xresources" &&
-    cd "$HOME/.fonts" || return &&
-    curl -fsSLO --raw https://github.com/romkatv/powerlevel10k-media/blob/master/MesloLGS%20NF%20Bold%20Italic.ttf &&
-    curl -fsSLO --raw https://github.com/romkatv/powerlevel10k-media/blob/master/MesloLGS%20NF%20Bold.ttf &&
-    curl -fsSLO --raw https://github.com/romkatv/powerlevel10k-media/blob/master/MesloLGS%20NF%20Regular.ttf &&
-    curl -fsSLO --raw https://github.com/romkatv/powerlevel10k-media/blob/master/MesloLGS%20NF%20Bold%20Italic.ttf &&
-    curl -fsSLO --raw https://github.com/romkatv/powerlevel10k-media/blob/master/MesloLGS%20NF%20License.txt &&
+    cp -r /workspaces/PlainLicense/.devcontainer/.fonts "$HOME" &&
     fc-cache -vf "$HOME/.fonts" &&
     cd /workspaces/PlainLicense || return
 }
@@ -87,13 +82,13 @@ function set_configs() {
     cat "$LOLCATE_CONFIG" >> "$HOME/.config/lolcate/default/config.toml"
     cat "$LOLCATE_IGNORES" >> "$HOME/.config/lolcate/default/ignores"
     mkdir -p "$bash_completion"
-
+    unalias ll
     mkdir -p "$HOME/.zfunc"
 
     mkdir -p "$HOME/logs" &&
     mkdir -p /workspaces/PlainLicense/.workbench &&
     ln -s "$HOME/logs" /workspaces/PlainLicense/.workbench/logs &&
-    echo "lolcate --update" | sudo tee /etc/cron.daily/lolcate &&
+    echo "lolcate --update > /dev/null 2>&1 &" | sudo tee /etc/cron.daily/lolcate &&
     sudo chmod +x /etc/cron.daily/lolcate &&
     chmod +x "$HOME/.oh-my-zsh/oh-my-zsh.sh"
     touch "$HOME/.source_zshrc"
@@ -129,12 +124,12 @@ function bun_install() {
 }
 
 function set_completions() {
-    $HOME/.cargo/bin/rustup completions zsh > "$HOME/.zfunc/_rustup"
-    $HOME/.cargo/bin/rustup completions bash > "$bash_completion/rustup"
-    $HOME/.cargo/bin/rustup completions zsh cargo > "$HOME/.zfunc/_cargo"
-    $HOME/.cargo/bin/rustup completions bash cargo > "$bash_completion/cargo"
-    $HOME/.cargo/bin/rg --generate=complete-zsh > "$HOME/.zfunc/_rg"
-    $HOME/.cargo/bin/rg --generate=complete-bash > "$bash_completion/rg"
+    "$HOME"/.cargo/bin/rustup completions zsh > "$HOME/.zfunc/_rustup"
+    "$HOME"/.cargo/bin/rustup completions bash > "$bash_completion/rustup"
+    "$HOME"/.cargo/bin/rustup completions zsh cargo > "$HOME/.zfunc/_cargo"
+    "$HOME"/.cargo/bin/rustup completions bash cargo > "$bash_completion/cargo"
+    "$HOME"/.cargo/bin/rg --generate=complete-zsh > "$HOME/.zfunc/_rg"
+    "$HOME"/.cargo/bin/rg --generate=complete-bash > "$bash_completion/rg"
 }
 
 initial_installs &&
