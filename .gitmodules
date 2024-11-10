@@ -1,15 +1,15 @@
 [submodule "external/license-list-data"]
 	path = external/license-list-data
-	url = https://github.com/spdx/license-list-data.git
+	url = git@github/spdx/license-list-data.git
 	branch = main
     ignore = all
 [submodule "external/mkdocs-material"]
 	path = external/mkdocs-material
-	url = https://github.com/spdx/license-list-data.git
+	url = git@github.com:squidfunk/mkdocs-material.git
 	branch = master
 	ignore = all
 [submodule "external/choosealicense.com"]
 	path = external/choosealicense.com
-	url = https://github.com/github/choosealicense.com.git
+	url = git@github/github/choosealicense.com.git
 	branch = gh-pages
 	ignore = all
