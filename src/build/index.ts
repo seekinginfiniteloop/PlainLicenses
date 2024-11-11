@@ -9,6 +9,7 @@ import { baseProject, heroImages, heroParents, webConfig } from "./config/index.
 import { buildJson, esbuildOutputs, FileHashes, HeroImage, Project } from "./types.ts";
 
 import globby from 'globby';
+import { exit } from 'process';
 
 const cssSrc = "src/assets/stylesheets/bundle.css";
 
@@ -132,30 +133,35 @@ export const heroImages = rawHeroImages.map(image => ({
 `;
 
   const outputPath = path.join('src', 'assets', 'javascripts', 'hero', 'imageshuffle', 'data', 'index.ts');
-  await fs.writeFile(outputPath, fileContent);
-  console.log('Hero images data exported to heroImages.ts');
 
-  // Run ESLint on the generated file to strip the quotes from keys
-  exec('eslint --cache src/assets/javascripts/hero/imageshuffle/data/index.ts --fix', (error, stdout, stderr) => {
-    if (error) {
-      console.error(`Error running ESLint: ${error.message}`);
-      return;
-    }
-    if (stderr) {
-      console.error(`ESLint stderr: ${stderr}`);
-      return;
-    }
-    console.log(`ESLint stdout: ${stdout}`);
-  });
+  const runLint = async () => {
+    await fs.writeFile(outputPath, fileContent);
+    console.log('Hero images data exported to heroImages.ts');
+
+    // Run ESLint on the generated file to strip the quotes from keys
+    exec('eslint --cache src/assets/javascripts/hero/imageshuffle/data/index.ts --fix', (error, stdout, stderr) => {
+      if (error) {
+        console.error(`Error running ESLint: ${error.message}`);
+        return;
+      }
+      if (stderr) {
+        console.error(`ESLint stderr: ${stderr}`);
+        return;
+      }
+      console.log(`ESLint stdout: ${stdout}`);
+    });
+  }
+  await runLint();
 }
-
 /**
  * Processes the hero images for the landing page. Facilitates hashing, copying, updating paths, and sending them to get written to a typescript file.
  */
 async function handleHeroImages() {
   const images: HeroImage[] = [];
-  const heroes = heroImages; // Ensure `heroImages` is defined or imported
-
+  const heroes = heroImages;
+  if (!heroes) {
+    throw new Error('No hero images found');
+  }
   for (const [parentName, image] of Object.entries<HeroImage>(heroes)) {
     // Update the parent path
     const imageName = parentName

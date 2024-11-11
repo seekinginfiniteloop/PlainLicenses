@@ -31,7 +31,7 @@
     "fix": "bun run fix:style:css && bun run fix:style:ts",
     "fix:style:css": "bun run -b stylelint --fix \"src/**/*.css\"",
     "fix:style:ts": "bun run -b eslint --cache --fix \"src/**/*.ts\" \"*.ts\" \"*.mjs\"",
-    "build": "bun run src/build/index.ts",
+    "build": "bunx tsx src/build/index.ts",
     "runall": "pre-commit run -a && bun run check && bun run fix && bun run build",
     "upgrade": "bun update && uv sync --upgrade && pre-commit autoupdate"
   },
@@ -165,11 +165,13 @@
   "dependencies": {
     "@eslint/js": "^9.14.0",
     "@types/eslint-config-prettier": "^6.11.3",
-    "@typescript-eslint/eslint-plugin": "^8.13.0",
-    "@typescript-eslint/parser": "^8.13.0",
+    "@typescript-eslint/eslint-plugin": "^8.14.0",
+    "@typescript-eslint/parser": "^8.14.0",
     "eslint": "^9.14.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-jsdoc": "^50.4.3",
-    "ts-node": "^10.9.2"
+    "ts-node": "^10.9.2",
+    "tsc": "^2.0.4",
+    "typescript": "^5.6.3"
   }
 }
