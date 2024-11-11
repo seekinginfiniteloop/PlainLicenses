@@ -12,7 +12,7 @@ import globby from 'globby';
 
 const cssSrc = "src/assets/stylesheets/bundle.css";
 
-//TODO: Refactor to use esbuild's transform API and reduce the number of file reads and writes
+// TODO: Refactor to use esbuild's transform API and reduce the number of file reads and writes
 
 let noScriptImage: HeroImage = {
   imageName: '',
