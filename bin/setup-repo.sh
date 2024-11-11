@@ -6,31 +6,44 @@
 set -e
 
 # Default setup_mode is 0 (disabled)
+# Initialize flags
 hard_reset=0
 tool_setup=0
-# Parse command-line arguments
-if [[ "$1" == "--hard-reset" ]]; then
-    hard_reset=1
-fi
-if [[ "$1" == "--tool-setup" ]]; then
-    tool_setup=1
-fi
 
+# Parse command-line arguments
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --hard-reset)
+      hard_reset=1
+      shift
+      ;;
+    --tool-setup)
+      tool_setup=1
+      shift
+      ;;
+    *)
+      echo "Unknown option: $1"
+      exit 1
+      ;;
+  esac
+done
 # Declare associative array for submodules and their properties
 declare -A submodules
 
 # Add submodules and their properties
-submodules["license-list-data,url"]="git@github.com/spdx/license-list-data.git"
-submodules["license-list-data,branch"]="main"
-submodules["license-list-data,sparse_paths"]="/json/licenses.json /json/details"
+submodule_names=("license-list-data" "mkdocs-material" "choosealicense.com")
 
-submodules["mkdocs-material,url"]="git@github.com/squidfunk/mkdocs-material.git"
-submodules["mkdocs-material,branch"]="master"
-submodules["mkdocs-material,sparse_paths"]="/material/templates /material/overrides /src/templates /src/overrides tsconfig.json"
+submodule_url["license-list-data"]="https://github.com/spdx/license-list-data.git"
+submodule_branch["license-list-data"]="main"
+submodule_sparse_paths["license-list-data"]="/json/licenses.json /json/details"
 
-submodules["choosealicense.com,url"]="git@github.com/github/choosealicense.com.git"
-submodules["choosealicense.com,branch"]="gh-pages"
-submodules["choosealicense.com,sparse_paths"]="/_data /_licenses"
+submodule_url["mkdocs-material"]="https://github.com/squidfunk/mkdocs-material.git"
+submodule_branch["mkdocs-material"]="master"
+submodule_sparse_paths["mkdocs-material"]="/material/templates /material/overrides /src/templates /src/overrides tsconfig.json"
+
+submodule_url["choosealicense.com"]="https://github.com/github/choosealicense.com.git"
+submodule_branch["choosealicense.com"]="gh-pages"
+submodule_sparse_paths["choosealicense.com"]="/_data /_licenses"
 
 REPO_ROOT_ABS_PATH="$(git rev-parse --show-toplevel)"
 SUBMODULE_PATH_PREFIX='external'
@@ -52,39 +65,26 @@ stash_changes() {
 }
 
 init_hard_reset() {
-    stash_changes || error_exit "Failed to stash changes"
-    for submodule in "${!submodules[@]}"; do
-        cd "$REPO_ROOT_ABS_PATH/$SUBMODULE_PATH_PREFIX/$submodule"
-        git checkout "${submodules[$submodule,branch]}" || error_exit "Failed to checkout branch ${submodules[$submodule,branch]}"
-        git reset --hard "origin/${submodules[$submodule,branch]}" || error_exit "Failed to reset to origin/${submodules[$submodule,branch]}"
-        git clean -fdx || error_exit "Failed to clean the submodule"
-    done
-}
-
-get_tool_locs() {
-    bunloc=whereis bun || which bun
-    uvloc=whereis uv || which uv
-    piploc=whereis pip || which pip
-    cargoloc=whereis cargo || which cargo
+  stash_changes || error_exit "Failed to stash changes"
+  for submodule in "${submodule_names[@]}"; do
+    cd "$REPO_ROOT_ABS_PATH/$SUBMODULE_PATH_PREFIX/$submodule"
+    git checkout "${submodule_branch[$submodule]}" || error_exit "Failed to checkout branch ${submodule_branch[$submodule]}"
+    git reset --hard "origin/${submodule_branch[$submodule]}" || error_exit "Failed to reset to origin/${submodule_branch[$submodule]}"
+    git clean -fdx || error_exit "Failed to clean the submodule"
+  done
 }
 
 install_bun_tools() {
     cd "$REPO_ROOT_ABS_PATH"
-    get_tool_locs
+    bunloc=$(which bun 2>/dev/null || command -v bun 2>/dev/null || echo "$HOME/.bun/bin/bun")
     local bunstall="$bunloc install -g --no-interactive --silent"
-    $bunstall &&
-    $bunstall '@linthtml/linthtml'
-    $bunstall 'stylelint'
-    $bunstall 'prettier'
-    $bunstall 'semantic-release-cli'
-    $bunstall 'markdownlint-cli2'
-    $bunstall 'commitizen'
-    $bunstall 'commitlint'
+    $bunloc install --no-interactive --silent
+    $bunstall '@linthtml/linthtml' 'stylelint' 'prettier' 'semantic-release-cli' 'markdownlint-cli2' 'commitizen' 'commitlint' 'eslint' || error_exit "Failed to install bun tools"
 }
 
 install_uv_tools() {
     cd "$REPO_ROOT_ABS_PATH"
-    get_tool_locs
+    uvloc=$("${uvloc}" || which uv 2>/dev/null || command -v uv 2>/dev/null || echo "$HOME/.local/bin/uv")
     export UV_PYTHON_DOWNLOADS="automatic"
     local uvstall="$uvloc tool install"
     $uvloc python install 3.13 &&
@@ -97,31 +97,36 @@ install_uv_tools() {
 }
 
 setup_tools() {
-    cd "$REPO_ROOT_ABS_PATH"
-    get_tool_locs
-    # Check path for tools, starting with bun
-    if [[ ! $bunloc ]]; then
-        echo "Installing bun..."
-        curl -fsSL https://bun.sh/install | bash || error_exit "Failed to install bun"
-    fi
-    if [[ ! $uvloc ]]; then
+  cd "$REPO_ROOT_ABS_PATH"
+  # Check if bun is installed
+  if ! command -v bun >/dev/null 2>&1; then
+    echo "Installing bun..."
+    curl -fsSL https://bun.sh/install | bash || npm install -g bun || error_exit "Failed to install bun"
+  fi
+  if ! command -v uv >/dev/null 2>&1; then
         echo "Installing uv..."
-        if [[ $piploc ]]; then
-            pip install uv || error_exit "Failed to install uv"
-        else
+        if ! command -v pip >/dev/null 2>&1; then
             curl -LsSf https://astral.sh/uv/install.sh | sh || error_exit "Failed to install uv"
+            export uvloc="${HOME}/.local/bin/uv}"
+        else
+            pip install uv || error_exit "Failed to install uv"
         fi
     fi
-    if [[ $cargoloc ]]; then
-        echo "Installing typos-cli..."
-        $cargoloc install typos-cli || error_exit "Failed to install typos-cli"
+    if ! command -v cargo >/dev/null 2>&1; then
+        echo "Installing Rust..."
+        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y || error_exit "Failed to install Rust"
+        source "$HOME/.cargo/env"
+        cargo install typos-cli || error_exit "Failed to install typos-cli"
+    else
+        cargo install typos-cli || error_exit "Failed to install typos-cli"
     fi
+    source "$HOME/.zshrc" || source "$HOME/.bashrc" || source "$HOME/.bash_profile" || source "$HOME/.profile"
+
+    uvloc=$(which uv 2>/dev/null || command -v uv 2>/dev/null || echo "$HOME/.local/bin/uv")
     echo "Tools installed."
-    get_tool_locs
-    echo "Bun location: $bunloc"
-    echo "UV location: $uvloc"
     install_bun_tools || error_exit "Failed to install bun tools"
     install_uv_tools || error_exit "Failed to install uv tools"
+    cd "$REPO_ROOT_ABS_PATH"
     chmod +x bin/install-hooks.sh
     bin/install-hooks.sh || error_exit "Failed to install hooks"
 }

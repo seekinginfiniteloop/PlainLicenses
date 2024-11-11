@@ -92,6 +92,17 @@ function set_configs() {
     sudo chmod +x /etc/cron.daily/lolcate &&
     chmod +x "$HOME/.oh-my-zsh/oh-my-zsh.sh"
     touch "$HOME/.source_zshrc"
+    gpgconfig="$(cat << 'EOF'
+    enable-ssh-support
+    default-cache-ttl 1200
+    max-cache-ttl 7200
+    pinentry-program /usr/bin/pinentry-curses
+EOF
+    )" &&
+    echo "$gpgconfig" > "$HOME/.gnupg/gpg-agent.conf"
+    gpgconf --kill gpg-agent &
+    sudo killall gpg-agent &
+
 }
 
 

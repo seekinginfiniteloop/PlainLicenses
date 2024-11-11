@@ -24,27 +24,18 @@ repos:
     hooks:
       - id: typos
         stages: [pre-commit]
-        args:
-          - '--ignore'
-          - .gitignore
-          - '--ignore'
-          - .pre-commit-config.yaml
-          - '--ignore'
-          - .markdownlint.yml
         exclude: |
           (?x)^(
+            .eslintcache |
+            eslint.config.mjs |
+            .gitignore |
+            .pre-commit-config.yaml |
+            .markdownlint.yml |
             node_modules/|
             packages/.*?/node_modules|
             external/|
             eslint.config.mjs)
         types_or: [text]
-  - repo: https://github.com/koalaman/shellcheck-precommit
-    rev: v0.7.2
-    hooks:
-      - id: shellcheck
-        stages: [pre-commit]
-        args: ["--severity=warning", "--external-sources"]
-        types: [shell]
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.7.2
     hooks:
@@ -56,64 +47,70 @@ repos:
         stages: [pre-commit]
         types: [python]
   - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
-    rev: <latest tag>
+    rev: v9.18.0
     hooks:
       - id: commitlint
         stages: [commit-msg]
         args: [--config, commitlint.config.ts]
-# A local hook must define id, name, language, entry, and files / types as specified under Creating new hooks.
   - repo: local
-    id: build
-    name: Build
-    language: system
-    entry: bun run -b build
-    files: src/**/*.ts
-    types: [ts]
-    stages: [pre-commit]
-  - repo: local
-    id: stylelint
-    name: Stylelint
-    language: system
-    files: src/**/*.css
-    types: [css]
-    entry: bun run -b stylelint --fix
-    stages: [pre-commit]
-  - id: eslint
-    repo: local
-    name: ESLint
-    language: system
-    types: [ts, javascript]
-    exclude: |
-      (?x)^(
-        node_modules/|
-        packages/.*?/node_modules|
-        .vscode/|
-        external/|
-        docs/)
-    entry: bun run -b eslint --fix
-    stages: [pre-commit]
-  - id: prettier
-    repo: local
-    name: Prettier
-    language: system
-    types: [json, yaml, toml]
-    exclude: |
-      (?x)^(
-        node_modules/|
-        packages/.*?/node_modules|
-        external/)
-    entry: bun run -b prettier --write
-    stages: [pre-commit]
-  - id: commitizen
-    repo: local
-    name: Commitizen
-    language: system
-    exclude: |
-      (?x)^(
-        node_modules/|
-        packages/.*?/node_modules|
-        external/)
-    entry: bun run -b git-cz
-    stages: [prepare-commit-msg]
-    type: [file]
-    always_run: true
+    hooks:
+      - id: shellcheck
+        language: system
+        name: Shellcheck
+        stages: [pre-commit]
+        entry: shellcheck -x -S error
+        types: [shell]
+      - id: build
+        name: Build
+        language: system
+        entry: bun run -b build
+        files: src/.*?.ts
+        types: [ts]
+        stages: [pre-commit]
+
+      - id: stylelint
+        name: Stylelint
+        language: system
+        entry: bun run -b stylelint --fix
+        files: src/assets/stylesheets/.*?.css
+        types: [css]
+        stages: [pre-commit]
+
+      - id: eslint
+        name: ESLint
+        language: system
+        entry: bun run -b eslint --fix
+        types: [ts, javascript]
+        exclude: |
+          (?x)^(
+            node_modules/|
+            packages/.*?/node_modules|
+            .vscode/|
+            external/|
+            docs/)
+        stages: [pre-commit]
+
+      - id: prettier
+        name: Prettier
+        language: system
+        entry: bun run -b prettier --write
+        types: [json, yaml, toml]
+        exclude: |
+          (?x)^(
+            node_modules/|
+            packages/.*?/node_modules|
+            external/)
+        stages: [pre-commit]
+
+      - id: commitizen
+        name: Commitizen
+        language: system
+        entry: bun run -b git-cz
+        exclude: |
+          (?x)^(
+            node_modules/|
+            packages/.*?/node_modules|
+            external/)
+        stages: [prepare-commit-msg]
+        types: [file]
+        always_run: true

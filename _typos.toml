@@ -2,21 +2,23 @@
 locale = "en-us"
 check-file = true
 check-filename = true
-extend-ignore-re = ["(?s)(#|//)\\s*spellchecker:off.*?\\n\\s*(#|//)\\s*spellchecker:on"]
+extend-ignore-re = [
+    "(?s)(#|//)\\s*spellchecker:off.*?\\n\\s*(#|//)\\s*spellchecker:on",
+]
 
 [files]
 ignore-hidden = true
 ignore-files = true
-extend-exclude = """
-/usr/**/*
-/tmp/**/*
-/**/node_modules/**
-node_modules
-mkdocs-material
-license-list-data
-external
-vendor
-.git
-/usr/share/code/**/*
-eslint.config.mjs
-"""
+extend-exclude = [
+    "/usr/**/*",
+    "/tmp/**/*",
+    "/**/node_modules/**",
+    "node_modules",
+    "mkdocs-material",
+    "license-list-data",
+    "external",
+    "vendor",
+    ".git",
+    "/usr/share/code/**/*",
+    "eslint.config.mjs",
+]

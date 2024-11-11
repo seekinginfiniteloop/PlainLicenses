@@ -6,10 +6,10 @@ function find_repo_root {
         echo "."
         return
     fi
-    local SCRIPT_DIR
     SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+    export SCRIPT_DIR
     local dir="$SCRIPT_DIR"
-    while [[ "$dir" != "/" ]]; do
+        while [[ "$dir" != "/" ]]; do
         if [[ -d "$dir/.git" ]]; then
             echo "$dir"
             return
@@ -28,6 +28,7 @@ fi
 cd .git/hooks || exit 1
 if [[ ! -f pre-commit ]]; then
     cat << 'EOF' > pre-commit
+#!/bin/bash
 # Get the directory of this script
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
@@ -43,6 +44,8 @@ function find_repo_root {
         echo "."
         return
     fi
+    SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+    export SCRIPT_DIR
     local dir="$SCRIPT_DIR"
     while [[ "$dir" != "/" ]]; do
         if [[ -d "$dir/.git" ]]; then

@@ -36,6 +36,7 @@
     "vue-html": true,
     "yaml": true
   },
+  "terminal.integrated.fontFamily": "MesloLGS NF",
     "[css]": {
     "editor.defaultFormatter": "vscode.css-language-features",
     "editor.formatOnPaste": true,
