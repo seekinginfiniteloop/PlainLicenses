@@ -1,9 +1,8 @@
+/* eslint-disable no-console */
 import { cssModulesPlugin } from "@asn.aeb/esbuild-css-modules-plugin"
 // @ts-ignore
 import { tsconfigPathsPlugin } from "esbuild-plugin-tsconfig-paths"
 import * as esbuild from "esbuild"
-// import { readFileSync } from "node:fs";
-// import path from "path";
 import { copy } from 'esbuild-plugin-copy'
 import globby from "globby"
 
@@ -118,7 +117,7 @@ async function resolveGlob(glob: string, fastGlobOptions?: {}): Promise<string[]
       return result
     }
   } catch (error) {
-    // eslint-disable-next-line no-console
+
     console.error("Error resolving glob:", error)
     throw error
   }
@@ -144,26 +143,47 @@ const parentNames = async () => {
 
 export const getHeroImages = async (): Promise<{ [key: string]: HeroImage }> => {
   const parents = await parentNames()
-  return Object.fromEntries(
+
+  const flattenedWidths = Object.fromEntries(
     await Promise.all(
       parents.filter((parent): parent is string => parent !== undefined).map(async (parent: string) => {
-          const key = parent.split("/").pop()
-          const heroFilePattern = `${key}_{1280,1920,2560,3840}.avif`
-          const children = await globby(`${parent}/${heroFilePattern}`, { onlyFiles: true, unique: true })
-          const flattenedWidths: WidthMap = children.reduce<WidthMap>((acc: WidthMap, child: string) => {
-            const width: number | undefined = [1280, 1920, 2560, 3840].find((w: number) => child.includes(w.toString()))
-            if (width) {
-              acc[width] = child
-            }
-            return acc
-          }, {} as WidthMap) // Initialize acc as an empty WidthMap
+        const key = parent.split("/").pop()
+        const heroFilePattern = `${key}_{1280,1920,2560,3840}.avif`
+        const children = await globby(`${parent}/${heroFilePattern}`, { onlyFiles: true, unique: true })
+        const widths = children.reduce<WidthMap>((acc, child) => {
+          const width = [1280, 1920, 2560, 3840].find(w => child.includes(w.toString()))
+          if (width) {
+            acc[width] = child
+          }
+          return acc
+        }, {})
+        return [parent, widths]
+      })
+    )
+  )
 
-          const srcset = generateSrcset({ parent, widths: flattenedWidths })
-          return [key, { parent, widths: flattenedWidths, srcset }]
-        })
+  const handleError = (message: string, details: any) => {
+    console.error(message, details)
+    throw new Error(message)
+  }
+
+  return Object.fromEntries(
+    await Promise.all(
+      Object.entries(flattenedWidths).map(async ([key, parent]) => {
+        if (!parent) {
+          handleError(`No parent for ${key}`, { key })
+        }
+        const srcset = await generateSrcset({ parent: key, widths: parent as { [key: number]: string } })
+        if (!srcset) {
+          handleError(`No srcset for ${key}`, { parent, widths: flattenedWidths })
+        }
+        console.log({ key, parent, widths: flattenedWidths, srcset })
+        return [key, { parent, widths: flattenedWidths, srcset }]
+      })
     )
   )
 }
+
 
 export const heroImages: { [key: string]: HeroImage } = {}
 
@@ -172,6 +192,6 @@ getHeroImages()
     Object.assign(heroImages, result)
   })
   .catch((error) => {
-    // eslint-disable-next-line no-console
+
     console.error("Error resolving hero images:", error)
   })

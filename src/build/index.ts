@@ -159,8 +159,8 @@ export const heroImages = rawHeroImages.map(image => ({
 async function handleHeroImages() {
   const images: HeroImage[] = [];
   const heroes = heroImages;
-  if (!heroes) {
-    throw new Error('No hero images found');
+  if (!heroes.srcset) {
+    throw new Error('Srcset not found in hero images');
   }
   for (const [parentName, image] of Object.entries<HeroImage>(heroes)) {
     // Update the parent path
@@ -284,7 +284,7 @@ async function getFileHashes(): Promise<FileHashes> {
 async function replacePlaceholders(): Promise<void> {
   const { palette, main } = await getFileHashes();
   if (!palette || !main) {
-    return;
+    throw new Error('Palette or main CSS file hash not found');
   }
   try {
     if (await fs.access(cssSrc).catch(() => false)) {
@@ -357,7 +357,6 @@ const metaOutputMap = async (output: esbuildOutputs): Promise<buildJson> => {
   const keys = Object.keys(output);
   const jsSrcKey = keys.find((key) => key.endsWith('.js'));
   const cssSrcKey = keys.find((key) => key.endsWith('.css') && key.includes("bundle") && !key.includes("javascripts"));
-
   let noScriptImageContent =`
   <img srcset="${noScriptImage.srcset}" alt="hero image" class="hero-parallax__image hero-parallax__image--minimal" src="${noScriptImage.widths[1280]}" alt="hero image"
   sizes="(max-width: 1280px) 1280px, (max-width: 1920px) 1920px, (max-width: 2560px) 2560px, 3840px" loading="eager" fetchpriority="high" draggable="false"

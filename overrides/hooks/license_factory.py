@@ -15,7 +15,7 @@ from datetime import datetime, timezone
 from functools import cached_property
 from pathlib import Path
 from re import Match, Pattern
-from textwrap import TextWrapper, dedent, indent
+from textwrap import dedent, indent
 from typing import Any, ClassVar, Literal
 
 import ez_yaml
