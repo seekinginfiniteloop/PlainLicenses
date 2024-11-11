@@ -1,5 +1,4 @@
 #!/bin/bash
-# shellcheck disable=SC1091
 
 # Update and install packages
 cd /workspaces/PlainLicense || return
@@ -87,7 +86,7 @@ function set_configs() {
 
     mkdir -p "$HOME/logs" &&
     mkdir -p /workspaces/PlainLicense/.workbench &&
-    ln -s "$HOME/logs" /workspaces/PlainLicense/.workbench/logs &&
+    ln -s /home/vscode/logs /workspaces/PlainLicense/.workbench/ &&
     echo "lolcate --update > /dev/null 2>&1 &" | sudo tee /etc/cron.daily/lolcate &&
     sudo chmod +x /etc/cron.daily/lolcate &&
     chmod +x "$HOME/.oh-my-zsh/oh-my-zsh.sh"
@@ -102,7 +101,6 @@ EOF
     echo "$gpgconfig" > "$HOME/.gnupg/gpg-agent.conf"
     gpgconf --kill gpg-agent &
     sudo killall gpg-agent &
-
 }
 
 

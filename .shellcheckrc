@@ -1,3 +1,8 @@
 # .shellcheckrc
 
 external-sources=true
+# Disable anything that requires external reference checks...
+# shellcheck doesn't handle these well
+disable=SC1090
+disable=SC1091
+disable=SC1094

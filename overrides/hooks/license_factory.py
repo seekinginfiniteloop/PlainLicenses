@@ -15,7 +15,7 @@ from datetime import datetime, timezone
 from functools import cached_property
 from pathlib import Path
 from re import Match, Pattern
-from textwrap import dedent, indent
+from textwrap import TextWrapper, dedent, indent
 from typing import Any, ClassVar, Literal
 
 import ez_yaml
@@ -363,8 +363,7 @@ class LicenseContent:
         """
         text = text or self.markdown_license_text
         text = self.process_definitions(text, plaintext=True)
-        headers = self._header_pattern.finditer(text)
-        if headers:
+        if headers := self._header_pattern.finditer(text):
             for header in headers:
                 text = text.replace(header.group(0), f"{header.group(1).upper()}\n")
         text = type(self)._markdown_pattern.sub(
@@ -551,7 +550,8 @@ class LicenseContent:
         """
         indentation = " " * 4 * level
         title_indent = "" if level == 1 else " " + " " * 4 * (level - 1)
-        title = f"""{title_indent}=== "{icon} {title}" """
+        icon = f"{icon} " if icon else ""
+        title = f"""{title_indent}=== "{icon}{title}" """
         return f"""{title}\n\n{indent(dedent(text), indentation)}\n"""
 
     @staticmethod
@@ -602,8 +602,9 @@ class LicenseContent:
                     4,
                 )
             case "markdown":
-                return f"### {self.meta.get('interpretation_title')}\n\n" + wrap_text(
-                    dedent(self.meta.get("interpretation_text", ""))
+                return (
+                    f"### {self.meta.get('interpretation_title')}\n\n"
+                    + wrap_text(dedent(self.meta.get("interpretation_text", "")))
                 )
             case "plaintext":
                 as_plaintext = self.process_markdown_to_plaintext(
@@ -615,7 +616,7 @@ class LicenseContent:
                     self.meta.get("plain_name", "").upper(),
                     title,
                 )
-                return f"{title.upper()}\n\n" + dedent(as_plaintext)
+                return f"{title.upper()}\n\n{dedent(as_plaintext)}"
         return ""
 
     def get_header_block(self, kind: Literal["reader", "markdown", "plaintext"]) -> str:
@@ -739,18 +740,13 @@ class LicenseContent:
                 not_advice_title,
                 3,
             )
-        not_advice = self.tabify(self.not_advice_text, not_advice_title, 1)
+        not_advice = self.tabify(
+            self.not_advice_text, not_advice_title, 1,)
         not_official_title = f"the official {self.meta.get("original_name")}"
         not_official = self.tabify(
             self.not_official_text, not_official_title, 1,
         )
-        return self.blockify(
-            f"{not_advice}{not_official}",
-            "admonition",
-            f"The {self.meta.get("plain_name", "")} isn't...",
-            4,
-            {"type": "warning"},
-        )
+        return f"<div class='admonition warning'><p class='admonition-title'>The {self.meta.get('plain_name', '')} isn't...</p>\n\n" + f"{not_advice}{not_official}</div>"
 
     @property
     def reader(self) -> str:
@@ -946,7 +942,7 @@ class LicenseContent:
             if self.meta.get("outro")
             else "\n"
         )
-        content = (
+        return (
             self.blockify(
                 f"{tabs}",
                 "admonition",
@@ -955,4 +951,3 @@ class LicenseContent:
                 options={"type": "license"},
             )
         ) + outro
-        return content

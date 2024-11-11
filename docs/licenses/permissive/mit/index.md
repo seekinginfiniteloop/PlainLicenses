@@ -36,7 +36,7 @@ reader_license_text: |
 
   ## If You Use This Work, You Accept It "As Is"'
 
-  We provide this work as-is and offer **no warranty. We are not responsible for any for any damages or problems** from your use of the work.
+  We provide this work as-is **without warranty. We are not responsible for any damages or problems** from your use of the work.
 official_license_text: |
   # The MIT License (MIT)
 

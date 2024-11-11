@@ -10,12 +10,15 @@ gpg-connect-agent updatestartuptty /bye > /dev/null 2>&1 &
 HIST_STAMPS="mm/dd/yyyy"
 zstyle :omz:plugins:ssh-agent quiet yes
 zstyle :omz:plugins:ssh-agent lazy yes
-source $ZSH/oh-my-zsh.sh
+source "$ZSH/oh-my-zsh.sh"
 
+# shellcheck disable=SC2034
 DISABLE_AUTO_UPDATE=true
 DISABLE_UPDATE_PROMPT=true
 ZSH_THEME="powerlevel10k/powerlevel10k"
+# shellcheck disable=SC2296
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+# shellcheck disable=SC2296
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
@@ -47,11 +50,12 @@ export LOG_PATH="$HOME/logs"
 SIGNING_KEY="$(ssh-add -L)"
 export SIGNING_KEY
 updatedb
-source $HOME/.oh-my-zsh/oh-my-zsh.sh
+source "$HOME/.oh-my-zsh/oh-my-zsh.sh"
 fpath+=$HOME/.zfunc
 setopt extended_glob
 autoload -Uz compinit
 zstyle ':completion:*' menu select
+# shellcheck disable=SC2034
 plugins=(bun git gitfast git-prompt gpg-agent ssh-agent pre-commit zsh-interactive-cd rust)
 
 if [ -f "$HOME/.source_zshrc" ]; then
@@ -60,4 +64,4 @@ if [ -f "$HOME/.source_zshrc" ]; then
 fi
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+[[ ! -f ~/.p10k.zsh ]] || source "$HOME/.p10k.zsh"

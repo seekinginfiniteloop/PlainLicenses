@@ -13,6 +13,7 @@
 #      - Avoid using quotes in the text fields; instead use literal blocks (| for
 #     multiline and > for single line with the text indented on the next line)
 #     - **Please don't use reference link tags on license pages. Use in-line links.**
+#       I love reference links, too, but they complicate license processing.
 #
 # Steps:
 # 1) !!IMPORTANT: replace all {{ variables }} with the appropriate information
@@ -26,117 +27,135 @@
 #     limitations. These are from choosealicense.com's tagging system
 #     https://github.com/github/choosealicense.com#license-metadata
 #
-# 4) Fill in the outro if needed. The outro field is APPENDED to the standard outro
-#     text, so this may be empty. If you keep it empty, change the value to `null`. It
-#     is empty on most licenses. Use it for unique
-#    information about the license.
+# 4) Fill in the outro if needed. The outro field is APPENDED to the license page
+#    (it appears below the license). If you keep it empty, change the value to `null`. It
+#     is empty on most licenses. Use it for unique information about the license.
+#     For an example, see [Plain Elastic License](https://plainlicense.org/licenses/source-available/elastic-2.0/)
 #
 # 5) Fill in the reader_license_text and official_license_text fields with the
 #   appropriate information. These fields are used to generate the license tabs on the
-#   license page.
+#   license page. Reader license text is the plain language version of the license.
+#   Official license text is the original license text.
 #     NOTE:
 #         - **DO NOT INCLUDE THE TITLE AND VERSIONS FOR license text.** Start with the
 #         first section of the license text. The title and versions are generated
 #         automatically. Headers and text are not.
-#         - Don't include an interpretation, not-legal-advice, or not-official section; #           those are generated automatically.
+#         - Don't include an interpretation, not-legal-advice, or not-official section;
+#           those are generated automatically.
 #
-# 6) Save the file in the appropriate directory (docs/licenses/{{category}}/{spdx-id}}/# index.md. Don't worry
-# about removing comments; we'll take care of that when we generate the license page.
+# 6) Save the file in the appropriate directory (docs/licenses/{{category}}/{spdx-id}}/index.md.
+#     Don't worry about removing these comments; we'll take care of that when we generate the license page.
+# template: don't change this; it's used to generate the license page
 template: license.html
-plain_name: > # don't include version number in the plain name
+plain_name: > # don't include version number or "the" in the plain name
   {{ plain_name }}
-# SPDX identifier for the original license, find it at https://spdx.org/licenses/ or in our repository at https://github.com/seekinginfiniteloop/PlainLicense/external/license-list-data/json/licenses.json (both are pulled from the same source)
+# spdx_id: SPDX identifier for the original license, find it at https://spdx.org/licenses/ or in our repository at https://github.com/seekinginfiniteloop/PlainLicense/external/license-list-data/json/licenses.json (both are pulled from the same source)
 # If the license is a Plain License original, try to copy the spdx convention when naming it, and prefix it with `Plain-`. Following SPDX convention, use the major.minor version number at the end of the spdx_id. Example: `Plain-Public-Work-1.0`
 spdx_id: >
   {{ spdx_id }}
+# original_name: original name as listed in the SPDX database else null if a Plain License original
 original_name: >
-  {{ original_name }} # original name as listed in the SPDX database else null
-# URL to the original license text, link to official site if possible, otherwise link to the opensource.org or SPDX page
+  {{ original_name }}
+# original_url: URL to the original license text, link to official site if possible, otherwise link to the opensource.org or SPDX page
 original_url: >
-  {{ original_url }} # URL to the original license text else null
-original_organization: > # organization that created the license
+  {{ original_url }}
+# original_organization: organization that created the license. If the license is a Plain License original, set to null
+original_organization: >
   {{ original_organization }}
+# original_version: version of the original license (e.g. '2.0' for Apache 2.0. 'null' if there is no versioning)
 original_version:
-  > # version of the original license (e.g. '2.0' for Apache 2.0. 'null' if there is no versioning)
+  >
   {{ original_version }}
+# category: permissive, copyleft, public-domain, source-available, proprietary (choose one)
 category:
-  > # category of the license: permissive, copyleft, public-domain, source-available, proprietary
+  >
   {{ category }}
-# description of the license and its defining characteristics
+# license_description: A brief (1-3 sentences) description of the license and its defining characteristics
 license_description: >
   {{ description }}
-# notes about the license and its usage
+# notes: additional notes about the license, such as its history, use cases, or other important information
 note: >
   {{ notes }}
-# We use choosealicense.com's tagging system; we haven't implemented this yet, but we
+# CHOOSE A LICENSE TAGS
+# We use choosealicense.com's tagging system; we haven't fully implemented this yet, but we
 # will in the future. Their system divides tags into permissions, conditions, and limitations
-# SELECT ONLY TAGS THAT APPLY TO THE LICENSE, AND REMOVE THE REST. If the license is already on choosealicense.com, please use the same tags as on their site. You can find all licenses and their tags at https://www.github.com/seekinginfiniteloop/PlainLicense/external/choosealicense.com/_licenses_/
+# SELECT ONLY TAGS THAT APPLY TO THE LICENSE, AND REMOVE THE REST. If the license is already on choosealicense.com,
+# please use the same tags as on their site. You can find all choosealicense.com licenses and their tags at
+# https://github.com/seekinginfiniteloop/PlainLicense/external/choosealicense.com/_licenses_/
 # If the license is not on choosealicense.com, use the tags that best describe the license
-# Descriptions of the tags are here: https://www.github.com/seekinginfiniteloop/PlainLicense/external/choosealicense.com/_data/rules.yml
-permissions: # AS APPLICABLE:
+# Descriptions of the tags are here:
+# https://github.com/seekinginfiniteloop/PlainLicense/external/choosealicense.com/_data/rules.yml
+# AS APPLICABLE:
+permissions:
   - distribution
   - commercial-use
   - modifications
   - patent-use
   - private-use
-  - revokable # this isn't in choosealicense.com's tags, but we need it because we have proprietary licenses
-conditions: # AS APPLICABLE:
+  - revokable # this isn't one of choosealicense.com's tags, but we need it because we have proprietary licenses
+# AS APPLICABLE:
+conditions:
   - disclose-source
   - document-changes
   - include-copyright
   - include-copyright
   - network-use-disclose
-  - same-license # must use the same license for the project (full stack)
-  - same-license--file # must use the same license for the file, but not the project
-  - same-license--library # must use the same license for the library, but not the project
-limitations: # AS APPLICABLE:
-  - liability
-  - patent-use
-  - trademark-use
-  - warranty
+  - same-license # must use the same license for the entire project (full stack)
+  - same-license--file # must use the same license for the same file, but not the project
+  - same-license--library # must use the same license for the same library, but not the project
+# AS APPLICABLE:
+limitations:
+  - liability # disclaims liability
+  - patent-use # explicitly defines patent use rights
+  - trademark-use # explicitly defines trademark use rights
+  - warranty # disclaims warranty
 # NOTE: The simplified tags you see on license pages with icon representations are added in the build process automatically. They are appended based on permissions, conditions, limitations
-# The mapping is in the license_factory.py script in the `overrides/hooks` directory
+# The mapping is in the `license_factory.py` script in the `overrides/hooks` directory
 
-# outro text for the license page; this is appended to the page, below the license tabs. Optional and usually empty; if empty, change to `null`
+# outro: outro text for the license page; this is appended to the page, below the license tabs. Optional and usually empty; if empty, change to `null`
 outro: |
   null
 
-# Optional additional instructions for how to use the license. This is appended to the stock `how` instructions from the boilerplate in the mkdocs.yml. This is usually empty, and null is the default value. When we do have instructions, most often the license itself gives them, so reference the license text with an anchor link, which is the header for that section of the license text. Example:
+# Optional additional instructions for how to use the license. This is appended to the stock `how` instructions from the boilerplate in the mkdocs.yml.
+# This is usually empty, and null is the default value. When we do have instructions, most often the license itself gives them, so reference the license text with an anchor link,
+# which is the header for that section of the license text. Example:
 # ```markdown
 # See [`How to Apply the Plain Apache to Your Work`](#how-to-apply-the-plain-apache-to-your-work "jump to additional license instructions")` section for information on applying the license to your work.
 # ```
 extra_how: null
-
-# Reader License Text -- MKDocs markdown format. Make it pretty.
-# See [Writing Guidelines](plainlicense.org/helping/write.html)
+# READER LICENSE TEXT (PLAIN LANGUAGE LICENSE)
+# reader_license_text: this is the plain language version of the license text
+# It is the Plain License version.
+# Uses MKDocs markdown. Make it pretty. See [Writing Guidelines](plainlicense.org/helping/write.html)
 # Scripts will automatically generate the rest of the tabs, text, and links
-# **Don't include code blocks (three backticks)**
-# Inline code spans are OK (one backtick)
 # Don't include the license title (e.g. Plain MIT); it is generated automatically
-# Headers are NOT generated automatically; include them in the text
-# Don't use reference tags in the license text; use in-line links instead
+# All other headers are NOT generated automatically; include them in the text
+# Don't use reference links in the license text; use in-line links instead
 reader_license_text: |
   {{ reader_license_text }}
 
-# official license text -- try to use a standard markdown format
-# This is the text of the original license, INCLUDING its header
-# If the official license text is in a different format, check if it's at
-# https://github.com/IQAndreas/markdown-licenses or convert it to markdown by hand
-# (usually just adding header tags and fixing links). Reach out if you need help.
-# Don't use reference tags in the license text; use in-line links instead
-
+# OFFICIAL LICENSE TEXT
+# official_license_text:
+# If applicable, provide the mostly common/official license text for the original license.
+# In MARKDOWN.
+# Include its title and version number, if applicable; exactly as it usually appears.
+# If you can't find the official text in markdown, check if it's at:
+# https://github.com/IQAndreas/markdown-licenses . Otherwise, you might have to
+# manually convert it to markdown (usually just adding header tags and fixing links).
+# Reach out if you need help.cDon't use reference links in the license text; use in-line links instead
 # if it's a Plain License original, set to null
 official_license_text: |
   {{ official_license_text }}
 
+# link_in_original: boolean, if the original license includes a link to the original_url, set to true
+# If not, false. We'll add a link to the license when we generate the page using the original_url
 link_in_original: false
-# boolean, if the original license includes a link to the original_url, set to true
-# if the original license does not include a link to the original_url, set to false;
-# we'll add a link to the license when we generate the page
 
-original_gunning_fog: null
+# GUNNING FOG INDEXES
 # Gunning Fog index for the original license text; we'll calculate this when we generate the page
 # If you don't know what this is, don't worry about it; we'll take care of it
-plain_gunning_fog: null
+original_gunning_fog: null
+
 # Gunning Fog index for the plain language license text; we'll calculate this when we generate the page
+plain_gunning_fog: null
 ---

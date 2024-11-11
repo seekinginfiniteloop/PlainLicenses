@@ -26,4 +26,4 @@
 
 ## **Use at your own risk!**
 
-Plain License licenses are provided as-is. Consult with an attorney before using any license for a project (and let us know what they say!). [The author, @seekinginfiniteloop](https://www.github.com/seekinginfiniteloop/),  is not an attorney. He's just a human who wants to make licenses more accessible for everyone.
+We provide our licenses **as-is**. Consult with an attorney before using any license for a project (and let us know how that goes). [The author, @seekinginfiniteloop](https://github.com/seekinginfiniteloop/), is not an attorney. He's just a human who wants to make licenses more accessible for everyone.
