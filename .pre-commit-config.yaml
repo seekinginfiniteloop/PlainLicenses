@@ -110,4 +110,5 @@ repos:
             external/)
         stages: [prepare-commit-msg]
         types: [file]
+        branch: 
         always_run: true

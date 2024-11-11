@@ -3,10 +3,10 @@
 export ZSH=$HOME/.oh-my-zsh
 zstyle ':omz:update' mode auto      # update automatically without asking
 zstyle ':omz:update' frequency 7
-eval "$(gpg-agent --daemon --enable-ssh-support)"
 GPG_TTY=$(tty)
 export GPG_TTY
-gpg-connect-agent updatestartuptty /bye
+gpg-agent --daemon --enable-ssh-support > /dev/null 2>&1 &
+gpg-connect-agent updatestartuptty /bye > /dev/null 2>&1 &
 HIST_STAMPS="mm/dd/yyyy"
 zstyle :omz:plugins:ssh-agent quiet yes
 zstyle :omz:plugins:ssh-agent lazy yes

@@ -7,6 +7,7 @@ function error_exit {
     exit 1
 }
 
+
 if [[ -z "$REPO_ROOT" || -z "$VIRTUAL_ENV" ]]; then
     ../set_venv || error_exit "Failed to set the virtual environment."
 fi
