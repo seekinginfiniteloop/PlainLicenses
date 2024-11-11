@@ -1,0 +1,21 @@
+#!/bin/bash
+# Git hooks are copied to the .git/hooks directory when the repository is setup.
+
+# Function to exit with an error message
+function error_exit {
+    echo "$1" 1>&2
+    exit 1
+}
+
+if [[ -z "$REPO_ROOT" || -z "$VIRTUAL_ENV" ]]; then
+    ../set_venv || error_exit "Failed to set the virtual environment."
+fi
+
+cd "$REPO_ROOT" || error_exit "Failed to change to the repository root directory."
+
+if command -v pre-commit > /dev/null 2>&1; then
+    exec pre-commit run --hook-stage=pre-commit || error_exit "pre-commit failed"
+else
+    echo "pre-commit not found.  Did you forget to activate your virtualenv?" 1>&2 ||
+    error_exit "pre-commit not found"
+fi

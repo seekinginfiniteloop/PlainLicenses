@@ -27,11 +27,9 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
-# Declare associative array for submodules and their properties
-declare -A submodules
 
 # Add submodules and their properties
-submodule_names=("license-list-data" "mkdocs-material" "choosealicense.com")
+submodule_names=("license-list-data" "mkdocs-material" "choosealicense")
 
 submodule_url["license-list-data"]="https://github.com/spdx/license-list-data.git"
 submodule_branch["license-list-data"]="main"
@@ -41,9 +39,11 @@ submodule_url["mkdocs-material"]="https://github.com/squidfunk/mkdocs-material.g
 submodule_branch["mkdocs-material"]="master"
 submodule_sparse_paths["mkdocs-material"]="/material/templates /material/overrides /src/templates /src/overrides tsconfig.json"
 
-submodule_url["choosealicense.com"]="https://github.com/github/choosealicense.com.git"
-submodule_branch["choosealicense.com"]="gh-pages"
-submodule_sparse_paths["choosealicense.com"]="/_data /_licenses"
+# shellcheck disable=SC2034
+submodule_url["choosealicense"]="https://github.com/github/choosealicense.com.git"
+submodule_branch["choosealicense"]="gh-pages"
+# shellcheck disable=SC2034
+submodule_sparse_paths["choosealicense"]="/_data /_licenses"
 
 REPO_ROOT_ABS_PATH="$(git rev-parse --show-toplevel)"
 SUBMODULE_PATH_PREFIX='external'
@@ -132,8 +132,19 @@ setup_tools() {
 }
 
 update_submodules || error_exit "Failed to update submodules"
+chmod +x bin/*
+chmod +x bin/hooks/*
 if [[ $tool_setup -eq 1 ]]; then
     setup_tools || error_exit "Failed to setup tools"
-    elif [[ $hard_reset -eq 1 ]]; then
+elif [[ $hard_reset -eq 1 ]]; then
     init_hard_reset || error_exit "Failed to hard reset submodules"
+else
+    echo "Submodules updated."
+    if [[ -L .git/hooks/pre-commit && -L .git/hooks/prepare-commit-msg && -L .git/hooks/commit-msg ]]; then
+        echo "Hooks already exist."
+    else
+        echo "Installing hooks..."
+        chmod +x bin/install-hooks.sh
+        bin/install-hooks.sh || error_exit "Failed to install hooks"
+    fi
 fi

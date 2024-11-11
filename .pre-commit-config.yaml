@@ -1,3 +1,4 @@
+---
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
@@ -67,7 +68,6 @@ repos:
         files: src/.*?.ts
         types: [ts]
         stages: [pre-commit]
-
       - id: stylelint
         name: Stylelint
         language: system
@@ -75,7 +75,6 @@ repos:
         files: src/assets/stylesheets/.*?.css
         types: [css]
         stages: [pre-commit]
-
       - id: eslint
         name: ESLint
         language: system
@@ -89,7 +88,6 @@ repos:
             external/|
             docs/)
         stages: [pre-commit]
-
       - id: prettier
         name: Prettier
         language: system
@@ -101,7 +99,6 @@ repos:
             packages/.*?/node_modules|
             external/)
         stages: [pre-commit]
-
       - id: commitizen
         name: Commitizen
         language: system
