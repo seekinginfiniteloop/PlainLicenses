@@ -125,8 +125,7 @@ async function resolveGlob(glob: string, fastGlobOptions?: {}): Promise<string[]
 
 /**
  * Generates the Srcset for a given image.
- * @function
- * @param image - The image to generate the Srcset for.
+ * @param image The image to generate the Srcset for.
  * @returns A promise that resolves to the Srcset for the image.
  */
 export async function generateSrcset(image: HeroImageBase): Promise<string> {
@@ -140,39 +139,31 @@ export async function generateSrcset(image: HeroImageBase): Promise<string> {
 
 const parents = await resolveGlob("src/assets/images/hero/*", { onlyDirectories: true })
 
-const heroes = () => {
+export const heroImages = async () => {
   const getWidthMaps = async () => {
-    return Object.fromEntries(
-      await Promise.all(
-        parents.map(async (parent: string) => {
-          const key = parent.split("/").pop()
-          const heroFilePattern = `${key}_{1280,1920,2560,3840}.avif`
-          const children = await globby(`${parent}/${heroFilePattern}`, { onlyFiles: true, unique: true })
-          const flattenedWidths: WidthMap = children.reduce<WidthMap>((acc: WidthMap, child: string) => {
-            const width: number | undefined = [1280, 1920, 2560, 3840].find((w: number) => child.includes(w.toString()))
-            if (width) {
-              acc[width] = child
-            }
-            return acc
-          }, {} as WidthMap) // Initialize acc as an empty WidthMap
+    const results = await Promise.allSettled(
+      parents.map(async (parent: string) => {
+        const key = parent.split("/").pop()
+        const heroFilePattern = `${key}_{1280,1920,2560,3840}.avif`
+        const children = await globby(`${parent}/${heroFilePattern}`, { onlyFiles: true, unique: true })
+        const flattenedWidths: WidthMap = children.reduce<WidthMap>((acc: WidthMap, child: string) => {
+          const width: number | undefined = [1280, 1920, 2560, 3840].find((w: number) => child.includes(w.toString()))
+          if (width) {
+            acc[width] = child
+          }
+          return acc
+        }, {} as WidthMap) // Initialize acc as an empty WidthMap
 
-          const srcset = await generateSrcset({ parent, widths: flattenedWidths })
-          return [key, { parent, widths: flattenedWidths, srcset }] as [string, HeroImage]
-        })
-      )
+        const srcset = await generateSrcset({ parent, widths: flattenedWidths })
+        return [key, { parent, widths: flattenedWidths, srcset }] as [string, HeroImage]
+      })
+    )
+
+    return Object.fromEntries(
+      results
+        .filter((result): result is PromiseFulfilledResult<[string, HeroImage]> => result.status === "fulfilled")
+        .map(result => result.value)
     )
   }
-  return getWidthMaps().then((widthMaps) => {
-      return widthMaps
-    }).catch((error) => {
-      console.error("Error getting width maps:", error)
-      throw error
-    })
+  return getWidthMaps()
 }
-
-export const heroImages = heroes().then((heroes) => {
-  return heroes
-}).catch((error) => {
-  console.error("Error getting hero images:", error)
-  throw error
-})

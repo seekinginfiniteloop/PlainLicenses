@@ -12,7 +12,7 @@ export default [{
 
     parserOptions: {
       project: [
-        "tsconfig.json",
+        "tsconfig.json", "tsconfig.build.json"
       ],
       projectService: true,
       tsconfigRootDir: import.meta.dirname,
@@ -221,7 +221,7 @@ export default [{
 
     parserOptions: {
       project: [
-        "tsconfig.json",
+        "tsconfig.json", "tsconfig.build.json"
       ],
       projectService: true,
       tsconfigRootDir: import.meta.dirname,

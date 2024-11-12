@@ -1,4 +1,88 @@
 {
+  "[css]": {
+    "editor.defaultFormatter": "vscode.css-language-features",
+    "editor.formatOnPaste": true,
+    "editor.formatOnSave": true,
+    "editor.formatOnType": true
+  },
+  "[html]": {
+    "editor.defaultFormatter": "vscode.html-language-features",
+    "editor.formatOnPaste": true,
+    "editor.formatOnSave": true,
+    "editor.formatOnType": true
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "rvest.vs-code-prettier-eslint",
+    "editor.formatOnPaste": true,
+    "editor.formatOnSave": true,
+    "editor.formatOnType": true,
+    "editor.maxTokenizationLineLength": 10000
+  },
+  "[json]": {
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "always",
+      "source.fixAll.sortJSON": "always"
+    },
+    "editor.defaultFormatter": "vscode.json-language-features",
+    "editor.formatOnPaste": true,
+    "editor.formatOnSave": true,
+    "editor.formatOnType": true,
+    "editor.tabSize": 2
+  },
+  "[python]": {
+    "diffEditor.ignoreTrimWhitespace": false,
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "always",
+      "source.organizeImports": "always"
+    },
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.formatOnPaste": true,
+    "editor.formatOnSave": true,
+    "editor.formatOnType": true,
+    "editor.wordBasedSuggestions": "matchingDocuments"
+  },
+  "[shellscript]": {
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "always",
+      "source.fixAll.shellcheck": "always"
+    },
+    "editor.defaultFormatter": "shakram02.bash-beautify",
+    "editor.formatOnPaste": true,
+    "editor.formatOnSave": true,
+    "editor.formatOnType": true,
+    "editor.tabSize": 4,
+    "files.eol": "\n",
+    "github.copilot.editor.enableAutoCompletions": true
+  },
+  "[typescript]": {
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "always",
+      "source.fixAll.eslint": "always",
+      "source.fixAll.ts": "always"
+    },
+    "editor.defaultFormatter": "rvest.vs-code-prettier-eslint",
+    "editor.formatOnPaste": true,
+    "editor.formatOnSave": true,
+    "editor.formatOnType": true,
+    "github.copilot.editor.enableAutoCompletions": true
+  },
+  "[yaml]": {
+    "diffEditor.ignoreTrimWhitespace": false,
+    "editor.autoIndent": "keep",
+    "editor.defaultFormatter": "rvest.vs-code-prettier-eslint",
+    "editor.formatOnType": true,
+    "editor.insertSpaces": true,
+    "editor.quickSuggestions": {
+      "comments": false,
+      "other": true,
+      "strings": true
+    },
+    "editor.tabSize": 2
+  },
+  "editor.fontFamily": "'Fira Code Retina', 'FiraCode-Retina', 'Fira Code', 'Source Code Pro', 'Droid Sans Mono', 'monospace', 'Droid Sans Fallback'",
+  "editor.fontLigatures": "'cv19', 'cv24', 'cv27', 'cv30', 'ss02', 'ss07', 'ss08', 'ss09', 'zero'",
+  "editor.fontWeight": "450",
+  "editor.formatOnSave": true,
   "git.allowNoVerifyCommit": true,
   "git.autoStash": true,
   "git.autofetch": true,
@@ -37,87 +121,7 @@
     "yaml": true
   },
   "terminal.integrated.fontFamily": "MesloLGS NF",
-    "[css]": {
-    "editor.defaultFormatter": "vscode.css-language-features",
-    "editor.formatOnPaste": true,
-    "editor.formatOnSave": true,
-    "editor.formatOnType": true
-  },
-  "[html]": {
-    "editor.defaultFormatter": "vscode.html-language-features",
-    "editor.formatOnPaste": true,
-    "editor.formatOnSave": true,
-    "editor.formatOnType": true
-  },
-  "[javascript]": {
-    "editor.defaultFormatter": "rvest.vs-code-prettier-eslint",
-    "editor.formatOnPaste": true,
-    "editor.formatOnSave": true,
-    "editor.formatOnType": true,
-    "editor.maxTokenizationLineLength": 10000
-  },
-    "[json]": {
-    "editor.codeActionsOnSave": {
-      "source.fixAll": "always",
-      "source.fixAll.sortJSON": "always"
-    },
-    "editor.defaultFormatter": "vscode.json-language-features",
-    "editor.formatOnPaste": true,
-    "editor.formatOnSave": true,
-    "editor.formatOnType": true,
-    "editor.tabSize": 2
-  },
-    "[python]": {
-    "diffEditor.ignoreTrimWhitespace": false,
-    "editor.codeActionsOnSave": {
-      "source.fixAll": "always",
-      "source.organizeImports": "always"
-    },
-    "editor.defaultFormatter": "charliermarsh.ruff",
-    "editor.formatOnPaste": true,
-    "editor.formatOnSave": true,
-    "editor.formatOnType": true,
-    "editor.wordBasedSuggestions": "matchingDocuments",
-    "gitlens.codeLens.symbolScopes": [
-      "!Module"
-    ]
-  },
-  "[shellscript]": {
-    "editor.codeActionsOnSave": {
-      "source.fixAll": "always",
-      "source.fixAll.shellcheck": "always"
-    },
-    "editor.defaultFormatter": "shakram02.bash-beautify",
-    "editor.formatOnPaste": true,
-    "editor.formatOnSave": true,
-    "editor.formatOnType": true,
-    "editor.tabSize": 4,
-    "files.eol": "\n",
-    "github.copilot.editor.enableAutoCompletions": true
-  },
-  "[typescript]": {
-    "editor.codeActionsOnSave": {
-      "source.fixAll": "always",
-      "source.fixAll.eslint": "always",
-      "source.fixAll.ts": "always"
-    },
-    "editor.defaultFormatter": "rvest.vs-code-prettier-eslint",
-    "editor.formatOnPaste": true,
-    "editor.formatOnSave": true,
-    "editor.formatOnType": true,
-    "github.copilot.editor.enableAutoCompletions": true
-  },
-    "[yaml]": {
-    "diffEditor.ignoreTrimWhitespace": false,
-    "editor.autoIndent": "keep",
-    "editor.defaultFormatter": "rvest.vs-code-prettier-eslint",
-    "editor.formatOnType": true,
-    "editor.insertSpaces": true,
-    "editor.quickSuggestions": {
-      "comments": false,
-      "other": true,
-      "strings": true
-    },
-    "editor.tabSize": 2
-  },
+  "typescript.format.semicolons": "remove",
+  "typescript.tsserver.web.typeAcquisition.enabled": true,
+  "vsintellicode.typescript.completionsEnabled": true
 }

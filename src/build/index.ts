@@ -9,7 +9,6 @@ import { baseProject, heroImages, heroParents, webConfig } from "./config/index.
 import { buildJson, esbuildOutputs, FileHashes, HeroImage, Project } from "./types.ts";
 
 import globby from 'globby';
-import { exit } from 'process';
 
 const cssSrc = "src/assets/stylesheets/bundle.css";
 
@@ -158,8 +157,8 @@ export const heroImages = rawHeroImages.map(image => ({
  */
 async function handleHeroImages() {
   const images: HeroImage[] = [];
-  const heroes = heroImages;
-  if (!heroes.srcset) {
+  const heroes = await heroImages();
+  if (!heroes?.srcset) {
     throw new Error('Srcset not found in hero images');
   }
   for (const [parentName, image] of Object.entries<HeroImage>(heroes)) {
