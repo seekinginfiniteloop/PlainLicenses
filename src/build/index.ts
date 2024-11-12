@@ -23,13 +23,6 @@ let noScriptImage: HeroImage = {
 
 /**
  * Strips a file hash from a full path to a file.
- * Handles the format: filename.hash.ext or filename.hash.min.ext
- * @param fullPath - the full path to the file
- * @returns the file hash
- */
-
-/**
- * Strips a file hash from a full path to a file.
  * @param fullPath - the full path to the file
  * @returns the file hash
  */
