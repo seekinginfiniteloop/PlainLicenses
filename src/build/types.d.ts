@@ -27,26 +27,26 @@ export interface esbuildOutputs {
   }
 }
 export interface FileHashes {
-  palette: string;
-  main: string;
+  palette: string
+  main: string
 }
 export interface MetaFileOutputs {
-  bytes: number;
-  inputs: { [path: string]: { bytesInOutput: number } };
-  exports: string[];
-  entryPoint?: string;
+  bytes: number
+  inputs: { [path: string]: { bytesInOutput: number } }
+  exports: string[]
+  entryPoint?: string
 }
 
 export interface buildJson {
-  noScriptImage: string;
-  SCRIPTBUNDLE: string;
-  CSSBUNDLE: string;
+  noScriptImage: string
+  SCRIPTBUNDLE: string
+  CSSBUNDLE: string
 }
 
 export interface Project {
-  entryPoints: string[];
-  entryNames?: string;
-  outdir?: string;
-  tsconfig: string;
-  platform?: "node" | "browser";
+  entryPoints: string[]
+  entryNames?: string
+  outdir?: string
+  tsconfig: string
+  platform?: "node" | "browser"
 }
