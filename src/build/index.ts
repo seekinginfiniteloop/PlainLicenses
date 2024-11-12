@@ -24,11 +24,15 @@ let noScriptImage: HeroImage = {
 /**
  * Strips a file hash from a full path to a file.
  * Handles the format: filename.hash.ext or filename.hash.min.ext
- * @function
  * @param fullPath - the full path to the file
  * @returns the file hash
  */
 
+/**
+ * Strips a file hash from a full path to a file.
+ * @param fullPath - the full path to the file
+ * @returns the file hash
+ */
 async function getFileHash(fullPath: string): Promise<string> {
   if (!fullPath || typeof fullPath !== 'string' || !fullPath.includes('.')) {
     return '';
@@ -49,7 +53,6 @@ async function getFileHash(fullPath: string): Promise<string> {
 
 /**
  * minifies an SVG file
- * @function
  * @param data - SVG data
  * @returns the minified SVG data
  */
@@ -92,7 +95,6 @@ async function getmd5Hash(filePath: string): Promise<string> {
 
 /**
  * Exports the processed hero images to a TypeScript file
- * @function
  * @param images - the processed hero images
  */
 async function exportImagesToTS(images: HeroImage[]) {
@@ -110,7 +112,6 @@ export interface HeroImage {
 
 /**
  * Replaces the 'docs' part of the path with the current location's protocol and host
- * @function
  * @param src - the source path
  * @returns the updated path
  */
@@ -186,7 +187,6 @@ async function handleHeroImages() {
   }
 /**
  * main esbuild build function
- * @function
  * @param project - the project to build
  * @returns an observable
  */
@@ -209,6 +209,9 @@ async function build(project: Project): Promise<Observable<unknown>> {
   return from(buildPromise);
 }
 
+/**
+ * removes hashed files in the src directory
+ */
 async function removeHashedFilesInSrc() {
   const hashedFiles = await globby('src/**/*.{js,css,avif}', { onlyFiles: true, unique: true });
   const hashRegex = new RegExp(/^.+(\.[a-fA-F0-9]{8})\.(avif|js|css)/)
@@ -225,7 +228,6 @@ async function removeHashedFilesInSrc() {
 
 /**
  * clears assets directories of all files except for tablesort.js, feedback.js, and pixel.js
- * @function
  */
 async function clearDirs() {
   const parents = await heroParents;
@@ -251,7 +253,6 @@ async function clearDirs() {
 
 /**
  * transforms SVG files in src/assets/images directory
- * @function
  */
 async function transformSvg(): Promise<void> {
   const svgFiles = await globby('src/assets/images/*.svg', { onlyFiles: true, unique: true });
@@ -264,7 +265,6 @@ async function transformSvg(): Promise<void> {
 
 /**
  *  gets the file hashes for Material for MKDocs palette and main CSS files
- * @function
  * @returns the file hashes for palette and main CSS files
  */
 async function getFileHashes(): Promise<FileHashes> {
@@ -278,7 +278,6 @@ async function getFileHashes(): Promise<FileHashes> {
 
 /**
  * Replaces placeholders in bundle.css with file hashes for Material for MKDocs palette and main CSS files
- * @function
  */
 async function replacePlaceholders(): Promise<void> {
   const { palette, main } = await getFileHashes();
@@ -326,7 +325,6 @@ async function buildAll() {
 
 /**
  * Get the 'outputs' section of the esbuild metafile
- * @function
  * @param result - the esbuild build result
  * @returns the 'outputs' section of the esbuild metafile
  */
@@ -349,7 +347,6 @@ const metaOutput = async (result: esbuild.BuildResult) => {
 
 /**
  * Create a mapping of original file names to hashed file names
- * @function
  * @param output - the metaOutput object
  */
 const metaOutputMap = async (output: esbuildOutputs): Promise<buildJson> => {
@@ -375,7 +372,6 @@ const metaOutputMap = async (output: esbuildOutputs): Promise<buildJson> => {
 
 /**
  * Write the meta.json file
- * @function
  * @param metaOutput - the metafile outputs
  */
 const writeMeta = async (metaOutput: {}) => {

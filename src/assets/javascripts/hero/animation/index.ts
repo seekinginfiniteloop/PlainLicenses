@@ -1,11 +1,11 @@
 /**
- * @license Plain Unlicense (Public Domain)
  * @copyright No rights reserved. Created by and for Plain License www.plainlicense.org
  * Hero landing page interactions, including:
  * - Easter egg infobox overlay
  * - Hero button interactions and smooth scrolling
  * - Path change handling
  * - Scroll triggered animations
+ * @license Plain Unlicense (Public Domain)
  */
 import { gsap } from "gsap"
 import { ScrollToPlugin } from "gsap/ScrollToPlugin"
@@ -46,7 +46,6 @@ if (easterEgg && infoBox) {
 
 /**
  * Checks if the info box overlay is visible.
- * @function
  * @returns boolean - true if the info box is visible, false otherwise
  */
 const infoBoxIsVisible = () => infoBox?.open ?? false
@@ -74,8 +73,7 @@ logger.info(`Prefers reduced motion: ${prefersReducedMotion}`)
 
 /**
  * Gets scroll target values from data attributes on a specified element.
- * @function
- * @param el - The element to retrieve scroll target values from.
+ * @param el The element to retrieve scroll target values from.
  * @returns object - An object containing the target, duration, pause target, pause duration, and target attributes.
  */
 const getScrollTargets = (
@@ -103,8 +101,8 @@ const getScrollTargets = (
 
 /**
  * Creates an observable that scrolls to a specified element with a smooth animation.
- * @param el - The element to scroll to.
- * @returns Observable<void> - An observable of void.
+ * @param el The element to scroll to.
+ * @returns Observable&lt;void> - An observable of void.
  */
 const smoothScroll$ = (el: Element): Observable<void> => {
   const { target, wayPoint, wayPointPause, duration } = getScrollTargets(el)

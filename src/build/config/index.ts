@@ -165,5 +165,5 @@ export const heroImages = async () => {
         .map(result => result.value)
     )
   }
-  return getWidthMaps()
+  return await getWidthMaps();
 }

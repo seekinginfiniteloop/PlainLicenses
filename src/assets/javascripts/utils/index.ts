@@ -31,7 +31,6 @@ type InteractionHandler<E, R> = (events$: Observable<E>) => Observable<R>
 
 /**
  * Creates an observable from specified event targets and event types.
- * @function
  * @param ev - The event target or targets to observe.
  * @param handler - An optional interaction handler function to apply to the observable. The handler must receive and return an observable.
  * @returns Observable<R | InteractionEvent> - An observable of the specified event type.
@@ -59,7 +58,6 @@ export function createInteractionObservable<R>(
 
 /**
  * Set a CSS variable on the document element.
- * @function
  * @param name - The name of the CSS variable to set.
  * @param value - The value to assign to the CSS variable.
  */

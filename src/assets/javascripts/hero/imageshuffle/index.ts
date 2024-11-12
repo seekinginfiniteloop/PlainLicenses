@@ -52,7 +52,6 @@ const updateImageSources = (images: HTMLImageElement[], optimalWidth: number) =>
 
 /**
  * Check if the page is visible
- * @function
  * @returns - true if the page is visible, otherwise false
  */
 function isPageVisible() {
@@ -61,7 +60,6 @@ function isPageVisible() {
 
 /**
  * Retrieves an image's settings based on its name
- * @function
  * @param imageName - The name of the image
  * @returns - the image's settings if found, otherwise undefined
  */
@@ -130,7 +128,6 @@ const fetchAndSetImage = (imgSettings: HeroImage): Observable<void> => {
 
 /**
  * Randomizes the order of the hero images
- * @function
  * @returns - an array of hero images in random order
  */
 function randomizeHeroes(): HeroImage[] {
@@ -141,7 +138,6 @@ let imageGenerator: Iterator<HeroImage>
 
 /**
  * Initializes the image generator
- * @function
  */
 function initializeImageGenerator() {
   imageGenerator = randomizeHeroes().values()
@@ -231,8 +227,7 @@ const createOrientationObservable = (mediaQuery: MediaQueryList): Observable<boo
 
   /**
    * Regenerates the sources of the images following a screen orientation change
-   * @function
-   * @param optimalWidth - The optimal width of the images
+     * @param optimalWidth - The optimal width of the images
    */
 function regenerateSources(optimalWidth: number) {
   const imageLayers = Array.from(parallaxLayer?.getElementsByTagName("img") || [])
@@ -313,8 +308,7 @@ const initSubscriptions = (): void => {
 
   /**
    * Loads the first image on the hero landing page
-   * @function
-   * @returns - an observable that emits when the first image is loaded
+     * @returns - an observable that emits when the first image is loaded
    */
 function loadFirstImage(): Observable<void> {
   const firstImage = heroesGen() || initializeImageGenerator()
@@ -346,7 +340,6 @@ const imageHeight$ = of(getImage())
 
 /**
  * Sets the height of the parallax layer and its fade height based on the image height
- * @function
  * @param height - The height to set
  */
 function setParallaxHeight(height: number) {
