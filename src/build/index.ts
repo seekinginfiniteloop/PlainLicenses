@@ -159,9 +159,6 @@ export const heroImages = rawHeroImages.map(image => ({
 async function handleHeroImages() {
   const images: HeroImage[] = [];
   const heroes = await heroImages();
-  if (!heroes?.srcset) {
-    throw new Error('Srcset not found in hero images');
-  }
   for (const [parentName, image] of Object.entries<HeroImage>(heroes)) {
     // Update the parent path
     const imageName = parentName
