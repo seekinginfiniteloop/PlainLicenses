@@ -19,13 +19,13 @@ var _h=Object.create;var Lf=Object.defineProperty;var yh=Object.getOwnPropertyDe
  * @copyright No rights reserved. Created by and for Plain License www.plainlicense.org
  */
 /**
- * @license Plain Unlicense (Public Domain)
  * @copyright No rights reserved. Created by and for Plain License www.plainlicense.org
  * Hero landing page interactions, including:
  * - Easter egg infobox overlay
  * - Hero button interactions and smooth scrolling
  * - Path change handling
  * - Scroll triggered animations
+ * @license Plain Unlicense (Public Domain)
  */
 /**
  * @license Plain Unlicense (Public Domain)
@@ -115,4 +115,4 @@ gsap/ScrollTrigger.js:
    * @author: Jack Doyle, jack@greensock.com
   *)
 */
-//# sourceMappingURL=index.3QUY3LCM.js.map
+//# sourceMappingURL=index.S42DJ2FK.js.map
