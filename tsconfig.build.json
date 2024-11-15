@@ -1,22 +1,24 @@
 {
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
-    "target": "ES2023",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "outDir": "./tools/build"
-  },
-  "files": [
-    "./src/build/index.ts"
-  ],
   "buildOptions": {
     "outDir": "./tools",
     "rootDir": "./tools"
   },
-  "include": [
-    "./node_modules/sass/types/*.ts"
-  ],
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "module": "ESNext",
+    "moduleResolution": "NodeNext",
+    "outDir": "./tools/build",
+    "pretty": true,
+    "target": "ESNext"
+  },
   "exclude": [
     "./node_modules"
+  ],
+  "extends": "./tsconfig.json",
+  "files": [
+    "./src/build/index.ts"
+  ],
+  "include": [
+    "./node_modules/sass/types/*.ts"
   ]
 }

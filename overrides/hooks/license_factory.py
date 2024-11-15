@@ -630,7 +630,7 @@ class LicenseContent:
                 title = f"\n<h1 class='license-title'>{self.meta['plain_name']}</h1>"
                 if original_version:
                     version_info = f"""\n
-                    <div class='version_info'><span class="original_version">original version: {original_version}</span><br /><span class="plain_version">plain version: {plain_version}</span></div>\n"""
+                    <div class='version-info'><span class="original_version">original version: {original_version}</span><br /><span class="plain_version">plain version: {plain_version}</span></div>\n"""
                 else:
                     version_info = f"""\n
                     <div class='version_info'><span class="plain_version">plain version: {plain_version}</span></div>\n"""

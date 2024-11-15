@@ -12,7 +12,7 @@ Public domain dedications aren't licenses. Instead, **if you dedicate a work to 
 
 Some countries don't allow you to give up all rights to a work, so our dedications also include a fallback permissive license.
 
-## When Should I Use a Public Domain Dedication
+## When to Use a Public Domain Dedication
 
 You should **use a public domain dedication if**...
 **You**:
@@ -25,7 +25,7 @@ You should **use a public domain dedication if**...
 
 ### [Plain Unlicense][unlicense]
 
-The Plain Unlicense is currently our only public domain dedication. It is a simple, clear dedication that gives away all your rights to a work. **All Plain License content uses the Plain Unlicense unless otherwise noted.** (1)
+The [Plain Unlicense][unlicense] is currently our only public domain dedication. It is a simple, clear dedication that gives away all your rights to a work. **All Plain License content uses the Plain Unlicense unless otherwise noted.** (1)
 { .annotate }
 
 1. Some licenses we recraft aren't in the public domain and require you give credit to the author, so we cannot release these under the Plain Unlicense.

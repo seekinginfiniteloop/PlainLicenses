@@ -122,14 +122,12 @@
 }
 
 [data-md-color-scheme="slate"] {
-  --md-hue: 235.2;
   --md-typeset-a-color: var(--ecru);
   --md-default-fg-color--light: hsla(var(--md-hue), 15%, 90%, 0.75);
 }
 
 :root,
 [data-md-color-scheme="default"] {
-  --md-hue: 235.2;
   --md-default-fg-color: var(--oxford-blue);
   --md-default-fg-color--light: rgba(var(--oxford-blue-adj), 0.85);
   --md-default-fg-color--lighter: rgba(var(--oxford-blue-adj), 0.4);

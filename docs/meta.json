@@ -1,12 +1,12 @@
 {
   "metaOutput": {
-    "docs/assets/javascripts/index.S42DJ2FK.js.map": {
-      "bytes": 1705311,
+    "docs/assets/javascripts/index.PW6ZUTOO.js.map": {
+      "bytes": 1666280,
       "inputs": [],
       "exports": []
     },
-    "docs/assets/javascripts/index.S42DJ2FK.js": {
-      "bytes": 248530,
+    "docs/assets/javascripts/index.PW6ZUTOO.js": {
+      "bytes": 580986,
       "inputs": [
         "node_modules/focus-visible/dist/focus-visible.js",
         "node_modules/escape-html/index.js",
@@ -242,8 +242,9 @@
         "external/mkdocs-material/src/templates/assets/javascripts/patches/scrollfix/index.ts",
         "external/mkdocs-material/src/templates/assets/javascripts/patches/scrolllock/index.ts",
         "external/mkdocs-material/src/templates/assets/javascripts/polyfills/index.ts",
-        "src/assets/javascripts/log/index.ts",
         "src/assets/javascripts/feedback/index.ts",
+        "src/assets/javascripts/log/index.ts",
+        "src/assets/javascripts/hero/index.ts",
         "node_modules/gsap/gsap-core.js",
         "node_modules/gsap/CSSPlugin.js",
         "node_modules/gsap/index.js",
@@ -262,13 +263,13 @@
       "exports": [],
       "entryPoint": "src/assets/javascripts/index.ts"
     },
-    "docs/assets/javascripts/index.U3ZVAFAB.css.map": {
-      "bytes": 14909,
+    "docs/assets/javascripts/index.7P62UP3N.css.map": {
+      "bytes": 14803,
       "inputs": [],
       "exports": []
     },
-    "docs/assets/javascripts/index.U3ZVAFAB.css": {
-      "bytes": 6107,
+    "docs/assets/javascripts/index.7P62UP3N.css": {
+      "bytes": 6933,
       "inputs": [
         "external/mkdocs-material/src/templates/assets/javascripts/components/content/mermaid/index.css"
       ]
@@ -329,13 +330,13 @@
       ],
       "exports": []
     },
-    "docs/assets/stylesheets/bundle.DP2TNTOH.css.map": {
-      "bytes": 333835,
+    "docs/assets/stylesheets/bundle.KRB6OKTJ.css.map": {
+      "bytes": 332566,
       "inputs": [],
       "exports": []
     },
-    "docs/assets/stylesheets/bundle.DP2TNTOH.css": {
-      "bytes": 183223,
+    "docs/assets/stylesheets/bundle.KRB6OKTJ.css": {
+      "bytes": 211842,
       "inputs": [
         "external/mkdocs-material/material/templates/assets/stylesheets/palette.06af60db.min.css",
         "external/mkdocs-material/material/templates/assets/stylesheets/main.0253249f.min.css",

@@ -1,7 +1,7 @@
 ---
 template: main.html
 title: Plain License Permissive Licenses
-description: Plain License permissive licenses give you the most freedom to use a work. We provide simple, clear licenses that allows you to do almost anything with a work.
+description: Plain License permissive licenses let users do almost anything with a work, but they have to give credit to the original author (usually).
 ---
 
 # Plain Permissive Licenses :nounproject-copyright: :nounproject-open-source:
@@ -23,7 +23,7 @@ You should **use a permissive license if**...
 
 ### [Plain MIT][MIT]
 
-The MIT license is one of the most popular permissive licenses. It is a simple, clear license that allows you to do almost anything with a work as long as you give credit to the original author.
+The [MIT license][MIT] is one of the most popular permissive licenses. It is a simple, clear license that allows you to do almost anything with a work as long as you give credit to the original author.
 <!--
 ### [Plain Apache License][apache]
 

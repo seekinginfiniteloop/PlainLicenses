@@ -1,11 +1,11 @@
 /**
- * @license Plain Unlicense (Public Domain)
- * @copyright No rights reserved. Created by and for Plain License www.plainlicense.org
- * @module licenses handles small parts of interactions on license pages.
+ * licenses handles small parts of interactions on license pages.
  * Specifically, it handles linking quicklink icon behavior to the tab behavior,
+ * @copyright No rights reserved. Created by and for Plain License www.plainlicense.org
+ * Plain Unlicense (Public Domain)
  */
-import { Observable, Subscription, fromEvent, merge } from "rxjs"
-import { filter, map, startWith, tap } from "rxjs/operators"
+import { Observable, Subscription, defer, fromEvent } from "rxjs"
+import { filter, map, tap } from "rxjs/operators"
 
 import { logger } from "~/log"
 import { mergedUnsubscription$ } from "~/utils"
@@ -13,13 +13,12 @@ import { mergedUnsubscription$ } from "~/utils"
 const { location$ } = window
 
 const subscriptions: Subscription[] = []
-/**
+
 const updateTabStyles = (hash: string): void => {
     logger.info("updating tab styles, hash:", hash)
   const color = hash ? "var(--md-accent-fg-color)" : "transparent"
   document.documentElement.style.setProperty("--tab-active-color", color)
 }
- */
 
 const tabClick$: Observable<string> = fromEvent(
   document.querySelectorAll(".md-typeset .tabbed-labels > label > [href]"),
@@ -37,13 +36,13 @@ location$.pipe(filter(location => location.pathname.includes("licenses") && loca
    // subscriptions.push(component$.subscribe())
     logger.info("subscribing to hashChange$, tabClick$, and toggle")
 
-    /**subscriptions.push(
-      defer(tabClick$)
+    subscriptions.push(
+      defer(() => tabClick$)
         .pipe(
           tap(updateTabStyles)
         )
         .subscribe()
-    )*/
+    )
     subscriptions.push(fromEvent(toggle, "change")
       .pipe(
         tap(() => {

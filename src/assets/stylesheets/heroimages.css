@@ -3,7 +3,7 @@
 .hero-parallax__image {
   --scale: 1.1;
   --object-fit: fill;
-  --perspective: 50em;
+  --perspective: 50rem;
   --perspective-origin: center bottom;
   --object-position: center bottom;
   --translate-x: 0%;
@@ -34,17 +34,17 @@
 @keyframes glow {
   from {
     text-shadow:
-      0.01em 0.01em 0 var(--oxford-blue),
-      0 0 0.16em var(--emerald),
-      0.03em 0.03em 0 var(--ecru);
+      0.01rem 0.01rem 0 var(--oxford-blue),
+      0 0 0.16rem var(--emerald),
+      0.03rem 0.03rem 0 var(--ecru);
   }
 
   to {
     text-shadow:
-      0.01em 0.01em 0 var(--oxford-blue),
-      0 0 0.25em var(--emerald),
-      0 0 0.27em var(--emerald),
-      0.04em 0.04em 0 var(--ecru);
+      0.01rem 0.01rem 0 var(--oxford-blue),
+      0 0 0.25rem var(--emerald),
+      0 0 0.27rem var(--emerald),
+      0.04rem 0.04rem 0 var(--ecru);
   }
 }
 
@@ -58,7 +58,7 @@ so it made sense for them to live here
   display: inline-block;
   margin: 0.5rem;
   font-family: Bangers, Impact, Haettenschweiler, Charcoal, "Arial Narrow Bold", Gadget, sans-serif;
-  font-size: clamp(20px, calc(100vw / 14), 16em);
+  font-size: clamp(20px, calc(100vw / 14), 16rem);
   color: var(--h1-color);
   text-align: left;
   text-transform: uppercase;
@@ -76,12 +76,12 @@ so it made sense for them to live here
   display: inline-block;
   margin: 0 1rem 1rem;
   font-family: Bangers, Impact, Haettenschweiler, Charcoal, "Arial Narrow Bold", Gadget, sans-serif;
-  font-size: clamp(14px, calc(100vw / 19), 12em);
+  font-size: clamp(14px, calc(100vw / 19), 12rem);
   color: var(--p-color);
   text-align: left;
   text-shadow:
-    0.01em 0.01em 0 var(--oxford-blue),
-    0.05em 0.05em 0 var(--turkey-red);
+    0.01rem 0.01rem 0 var(--oxford-blue),
+    0.05rem 0.05rem 0 var(--turkey-red);
   text-transform: uppercase;
   white-space: nowrap;
   font-display: swap;
@@ -93,11 +93,11 @@ so it made sense for them to live here
 
 @media screen and (width <= 416px) {
   #CTA_header {
-    font-size: clamp(15px, calc(100vw / 16), 10em);
+    font-size: clamp(15px, calc(100vw / 16), 10rem);
   }
 
   #CTA_paragraph {
-    font-size: clamp(12px, calc(100vw / 22), 6em);
+    font-size: clamp(12px, calc(100vw / 22), 6rem);
   }
 }
 

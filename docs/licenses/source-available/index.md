@@ -24,6 +24,6 @@ You should **use a source-available license if**...
 
 ### [Plain Elastic License][el2]
 
-The Plain Elastic License is a source-available license that allows you to share your work with others, giving them freedom to use, share and change it. They can't offer a competing service based on your work. This license is for people who want to keep their work permanently out of the hands of competitors but still make it free for others to use.
+The [Plain Elastic License][el2] is a source-available license that allows you to share your work with others, giving them freedom to use, share and change it. They can't offer a competing service based on your work. This license is for people who want to keep their work permanently out of the hands of competitors but still make it free for others to use.
 
 [el2]: elastic-2.0/index.md "Plain Elastic License"

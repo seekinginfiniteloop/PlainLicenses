@@ -16,7 +16,7 @@ no_official: false
 category: >
     copyleft
 license_description: >
-    The MPL is a weak copyleft license. It requires you share your source code or materials when you distribute your work, but only for the parts under the MPL. You can combine and MPL work with works covered by other licenses and distribute the combined work under different terms. The MPL also includes a patent grant from contributors. The license is compatible with the GPL and LGPL, allowing you to relicense an MPL work under those licenses, which are stronger copyleft licenses.
+    The MPL is a weak <a href="/licenses/copyleft/" title="copyleft licenses">copyleft</a> license. You must share your source code or materials when you distribute your work, but only for the parts under the MPL. You can combine an MPL work with works covered by other licenses and share the combined work under different terms. The MPL also includes a patent grant from contributors. The license is compatible with the GPL and LGPL, allowing you to relicense an MPL work under those licenses, which are stronger copyleft licenses.
 note: null
 permissions:
     - commercial-use

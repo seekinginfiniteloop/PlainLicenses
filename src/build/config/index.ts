@@ -44,7 +44,7 @@ const cssBanner = `/**
 
 export const webConfig: esbuild.BuildOptions = {
   bundle: true,
-  minify: true,
+  minify: false,
   sourcemap: true,
   metafile: true,
   banner: { js: jsBanner, css: cssBanner },
@@ -54,6 +54,7 @@ export const webConfig: esbuild.BuildOptions = {
   outbase: "src",
   chunkNames: "[dir]/assets/javascripts/chunks/[name].[hash]",
   assetNames: "[dir]/[name].[hash]",
+  
   loader: {
     ".js": "js",
     ".ts": "ts",
@@ -137,9 +138,8 @@ export async function generateSrcset(image: HeroImageBase): Promise<string> {
   return entries.join(", ")
 }
 
-const parents = await resolveGlob("src/assets/images/hero/*", { onlyDirectories: true })
-
 export const heroImages = async () => {
+  const parents = await resolveGlob("src/assets/images/hero/*", { onlyDirectories: true })
   const getWidthMaps = async () => {
     const results = await Promise.allSettled(
       parents.map(async (parent: string) => {
@@ -165,5 +165,5 @@ export const heroImages = async () => {
         .map(result => result.value)
     )
   }
-  return await getWidthMaps();
+  return getWidthMaps()
 }
