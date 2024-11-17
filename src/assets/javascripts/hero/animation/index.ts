@@ -15,19 +15,19 @@ import {
   Observable,
   Subscription,
   concat,
+  fromEvent,
   of
 } from "rxjs"
 import {
-  distinctUntilKeyChanged,
   filter,
   map,
-  skipUntil,
   tap,
   withLatestFrom
 } from "rxjs/operators"
 
-import { createInteractionObservable, mergedUnsubscription$ } from "~/utils"
+import { createInteractionObservable, isHome, isOnSite, mergedUnsubscription$, unsubscribeFromAll, watchLocationChange } from "~/utils"
 import { logger } from "~/log"
+
 gsap.registerPlugin(ScrollToPlugin)
 gsap.registerPlugin(ScrollTrigger)
 
@@ -37,8 +37,6 @@ const easterEgg = document.getElementById("the-egg")
 
 const infoBox = document.getElementById("egg-box") as HTMLDialogElement
 const storedLocationState = history.state
-
-const { document$, location$ } = window
 
 if (easterEgg && infoBox) {
   easterEgg.style.display = "block"
@@ -153,7 +151,7 @@ const smoothScroll$ = (el: Element): Observable<void> => {
 }
 
 /** Subscribes to all user interaction observables and handles the corresponding actions. */
-const allSubscriptions = (): void => {
+export const allSubscriptions = (): void => {
   // Observable for easter egg interactions
   const eggFunction = (event$: Observable<Event>): Observable<void> => {
     return event$.pipe(
@@ -190,7 +188,6 @@ const allSubscriptions = (): void => {
       filter(([_, isVisible]) => isVisible), // Only proceed if the info box is visible
       filter(([ev]) => {
         const target = ev.target as Element | null
-        // eslint-disable-next-line no-null/no-null
         return (!infoBox.contains(target) && !easterEgg?.contains(target)) || target?.closest("#egg-box-close") !== null
       }),
       tap(([ev]) => ev.preventDefault()),
@@ -260,134 +257,114 @@ const allSubscriptions = (): void => {
     })
   )
 
-  // Observable for path changes
-  const pathObservable$ = location$.pipe(
-    distinctUntilKeyChanged("pathname"),
-    filter(
-      (location: { pathname: string }) =>
-        location.pathname !== "index.html" && location.pathname !== "/"
-    ),
-    tap(() => hideOverlay()),
-    tap(() => {
-      logger.info("Path changed, overlay hidden")
-    })
-  )
+  const noLongerHome = (url: URL) => !isHome(url) && isOnSite(url)
+  const pathObservable$ = watchLocationChange((url) => noLongerHome(url)).pipe(tap(() => hideOverlay()), tap(() => logger.info("Path changed, overlay hidden")))
 
   subscriptions.push(
-    pathObservable$.subscribe({
-      next: () => { },
-      error: err => logger.error("Error in path change:", err),
-      complete: () => logger.info("Path observable completed")
-    })
-  )
-if (!prefersReducedMotion) {
+    pathObservable$.subscribe({ next: () => { unsubscribeFromAll(subscriptions) } }))
 
-  const setupAnimation = (selector: string, properties: gsap.TweenVars) => {
-    gsap.set(selector, properties)
-  }
+  if (!prefersReducedMotion) {
 
-  const createTimeline = (selector: string, animations: gsap.TweenVars[], scrollTrigger: ScrollTrigger.Vars) => {
-    const timeline = gsap.timeline(scrollTrigger)
-    animations.forEach(animation => timeline.add(gsap.to(selector, animation)))
-    return timeline
-  }
-
-  const createFadeInAnimation = (): Observable<ScrollTrigger>[] => {
-    const makeScrollBatch = (selector: string) => {
-      const batch: Observable<ScrollTrigger>[] = []
-      ScrollTrigger.batch(selector, {
-        start: "top bottom",
-        end: "top top",
-        interval: 0.15,
-        batchMax: 2,
-        onEnter: (b: Element[]) => {
-          gsap.to(b, { opacity: 1, y: 0, duration: 0.3, ease: "power2.out", stagger: { each: 0.15, grid: "auto" }, overwrite: true })
-        },
-        onLeave: (b: Element[]) => { gsap.set(b, { opacity: 0, y: -100, overwrite: true }) },
-        onEnterBack: (b: Element[]) => { gsap.to(b, { opacity: 1, y: 0, duration: 0.3, ease: "power2.out", stagger: 0.15, overwrite: true }) },
-        onLeaveBack: (b: Element[]) => { gsap.set(b, { opacity: 0, y: 100, overwrite: true }) }
-      }).forEach((trigger: ScrollTrigger) => { batch.push(of(trigger)) })
-      return batch
+    const setupAnimation = (selector: string, properties: gsap.TweenVars) => {
+      gsap.set(selector, properties)
     }
-  const fadeIns = (): Observable<ScrollTrigger>[] => {
-    return [...makeScrollBatch(".fade-in"), ...makeScrollBatch(".fade-in2")
-    ]
-  }
-  setupAnimation(".fade-in", { opacity: 0, y: 100 })
-  setupAnimation(".fade-in2", { opacity: 0, y: 100 })
-  ScrollTrigger.addEventListener("refreshInit", () => {
-    gsap.set(".fade-in", { y: 0, opacity: 1 })
-    gsap.set(".fade-in2", { y: 0, opacity: 1 })
-  })
-  return fadeIns()
-  }
-  subscriptions.push(concat(...createFadeInAnimation()).subscribe())
 
-  const createCtaAnimation = () => {
-    setupAnimation(".cta-ul", { scaleX: 0, transformOrigin: "left", height: "1.8em", width: "0" })
-    const ctaTimeline = createTimeline(".cta-ul", [
-      { scaleX: 1, transformOrigin: "left", duration: 0.25, height: "1.3em", width: "50%" },
-      { scaleX: 1, duration: 0.3, ease: "power2.out", height: "0.8em", width: "100%" }
-    ], {
-      scrub: 0.2,
-      start: "top 5vh",
-      trigger: ".hero__parallax",
-      onEnter: () => { ctaTimeline.play() },
-      scroller: ".hero__parallax"
-    })
-  }
-  subscriptions.push(of(createCtaAnimation).subscribe())
+    const createTimeline = (selector: string, animations: gsap.TweenVars[], scrollTrigger: ScrollTrigger.Vars) => {
+      const timeline = gsap.timeline(scrollTrigger)
+      animations.forEach(animation => timeline.add(gsap.to(selector, animation)))
+      return timeline
+    }
 
-  const createEmphasisAnimation = () => {
-    setupAnimation(".special-ul", { scaleX: 0, transformOrigin: "left", height: "1.8em", width: "0" })
-    const emphasisTimeline = createTimeline(".special-ul", [
-      { scaleX: 1, transformOrigin: "left", duration: 0.25, height: "1.3em", width: "50%" },
-      { scaleX: 1, duration: 0.3, ease: "power2.out", height: "0.8em", width: "100%" }
-    ],
-    {
-      scrub: 0.2,
-      start: "top 140vh",
-      trigger: "#pt2-hero-section-content",
-      onEnter: () => { emphasisTimeline.play() },
-      scroller: document.body
+    const createFadeInAnimation = (): Observable<ScrollTrigger>[] => {
+      const makeScrollBatch = (selector: string) => {
+        const batch: Observable<ScrollTrigger>[] = []
+        ScrollTrigger.batch(selector, {
+          start: "top bottom",
+          end: "top top",
+          interval: 0.15,
+          batchMax: 2,
+          onEnter: (b: Element[]) => {
+            gsap.to(b, { opacity: 1, y: 0, duration: 0.3, ease: "power2.out", stagger: { each: 0.15, grid: "auto" }, overwrite: true })
+          },
+          onLeave: (b: Element[]) => { gsap.set(b, { opacity: 0, y: -100, overwrite: true }) },
+          onEnterBack: (b: Element[]) => { gsap.to(b, { opacity: 1, y: 0, duration: 0.3, ease: "power2.out", stagger: 0.15, overwrite: true }) },
+          onLeaveBack: (b: Element[]) => { gsap.set(b, { opacity: 0, y: 100, overwrite: true }) }
+        }).forEach((trigger: ScrollTrigger) => { batch.push(of(trigger)) })
+        return batch
       }
-    )
+      const fadeIns = (): Observable<ScrollTrigger>[] => {
+        return [...makeScrollBatch(".fade-in"), ...makeScrollBatch(".fade-in2")
+        ]
+      }
+      setupAnimation(".fade-in", { opacity: 0, y: 100 })
+      setupAnimation(".fade-in2", { opacity: 0, y: 100 })
+      ScrollTrigger.addEventListener("refreshInit", () => {
+        gsap.set(".fade-in", { y: 0, opacity: 1 })
+        gsap.set(".fade-in2", { y: 0, opacity: 1 })
+      })
+      return fadeIns()
+    }
+    subscriptions.push(concat(...createFadeInAnimation()).subscribe())
+
+    const createCtaAnimation = () => {
+      setupAnimation(".cta-ul", { scaleX: 0, transformOrigin: "left", height: "1.8em", width: "0" })
+      const ctaTimeline = createTimeline(".cta-ul", [
+        { scaleX: 1, transformOrigin: "left", duration: 0.25, height: "1.3em", width: "50%" },
+        { scaleX: 1, duration: 0.3, ease: "power2.out", height: "0.8em", width: "100%" }
+      ], {
+        scrub: 0.2,
+        start: "top 5vh",
+        trigger: ".hero__parallax",
+        onEnter: () => { ctaTimeline.play() },
+        scroller: ".hero__parallax"
+      })
+    }
+    subscriptions.push(of(createCtaAnimation).subscribe())
+
+    const createEmphasisAnimation = () => {
+      setupAnimation(".special-ul", { scaleX: 0, transformOrigin: "left", height: "1.8em", width: "0" })
+      const emphasisTimeline = createTimeline(".special-ul", [
+        { scaleX: 1, transformOrigin: "left", duration: 0.25, height: "1.3em", width: "50%" },
+        { scaleX: 1, duration: 0.3, ease: "power2.out", height: "0.8em", width: "100%" }
+      ],
+        {
+          scrub: 0.2,
+          start: "top 140vh",
+          trigger: "#pt2-hero-section-content",
+          onEnter: () => { emphasisTimeline.play() },
+          scroller: document.body
+        }
+      )
+    }
+    subscriptions.push(of(createEmphasisAnimation).subscribe())
+
+    const createSpecialHighlight = () => {
+      setupAnimation(".special-highlight", { textShadow: "0 0 0 transparent", x: 0 })
+      const specialHighlight = createTimeline(".special-highlight", [
+        { textShadow: "0.02em 0.02em 0 var(--turkey-red)", x: 20, duration: 0.25 },
+        { textShadow: "0.04em 0.04em 0.06em var(--turkey-red)", x: 50, duration: 0.2, ease: "power2.out" }
+      ],
+        {
+          start: "top 240vh",
+          trigger: "#pt3-hero-section-content",
+          scroller: document.body,
+          onEnter: () => { specialHighlight.play() }
+        })
+    }
+    subscriptions.push(of(createSpecialHighlight).subscribe())
   }
-  subscriptions.push(of(createEmphasisAnimation).subscribe())
-
-  const createSpecialHighlight = () => {
-    setupAnimation(".special-highlight", { textShadow: "0 0 0 transparent", x: 0 })
-    const specialHighlight = createTimeline(".special-highlight", [
-      { textShadow: "0.02em 0.02em 0 var(--turkey-red)", x: 20, duration: 0.25 },
-      { textShadow: "0.04em 0.04em 0.06em var(--turkey-red)", x: 50, duration: 0.2, ease: "power2.out" }
-    ],
-      {
-      start: "top 240vh",
-      trigger: "#pt3-hero-section-content",
-      scroller: document.body,
-      onEnter: () => { specialHighlight.play() }
-    })
-  }
-  subscriptions.push(of(createSpecialHighlight).subscribe())
-}
-  subscriptions.push(location$.pipe(
-    filter((location: URL) => location.pathname === "/" || location.pathname === "/index.html"), skipUntil(location$.pipe(filter((location: URL) => location.hash !== ""))),
-    filter((location: URL) =>
-    location.hash === "#" || location.hash === "#pt3-hero-section-content"
-    ),
-  ).subscribe(() => {
-  history.replaceState(storedLocationState, "", "/")
-}))
+  subscriptions.push(fromEvent(window, "hashchange").pipe(
+  ).subscribe({
+    next: () => {
+      history.replaceState(storedLocationState, "", "/")
+    }
+  }))
 }
 
-document$.pipe(skipUntil(location$.pipe(filter((location: URL) => location.pathname === "/" || location.pathname === "/index.html")))).subscribe(() => {
-  allSubscriptions()
-})
-
-const urlFilter = (url: URL) => (url.pathname !== "/" && url.pathname !== "/index.html" && url.pathname !== "/#") || (url.hostname !== "plainlicense.org" && url.protocol === "https:")
+const urlFilter = (url: URL) => (!isHome(url) && isOnSite(url)) || !isOnSite(url)
 
 mergedUnsubscription$(urlFilter).subscribe({
   next: () => {
-    subscriptions.forEach(sub => sub.unsubscribe())
+    unsubscribeFromAll(subscriptions)
   }
 })

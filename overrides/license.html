@@ -20,22 +20,13 @@
                 {% include "partials/license_tags.html" %}
             </div>
             <div class="md-nav md-nav--secondary">
-                <div class="expandable-section">
-                    <input type="checkbox" id="section-toggle" class="section-toggle"
-                        aria-hidden="true">
-                    <label for="section-toggle" class="section-header" role="button"
-                        aria-expanded="false" aria-controls="section-content">
-                        How to Use This License
-                    </label>
-                    <div class="section-content">
-                        <div id="section-content">
-                            {{ page.meta['how'] | trim }}
-                            {% if page.meta.get('extra_how') %}
-                            {{ page.meta['extra_how'] | trim }}
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
+                <details class="question">
+                    <summary>How to Use...</summary>
+                    <p class="md-typeset"> {{ page.meta['how'] | trim }}</p>
+                    {%- if page.meta.get('extra_how') %}
+                    <p class="md-typeset"> {{ page.meta['extra_how'] | trim }} </p>
+                        {% endif %}
+                </details>
             </div>
         </div>
     </div>
@@ -58,4 +49,3 @@
 {% block scripts %}
 <script async fetch-priority="high" src="{{ js_bundle | url }}"></script>
 {% endblock %}
-

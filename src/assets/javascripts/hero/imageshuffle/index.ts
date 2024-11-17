@@ -1,10 +1,10 @@
 /**
- * @license Plain Unlicense (Public Domain)
- * @copyright No rights reserved. Created by and for Plain License www.plainlicense.org
  * @module hero module contains the logic for the hero image shuffling on the home page.
  * It fetches the image URLs, randomizes their order, caches and loads the images on
  * the hero landing page.
  * It also handles visibility changes and screen orientation changes.
+ * @copyright No rights reserved. Created by and for Plain License www.plainlicense.org
+ * @license Plain Unlicense (Public Domain)
  */
 import {
   EMPTY,
@@ -19,16 +19,16 @@ import {
   shareReplay,
   throwError
 } from "rxjs"
-import { catchError, distinctUntilChanged, filter, first, map, mergeMap, skipUntil, switchMap, takeUntil, tap } from "rxjs/operators"
+import { catchError, distinctUntilChanged, distinctUntilKeyChanged, filter, first, map, mergeMap, switchMap, takeUntil, tap } from "rxjs/operators"
 
-import { isElementVisible, mergedUnsubscription$, setCssVariable } from "~/utils"
+import { isElementVisible, isHome, isOnSite, mergedUnsubscription$, setCssVariable, unsubscribeFromAll, watchLocationChange } from "~/utils"
 import { getAsset } from "~/cache"
 import { heroImages } from "~/hero/imageshuffle/data"
 import { logger } from "~/log"
 // eslint-disable-next-line no-duplicate-imports
 import type { HeroImage } from "~/hero/imageshuffle/data"
 
-const { document$, location$ } = window
+const { document$ } = window
 let stopCycling$ = new Subject<void>()
 const CONFIG = { INTERVAL_TIME: 25000 }
 const subscriptions: Subscription[] = []
@@ -60,7 +60,7 @@ function isPageVisible() {
 
 /**
  * Retrieves an image's settings based on its name
- * @param imageName - The name of the image
+ * @param imageName The name of the image
  * @returns - the image's settings if found, otherwise undefined
  */
 function retrieveImage(imageName: string): HeroImage | undefined {
@@ -227,7 +227,7 @@ const createOrientationObservable = (mediaQuery: MediaQueryList): Observable<boo
 
   /**
    * Regenerates the sources of the images following a screen orientation change
-     * @param optimalWidth - The optimal width of the images
+   * @param optimalWidth The optimal width of the images
    */
 function regenerateSources(optimalWidth: number) {
   const imageLayers = Array.from(parallaxLayer?.getElementsByTagName("img") || [])
@@ -273,9 +273,8 @@ const orientation$ = createOrientationObservable(portraitMediaQuery).pipe(
     })
 )
 
-const locationChange$ = location$.pipe(
-  distinctUntilChanged((a: URL, b: URL) => a.pathname === b.pathname),
-  filter(loc => loc.pathname === "/" || loc.pathname === "/index.html" || loc.pathname === "/#"),
+const locationChange$ = watchLocationChange((url) => { return url instanceof(URL) }).pipe(
+  distinctUntilKeyChanged("pathname"), filter((url) => !isHome(url)),
   tap(() => stopImageCycling()),
   catchError(error => {
       logger.error("Error in location change observable:", error)
@@ -308,7 +307,7 @@ const initSubscriptions = (): void => {
 
   /**
    * Loads the first image on the hero landing page
-     * @returns - an observable that emits when the first image is loaded
+   * @returns - an observable that emits when the first image is loaded
    */
 function loadFirstImage(): Observable<void> {
   const firstImage = heroesGen() || initializeImageGenerator()
@@ -340,7 +339,7 @@ const imageHeight$ = of(getImage())
 
 /**
  * Sets the height of the parallax layer and its fade height based on the image height
- * @param height - The height to set
+ * @param height The height to set
  */
 function setParallaxHeight(height: number) {
   const headerHeight = document.getElementById("header-target")?.clientHeight || 95
@@ -362,55 +361,46 @@ function setParallaxHeight(height: number) {
   setCssVariable("--parallax-height", `${parallaxHeight}px`)
 }
 
-
-function initImages() {
+/**
+ * Initializes the hero image shuffling
+ * @returns - an observable that emits when the hero image shuffling is initialized
+ */
+export function shuffle$() {
   initializeImageGenerator()
 
-subscriptions.push(
-  document$.pipe(
-    switchMap(() => imageHeight$)
-  ).subscribe({
+  subscriptions.push(
+    document$.pipe(
+      switchMap(() => imageHeight$)
+    ).subscribe({
     next: height => setParallaxHeight(height)
   })
-)
+  )
 
-subscriptions.push(loadFirstImage().pipe(
-  tap(() => initSubscriptions()),
-  switchMap(() => startImageCycling())
-).subscribe({
+  subscriptions.push(loadFirstImage().pipe(
+    tap(() => initSubscriptions()),
+    switchMap(() => startImageCycling())
+  ).subscribe({
     next: () => {},
     error: (err: Error) => logger.error("Error during image cycling:", err)
   }))
 
-document$.pipe(
-  first(),
-  tap(() => {
+  const noLongerHome$ = watchLocationChange(location => !isHome(location) || !isOnSite(location))
+
+  return document$.pipe(
+    first(),
+    tap(() => {
       initSubscriptions()
     }),
-  switchMap(() => {
+    switchMap(() => {
       return loadFirstImage()
     }),
-  tap(() => {
+    tap(() => {
       initializeImageCycling()
     }),
-  catchError((err: Error) => {
+    catchError((err: Error) => {
       logger.error("Error during initialization:", err)
       return EMPTY
-    })
-).subscribe({
-    complete: () => logger.info("Document initialization and image cycling completed")
-  })
-
+    }),
+    takeUntil(from(noLongerHome$)),
+    tap(() => mergedUnsubscription$(() => true).subscribe(() => unsubscribeFromAll(subscriptions))))
 }
-
-location$.pipe(skipUntil(location$.pipe(filter(loc => loc.pathname === "/" || loc.pathname === "/index.html" || loc.pathname === "/#")))).subscribe(() => { initImages() })
-
-
-
-const urlFilter = (url: URL) => (url.pathname !== "/" && url.pathname !== "/index.html" && url.pathname !== "/#") || (url.hostname !== "plainlicense.org" && url.protocol === "https:")
-
-mergedUnsubscription$(urlFilter).subscribe({
-  next: () => {
-    subscriptions.forEach(sub => sub.unsubscribe())
-  }
-})

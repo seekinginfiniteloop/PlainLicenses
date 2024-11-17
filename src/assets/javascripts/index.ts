@@ -1,112 +1,139 @@
-/**
- * Plain Unlicense (Public Domain)
- * @copyright No rights reserved. Created by and for Plain License www.plainlicense.org
- */
+/*
+ * This is the main entrypoint for all JS on PlainLicense
+ * It initiates a series of observables that listen for changes in the DOM
+ * and then subscribes to them.
+ * These subscriptions handle script loading for all pages and for
+ * specific pages like the home page, license pages, and helping page.
+**/
 import * as bundle from "@/bundle"
-import * as feedback from "~/feedback"
-import * as hero from "~/hero"
-import * as licenses from "~/licenses"
-import { Subscription, merge } from "rxjs"
-import { filter, map, mergeMap, switchMap, tap } from "rxjs/operators"
-import { cacheAssets, cleanupCache, deleteOldCache } from "./cache"
+import { Subscription, merge, of } from "rxjs"
+import { distinctUntilKeyChanged, mergeMap, skipUntil, takeWhile, tap } from "rxjs/operators"
+import { feedback$ } from "~/feedback"
+import { watchLicense } from "~/licenses"
 import { logger } from "~/log"
-import { mergedUnsubscription$ } from "~/utils"
-// @ts-ignore
+import { isHome, isLicense, isOnSite, locationBeacon$, mergedUnsubscription$, unsubscribeFromAll, watchLocationChange, watchTables, windowEvents } from "~/utils"
+import { cacheAssets, cleanupCache, deleteOldCache } from "./cache"
+import { shuffle$ } from "./hero/imageshuffle"
+import { allSubscriptions } from "./hero/animation"
 
-const { document$, location$ } = window
+const { document$ } = window
 
 const subscriptions: Subscription[] = []
 
-document.documentElement.classList.remove("no-js")
-document.documentElement.classList.add("js")
-
-// Set up dynamic imports
-document$.subscribe(() => {
-  bundle
-  feedback
-})
-
-// license page scripts
-location$.pipe(filter(location => location.pathname.includes("licenses") && location.pathname.split("/").length >= 4)).subscribe(() => {
-  licenses
-  })
-// hero page scripts
-location$.pipe(filter(location => location.pathname === "/")).subscribe(() => {
-  hero
-})
-
-// Assets to cache
 const styleAssets = document.querySelectorAll("link[rel=stylesheet][href*=stylesheets]")
 const scriptAssets = document.querySelectorAll("script[src*=javascripts]")
 const fontAssets = document.querySelectorAll("link[rel=stylesheet][href*=fonts]")
 
-subscriptions.push(document$.pipe(
-  switchMap(() =>
-    cleanupCache(8000).pipe(
-      tap(() => logger.info("Attempting to clean up cache")),
-      mergeMap(() =>
-        merge(
-          cacheAssets("stylesheets", styleAssets as NodeListOf<HTMLElement>),
-          cacheAssets("javascripts", scriptAssets as NodeListOf<HTMLElement>),
-          cacheAssets("fonts", fontAssets as NodeListOf<HTMLElement>)
-        )
-      ),
-      tap(() => { logger.info("Assets cached") }),
-    )
-  ), tap(() => logger.info("Assets cached"))
-).subscribe({
-  next: () => logger.info("Assets cached successfully"),
-  error: (err: Error) => logger.error("Error caching assets:", err),
-  complete: () => logger.info("Caching process completed")
-}))
+document.documentElement.classList.remove("no-js")
+document.documentElement.classList.add("js")
 
-subscriptions.push(document$.subscribe(() => {
-  deleteOldCache().subscribe({
-    next: () => logger.info("Old cache deleted"),
-    error: (err: Error) => logger.error("Error deleting old cache:", err),
-    complete: () => logger.info("Deleting old cache completed")
-  })
-}))
-
-subscriptions.push(document$.subscribe(() => {
+const insertAnalytics = () => {
   const script = document.createElement("script")
   script.type = "text/javascript"
   script.src = "https://app.tinyanalytics.io/pixel/ei74pg7dZSNOtFvI"
   document.head.appendChild(script)
-}))
+}
 
-subscriptions.push(document$.subscribe(() => {
-  const tables = document.querySelectorAll("article table:not([class])")
-  tables.forEach(table => {
-    const Tablesort = require("tablesort")
-    new Tablesort(table)
-  })
-}))
+const shuffler$ = shuffle$()
+const animate$ = document$.pipe(tap(() => allSubscriptions()))
 
-subscriptions.push(
-  location$.pipe(
-    map((location: URL) => location.pathname.split("/")),
-    map((pathArray: string[]) => ({
-      parent: pathArray[pathArray.length - 2],
-      page: pathArray[pathArray.length - 1]
-    })),
-    filter(({ parent, page }) => parent === "helping" && page === "index.html")
-  ).subscribe(() => {
-    const script = document.createElement("script")
-    script.async = true
-    script.defer = true
-    script.src = "https://buttons.github.io/buttons.js"
-    document.head.appendChild(script)
+const atHome$ = locationBeacon$.pipe(
+  distinctUntilKeyChanged("pathname"),
+  takeWhile((url: URL) => isHome(url)),
+  tap(() => {
+    logger.info("At home page")
+    shuffler$.subscribe()
+    animate$.subscribe()
   })
 )
 
-// Cleanup subscriptions
-const customUrlFilter = (url: URL) => url.hostname !== "plainlicense.org" && url.protocol === "https:"
+const license$ = watchLicense()
 
-mergedUnsubscription$(customUrlFilter).subscribe({
+const atLicense$ = locationBeacon$.pipe(
+  distinctUntilKeyChanged("pathname"),
+  takeWhile((url: URL) => isLicense(url)),
+  tap(() => {
+    logger.info("At license page")
+    license$.subscribe()
+  })
+)
+
+const isHelpingIndex = (url: URL) =>
+  (url.pathname.split("/").length === 3 && url.pathname.endsWith("index.html")) ||
+  (url.pathname.split("/").length === 2 && url.pathname.endsWith("/"))
+
+const atHelping$ = locationBeacon$.pipe(
+  distinctUntilKeyChanged("pathname"),
+  takeWhile((url: URL) => url.pathname.includes("helping") && isHelpingIndex(url)),
+  tap(() => logger.info("At helping page"))
+)
+
+const table$ = watchTables()
+
+const cleanCache$ = cleanupCache(8000).pipe(
+  tap(() => logger.info("Attempting to clean up cache")),
+  mergeMap(() =>
+    merge(
+      cacheAssets("stylesheets", styleAssets as NodeListOf<HTMLElement>),
+      cacheAssets("javascripts", scriptAssets as NodeListOf<HTMLElement>),
+      cacheAssets("fonts", fontAssets as NodeListOf<HTMLElement>)
+    )
+  ),
+  tap(() => logger.info("Assets cached"))
+)
+
+const analytics$ = watchLocationChange((url) => isOnSite(url)).pipe(
+  distinctUntilKeyChanged("pathname"),
+  tap(() => insertAnalytics())
+)
+
+const newPage$ = locationBeacon$.pipe(
+  distinctUntilKeyChanged("pathname"),
+  tap(() => logger.info("New page loaded"))
+)
+
+const event$ = of(windowEvents())
+const deleteCache$ = deleteOldCache()
+
+let pageSubscriptions: Subscription[] = []
+
+/**
+ * Initializes a page by setting up necessary subscriptions.
+ */
+function initPage() {
+  logger.info("New page loaded")
+  pageSubscriptions.push(
+    of(bundle).subscribe(),
+    event$.subscribe(),
+    analytics$.subscribe(),
+    table$.subscribe(),
+    feedback$.subscribe(),
+    cleanCache$.subscribe(),
+    deleteCache$.subscribe()
+  )
+  logger.info("Subscribed to new page subscriptions")
+}
+
+const onNewPage$ = newPage$.pipe(
+  skipUntil(document$),
+  tap(() => logger.info("New page detected"))
+)
+
+subscriptions.push(onNewPage$.subscribe({
   next: () => {
-    subscriptions.forEach(sub => sub.unsubscribe())
-    logger.info("Subscriptions cleaned up")
+    unsubscribeFromAll(pageSubscriptions)
+    initPage()
+  }
+}))
+
+subscriptions.push(atHome$.subscribe())
+subscriptions.push(atLicense$.subscribe())
+subscriptions.push(atHelping$.subscribe())
+
+mergedUnsubscription$(url => !isOnSite(url)).subscribe({
+  next: () => {
+    unsubscribeFromAll(subscriptions)
+    logger.info("Unsubscribed from all subscriptions")
   },
   error: (err: Error) => logger.error("Error in cleanup:", err)
 })

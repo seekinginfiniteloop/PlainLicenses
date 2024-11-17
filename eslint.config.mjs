@@ -40,6 +40,7 @@ export default [{
   },
   {
     ignores: [
+      "*.d.ts",
       "external/**",
       "mkdocs-material/**",
       "**/node_modules",
@@ -125,7 +126,8 @@ export default [{
       }],
       "no-unused-vars": [
         "error",
-        { varsIgnorePattern: "^_", argsIgnorePattern: "^_" },
+        {
+          varsIgnorePattern: "^_", argsIgnorePattern: "^_"        },
       ],
       "no-return-await": "error",
       "no-sequences": "error",

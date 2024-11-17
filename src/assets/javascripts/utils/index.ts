@@ -1,10 +1,14 @@
-import { Observable, forkJoin, fromEvent, merge } from "rxjs"
-import { filter } from "rxjs/operators"
-const { location$ } = window
+import { getLocation } from "~/browser"
+import * as bundle from "~/bundle"
+import { BehaviorSubject, Observable, Subscription, forkJoin, fromEvent, merge, of } from "rxjs"
+import { distinct, filter, map, shareReplay, tap } from "rxjs/operators"
+import Tablesort from "tablesort"
+import { logger } from "~/log"
+
 
 /**
  * Check if an element is visible in the viewport
- * @param el - HTMLElement
+ * @param el HTMLElement
  * @returns true if the element is visible
  */
 export function isElementVisible(el: Element) {
@@ -27,14 +31,14 @@ export function isElementVisible(el: Element) {
   )
 }
 
-type InteractionHandler<E, R> = (events$: Observable<E>) => Observable<R>
+type InteractionHandler<E, R> = (_events$: Observable<E>) => Observable<R>
 
 /**
  * Creates an observable from specified event targets and event types.
- * @param ev - The event target or targets to observe.
- * @param handler - An optional interaction handler function to apply to the observable. The handler must receive and return an observable.
- * @returns Observable<R | InteractionEvent> - An observable of the specified event type.
  * @template R - The type of the observable result.
+ * @param ev The event target or targets to observe.
+ * @param handler An optional interaction handler function to apply to the observable. The handler must receive and return an observable.
+ * @returns Observable&lt;R | InteractionEvent> - An observable of the specified event type.
  */
 export function createInteractionObservable<R>(
   ev: EventTarget | EventTarget[],
@@ -51,35 +55,98 @@ export function createInteractionObservable<R>(
     ...validEventTargets.map(target => fromEvent<Event>(target, "touchend"))
   )
 
-  const events$ = merge(click$, touchend$)
+  const events$ = merge(click$, touchend$).pipe(filter(event => event != null))
 
   return handler ? handler(events$) : events$
 }
 
 /**
  * Set a CSS variable on the document element.
- * @param name - The name of the CSS variable to set.
- * @param value - The value to assign to the CSS variable.
+ * @param name The name of the CSS variable to set.
+ * @param value The value to assign to the CSS variable.
  */
 export function setCssVariable(name: string, value: string) {
   document.documentElement.style.setProperty(name, value)
 }
 
-/**
- * Merge location and beforeunload events with a URL filter.
- * @param urlFilter - A function that filters URLs.
- * @returns An observable of merged location and beforeunload events.
- */
-export const mergedUnsubscription$ = (urlFilter: (url: URL) => boolean) => {
-  const location: Observable<URL> = location$.pipe(
-    filter(urlFilter))
+export const isHome = (url: URL) => { return (url.pathname === "/" || url.pathname === "/index.html") }
 
-  const beforeUnload: Observable<Event> = fromEvent(window, "beforeunload")
+const isLicensePage = (url: URL) => { return ((url.pathname.endsWith("index.html") && url.pathname.split("/").length === 5) || (url.pathname.endsWith("/") && url.pathname.split("/").length === 4)) }
 
-  return forkJoin([location, beforeUnload])
+export const isLicense = (url: URL) => { return url.pathname.includes("licenses") && isLicensePage(url) }
+
+const isProd = (url: URL) => { return url.hostname === "plainlicense.org" && url.protocol === "https:" }
+
+const isDev = (url: URL) => { return (url.hostname === "localhost" && url.port === "8000") || (url.hostname === "127.0.0.1" && url.port === "8000") }
+
+export const isOnSite = (url: URL) => { return isProd(url) || isDev(url)
 }
 
-export const page$ = (urlFilter: (url: URL) => boolean) => {
-  return location$.pipe(
-    filter(urlFilter))
+// obserable for current location
+const locationBehavior$ = new BehaviorSubject<URL>(getLocation())
+const isValidEvent = (value: Event | null) => {
+  return value !== null && value instanceof (Event)
+}
+
+export const locationBeacon$ = merge(
+  locationBehavior$,
+  fromEvent(window, "popstate").pipe(filter((value) => isValidEvent(value))),
+  fromEvent(window, 'hashchange').pipe(filter((value) => isValidEvent(value)))).pipe(filter((value) => value !== null), shareReplay(1),
+  map(value => value instanceof URL ? value : getLocation()),
+  distinct()
+)
+
+export const watchLocationChange = (urlFilter: ((_url: URL) => boolean) | undefined) => {
+  return locationBeacon$.pipe(
+    urlFilter ? filter(url => urlFilter(url)) : map(url => url)
+  )
+}
+
+/**
+ * Merge location and beforeunload events with a URL filter.
+ * @param urlFilter A function that filters URLs.
+ * @returns An observable of merged location and beforeunload events.
+ */
+export const mergedUnsubscription$ = (urlFilter: (_url: URL) => boolean): Observable<[URL, Event]> => {
+  const location: Observable<URL> = watchLocationChange(urlFilter)
+  const beforeUnload: Observable<Event> = fromEvent(window, "beforeunload")
+
+  return forkJoin([location, beforeUnload]).pipe(tap(() => logger.info("Unsubscribing from subscriptions")))
+}
+
+/**
+ * Push a new URL to the browser history.
+ * @param url current url
+ */
+export function pushUrl(url: string) {
+  history.pushState(null, '', url)
+  locationBehavior$.next(new URL(window.location.href))
+}
+
+export const watchTables = () => {
+  const tables = document.querySelectorAll("article table:not([class])")
+  const observables = () => { return tables.length > 0 ? Array.from(tables).map(table => of(table).pipe(map(table => table as HTMLTableElement), tap((table) => new Tablesort(table)))) : [] }
+  return merge(...observables())
+}
+
+export const unsubscribeFromAll = (subscriptions: Subscription[]) => {
+  subscriptions.forEach(subscription => subscription.unsubscribe())
+}
+
+/**
+ * Subscribe to all window events.
+ * @returns An array of subscriptions for each window event.
+ */
+export async function windowEvents() {
+  const { document$, location$, target$, keyboard$, viewport$, tablet$, screen$, print$, alert$, progress$, component$ } = window
+  const observables = { document$, location$, target$, keyboard$, viewport$, tablet$, screen$, print$, alert$, progress$, component$ }
+  let observablesMissing = false
+  for (const key in observables) {
+    if (!(globalThis as any)[key]) {
+      observablesMissing = true
+    }
+  }
+  if (observablesMissing) {
+    bundle
+  }
 }
