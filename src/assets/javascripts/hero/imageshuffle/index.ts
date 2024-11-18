@@ -1,5 +1,5 @@
 /**
- * @module hero module contains the logic for the hero image shuffling on the home page.
+ * hero module contains the logic for the hero image shuffling on the home page.
  * It fetches the image URLs, randomizes their order, caches and loads the images on
  * the hero landing page.
  * It also handles visibility changes and screen orientation changes.
@@ -19,7 +19,7 @@ import {
   shareReplay,
   throwError
 } from "rxjs"
-import { catchError, distinctUntilChanged, distinctUntilKeyChanged, filter, first, map, mergeMap, switchMap, takeUntil, tap } from "rxjs/operators"
+import { catchError, distinctUntilChanged, distinctUntilKeyChanged, filter, map, mergeMap, retry, skipUntil, skipWhile, switchMap, takeUntil, tap } from "rxjs/operators"
 
 import { isElementVisible, isHome, isOnSite, mergedUnsubscription$, setCssVariable, unsubscribeFromAll, watchLocationChange } from "~/utils"
 import { getAsset } from "~/cache"
@@ -57,6 +57,9 @@ const updateImageSources = (images: HTMLImageElement[], optimalWidth: number) =>
 function isPageVisible() {
   return !document.hidden
 }
+
+const retryWhenAtHome = retry(
+  { delay: () => watchLocationChange((url) => isHome(url) && isOnSite(url)).pipe(filter(() => isPageVisible() && parallaxLayer !== null && isElementVisible(parallaxLayer as Element)), map((value) => { if (value) { return value } else { return void 0 } })) })
 
 /**
  * Retrieves an image's settings based on its name
@@ -157,12 +160,7 @@ const cycleImages = (): Observable<void> => {
   const nextImage = heroesGen()
 
   if (nextImage) {
-    return fetchAndSetImage(nextImage).pipe(
-      catchError((err: Error): Observable<void> => {
-        logger.error(`error fetching next image ${err}`)
-        return EMPTY
-      })
-    )
+    return fetchAndSetImage(nextImage)
   }
 
   if (images.length > 1) {
@@ -255,7 +253,7 @@ function regenerateSources(optimalWidth: number) {
 }
 
 const orientation$ = createOrientationObservable(portraitMediaQuery).pipe(
-  filter(() => isPageVisible()),
+  skipWhile(() => !isPageVisible() || !isElementVisible(parallaxLayer as Element)),
   distinctUntilChanged(),
   tap(() => {
       const currentImage = parallaxLayer?.getElementsByTagName("img")[0]
@@ -274,7 +272,7 @@ const orientation$ = createOrientationObservable(portraitMediaQuery).pipe(
 )
 
 const locationChange$ = watchLocationChange((url) => { return url instanceof(URL) }).pipe(
-  distinctUntilKeyChanged("pathname"), filter((url) => !isHome(url)),
+  distinctUntilKeyChanged("pathname"), filter((url) => !isHome(url) || !isOnSite(url)),
   tap(() => stopImageCycling()),
   catchError(error => {
       logger.error("Error in location change observable:", error)
@@ -316,6 +314,8 @@ function loadFirstImage(): Observable<void> {
     firstImage.src = firstImage.widths[getOptimalWidth()]
     logger.info(`First image's src: ${firstImage.src}`)
     return fetchAndSetImage(firstImage).pipe(
+      switchMap(() => watchLocationChange((url) => !isHome(url) || !isOnSite(url))),
+      skipWhile(() => true),
       tap(() => logger.info("First image loaded successfully"))
     )
   } else {
@@ -330,7 +330,7 @@ const getImage = () => {
   } else { return undefined }
 }
 const imageHeight$ = of(getImage())
-  .pipe(map(img => img?.height || window.innerHeight),
+  .pipe(retryWhenAtHome, filter((img) => img !== null && img instanceof HTMLImageElement), map(img => img?.height || window.innerHeight),
     shareReplay(1),
 
     filter(() => isPageVisible() && isElementVisible(parallaxLayer as Element)),
@@ -378,29 +378,14 @@ export function shuffle$() {
 
   subscriptions.push(loadFirstImage().pipe(
     tap(() => initSubscriptions()),
-    switchMap(() => startImageCycling())
-  ).subscribe({
-    next: () => {},
-    error: (err: Error) => logger.error("Error during image cycling:", err)
-  }))
-
+    skipUntil(document$),
+    tap(() => initializeImageCycling()),
+    retryWhenAtHome).subscribe({
+      next: () => { },
+      error: (err: Error) => logger.error("Error during image cycling:", err)
+    }))
   const noLongerHome$ = watchLocationChange(location => !isHome(location) || !isOnSite(location))
 
-  return document$.pipe(
-    first(),
-    tap(() => {
-      initSubscriptions()
-    }),
-    switchMap(() => {
-      return loadFirstImage()
-    }),
-    tap(() => {
-      initializeImageCycling()
-    }),
-    catchError((err: Error) => {
-      logger.error("Error during initialization:", err)
-      return EMPTY
-    }),
-    takeUntil(from(noLongerHome$)),
+  return of(noLongerHome$).pipe(
     tap(() => mergedUnsubscription$(() => true).subscribe(() => unsubscribeFromAll(subscriptions))))
 }

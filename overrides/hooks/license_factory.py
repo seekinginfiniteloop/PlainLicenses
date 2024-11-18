@@ -713,9 +713,9 @@ class LicenseContent:
     def not_advice_text(self) -> str:
         """Returns the not advice text for the license."""
         return dedent(f"""\
-            We are not lawyers. This is not legal advice. You use this license at your own risk. If you need legal advice, talk to a lawyer.
+            We are not lawyers. This is not legal advice. If you need legal advice, talk to a lawyer. You use this license at your own risk.
 
-            We are normal people who want to make licenses accessible for everyone. We hope that our plain language helps you and anyone else (including lawyers) understand this license. If you see a mistake or want to suggest a change, please [submit an issue on GitHub]({self.meta.get("github_issues_link")} "Submit an issue on GitHub") or [submit edits to this page]({self.meta.get("github_edit_link")} "edit on GitHub").
+            We are normal people who want to make licenses accessible for everyone. We hope that our plain language helps you and anyone else understand this license  (including lawyers). If you see a mistake or want to suggest a change, please [submit an issue on GitHub]({self.meta.get("github_issues_link")} "Submit an issue on GitHub") or [edit this page]({self.meta.get("github_edit_link")} "edit on GitHub").
             """)
 
     @cached_property

@@ -34,6 +34,13 @@ declare global {
    * Interfaces
    * ------------------------------------------------------------------------- */
 
+  interface TabElement {
+    input: HTMLInputElement
+    label: HTMLLabelElement
+    iconAnchor: HTMLAnchorElement
+    iconSVG: SVGElement
+  }
+
   interface ViewportOffset {
     x: number
     y: number

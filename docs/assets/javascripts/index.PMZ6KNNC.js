@@ -1001,8 +1001,8 @@ var require_tablesort = __commonJS({
             that.sortTable(defaultSort);
           }
         },
-        sortTable: function(header2, update) {
-          var that = this, columnKey = header2.getAttribute("data-sort-column-key"), column = header2.cellIndex, sortFunction = caseInsensitiveSort, item = "", items = [], i = that.thead ? 0 : 1, sortMethod = header2.getAttribute("data-sort-method"), sortOrder = header2.getAttribute("aria-sort");
+        sortTable: function(header, update) {
+          var that = this, columnKey = header.getAttribute("data-sort-column-key"), column = header.cellIndex, sortFunction = caseInsensitiveSort, item = "", items = [], i = that.thead ? 0 : 1, sortMethod = header.getAttribute("data-sort-method"), sortOrder = header.getAttribute("aria-sort");
           that.table.dispatchEvent(createEvent("beforeSort"));
           if (!update) {
             if (sortOrder === "ascending") {
@@ -1012,7 +1012,7 @@ var require_tablesort = __commonJS({
             } else {
               sortOrder = that.options.descending ? "descending" : "ascending";
             }
-            header2.setAttribute("aria-sort", sortOrder);
+            header.setAttribute("aria-sort", sortOrder);
           }
           if (that.table.rows.length < 2) return;
           if (!sortMethod) {
@@ -3999,6 +3999,67 @@ function repeat(countOrConfig) {
   });
 }
 
+// node_modules/rxjs/dist/esm5/internal/operators/retry.js
+function retry(configOrCount) {
+  if (configOrCount === void 0) {
+    configOrCount = Infinity;
+  }
+  var config7;
+  if (configOrCount && typeof configOrCount === "object") {
+    config7 = configOrCount;
+  } else {
+    config7 = {
+      count: configOrCount
+    };
+  }
+  var _a2 = config7.count, count = _a2 === void 0 ? Infinity : _a2, delay2 = config7.delay, _b = config7.resetOnSuccess, resetOnSuccess = _b === void 0 ? false : _b;
+  return count <= 0 ? identity : operate(function(source, subscriber) {
+    var soFar = 0;
+    var innerSub;
+    var subscribeForRetry = function() {
+      var syncUnsub = false;
+      innerSub = source.subscribe(createOperatorSubscriber(subscriber, function(value) {
+        if (resetOnSuccess) {
+          soFar = 0;
+        }
+        subscriber.next(value);
+      }, void 0, function(err) {
+        if (soFar++ < count) {
+          var resub_1 = function() {
+            if (innerSub) {
+              innerSub.unsubscribe();
+              innerSub = null;
+              subscribeForRetry();
+            } else {
+              syncUnsub = true;
+            }
+          };
+          if (delay2 != null) {
+            var notifier = typeof delay2 === "number" ? timer(delay2) : innerFrom(delay2(err, soFar));
+            var notifierSubscriber_1 = createOperatorSubscriber(subscriber, function() {
+              notifierSubscriber_1.unsubscribe();
+              resub_1();
+            }, function() {
+              subscriber.complete();
+            });
+            notifier.subscribe(notifierSubscriber_1);
+          } else {
+            resub_1();
+          }
+        } else {
+          subscriber.error(err);
+        }
+      }));
+      if (syncUnsub) {
+        innerSub.unsubscribe();
+        innerSub = null;
+        subscribeForRetry();
+      }
+    };
+    subscribeForRetry();
+  });
+}
+
 // node_modules/rxjs/dist/esm5/internal/operators/scan.js
 function scan(accumulator, seed) {
   return operate(scanInternals(accumulator, seed, arguments.length >= 2, true));
@@ -4128,6 +4189,17 @@ function skipUntil(notifier) {
     innerFrom(notifier).subscribe(skipSubscriber);
     source.subscribe(createOperatorSubscriber(subscriber, function(value) {
       return taking && subscriber.next(value);
+    }));
+  });
+}
+
+// node_modules/rxjs/dist/esm5/internal/operators/skipWhile.js
+function skipWhile(predicate) {
+  return operate(function(source, subscriber) {
+    var taking = false;
+    var index = 0;
+    source.subscribe(createOperatorSubscriber(subscriber, function(value) {
+      return (taking || (taking = !predicate(value, index++))) && subscriber.next(value);
     }));
   });
 }
@@ -5998,15 +6070,15 @@ function watchMain(el, { viewport$: viewport$3, header$: header$2 }) {
     )
   );
   return combineLatest([adjust$, border$, viewport$3]).pipe(
-    map(([header2, { top, bottom }, { offset: { y }, size: { height } }]) => {
+    map(([header, { top, bottom }, { offset: { y }, size: { height } }]) => {
       height = Math.max(
         0,
-        height - Math.max(0, top - y, header2) - Math.max(0, height + y - bottom)
+        height - Math.max(0, top - y, header) - Math.max(0, height + y - bottom)
       );
       return {
-        offset: top - header2,
+        offset: top - header,
         height,
-        active: top - header2 <= y
+        active: top - header <= y
       };
     }),
     distinctUntilChanged((a, b) => a.offset === b.offset && a.height === b.height && a.active === b.active)
@@ -6075,8 +6147,8 @@ function mountPalette(el) {
     });
     push$.pipe(
       map(() => {
-        const header2 = getComponentElement("header");
-        const style = window.getComputedStyle(header2);
+        const header = getComponentElement("header");
+        const style = window.getComputedStyle(header);
         scheme.content = style.colorScheme;
         return style.backgroundColor.match(/\d+/g).map((value) => (+value).toString(16).padStart(2, "0")).join("");
       })
@@ -7644,6 +7716,106 @@ var feedback$ = of(feedback).pipe(
   })
 );
 
+// src/assets/javascripts/licenses/index.ts
+var getTabElements = () => {
+  const inputs = Array.from(document.querySelectorAll('.tabbed-set input[type="radio"]'));
+  return inputs.map((input) => {
+    var _a2;
+    const { id } = input;
+    return {
+      input,
+      label: document.querySelector(`label[for="${id}"]`),
+      iconAnchor: document.querySelector(`#icon-${id}`),
+      iconSVG: (_a2 = document.querySelector(`#icon-${id}`)) == null ? void 0 : _a2.querySelector("svg")
+    };
+  }).filter((elements) => elements.input && elements.label && elements.iconAnchor && elements.iconSVG);
+};
+var styleTab = (tab, state = "normal") => {
+  const { input, iconAnchor, iconSVG } = tab;
+  switch (state) {
+    case "normal":
+      if (input.checked) {
+        iconAnchor.classList.add("selected");
+        iconAnchor.style.borderColor = "var(--selected-color)";
+        iconSVG.style.fill = "var(--selected-color)";
+      } else {
+        iconAnchor.classList.remove("selected");
+        iconAnchor.style.borderColor = "";
+        iconSVG.style.fill = "";
+      }
+      break;
+    case "hover":
+    case "focus-visible":
+    case "focus":
+      if (input.checked) {
+        return styleTab(tab);
+      }
+      iconAnchor.classList.remove("selected");
+      iconSVG.style.fill = "var(--hover-color)";
+      break;
+  }
+};
+var setupTabIconSync = () => {
+  const tabElements = getTabElements();
+  tabElements.forEach((tab) => {
+    styleTab(tab);
+  });
+  const createInteractionStream = (elements, eventName) => {
+    const streams = elements.flatMap(({ label, iconAnchor }) => [
+      fromEvent(label, eventName).pipe(map(() => [label.getAttribute("for"), eventName])),
+      fromEvent(iconAnchor, eventName).pipe(map(() => [iconAnchor.id.replace("icon-", ""), eventName]))
+    ]);
+    return merge(...streams);
+  };
+  const hover$ = createInteractionStream(tabElements, "mouseenter").pipe(share());
+  const unhover$ = createInteractionStream(tabElements, "mouseleave").pipe(share());
+  const focus$ = createInteractionStream(tabElements, "focus").pipe(share());
+  const focusVisible$ = createInteractionStream(tabElements, "focus-visible").pipe(share());
+  const blur$ = createInteractionStream(tabElements, "blur").pipe(share());
+  const iconAnchorClicks$ = tabElements.map(
+    ({ iconAnchor, input }) => fromEvent(iconAnchor, "click").pipe(
+      tap((e) => {
+        e.preventDefault();
+        input.checked = true;
+        input.dispatchEvent(new Event("change"));
+      })
+    )
+  );
+  const selection$ = tabElements.map(
+    ({ input }) => fromEvent(input, "change").pipe(
+      map(() => input.id),
+      filter((id) => !!id)
+    )
+  );
+  const combined$ = combineLatest([
+    merge(...selection$).pipe(distinctUntilChanged()),
+    merge(
+      hover$.pipe(map(([id]) => ({ id, state: "hover" }))),
+      unhover$.pipe(map(([id]) => ({ id, state: "normal" }))),
+      focus$.pipe(map(([id]) => ({ id, state: "focus" }))),
+      focusVisible$.pipe(map(([id]) => ({ id, state: "focus-visible" }))),
+      blur$.pipe(map(([id]) => ({ id, state: "normal" })))
+    )
+  ]).pipe(
+    tap(
+      ([id, { state }]) => {
+        tabElements.forEach((tab) => {
+          if (tab.input.id === id && ["hover", "focus", "focus-visible", "normal"].includes(state)) {
+            styleTab(tab, state);
+          } else {
+            styleTab(tab);
+          }
+        });
+      }
+    )
+  );
+  iconAnchorClicks$.forEach((click$) => click$.subscribe());
+  return combined$;
+};
+var watchLicense = () => {
+  return setupTabIconSync();
+};
+
 // src/assets/javascripts/utils/index.ts
 var import_tablesort = __toESM(require_tablesort());
 function isElementVisible(el) {
@@ -7661,13 +7833,13 @@ function isElementVisible(el) {
 function createInteractionObservable(ev, handler) {
   const eventTargets = Array.isArray(ev) ? ev : [ev];
   const validEventTargets = eventTargets.filter((target) => target != null);
-  const click$2 = merge(
+  const click$ = merge(
     ...validEventTargets.map((target) => fromEvent(target, "click"))
   );
   const touchend$ = merge(
     ...validEventTargets.map((target) => fromEvent(target, "touchend"))
   );
-  const events$ = merge(click$2, touchend$).pipe(filter((event) => event != null));
+  const events$ = merge(click$, touchend$).pipe(filter((event) => event != null));
   return handler ? handler(events$) : events$;
 }
 function setCssVariable(name, value) {
@@ -7705,13 +7877,13 @@ var locationBeacon$ = merge(
   map((value) => value instanceof URL ? value : getLocation()),
   distinct()
 );
-var watchLocationChange = (urlFilter3) => {
+var watchLocationChange = (urlFilter2) => {
   return locationBeacon$.pipe(
-    urlFilter3 ? filter((url) => urlFilter3(url)) : map((url) => url)
+    urlFilter2 ? filter((url) => urlFilter2(url)) : map((url) => url)
   );
 };
-var mergedUnsubscription$ = (urlFilter3) => {
-  const location2 = watchLocationChange(urlFilter3);
+var mergedUnsubscription$ = (urlFilter2) => {
+  const location2 = watchLocationChange(urlFilter2);
   const beforeUnload = fromEvent(window, "beforeunload");
   return forkJoin([location2, beforeUnload]).pipe(tap(() => logger.info("Unsubscribing from subscriptions")));
 };
@@ -7738,54 +7910,6 @@ async function windowEvents() {
     bundle_exports;
   }
 }
-
-// src/assets/javascripts/licenses/index.ts
-var updateTabStyles = (hash) => {
-  logger.info("updating tab styles, hash:", hash);
-  const color = hash ? "var(--md-accent-fg-color)" : "transparent";
-  document.documentElement.style.setProperty("--tab-active-color", color);
-};
-var createClickObservable = (targets) => {
-  const observables = targets.map(
-    (target) => fromEvent(target, "click").pipe(
-      filter((event) => event !== null && event.target instanceof EventTarget && event.target.hasAttribute("href")),
-      map((event) => event.target.getAttribute("href") || ""),
-      filter((href) => href !== null && href.length > 1)
-    )
-  );
-  return merge(...observables);
-};
-var tabTargets = Array.from(document.querySelectorAll(".md-typeset .tabbed-labels > label > [href]"));
-var getIconTargets = () => {
-  if (tabTargets.length === 0) {
-    return [];
-  }
-  return tabTargets.map((target) => {
-    const identifier = target.getAttribute("for") || "";
-    return document.getElementById(`icon-${identifier}`);
-  });
-};
-var tabClick$ = defer(() => createClickObservable(tabTargets));
-var iconClick$ = defer(() => createClickObservable(getIconTargets()));
-var click$ = merge(tabClick$, iconClick$);
-var toggle = document.getElementById("section-toggle");
-var header = document.querySelector(".section-header");
-var urlFilter = (url) => !isLicense(url);
-var watchLicense = () => {
-  const clickSubscription = click$.pipe(
-    filter((href) => href !== null && href.length > 1),
-    tap((href) => updateTabStyles(href))
-  );
-  const toggleSubscription = fromEvent(toggle, "change").pipe(
-    filter((value) => value != null && value instanceof Event),
-    tap(() => header.setAttribute("aria-expanded", toggle.checked.toString()))
-  );
-  return merge(clickSubscription, toggleSubscription).pipe(
-    takeUntil(mergedUnsubscription$(urlFilter).pipe(
-      tap(() => logger.info("Unsubscribing from subscriptions"))
-    ))
-  );
-};
 
 // src/assets/javascripts/cache/index.ts
 var CONFIG = {
@@ -8088,6 +8212,15 @@ var updateImageSources = (images, optimalWidth) => {
 function isPageVisible() {
   return !document.hidden;
 }
+var retryWhenAtHome = retry(
+  { delay: () => watchLocationChange((url) => isHome(url) && isOnSite(url)).pipe(filter(() => isPageVisible() && parallaxLayer !== null && isElementVisible(parallaxLayer)), map((value) => {
+    if (value) {
+      return value;
+    } else {
+      return void 0;
+    }
+  })) }
+);
 function retrieveImage(imageName) {
   return heroImages.find((image) => image.imageName === imageName);
 }
@@ -8161,12 +8294,7 @@ var cycleImages = () => {
   const images = parallaxLayer.getElementsByTagName("img");
   const nextImage = heroesGen();
   if (nextImage) {
-    return fetchAndSetImage(nextImage).pipe(
-      catchError((err) => {
-        logger.error(`error fetching next image ${err}`);
-        return EMPTY;
-      })
-    );
+    return fetchAndSetImage(nextImage);
   }
   if (images.length > 1) {
     const recycledImage = images[images.length - 1];
@@ -8244,7 +8372,7 @@ function regenerateSources(optimalWidth) {
   }
 }
 var orientation$ = createOrientationObservable(portraitMediaQuery).pipe(
-  filter(() => isPageVisible()),
+  skipWhile(() => !isPageVisible() || !isElementVisible(parallaxLayer)),
   distinctUntilChanged(),
   tap(() => {
     const currentImage = parallaxLayer == null ? void 0 : parallaxLayer.getElementsByTagName("img")[0];
@@ -8265,7 +8393,7 @@ var locationChange$ = watchLocationChange((url) => {
   return url instanceof URL;
 }).pipe(
   distinctUntilKeyChanged("pathname"),
-  filter((url) => !isHome(url)),
+  filter((url) => !isHome(url) || !isOnSite(url)),
   tap(() => stopImageCycling()),
   catchError((error) => {
     logger.error("Error in location change observable:", error);
@@ -8300,6 +8428,8 @@ function loadFirstImage() {
     firstImage.src = firstImage.widths[getOptimalWidth()];
     logger.info(`First image's src: ${firstImage.src}`);
     return fetchAndSetImage(firstImage).pipe(
+      switchMap(() => watchLocationChange((url) => !isHome(url) || !isOnSite(url))),
+      skipWhile(() => true),
       tap(() => logger.info("First image loaded successfully"))
     );
   } else {
@@ -8315,6 +8445,8 @@ var getImage = () => {
   }
 };
 var imageHeight$ = of(getImage()).pipe(
+  retryWhenAtHome,
+  filter((img) => img !== null && img instanceof HTMLImageElement),
   map((img) => (img == null ? void 0 : img.height) || window.innerHeight),
   shareReplay(1),
   filter(() => isPageVisible() && isElementVisible(parallaxLayer)),
@@ -8345,29 +8477,16 @@ function shuffle$() {
   );
   subscriptions.push(loadFirstImage().pipe(
     tap(() => initSubscriptions()),
-    switchMap(() => startImageCycling())
+    skipUntil(document$2),
+    tap(() => initializeImageCycling()),
+    retryWhenAtHome
   ).subscribe({
     next: () => {
     },
     error: (err) => logger.error("Error during image cycling:", err)
   }));
   const noLongerHome$ = watchLocationChange((location2) => !isHome(location2) || !isOnSite(location2));
-  return document$2.pipe(
-    first(),
-    tap(() => {
-      initSubscriptions();
-    }),
-    switchMap(() => {
-      return loadFirstImage();
-    }),
-    tap(() => {
-      initializeImageCycling();
-    }),
-    catchError((err) => {
-      logger.error("Error during initialization:", err);
-      return EMPTY;
-    }),
-    takeUntil(from(noLongerHome$)),
+  return of(noLongerHome$).pipe(
     tap(() => mergedUnsubscription$(() => true).subscribe(() => unsubscribeFromAll(subscriptions)))
   );
 }
@@ -15495,8 +15614,8 @@ var allSubscriptions = () => {
     }
   }));
 };
-var urlFilter2 = (url) => !isHome(url) && isOnSite(url) || !isOnSite(url);
-mergedUnsubscription$(urlFilter2).subscribe({
+var urlFilter = (url) => !isHome(url) && isOnSite(url) || !isOnSite(url);
+mergedUnsubscription$(urlFilter).subscribe({
   next: () => {
     unsubscribeFromAll(subscriptions2);
   }
@@ -15569,7 +15688,7 @@ mergedUnsubscription$((url) => !isOnSite(url)).subscribe({
  * @copyright No rights reserved. Created by and for Plain License www.plainlicense.org
  */
 /**
- * @module hero module contains the logic for the hero image shuffling on the home page.
+ * hero module contains the logic for the hero image shuffling on the home page.
  * It fetches the image URLs, randomizes their order, caches and loads the images on
  * the hero landing page.
  * It also handles visibility changes and screen orientation changes.
@@ -15659,4 +15778,4 @@ gsap/ScrollTrigger.js:
    * @author: Jack Doyle, jack@greensock.com
   *)
 */
-//# sourceMappingURL=index.PXRH67CD.js.map
+//# sourceMappingURL=index.PMZ6KNNC.js.map

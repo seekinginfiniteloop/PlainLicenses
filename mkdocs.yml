@@ -50,6 +50,7 @@ theme:
   favicon: favicon.ico
   features:
     - content.action.edit
+    - content.action.view
     - content.code.annotate
     - content.code.copy
     - content.code.select
@@ -58,8 +59,8 @@ theme:
     - content.footnote.tooltips
     - navigation.footer
     - navigation.indexes
-    # - navigation.instant
-    # - navigation.instant.progress
+    - navigation.instant
+    - navigation.instant.progress
     - navigation.path
     - navigation.sections
     - navigation.tabs
@@ -271,15 +272,15 @@ extra:
       <p>Create a LICENSE or LICENSE.md file in the base of your project. If your project is on Github or another platform that uses markdown, copy the <a class="how_link" href=#markdown>markdown version</a> using the copy icon. If your platform doesn't support markddown, use the <a class="how_link" href="#plaintext">plaintext version</a>, or provide a link to our <a class="how_link" href="#reader">reader version</a>.</p> <p><strong>Notices</strong>: the licensing community usually recommends adding a short notice to each part of your project telling readers how the work is licensed and how they can use it. For software projects, this is at the top of each module or file.</p>
     tag_text: # These values map to each of the tags in the license frontmatter, and are used for tooltips.
       can-share: >
-        Share Freely: You can share or distribute any work that uses this {{ license_type | trim }} freely.
+        Share Freely: You can share or distribute any work that uses this {{ license_type }} freely.
       can-sell: >
-        Use Commercially: You can sell any work that uses this {{ license_type | trim }}, and you don't have to pay the authors anything or share your changes with them.
+        Use Commercially: You can sell any work that uses this {{ license_type }}, and you don't have to pay the authors anything or share your changes with them.
       can-change: >
-        Change freely: You can change any work that uses this {{ license_type | trim }} however you want.
+        Change freely: You can change any work that uses this {{ license_type }} however you want.
       can-revoke: >
         Take-backs: You can revoke this license from any work that uses it at any time if you hold the copyright.
       relicense: >
-        Relicense: You can change the {{ license_type | trim }} to a different license if you want. You may need to follow certain rules, like giving credit to the original author.
+        Relicense: You can change the {{ license_type }} to a different license if you want. You may need to follow certain rules, like giving credit to the original author.
       share-alike (strict): >
         Share-Alike (strict): You must share your changes under the same license if you change or modify any work that uses this license.
       share-alike (relaxed): >
