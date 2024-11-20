@@ -107,6 +107,7 @@ const smoothScroll$ = (el: Element): Observable<void> => {
   logger.info(`Setting scroll parameters: target: ${target.id}, wayPoint: ${wayPoint.id}, wayPointPause: ${wayPointPause}, duration: ${duration}`)
   const targetElement = target as HTMLElement
   const wayPointElement = wayPoint as HTMLElement
+  
   if (prefersReducedMotion) {
     const anchorTarget = targetElement.offsetTop
     document.body.scrollTo({ top: anchorTarget, behavior: "auto" })
@@ -122,31 +123,42 @@ const smoothScroll$ = (el: Element): Observable<void> => {
     logger.error(`Target element ${target} not found within document.`)
     return of(void 0)
   }
-    const scrollPositions = {
-      wayPoint: wayPointElement ? wayPointElement.offsetTop : targetElement.offsetTop,
-      target: targetElement.offsetTop
-    }
+
+  const scrollPositions = {
+    wayPoint: wayPointElement ? wayPointElement.offsetTop : targetElement.offsetTop,
+    target: targetElement.offsetTop
+  }
+
   if (scrollPositions && !(scrollPositions.wayPoint)) {
     scrollPositions.wayPoint = scrollPositions.target
     firstScrollDuration = duration
     secondScrollDuration = 0
   }
+
+  // Updated animation configuration
   tl.add(gsap.to(document.body, {
     duration: firstScrollDuration,
-    scrollTo: { y: scrollPositions.wayPoint, autoKill: false },
-    ease: "power3"
-  }
-  ))
+    scrollTo: { 
+      y: scrollPositions.wayPoint, 
+      autoKill: false,
+      ease: "power2.inOut"  // Changed ease function
+    },
+    ease: "none"  // Remove timeline ease to prevent double-easing
+  }))
+
   if (secondScrollDuration > 0) {
     tl.add(gsap.to(document.body, {
       duration: secondScrollDuration,
-      scrollTo: { y: scrollPositions.target, autoKill: false },
-      ease: "power3"
-    }
-    ), `+=${pause}`)
+      scrollTo: { 
+        y: scrollPositions.target, 
+        autoKill: false,
+        ease: "power2.inOut"  // Changed ease function
+      },
+      ease: "none"  // Remove timeline ease to prevent double-easing
+    }), `+=${pause}`)
   }
+  
   tl.play()
-
   return of(void 0)
 }
 
@@ -269,88 +281,169 @@ export const allSubscriptions = (): void => {
       gsap.set(selector, properties)
     }
 
-    const createTimeline = (selector: string, animations: gsap.TweenVars[], scrollTrigger: ScrollTrigger.Vars) => {
-      const timeline = gsap.timeline(scrollTrigger)
-      animations.forEach(animation => timeline.add(gsap.to(selector, animation)))
-      return timeline
+  const createTimeline = (selector: string, animations: gsap.TweenVars[], scrollTriggerOptions: ScrollTrigger.Vars) => {
+  const timeline = gsap.timeline({
+    scrollTrigger: {
+      ...scrollTriggerOptions
     }
+  })
+  animations.forEach(animation => timeline.add(gsap.to(selector, animation)))
+  return timeline
+}
 
-    const createFadeInAnimation = (): Observable<ScrollTrigger>[] => {
-      const makeScrollBatch = (selector: string) => {
-        const batch: Observable<ScrollTrigger>[] = []
-        ScrollTrigger.batch(selector, {
-          start: "top bottom",
-          end: "top top",
-          interval: 0.15,
-          batchMax: 2,
-          onEnter: (b: Element[]) => {
-            gsap.to(b, { opacity: 1, y: 0, duration: 0.3, ease: "power2.out", stagger: { each: 0.15, grid: "auto" }, overwrite: true })
-          },
-          onLeave: (b: Element[]) => { gsap.set(b, { opacity: 0, y: -100, overwrite: true }) },
-          onEnterBack: (b: Element[]) => { gsap.to(b, { opacity: 1, y: 0, duration: 0.3, ease: "power2.out", stagger: 0.15, overwrite: true }) },
-          onLeaveBack: (b: Element[]) => { gsap.set(b, { opacity: 0, y: 100, overwrite: true }) }
-        }).forEach((trigger: ScrollTrigger) => { batch.push(of(trigger)) })
-        return batch
+const createFadeInAnimation = (): Observable<ScrollTrigger>[] => {
+  const makeScrollBatch = (selector: string) => {
+    const batch: Observable<ScrollTrigger>[] = []
+    ScrollTrigger.batch(selector, {
+      start: "top 80%",  // Changed to trigger earlier
+      end: "bottom 20%", // Changed to fade out later
+      interval: 0.15,
+      batchMax: 2,
+      onEnter: (b: Element[]) => {
+        gsap.to(b, { 
+          opacity: 1, 
+          y: 0, 
+          duration: 0.5,  // Increased duration
+          ease: "power2.out", 
+          stagger: { each: 0.15, grid: "auto" }, 
+          overwrite: true 
+        })
+      },
+      onLeave: (b: Element[]) => { 
+        gsap.to(b, { 
+          opacity: 0, 
+          y: -50,  // Reduced movement
+          duration: 0.3,
+          ease: "power2.in",
+          overwrite: true 
+        })
+      },
+      onEnterBack: (b: Element[]) => { 
+        gsap.to(b, { 
+          opacity: 1, 
+          y: 0, 
+          duration: 0.5,
+          ease: "power2.out", 
+          stagger: 0.15, 
+          overwrite: true 
+        })
+      },
+      onLeaveBack: (b: Element[]) => { 
+        gsap.to(b, { 
+          opacity: 0, 
+          y: 50,  // Reduced movement
+          duration: 0.3,
+          ease: "power2.in",
+          overwrite: true 
+        })
       }
-      const fadeIns = (): Observable<ScrollTrigger>[] => {
-        return [...makeScrollBatch(".fade-in"), ...makeScrollBatch(".fade-in2")
-        ]
-      }
-      setupAnimation(".fade-in", { opacity: 0, y: 100 })
-      setupAnimation(".fade-in2", { opacity: 0, y: 100 })
-      ScrollTrigger.addEventListener("refreshInit", () => {
-        gsap.set(".fade-in", { y: 0, opacity: 1 })
-        gsap.set(".fade-in2", { y: 0, opacity: 1 })
-      })
-      return fadeIns()
-    }
+    }).forEach((trigger: ScrollTrigger) => { batch.push(of(trigger)) })
+    return batch
+  }
+
+  const fadeIns = (): Observable<ScrollTrigger>[] => {
+    return [...makeScrollBatch(".fade-in"), ...makeScrollBatch(".fade-in2")]
+  }
+
+  // Initial setup
+  setupAnimation(".fade-in", { opacity: 0, y: 50 })  // Reduced initial offset
+  setupAnimation(".fade-in2", { opacity: 0, y: 50 }) // Reduced initial offset
+
+  // Reset on refresh
+  ScrollTrigger.addEventListener("refreshInit", () => {
+    gsap.set(".fade-in", { y: 0, opacity: 1 })
+    gsap.set(".fade-in2", { y: 0, opacity: 1 })
+  })
+
+  return fadeIns()
+}}
+    
     subscriptions.push(concat(...createFadeInAnimation()).subscribe())
 
-    const createCtaAnimation = () => {
-      setupAnimation(".cta-ul", { scaleX: 0, transformOrigin: "left", height: "1.8em", width: "0" })
-      const ctaTimeline = createTimeline(".cta-ul", [
-        { scaleX: 1, transformOrigin: "left", duration: 0.25, height: "1.3em", width: "50%" },
-        { scaleX: 1, duration: 0.3, ease: "power2.out", height: "0.8em", width: "100%" }
-      ], {
-        scrub: 0.2,
-        start: "top 5vh",
-        trigger: ".hero__parallax",
-        onEnter: () => { ctaTimeline.play() },
-        scroller: ".hero__parallax"
-      })
-    }
+const createCtaAnimation = () => {
+  setupAnimation(".cta-ul", { scaleX: 0, transformOrigin: "left", height: "1.8em", width: "0" })
+  const ctaTimeline = createTimeline(".cta-ul", [
+    { scaleX: 1, transformOrigin: "left", duration: 0.25, height: "1.3em", width: "50%" },
+    { scaleX: 1, duration: 0.3, ease: "power2.out", height: "0.8em", width: "100%" }
+  ], {
+    scrub: 0.2,
+    start: "top 80%", // Adjusted from "top 5vh"
+    trigger: ".hero__parallax",
+    scroller: ".hero__parallax",
+    onEnter: () => { ctaTimeline.play() }
+  })
+}
     subscriptions.push(of(createCtaAnimation).subscribe())
 
-    const createEmphasisAnimation = () => {
-      setupAnimation(".special-ul", { scaleX: 0, transformOrigin: "left", height: "1.8em", width: "0" })
-      const emphasisTimeline = createTimeline(".special-ul", [
-        { scaleX: 1, transformOrigin: "left", duration: 0.25, height: "1.3em", width: "50%" },
-        { scaleX: 1, duration: 0.3, ease: "power2.out", height: "0.8em", width: "100%" }
-      ],
-        {
-          scrub: 0.2,
-          start: "top 140vh",
-          trigger: "#pt2-hero-section-content",
-          onEnter: () => { emphasisTimeline.play() },
-          scroller: document.body
-        }
-      )
+const createEmphasisAnimation = () => {
+  // Set initial styles
+  setupAnimation(".special-ul", { 
+    scaleX: 0, 
+    transformOrigin: "left", 
+    height: "1.8em", 
+    width: "0" 
+  })
+
+  // Create the timeline with scrollTrigger configuration inside
+  const emphasisTimeline = gsap.timeline({
+    scrollTrigger: {
+      trigger: "#pt2-hero-section-content",
+      start: "top 80%",        // Adjusted start point
+      end: "bottom top",       // Adjusted end point
+      scrub: 0.2,
+      scroller: document.body,
     }
+  })
+
+  // Define animations
+  emphasisTimeline.to(".special-ul", { 
+    scaleX: 1, 
+    transformOrigin: "left", 
+    duration: 0.25, 
+    height: "1.3em", 
+    width: "50%" 
+  })
+  .to(".special-ul", { 
+    scaleX: 1, 
+    duration: 0.3, 
+    ease: "power2.out", 
+    height: "0.8em", 
+    width: "100%" 
+  })
+}
     subscriptions.push(of(createEmphasisAnimation).subscribe())
 
-    const createSpecialHighlight = () => {
-      setupAnimation(".special-highlight", { textShadow: "0 0 0 transparent", x: 0 })
-      const specialHighlight = createTimeline(".special-highlight", [
-        { textShadow: "0.02em 0.02em 0 var(--turkey-red)", x: 20, duration: 0.25 },
-        { textShadow: "0.04em 0.04em 0.06em var(--turkey-red)", x: 50, duration: 0.2, ease: "power2.out" }
-      ],
-        {
-          start: "top 240vh",
-          trigger: "#pt3-hero-section-content",
-          scroller: document.body,
-          onEnter: () => { specialHighlight.play() }
-        })
+const createSpecialHighlight = () => {
+  // Set initial styles
+  setupAnimation(".special-highlight", { 
+    textShadow: "0 0 0 transparent", 
+    x: 0 
+  })
+
+  // Create the timeline with scrollTrigger configuration inside
+  const specialHighlightTimeline = gsap.timeline({
+    scrollTrigger: {
+      trigger: "#pt3-hero-section-content",
+      start: "top 80%",        // Adjusted start point
+      end: "bottom top",       // Adjusted end point
+      scroller: document.body,
+      toggleActions: "play none none none", // Ensures the animation plays when entering
     }
+  })
+
+  // Define animations
+  specialHighlightTimeline.to(".special-highlight", { 
+    textShadow: "0.02em 0.02em 0 var(--turkey-red)", 
+    x: 20, 
+    duration: 0.25 
+  })
+  .to(".special-highlight", { 
+    textShadow: "0.04em 0.04em 0.06em var(--turkey-red)", 
+    x: 50, 
+    duration: 0.2, 
+    ease: "power2.out" 
+  })
+}
     subscriptions.push(of(createSpecialHighlight).subscribe())
   }
   subscriptions.push(fromEvent(window, "hashchange").pipe(
