@@ -33,7 +33,7 @@ hide:
 
 ## Can I use one of your licenses for my project?  :material-chat-question-outline:
 
-**Yes!** Our licenses are in the public domain (1) , so you can use them for any project. We want to make it easier for people to understand the licenses that cover their work, so we're happy to see our licenses used for real projects. You can change them however you like, and you don't have to give us credit. If you appreciate Plain License and our message, then please tell people about us. Our licenses don't replace the original licenses, but compliment them. Every plain license includes an interpretation statement that makes it clear that the plain language version is based on the original license and that you can refer to the original license if you are unclear about the legal meaning of the plain language version.
+**Yes!** Our licenses are in the public domain (1), so you can use them for any project. We want to make it easier for people to understand the licenses that cover their work, so we're happy to see our licenses used for real projects. You can change them however you like, and you don't have to give us credit. If you appreciate Plain License and our message, then please tell people about us. Our licenses don't replace the original licenses, but compliment them. Every plain license includes an interpretation statement that makes it clear that the plain language version is based on the original license and that you can refer to the original license if you are unclear about the legal meaning of the plain language version.
 { .annotate }
 
 1. We use the [Plain Unlicense][plain unlicense] for our licenses when we can. Unfortunately, we can't use the Plain Unlicense for all our licenses because some original licenses are licensed under terms that don't allow us to use the Plain Unlicense. In those cases, we use the most permissive license we can and make it clear that the license is not in the public domain.
@@ -70,7 +70,7 @@ Take it from us, **it's hard to write clearly.** Taking complex ideas and making
 **There are a lot of licenses out there, and that can be confusing.** We think that's a problem, especially when the licenses are hard to understand. For example, the Free Software Foundation's GPL 3 requires [a very long faq][gpl-faq] just to explain how to use the license. (1)
 { .annotate }
 
-1. The GPL 3 is a great license, but it's very hard to understand. We applaud the FSF for their work providing clear answers to questions about the license. We think that's a great step in the right direction. :thumbsup:
+ 1. The GPL 3 is a great license, but it's very hard to understand. We applaud the FSF for their work providing clear answers to questions about the license. We think that's a great step in the right direction. :thumbsup:
 
 We think our licenses stand out because they're clear and easy to read. We hope that by making licenses easier to understand, we can help people make better decisions about how to license their work. We can't fix the problem of too many licenses. We can only offer our licenses to compliment and clarify the licenses people use. Maybe one day we'll see a world where all licenses are written in plain language.
 

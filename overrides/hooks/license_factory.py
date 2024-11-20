@@ -1,4 +1,4 @@
-# sourcery skip: avoid-global-variables, do-not-use-staticmethod
+# sourcery skip: avoid-global-variables, do-not-use-staticmethod, no-complex-if-expressions
 """
 Assembles license content for all license pages.
 
@@ -19,16 +19,15 @@ from textwrap import dedent, indent
 from typing import Any, ClassVar, Literal
 
 import ez_yaml
+from _utils import Status, find_repo_root, wrap_text
 from hook_logger import get_logger
 from jinja2 import Template, TemplateError
 from mkdocs.config.defaults import MkDocsConfig
 from mkdocs.structure.files import File, Files, InclusionLevel
 from mkdocs.structure.pages import Page
 
-from _utils import Status, find_repo_root, wrap_text
-
 # Change logging level here
-_assembly_log_level = logging.DEBUG
+_assembly_log_level = logging.WARNING
 
 if not hasattr(__name__, "assembly_logger"):
     assembly_logger = get_logger(
@@ -272,7 +271,7 @@ class LicenseContent:
     """
     Represents a license's content and metadata, including the license text and associated attributes. All license text processing happens here.
 
-    TODO: Break this monster class up into smaller classes
+    TODO: Break this monster class up into smaller classes... it's unwieldy and messy... but functional
     """
 
     _year_pattern: ClassVar[Pattern[str]] = re.compile(r"\{\{\s{1,2}year\s{1,2}\}\}")
@@ -535,7 +534,7 @@ class LicenseContent:
         return None
 
     @staticmethod
-    def tabify(text:str, title: str, level: int = 1, icon: str = "") -> str:
+    def tabify(text: str, title: str, level: int = 1, icon: str = "") -> str:
         """
         Returns a tabified block with the provided text.
 
@@ -602,9 +601,8 @@ class LicenseContent:
                     4,
                 )
             case "markdown":
-                return (
-                    f"### {self.meta.get('interpretation_title')}\n\n"
-                    + wrap_text(dedent(self.meta.get("interpretation_text", "")))
+                return f"### {self.meta.get('interpretation_title')}\n\n" + wrap_text(
+                    dedent(self.meta.get("interpretation_text", ""))
                 )
             case "plaintext":
                 as_plaintext = self.process_markdown_to_plaintext(
@@ -628,29 +626,32 @@ class LicenseContent:
         match kind:
             case "reader":
                 title = f"\n<h1 class='license-title'>{self.meta['plain_name']}</h1>"
-                if original_version:
-                    version_info = f"""\n
-                    <div class='version-info'><span class="original_version">original version: {original_version}</span><br /><span class="plain_version">plain version: {plain_version}</span></div>\n"""
-                else:
-                    version_info = f"""\n
-                    <div class='version_info'><span class="plain_version">plain version: {plain_version}</span></div>\n"""
+                original_version_html = (
+                    f"<span class='original_version'>original version: {original_version}</span><br />"
+                    if original_version
+                    else ""
+                )
+                plain_version_html = (
+                    f"<span class='plain_version'>plain version: {plain_version}</span>"
+                )
+                version_info = f"""<div class='version-info'>{original_version_html}{plain_version_html}</div>"""
                 return f"""<div class="license-header">{title}{version_info}</div>"""
             case "markdown":
-                title = f"\n# {self.meta.get('plain_name')}" ""
-                if original_version:
-                    version_info = dedent(f"""\
-                        > original version: {original_version}  |  plain version: {plain_version}""")
-                else:
-                    version_info = f"plain version: {plain_version}"
-                return f"{version_info}\n{title}"
+                title = f"\n# {self.meta.get('plain_name')}"
+                original_text = (
+                    f"original version: {original_version}  |  "
+                    if original_version
+                    else ""
+                )
+                return f"> {original_text}plain version: {plain_version}\n{title}"
             case _:
                 title = f"\n{self.meta.get('plain_name', "").upper()}"
-                if original_version:
-                    version_info = dedent(f"""\
-                        original version: {original_version} | plain version: {plain_version}""")
-                else:
-                    version_info = f"plain version: {plain_version}"
-                return f"{version_info}\n{title}"
+                original_text = (
+                    f"original version: {original_version}  |  "
+                    if original_version
+                    else ""
+                )
+                return f"{original_text}plain version: {plain_version}\n{title}"
 
     @cached_property
     def attributes(self) -> dict[str, Any | int | str]:
@@ -741,12 +742,20 @@ class LicenseContent:
                 3,
             )
         not_advice = self.tabify(
-            self.not_advice_text, not_advice_title, 1,)
+            self.not_advice_text,
+            not_advice_title,
+            1,
+        )
         not_official_title = f"the official {self.meta.get("original_name")}"
         not_official = self.tabify(
-            self.not_official_text, not_official_title, 1,
+            self.not_official_text,
+            not_official_title,
+            1,
         )
-        return f"<div class='admonition warning'><p class='admonition-title'>The {self.meta.get('plain_name', '')} isn't...</p>\n\n" + f"{not_advice}{not_official}</div>"
+        return (
+            f"<div class='admonition warning'><p class='admonition-title'>The {self.meta.get('plain_name', '')} isn't...</p>\n\n"
+            + f"{not_advice}{not_official}</div>"
+        )
 
     @property
     def reader(self) -> str:
@@ -787,7 +796,7 @@ class LicenseContent:
     def changelog(self) -> str:
         """Returns the changelog block for the license."""
         return self.tabify(
-            self.changelog_text, "changelog",1, self.icon_map['changelog']
+            self.changelog_text, "changelog", 1, self.icon_map["changelog"]
         )
 
     @property
@@ -800,12 +809,13 @@ class LicenseContent:
             if self.meta.get("link_in_original")
             else f"{self.official_license_text}\n\n{self.meta.get("official_link")}"
         )
-        return self.tabify(text, "official", 1, self.icon_map['official'])
+        return self.tabify(text, "official", 1, self.icon_map["official"])
 
     @cached_property
     def embed_link(self) -> str:
         """Returns the embed link for the license."""
         return dedent(f"""
+            # Embedding Your License
 
             ```html title="add this to your site's html"
 
@@ -830,7 +840,6 @@ class LicenseContent:
     def embed_instructions(self) -> str:
         """Returns the embed instructions for the license."""
         return dedent(f"""
-            ### Embedding Your License
 
             The above code will embed the license in your site. It uses an iframe to display the license as it appears on Plain License. This also sandboxes the license to prevent it from affecting your site.
 
@@ -842,9 +851,9 @@ class LicenseContent:
                - The default height is either the content height or 1024px, whichever is smaller.
                - The next section provides more details on customizing the size.
 
-            ### Customizing Your Embedded License
+            ## Customizing Your Embedded License
 
-            #### Changing the Size
+            ### Changing the Size
 
             Common size adjustments in the `style` attribute:
 
@@ -861,18 +870,18 @@ class LicenseContent:
 
             ```
 
-            ### Color Scheme Preference
+            ## Color Scheme Preference
 
             The embedded license will match your visitors' system preferences for light or dark mode by default.
 
-            #### Forcing a Specific Theme
+            ### Forcing a Specific Theme
 
             To force a specific theme, add `?theme=` to the URL, along with `light` or `dark`:
 
             - For light theme: `src="https://plainlicense.org/embed/{self.meta['spdx_id'].lower()}.html?theme=light"`
             - For dark theme: `src="https://plainlicense.org/embed/{self.meta['spdx_id'].lower()}.html?theme=dark"`
 
-            #### Syncing the License Theme with Your Site (more advanced)
+            ### Syncing the License Theme with Your Site (more advanced)
 
             You can optionally sync the license's light/dark theme to your site's theme. You will need to send the embedded license page a message to tell it what theme your site is currently using. You can include this code in your script bundle or HTML:
 
@@ -901,7 +910,7 @@ class LicenseContent:
 
             ```
 
-            ### Need Help?
+            ## Need Help?
 
             Bring your questions to our [GitHub Discussions](https://github.com/seekinginfiniteloop/PlainLicense/discussions "visit Plain License's discussions page") for help and support.
             """)
@@ -911,7 +920,9 @@ class LicenseContent:
         """Returns the embed block for the license."""
         return self.tabify(
             f"{self.embed_link}{self.embed_instructions}",
-            "html", 1, self.icon_map["embed"]
+            "html",
+            1,
+            self.icon_map["embed"],
         )
 
     @property

@@ -1,12 +1,12 @@
 {
   "metaOutput": {
-    "docs/assets/javascripts/index.PMZ6KNNC.js.map": {
-      "bytes": 1688636,
+    "docs/assets/javascripts/index.JF72V3BX.js.map": {
+      "bytes": 1690035,
       "inputs": [],
       "exports": []
     },
-    "docs/assets/javascripts/index.PMZ6KNNC.js": {
-      "bytes": 587588,
+    "docs/assets/javascripts/index.JF72V3BX.js": {
+      "bytes": 588260,
       "inputs": [
         "node_modules/focus-visible/dist/focus-visible.js",
         "node_modules/escape-html/index.js",
@@ -248,8 +248,8 @@
         "node_modules/rxjs/dist/esm5/operators/index.js",
         "src/assets/javascripts/log/index.ts",
         "src/assets/javascripts/feedback/index.ts",
-        "src/assets/javascripts/licenses/index.ts",
         "src/assets/javascripts/utils/index.ts",
+        "src/assets/javascripts/licenses/index.ts",
         "src/assets/javascripts/cache/index.ts",
         "src/assets/javascripts/hero/imageshuffle/data/index.ts",
         "src/assets/javascripts/hero/imageshuffle/index.ts",
@@ -332,13 +332,13 @@
       ],
       "exports": []
     },
-    "docs/assets/stylesheets/bundle.7F3MGL7G.css.map": {
-      "bytes": 332979,
+    "docs/assets/stylesheets/bundle.WWVFOGRU.css.map": {
+      "bytes": 339467,
       "inputs": [],
       "exports": []
     },
-    "docs/assets/stylesheets/bundle.7F3MGL7G.css": {
-      "bytes": 214650,
+    "docs/assets/stylesheets/bundle.WWVFOGRU.css": {
+      "bytes": 218351,
       "inputs": [
         "external/mkdocs-material/material/templates/assets/stylesheets/palette.06af60db.min.css",
         "external/mkdocs-material/material/templates/assets/stylesheets/main.0253249f.min.css",
@@ -348,6 +348,7 @@
         "src/assets/stylesheets/license.css",
         "src/assets/stylesheets/home.css",
         "src/assets/stylesheets/heroimages.css",
+        "src/assets/stylesheets/tags.css",
         "src/assets/stylesheets/bundle.css"
       ],
       "entryPoint": "src/assets/stylesheets/bundle.css"

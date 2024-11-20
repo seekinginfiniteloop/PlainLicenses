@@ -1,0 +1,10 @@
+/* for the tag index page */
+
+.md-typeset h2>.md-tag {
+    font-size: 1.4rem;
+    background-color: transparent;
+}
+
+.md-typeset h2>.md-tag::before {
+    background-color: var(--md-default-fg-color);
+}

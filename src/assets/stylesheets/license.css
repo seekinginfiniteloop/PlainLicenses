@@ -1,27 +1,48 @@
 /* stylelint-disable no-duplicate-selectors */
 /* stylelint-disable declaration-no-important */
 
-:root {
+:root,
+[data-md-color-scheme="default"] {
   --hover-color: var(--emerald);
-  --selected-color: var(--blue-blue);
-  --tab-active-color: var(--blue-blue);
   --md-admonition-icon--license: url("data: image/svg+xml, %3Csvg%20width%3D%22250mm%22%20height%3D%22250mm%22%20viewBox%3D%220%200%20250%20250%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M117.579%2078.098c-11.244-.078-22.376.283-31.448%209.086-6.747%209.956-6.747%209.956-6.807%2036.699.01%201.601.015%203.155.024%204.709%200%204.235%200%208.47.016%2012.704.019%204.387.033%208.774.033%2013.16q0%205.184.01%2010.368c.003%201.687.01%203.324.012%204.962.01%2013.783-1.195%2028.252%207.34%2039.207%205.82%206.166%2011.913%208.034%2019.875%208.091.792%200%201.56%200%202.328-.011q3.948.017%207.895-.001c1.877%200%203.755-.012%205.633-.012%203.929%200%207.857%200%2011.786-.012q7.642-.045%2015.283-.044c3.985%200%207.97%200%2011.955-.012%201.902%200%203.804-.012%205.707-.012%202.726%200%205.452%200%208.178-.012.853%200%201.68-.012%202.508-.012%207.78.006%2013.447-.407%2019.744-5.846%204.878-5.154%206.957-13.765%207.448-21.125l.025-4.866c.023-2.828.047-5.657.047-8.486%200-2.025%200-4.05.012-6.074q.025-6.366.028-12.73c-.002-5.491.007-10.981.044-16.472.03-4.294.051-8.587.051-12.88v-6.179c.107-12.691.885-25.69-6.48-36.163-7.256-8.063-7.256-8.063-31.05-7.998h-5.063c-3.547%200-7.095-.014-10.643%200-4.579.013-9.158.027-13.737.013-3.591-.013-7.182-.014-10.773-.014-1.72.014-3.44.014-5.16.014v-.016c-1.606-.006-3.215-.025-4.821-.036%22%20style%3D%22fill%3A%2314da94%3Bfill-opacity%3A0%3Bstroke-width%3A1.59502%22%20fill%3D%22none%22%2F%3E%3Cpath%20style%3D%22fill%3A%2315db95%3Bfill-opacity%3A1%3Bstroke-width%3A.209063%22%20d%3D%22m64.216%2021.875.487-.004%201.59-.009.55-.002q1.442-.007%202.884-.01%201.485-.005%202.97-.018%201.146-.007%202.291-.008.547%200%201.095-.007.768-.006%201.536-.004l.452-.008c1.295.013%202.358.457%203.332%201.34l.285.37.295.371c.53.812.507%201.707.554%202.649l.027.508c.09%201.895.096%203.789.092%205.685q-.002.893.003%201.784a155%20155%200%200%201-.095%205.832l-.014.525c-.054%201.23-.299%202.148-1.13%203.084l-.415.36-.41.368c-.79.575-1.531.795-2.491.832l-.602.025-.65.02-.684.024c-3.717.117-7.437.1-11.154-.01l-.668-.015c-1.504-.055-2.572-.232-3.742-1.27-1.036-1.24-1.32-2.228-1.323-3.835l-.003-.488a532%20532%200%200%201-.01-2.71l-.003-2.334a616%20616%200%200%200-.012-2.984q-.006-1.149-.006-2.298%200-.55-.005-1.1-.004-.771-.002-1.542l-.005-.455c.012-1.512.508-2.678%201.523-3.781%201.135-.816%202.101-.88%203.46-.885zM31.731%2055.57q.49%200%20.977-.002%201.022%200%202.042.002%201.302.003%202.604-.002%201.008-.002%202.017%200h.959c4.51-.011%204.51-.011%205.885%201.36%201.395%201.78%201.248%203.99%201.228%206.148v1.05q0%201.095-.01%202.19-.01%201.4-.009%202.801%200%201.082-.005%202.164l-.002%201.033q-.001.722-.01%201.443l-.004.827c-.093%201.251-.487%202.716-1.411%203.592-1.194.925-2.268.995-3.742.994l-.475.002-1.55.002-1.082.002-2.265.002q-1.448%200-2.897.007-1.116.004-2.234.003l-1.067.002q-.748.003-1.496%200-.217.002-.441.002c-1.51-.01-2.664-.328-3.767-1.376-1.618-1.862-1.39-4.323-1.391-6.666l-.002-.843-.002-1.763q0-1.119-.007-2.238l-.002-2.16-.005-.8c.011-4.547.011-4.547%201.29-6.24%201.965-1.71%204.44-1.546%206.874-1.539zM25.427%206.656l.486-.005%201.59-.009.551-.002q1.441-.006%202.884-.01%201.485-.004%202.97-.017%201.146-.009%202.291-.008.547-.001%201.095-.008.768-.007%201.536-.003l.452-.008c1.295.013%202.358.457%203.332%201.34l.284.37.296.37c.53.812.507%201.708.554%202.65l.027.508c.089%201.894.096%203.788.092%205.685q-.002.893.002%201.784a155%20155%200%200%201-.094%205.831l-.014.525c-.054%201.23-.299%202.148-1.13%203.085l-.415.36-.411.368c-.789.575-1.53.795-2.49.832l-.602.025-.65.02-.685.024c-3.717.116-7.436.1-11.153-.01l-.668-.015c-1.504-.055-2.572-.232-3.742-1.27-1.036-1.24-1.32-2.229-1.323-3.836l-.003-.487a532%20532%200%200%201-.01-2.71l-.003-2.334a629%20629%200%200%200-.012-2.984%20440%20440%200%200%201-.006-2.298q0-.55-.005-1.1-.005-.771-.002-1.542l-.006-.455c.013-1.512.51-2.678%201.524-3.781%201.135-.816%202.101-.88%203.459-.885Zm84.308%2045.75C94.39%2052.3%2079.2%2052.795%2066.819%2064.895c-9.207%2013.683-9.207%2013.683-9.29%2050.438.013%202.2.021%204.336.034%206.472%200%205.82%200%2011.64.02%2017.461.026%206.029.047%2012.058.047%2018.087q0%207.125.012%2014.248c.005%202.319.013%204.57.017%206.82.015%2018.943-1.63%2038.83%2010.017%2053.887%207.941%208.473%2016.257%2011.04%2027.123%2011.12%201.08%200%202.129%200%203.177-.016q5.386.023%2010.773-.001c2.562%200%205.125-.017%207.687-.017%205.362%200%2010.723%200%2016.084-.016%206.953-.043%2013.905-.06%2020.857-.06%205.438%200%2010.876%200%2016.314-.016%202.596%200%205.192-.018%207.788-.018%203.72%200%207.44%200%2011.161-.016%201.164%200%202.293-.017%203.422-.017%2010.617.008%2018.35-.558%2026.943-8.034%206.658-7.083%209.495-18.919%2010.165-29.034l.034-6.688c.031-3.887.064-7.774.064-11.663%200-2.782%200-5.565.017-8.348.021-5.832.037-11.664.038-17.496-.003-7.547.009-15.093.06-22.64.04-5.9.07-11.8.07-17.702v-8.491c.145-17.443%201.208-35.307-8.843-49.701-9.902-11.083-9.903-11.083-42.374-10.993h-6.909c-4.84%200-9.682-.02-14.523%200-6.25.018-12.498.036-18.747.018-4.9-.02-9.801-.018-14.701-.018-2.347.018-4.695.018-7.042.018l-.001-.023c-2.19-.008-4.386-.035-6.578-.05m8.747%2025.692c1.606.01%203.215.03%204.82.036v.016c1.72%200%203.441%200%205.16-.014%203.592%200%207.182%200%2010.773.014%204.58.014%209.159%200%2013.738-.014%203.548-.013%207.095%200%2010.643%200h5.062c23.794-.064%2023.794-.064%2031.05%208%207.366%2010.472%206.587%2023.47%206.481%2036.162v6.178c0%204.294-.022%208.587-.052%2012.88-.037%205.492-.046%2010.982-.044%2016.473%200%204.243-.012%208.486-.027%2012.73-.013%202.024-.012%204.05-.012%206.074%200%202.829-.025%205.658-.048%208.486l-.024%204.866c-.491%207.36-2.57%2015.971-7.449%2021.125-6.297%205.44-11.963%205.852-19.743%205.846-.828%200-1.656.012-2.508.012-2.726.012-5.452.012-8.178.012-1.903%200-3.805.012-5.708.012-3.984.012-7.969.012-11.954.012q-7.642-.001-15.284.044c-3.928.012-7.857.012-11.786.012-1.877%200-3.755.012-5.633.012q-3.947.018-7.894%200c-.768.013-1.536.013-2.328.013-7.963-.058-14.056-1.926-19.875-8.091-8.535-10.956-7.33-25.425-7.34-39.208-.003-1.638-.01-3.275-.013-4.962q-.01-5.184-.01-10.368c.001-4.386-.014-8.773-.033-13.16-.015-4.234-.015-8.47-.015-12.704-.01-1.554-.015-3.108-.025-4.709.061-26.743.061-26.743%206.807-36.699%209.073-8.803%2020.204-9.164%2031.449-9.086%22%2F%3E%3C%2Fsvg%3E");
+
+  --selected-color: var(--blue-blue);
+  --version-color: var(--zaffre);
 }
 
-:root[data-md-color-scheme="slate"] {
-  --hover-color: var(--emerald);
-  --selected-color: var(--ecru);
-  --tab-active-color: var(--ecru);
+[data-md-color-scheme="slate"] {
+  --selected-color: var(--vivid-sky-blue);
+  --version-color: var(--emerald);
+}
+
+.md-typeset details {
+  font-size: 0.82rem;
 }
 
 .md-typeset .admonition.license,
 .md-typeset details.license {
+  border-color: transparent;
+}
+
+.md-typeset .admonition.license>.admonition-title,
+.md-typeset details.license>summary {
+  background-color: transparent;
+}
+
+article[data-embedded-license] .md-typeset .admonition.license,
+article[data-embedded-license] .md-typeset details.license {
   border-color: var(--emerald);
 }
 
-.md-typeset .license>.admonition-title,
-.md-typeset .license>details.question>summary {
+article[data-embedded-license] .md-typeset .license>.admonition-title,
+article[data-embedded-license] .md-typeset .license>details.question>summary {
   background-color: rgba(var(--dark-emerald-adj), 0.1);
+  color: var(--zaffre);
+}
+
+[data-md-color-scheme="slate"] article[data-embedded-license] .md-typeset .license>.admonition-title,
+[data-md-color-scheme="slate"] article[data-embedded-license] .md-typeset .license>details.question>summary {
+  color: var(--white);
 }
 
 .md-typeset .license>.admonition-title::before,
@@ -35,7 +56,8 @@
 }
 
 .license .tabbed-labels {
-  padding-left: 0.5rem;
+  min-height: 0.11rem;
+  padding-left: 0.3rem;
 }
 
 [data-md-color-scheme="slate"] .md-typeset .tabbed-block dl dt code.highlight {
@@ -87,8 +109,8 @@ h1.license-title {
 
 .version-info {
   place-self: flex-start normal;
-  padding: 0.25rem;
-  margin: 0.01rem 0.02rem 0.02rem 0.938rem;
+  padding: 0.35rem;
+  margin: -2rem -1rem 0.02rem 0.938rem;
   font-size: 0.85rem;
   color: var(--white);
   text-align: left;
@@ -101,7 +123,6 @@ h1.license-title {
 }
 
 .version-info {
-  margin: 0;
   font-weight: 500;
 }
 
@@ -113,12 +134,13 @@ h1.license-title {
   font-weight: 600;
 }
 
+
 .js .md-typeset .tabbed-labels::before {
   background: var(--selected-color);
   bottom: 0;
   content: "";
   display: block;
-  height: 0.3rem;
+  height: 0.15rem;
   left: 0;
   position: absolute;
   transform: translateX(var(--md-indicator-x));
@@ -127,24 +149,48 @@ h1.license-title {
   width: var(--md-indicator-width)
 }
 
+.js .md-typeset .tabbed-labels--linked>label>a {
+  padding: 0.4rem;
+}
+
 .js .md-typeset .tabbed-labels>label {
   cursor: pointer;
-  display: inline-block;
+  display: block;
   font-size: clamp(0.75rem, 0.88rem, 1rem);
   margin: 0;
   position: relative;
   text-align: center;
   transition: color 125ms, background-color 125ms;
-  padding: 0.5rem
+  padding: 0.4rem;
+  border-bottom: 0.063rem solid var(--md-default-fg-color--lightest);
+}
+
+.md-typeset .tabbed-control .tabbed-button::after,
+.md-typeset .tabbed-control .tabbed-button::before {
+  width: 1.1rem;
+  vertical-align: middle;
+  padding: 0.025rem 0.075rem;
+}
+
+label[for="reader"] {
+  margin-left: 0.075rem;
+  padding-left: 0.1rem;
 }
 
 /* Styling for focused and hovered quick links and corresponding tab labels*/
+.md-nav.md-nav--secondary .quick_links a.quicklink_group.selected {
+  color: var(--selected-color);
+  fill: var(--selected-color);
+  padding-bottom: -0.063rem;
+  border-bottom: 0.063rem solid var(--selected-color);
+}
+
 .js .md-typeset .tabbed-labels>label:hover,
 .js .md-typeset .tabbed-labels>label:focus,
 .js .md-typeset .tabbed-labels>label:focus-visible,
-.quick_links>a:hover,
-.quick_links>a:focus,
-.quick_links>a:focus-visible{
+a.quick_link_group:hover:not(.selected) path,
+a.quick_link_group:focus:not(.selected) path,
+a.quick_link_group:focus-visible:not(.selected) path {
   color: var(--hover-color);
   fill: var(--hover-color);
 }
@@ -152,21 +198,22 @@ h1.license-title {
 .js .md-typeset .tabbed-labels>label:hover::before,
 .js .md-typeset .tabbed-labels>label:focus::before,
 .js .md-typeset .tabbed-labels>label:focus-visible::before,
-.quick_links>a:hover::before,
-.quick_links>a:focus::before,
-.quick_links>a:focus-visible::before {
-  background-color: transparent;
+a.quick_link_group:hover::before path,
+a.quick_link_group:focus::before path,
+a.quick_link_group:focus-visible::before path {
+  border-color: transparent;
+  fill: var(--hover-color);
 }
 
-.quick_links>a.selected,
+.quick_links a.quick_link_group.selected,
 input#reader:checked~.tabbed-labels>label[for="reader"],
 input#html:checked~.tabbed-labels>label[for="html"],
 input#markdown:checked~.tabbed-labels>label[for="markdown"],
 input#plaintext:checked~.tabbed-labels>label[for="plaintext"],
 input#changelog:checked~.tabbed-labels>label[for="changelog"],
-input#official:checked~.tabbed-labels>label[for="official"]
-{
+input#official:checked~.tabbed-labels>label[for="official"] {
   color: var(--selected-color);
+  border-bottom: 0.1rem solid var(--selected-color);
 }
 
 input#reader:checked~.tabbed-labels>label[for="reader"]::before,
@@ -175,9 +222,9 @@ input#markdown:checked~.tabbed-labels>label[for="markdown"]::before,
 input#plaintext:checked~.tabbed-labels>label[for="plaintext"]::before,
 input#changelog:checked~.tabbed-labels>label[for="changelog"]::before,
 input#official:checked~.tabbed-labels>label[for="official"]::before,
-.quick_links>a.selected::before {
+.quick_links .quick_link_group.selected::before {
   width: 100%;
-  background-color: var(--selected-color);
+  border-color: var(--selected-color);
 }
 
 .md-typeset div.admonition .warning .tabbed-set>input:first-child:checked~.tabbed-labels> :first-child,
@@ -188,12 +235,20 @@ input#official:checked~.tabbed-labels>label[for="official"]::before,
   border-color: var(--atomic-tangerine);
 }
 
-.md-typeset .admonition .warning .tabbed-set>.tabbed-labels:hover,
-.md-typeset .admonition .warning .tabbed-set>.tabbed-labels:focus,
-.md-typeset .admonition .warning .tabbed-set>.tabbed-labels:focus-visible {
-  color: var(--blue-blue);
-  border-color: transparent;
+input#reader~.tabbed-content .tabbed-block,
+input#html~.tabbed-content .tabbed-block,
+input#markdown~.tabbed-content .tabbed-block,
+input#plaintext~.tabbed-content .tabbed-block,
+input#changelog~.tabbed-content .tabbed-block,
+input#official~.tabbed-content .tabbed-block {
+  padding-top: 1.5rem;
+ }
+.md-typeset .admonition .warning .tabbed-set .tabbed-labels:hover,
+.md-typeset .admonition .warning .tabbed-set .tabbed-labels:focus,
+.md-typeset .admonition .warning .tabbed-set .tabbed-labels:focus-visible {
+  color: var(--hover-color);
 }
+
 #about_license {
   margin: 0.5rem;
   padding: 1rem .5rem;
@@ -206,19 +261,21 @@ p.md-nav__description.license {
   margin-top: 1rem;
   font-weight: 700;
   font-size-adjust: calc(1rem + 1vw);
-  color: var(--md-default-fg-color--lighter);
+  color: var(--md-default-fg-color--light);
   text-align: center;
   vertical-align: bottom;
-  border-bottom: 0.125rem solid var(--emerald);
+  border-bottom: 0.125rem solid var(--md-accent-bg-color);
 }
 
 /* styling for quicklinks on right sidebar for licenses */
 .md-nav.md-nav--secondary .quick_links {
   display: flex;
-  flex-flow: row wrap-reverse;
+  position: relative;
+  flex-flow: row wrap;
   align-items: flex-start;
   align-self: flex-end;
   justify-content: space-evenly;
+  font-weight: 700;
   width: 100%;
   min-height: 2rem;
   max-height: 4rem;
@@ -231,6 +288,30 @@ p.md-nav__description.license {
   max-width: 3rem;
   padding: 0.02rem;
   margin: 0.02rem;
+  fill: var(--md-default-fg-color);
+}
+
+.md-nav.md-nav--secondary .quick_links .quicklink_group::after {
+  content: attr(data-iden) " view";
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.75rem;
+    white-space: nowrap;
+    color: var(--md-accent-bg-color);
+    padding: 0.1rem 0.1rem;
+    opacity: 0;
+    transition: opacity 125ms;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+.md-nav.md-nav--secondary .quick_links .quicklink_group:hover::after,
+.md-nav.md-nav--secondary .quick_links .quicklink_group:focus::after,
+.md-nav.md-nav--secondary .quick_links .quicklink_group:focus-visible::after {
+  display: inline-block;
+  opacity: 1;
+  margin-top: 0.4rem;
 }
 
 .license_about_intro_container {
@@ -261,11 +342,12 @@ p.md-nav__description.license {
 
 /* styling for tag GROUP */
 #license-sidebar-inner .md-tags {
-  display: inline-flex;
-  flex-flow: row wrap-reverse;
+  display: flex;
+  flex-flow: row wrap;
+  position: relative;
   gap: 0.25rem;
-  align-items: center;
-  align-self: center;
+  align-items: flex-start;
+  align-self: flex-end;
   justify-content: space-evenly;
   width: 100%;
   min-height: 2rem;
@@ -275,45 +357,83 @@ p.md-nav__description.license {
 }
 
 /* styling for EACH tag */
+#license-nav {
+  position: relative;
+}
+
 #license-sidebar-inner .md-tag {
-  align-items: center;
-  padding: 0.3125rem 0.125rem;
-  font-size: min(0.8rem, 0.64rem);
+  display: inline-flex;
   font-weight: 700;
-  line-height: 1.6;
-  letter-spacing: normal;
-  border-radius: 2.4rem;
+}
+
+#license-sidebar-inner .md-tag-icon[href] {
+  padding: 0.02rem;
+  margin: 0.02rem;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  background-color: transparent;
+  outline: none;
+  transition: background-color 125ms;
+}
+
+#license-sidebar-inner .md-tag-icon[href]:focus::before,
+#license-sidebar-inner .md-tag-icon[href]:focus-visible::before,
+#license-sidebar-inner .md-tag-icon[href]:hover::before {
+  background-color: var(--hover-color);
+}
+
+#license-sidebar-inner .md-tag-icon::before {
+  display: inline-block;
   min-width: 1.5rem;
   max-width: 3rem;
   min-height: 1.5rem;
-  max-width: 3rem;
-  fill: var(--md-default-bg-color);
+  max-height: 3rem;
+  vertical-align: text-bottom;
+  content: "";
   background-color: var(--md-default-fg-color);
+  mask-image: var(--md-tag-icon);
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  transition: background-color 125ms;
 }
 
-#license-sidebar-inner .md-tag:focus,
-#license-sidebar-inner .md-tag:focus-visible,
-#license-sidebar-inner .md-tag:hover {
-  fill: var(--md-accent-fg-color);
+#license-sidebar-inner .md-tag-icon[href]::after {
+  text-align: center;
+  content: attr(id);
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.75rem;
+  white-space: nowrap;
+  color: var(--md-accent-bg-color);
+  padding: 0.1rem 0.1rem;
+  opacity: 0;
+  transition: opacity 125ms;
+  pointer-events: none;
+  z-index: 10;
 }
 
-#license-sidebar-inner .md-tag > a:active {
-  fill: var(--md-accent-bg-color);
-}
-
-#license-sidebar-inner [id]>.md-tag {
-  vertical-align: text-top;
+#license-sidebar-inner .md-tag-icon[href]:hover::after,
+#license-sidebar-inner .md-tag-icon[href]:focus::after,
+#license-sidebar-inner .md-tag-icon[href]:focus-visible::after {
+  display: inline-block;
+  width: 100%;
+  left: 50%;
+  opacity: 1;
+  margin-top: 0.5rem;
 }
 
 [dir="ltr"] .md-nav--secondary>details.question>summary::after {
   right: .25rem;
 }
 
-.md-nav--secondary > details.question {
+.md-nav--secondary details.question {
   display: flow-root;
   padding: 0 0.75rem;
   overflow: visible;
-  margin: 1.25rem 0.15rem;
+  margin: 3rem 0.15rem;
   font-size: clamp(0.9rem, 0.95rem, 1rem);
   color: var(--md-admonition-fg-color);
   background-color: var(--md-admonition-bg-color);
@@ -334,12 +454,12 @@ p.md-nav__description.license {
   color: var(--md-accent-fg-color);
 }
 
-.md-nav--secondary>details.question > code {
+.md-nav--secondary>details.question code {
   font-size: 0.9rem;
   box-shadow: 0 0 0 0.0625rem var(--md-default-fg-color--lightest)
 }
 
-.md-nav--secondary > details.question>summary {
+.md-nav--secondary>details.question summary {
   display: block;
   position: relative;
   padding-block: 0.5rem;
@@ -359,25 +479,22 @@ p.md-nav__description.license {
   border-start-end-radius: 0.125rem;
 }
 
-.md-nav--secondary > details.question>summary:focus-visible {
+.md-nav--secondary>details.question>summary:focus-visible {
   outline-color: var(--md-accent-fg-color);
   outline-offset: 0.25rem;
 }
 
-.md-nav--secondary > details.question>summary:not(:focus-visible) {
+.md-nav--secondary>details.question>summary:not(:focus-visible) {
   outline: none;
   -webkit-tap-highlight-color: transparent;
 }
 
-.md-nav--secondary>details.question>summary::marker {
-  display: none;
-}
-
+.md-nav--secondary>details.question>summary::marker,
 .md-nav--secondary>details.question>summary::-webkit-details-marker {
   display: none;
 }
 
-.md-nav--secondary > details.question>summary::after {
+.md-nav--secondary>details.question>summary::after {
   position: absolute;
   inset-inline-end: 0.5rem;
   top: 0.625rem;
@@ -406,7 +523,7 @@ p.md-nav__description.license {
   transform: rotate(180deg);
 }
 
-.md-nav--secondary > details.question>summary::before {
+.md-nav--secondary>details.question>summary::before {
   position: absolute;
   inset-inline-start: 0.75rem;
   top: 0.625rem;

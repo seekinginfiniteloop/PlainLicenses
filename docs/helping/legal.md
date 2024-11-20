@@ -86,3 +86,4 @@ If your contributions are more focused on writing or editing, please see our [Cr
 [discussions]: https://github.com/seekinginfiniteloop/PlainLicense/discussions/categories/attorney-talk "Attorney Talk Discussions"
 [legalissue]: https://github.com/seekinginfiniteloop/PlainLicense/issues/new?assignees=seekinginfiniteloop&labels=bug%2Ctriage&projects=&template=legal_issue.yml&title=%5BLegalFlaw%5D%3A+ "Create a new issue"
 [helping]: index.md "Helping Plain License"
+[crafting]: craft.md "Crafting Licenses"

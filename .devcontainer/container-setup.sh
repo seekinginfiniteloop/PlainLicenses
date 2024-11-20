@@ -57,7 +57,7 @@ function initial_installs() {
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y &&
     source "$HOME/.cargo/env" &&
     git clone --depth=1 https://gitee.com/romkatv/powerlevel10k.git "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k" &&
-    export PATH="$HOME/bin:$HOME/sbin:$HOME/.local/sbin:$HOME/.cargo/bin:$PATH:/opt/bin:/opt/sbin:/opt/local/bin:opt/local/sbin" &&
+    export PATH="$HOME/bin:$HOME/sbin:$HOME/.local/sbin:$HOME/.bun/bin:$HOME/.cargo/bin:$PATH:/opt/bin:/opt/sbin:/opt/local/bin:opt/local/sbin" &&
     mkdir -p "$HOME/.fonts" &&
     echo 'xterm*faceName: MesloLGS NF' > "$HOME/.Xresources" &&
     cp -r /workspaces/PlainLicense/.devcontainer/.fonts "$HOME" &&

@@ -120,6 +120,10 @@ body {
   font-weight: 300;
 }
 
+.md-typeset div.md-typeset__table,
+.md-typeset table:not([class]) {
+  font-size: clamp(0.8rem, .9rem, 1rem);
+}
 .md-typeset .md-typeset__table {
   margin-inline: 5%;
   text-align: center;
