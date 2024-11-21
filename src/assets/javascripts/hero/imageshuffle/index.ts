@@ -540,7 +540,7 @@ export function shuffle$() {
           subscription.add(cycler.start())
         })
       ),
-      stopCycler$
+      of(stopCycler$)
     ))
   )
 }
