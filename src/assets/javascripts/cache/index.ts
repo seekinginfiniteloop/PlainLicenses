@@ -1,12 +1,3 @@
-import { Observable, from, fromEvent, of, throwError } from "rxjs"
-import { catchError, defaultIfEmpty, map, mergeMap, switchMap, tap } from "rxjs/operators"
-import { logger } from "~/log"
-
-export const CONFIG = {
-  CACHE_NAME: "static-assets-cache-v1",
-  ROOT_URL: "assets/"
-}
-
 import { Observable, from, of } from "rxjs"
 import { catchError, map, mergeMap, switchMap, tap } from "rxjs/operators"
 import { logger } from "~/log"
@@ -14,32 +5,43 @@ import { isHome } from "~/utils"
 
 const { location$ } = window
 
+
 interface AssetTypeConfig {
   cacheable: boolean
   skipOnHome?: boolean
   contentType?: string
 }
 
-const ASSET_TYPES: Record<string, AssetTypeConfig> = {
-  image: {
-    cacheable: true,
-    skipOnHome: true, // Skip caching/fetching for homepage images
-    contentType: 'image'
-  },
-  font: {
-    cacheable: true,
-    skipOnHome: false,
-    contentType: 'font'
-  },
-  style: {
-    cacheable: true,
-    skipOnHome: false,
-    contentType: 'text/css'
-  },
-  script: {
-    cacheable: true,
-    skipOnHome: false,
-    contentType: 'application/javascript'
+interface CacheConfig {
+  CACHE_NAME: string
+  ROOT_URL: string
+  ASSET_TYPES: Record<string, AssetTypeConfig>
+}
+
+export const CONFIG: CacheConfig = {
+  CACHE_NAME: "static-assets-cache-v1",
+  ROOT_URL: "assets/",
+  ASSET_TYPES: {
+    image: {
+      cacheable: true,
+      skipOnHome: false,
+      contentType: 'image'
+    },
+    font: {
+      cacheable: true,
+      skipOnHome: false,
+      contentType: 'font'
+    },
+    style: {
+      cacheable: true,
+      skipOnHome: false,
+      contentType: 'text/css'
+    },
+    script: {
+      cacheable: true,
+      skipOnHome: false,
+      contentType: 'application/javascript'
+    }
   }
 }
 
