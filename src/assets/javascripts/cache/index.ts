@@ -7,8 +7,97 @@ export const CONFIG = {
   ROOT_URL: "assets/"
 }
 
+import { Observable, from, of } from "rxjs"
+import { catchError, map, mergeMap, switchMap, tap } from "rxjs/operators"
+import { logger } from "~/log"
+import { isHome } from "~/utils"
+
+const { location$ } = window
+
+interface AssetTypeConfig {
+  cacheable: boolean
+  skipOnHome?: boolean
+  contentType?: string
+}
+
+const ASSET_TYPES: Record<string, AssetTypeConfig> = {
+  image: {
+    cacheable: true,
+    skipOnHome: true, // Skip caching/fetching for homepage images
+    contentType: 'image'
+  },
+  font: {
+    cacheable: true,
+    skipOnHome: false,
+    contentType: 'font'
+  },
+  style: {
+    cacheable: true,
+    skipOnHome: false,
+    contentType: 'text/css'
+  },
+  script: {
+    cacheable: true,
+    skipOnHome: false,
+    contentType: 'application/javascript'
+  }
+}
+
 // opens the cache as an observable
 const openCache = (): Observable<Cache> => from(caches.open(CONFIG.CACHE_NAME))
+
+/**
+ * Determines the asset type from the URL
+ * @param url - the URL to check
+ * @returns the asset type or undefined
+ */
+const getAssetType = (url: string): string | undefined => {
+  if (url.includes('/images/')) return 'image'
+  if (url.includes('/fonts/')) return 'font'
+  if (url.includes('/stylesheets/')) return 'style'
+  if (url.includes('/javascripts/')) return 'script'
+  return undefined
+}
+
+/**
+ * Checks if an asset should be handled by the cache system
+ * @param url - the asset URL
+ * @returns boolean indicating if the asset should be cached
+ */
+const shouldHandleAsset = (url: string): boolean => {
+  const assetType = getAssetType(url)
+  if (!assetType) return false
+
+  const config = ASSET_TYPES[assetType]
+  if (!config?.cacheable) return false
+
+
+  if (config.skipOnHome && isHome(new URL(window.location.href)) && assetType === 'image') {
+    return false
+  }
+
+  return true
+}
+
+/**
+ * Creates a response with the correct content type
+ * @param response - the original response
+ * @param assetType - the type of asset
+ * @returns a new response with the correct content type
+ */
+const createTypedResponse = (response: Response, assetType: string): Response => {
+  const config = ASSET_TYPES[assetType]
+  if (!config?.contentType) return response
+
+  const headers = new Headers(response.headers)
+  headers.set('Content-Type', config.contentType)
+  
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers
+  })
+}
 
 /**
  * Extracts the hash from the URL for cache busting
@@ -44,32 +133,45 @@ const fetchAndCacheAsset = (url: string, cache: Cache): Observable<Response> =>
   )
 
 /**
- * Gets the asset from the cache or fetches it and caches it
+ * Gets an asset from the cache or fetches it
  * @param url - the URL of the asset
- * @returns an observable of the response
- * @throws an error if the asset cannot be fetched
- * @throws an error if the asset cannot be cached
- * @throws an error if the asset cannot be deleted
- * @throws an error if the cache cannot be opened
+ * @returns Observable<Response>
  */
-export const getAsset = (url: string): Observable<Response> =>
-  openCache().pipe(
+export const getAsset = (url: string): Observable<Response> => {
+  // If we shouldn't handle this asset, fetch it directly
+  if (!shouldHandleAsset(url)) {
+    return from(fetch(url)).pipe(
+      catchError(error => {
+        logger.error(`Error fetching asset directly: ${url}`, error)
+        return throwError(() => new Error(`Failed to fetch asset: ${url}`))
+      })
+    )
+  }
+
+  const assetType = getAssetType(url)!
+
+  return openCache().pipe(
     switchMap(cache =>
       from(cache.match(url)).pipe(
         switchMap(response => {
           if (response) {
             const cachedHash = extractHashFromUrl(response.url)
             const requestedHash = extractHashFromUrl(url)
+            
             if (cachedHash === requestedHash) {
-              return of(response)
+              logger.info(`Asset retrieved from cache: ${url}`)
+              return of(createTypedResponse(response, assetType))
             } else {
               return from(cache.delete(url)).pipe(
                 switchMap(() => fetchAndCacheAsset(url, cache)),
+                map(response => createTypedResponse(response, assetType)),
                 tap(() => logger.info(`Asset updated: ${url}`))
               )
             }
           } else {
-            return fetchAndCacheAsset(url, cache)
+            return fetchAndCacheAsset(url, cache).pipe(
+              map(response => createTypedResponse(response, assetType))
+            )
           }
         })
       )
@@ -79,6 +181,7 @@ export const getAsset = (url: string): Observable<Response> =>
       return throwError(() => new Error(`Failed to get asset: ${url}`))
     })
   )
+}
 
 /**
  * Extracts the URL from the element
