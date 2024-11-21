@@ -1358,13 +1358,13 @@ function arrRemove(arr, item) {
 
 // node_modules/rxjs/dist/esm5/internal/Subscription.js
 var Subscription = function() {
-  function Subscription6(initialTeardown) {
+  function Subscription5(initialTeardown) {
     this.initialTeardown = initialTeardown;
     this.closed = false;
     this._parentage = null;
     this._finalizers = null;
   }
-  Subscription6.prototype.unsubscribe = function() {
+  Subscription5.prototype.unsubscribe = function() {
     var e_1, _a2, e_2, _b;
     var errors;
     if (!this.closed) {
@@ -1431,13 +1431,13 @@ var Subscription = function() {
       }
     }
   };
-  Subscription6.prototype.add = function(teardown) {
+  Subscription5.prototype.add = function(teardown) {
     var _a2;
     if (teardown && teardown !== this) {
       if (this.closed) {
         execFinalizer(teardown);
       } else {
-        if (teardown instanceof Subscription6) {
+        if (teardown instanceof Subscription5) {
           if (teardown.closed || teardown._hasParent(this)) {
             return;
           }
@@ -1447,15 +1447,15 @@ var Subscription = function() {
       }
     }
   };
-  Subscription6.prototype._hasParent = function(parent) {
+  Subscription5.prototype._hasParent = function(parent) {
     var _parentage = this._parentage;
     return _parentage === parent || Array.isArray(_parentage) && _parentage.includes(parent);
   };
-  Subscription6.prototype._addParent = function(parent) {
+  Subscription5.prototype._addParent = function(parent) {
     var _parentage = this._parentage;
     this._parentage = Array.isArray(_parentage) ? (_parentage.push(parent), _parentage) : _parentage ? [_parentage, parent] : parent;
   };
-  Subscription6.prototype._removeParent = function(parent) {
+  Subscription5.prototype._removeParent = function(parent) {
     var _parentage = this._parentage;
     if (_parentage === parent) {
       this._parentage = null;
@@ -1463,19 +1463,19 @@ var Subscription = function() {
       arrRemove(_parentage, parent);
     }
   };
-  Subscription6.prototype.remove = function(teardown) {
+  Subscription5.prototype.remove = function(teardown) {
     var _finalizers = this._finalizers;
     _finalizers && arrRemove(_finalizers, teardown);
-    if (teardown instanceof Subscription6) {
+    if (teardown instanceof Subscription5) {
       teardown._removeParent(this);
     }
   };
-  Subscription6.EMPTY = function() {
-    var empty = new Subscription6();
+  Subscription5.EMPTY = function() {
+    var empty = new Subscription5();
     empty.closed = true;
     return empty;
   }();
-  return Subscription6;
+  return Subscription5;
 }();
 var EMPTY_SUBSCRIPTION = Subscription.EMPTY;
 function isSubscription(value) {
@@ -3339,6 +3339,13 @@ function fromEventPattern(addHandler, removeHandler, resultSelector) {
   });
 }
 
+// node_modules/rxjs/dist/esm5/internal/observable/iif.js
+function iif(condition, trueResult, falseResult) {
+  return defer(function() {
+    return condition() ? trueResult : falseResult;
+  });
+}
+
 // node_modules/rxjs/dist/esm5/internal/observable/timer.js
 function timer(dueTime, intervalOrScheduler, scheduler) {
   if (dueTime === void 0) {
@@ -3624,6 +3631,21 @@ function scanInternals(accumulator, seed, hasSeed, emitOnNext, emitBeforeComplet
       subscriber.complete();
     }));
   };
+}
+
+// node_modules/rxjs/dist/esm5/internal/operators/reduce.js
+function reduce(accumulator, seed) {
+  return operate(scanInternals(accumulator, seed, arguments.length >= 2, false, true));
+}
+
+// node_modules/rxjs/dist/esm5/internal/operators/toArray.js
+var arrReducer = function(arr, value) {
+  return arr.push(value), arr;
+};
+function toArray() {
+  return operate(function(source, subscriber) {
+    reduce(arrReducer, [])(source).subscribe(subscriber);
+  });
 }
 
 // node_modules/rxjs/dist/esm5/internal/operators/combineLatest.js
@@ -3999,67 +4021,6 @@ function repeat(countOrConfig) {
   });
 }
 
-// node_modules/rxjs/dist/esm5/internal/operators/retry.js
-function retry(configOrCount) {
-  if (configOrCount === void 0) {
-    configOrCount = Infinity;
-  }
-  var config7;
-  if (configOrCount && typeof configOrCount === "object") {
-    config7 = configOrCount;
-  } else {
-    config7 = {
-      count: configOrCount
-    };
-  }
-  var _a2 = config7.count, count = _a2 === void 0 ? Infinity : _a2, delay2 = config7.delay, _b = config7.resetOnSuccess, resetOnSuccess = _b === void 0 ? false : _b;
-  return count <= 0 ? identity : operate(function(source, subscriber) {
-    var soFar = 0;
-    var innerSub;
-    var subscribeForRetry = function() {
-      var syncUnsub = false;
-      innerSub = source.subscribe(createOperatorSubscriber(subscriber, function(value) {
-        if (resetOnSuccess) {
-          soFar = 0;
-        }
-        subscriber.next(value);
-      }, void 0, function(err) {
-        if (soFar++ < count) {
-          var resub_1 = function() {
-            if (innerSub) {
-              innerSub.unsubscribe();
-              innerSub = null;
-              subscribeForRetry();
-            } else {
-              syncUnsub = true;
-            }
-          };
-          if (delay2 != null) {
-            var notifier = typeof delay2 === "number" ? timer(delay2) : innerFrom(delay2(err, soFar));
-            var notifierSubscriber_1 = createOperatorSubscriber(subscriber, function() {
-              notifierSubscriber_1.unsubscribe();
-              resub_1();
-            }, function() {
-              subscriber.complete();
-            });
-            notifier.subscribe(notifierSubscriber_1);
-          } else {
-            resub_1();
-          }
-        } else {
-          subscriber.error(err);
-        }
-      }));
-      if (syncUnsub) {
-        innerSub.unsubscribe();
-        innerSub = null;
-        subscribeForRetry();
-      }
-    };
-    subscribeForRetry();
-  });
-}
-
 // node_modules/rxjs/dist/esm5/internal/operators/scan.js
 function scan(accumulator, seed) {
   return operate(scanInternals(accumulator, seed, arguments.length >= 2, true));
@@ -4409,9 +4370,9 @@ function zipWith() {
 
 // external/mkdocs-material/src/templates/assets/javascripts/browser/document/index.ts
 function watchDocument() {
-  const document$4 = new ReplaySubject(1);
-  fromEvent(document, "DOMContentLoaded", { once: true }).subscribe(() => document$4.next(document));
-  return document$4;
+  const document$3 = new ReplaySubject(1);
+  fromEvent(document, "DOMContentLoaded", { once: true }).subscribe(() => document$3.next(document));
+  return document$3;
 }
 
 // external/mkdocs-material/src/templates/assets/javascripts/browser/element/_/index.ts
@@ -4778,10 +4739,10 @@ function setLocationHash(hash) {
   el.addEventListener("click", (ev) => ev.stopPropagation());
   el.click();
 }
-function watchLocationHash(location$2) {
+function watchLocationHash(location$3) {
   return merge(
     fromEvent(window, "hashchange"),
-    location$2
+    location$3
   ).pipe(
     map(getLocationHash),
     startWith(getLocationHash()),
@@ -4789,8 +4750,8 @@ function watchLocationHash(location$2) {
     shareReplay(1)
   );
 }
-function watchLocationTarget(location$2) {
-  return watchLocationHash(location$2).pipe(
+function watchLocationTarget(location$3) {
+  return watchLocationHash(location$3).pipe(
     map((id) => getOptionalElement(`[id="${id}"]`)),
     filter((el) => typeof el !== "undefined")
   );
@@ -6316,7 +6277,7 @@ function inject(next) {
     endWith(document)
   );
 }
-function setupInstantNavigation({ location$: location$2, viewport$: viewport$3, progress$: progress$2 }) {
+function setupInstantNavigation({ location$: location$3, viewport$: viewport$3, progress$: progress$2 }) {
   const config7 = configuration();
   if (location.protocol === "file:")
     return EMPTY;
@@ -6335,8 +6296,8 @@ function setupInstantNavigation({ location$: location$2, viewport$: viewport$3, 
     history.replaceState(offset, "");
     history.pushState(null, "", url);
   });
-  merge(instant$, history$).subscribe(location$2);
-  const document$4 = location$2.pipe(
+  merge(instant$, history$).subscribe(location$3);
+  const document$3 = location$3.pipe(
     distinctUntilKeyChanged("pathname"),
     switchMap(
       (url) => requestHTML(url, { progress$: progress$2 }).pipe(
@@ -6353,7 +6314,7 @@ function setupInstantNavigation({ location$: location$2, viewport$: viewport$3, 
     share()
   );
   merge(
-    document$4.pipe(withLatestFrom(location$2, (_, url) => url)),
+    document$3.pipe(withLatestFrom(location$3, (_, url) => url)),
     // Handle instant navigation events that are triggered by the user clicking
     // on an anchor link with a hash fragment different from the current one, as
     // well as from popstate events, which are emitted when the user navigates
@@ -6361,10 +6322,10 @@ function setupInstantNavigation({ location$: location$2, viewport$: viewport$3, 
     // the scroll restoration to the current page, as we don't need to restore
     // the viewport offset when the user navigates to a different page, as this
     // is already handled by the previous observable.
-    document$4.pipe(
-      switchMap(() => location$2),
+    document$3.pipe(
+      switchMap(() => location$3),
       distinctUntilKeyChanged("pathname"),
-      switchMap(() => location$2),
+      switchMap(() => location$3),
       distinctUntilKeyChanged("hash")
     ),
     // Handle instant navigation events that are triggered by the user clicking
@@ -6373,7 +6334,7 @@ function setupInstantNavigation({ location$: location$2, viewport$: viewport$3, 
     // events and not from history change events, or we'll end up in and endless
     // loop. The top-level history entry must be removed, as it will be replaced
     // with a new one, which would otherwise lead to a duplicate entry.
-    location$2.pipe(
+    location$3.pipe(
       distinctUntilChanged((a, b) => a.pathname === b.pathname && a.hash === b.hash),
       switchMap(() => instant$),
       tap(() => history.back())
@@ -6388,7 +6349,7 @@ function setupInstantNavigation({ location$: location$2, viewport$: viewport$3, 
       history.scrollRestoration = "manual";
     }
   });
-  location$2.subscribe(() => {
+  location$3.subscribe(() => {
     history.scrollRestoration = "manual";
   });
   fromEvent(window, "beforeunload").subscribe(() => {
@@ -6400,7 +6361,7 @@ function setupInstantNavigation({ location$: location$2, viewport$: viewport$3, 
   ).subscribe(({ offset }) => {
     history.replaceState(offset, "");
   });
-  return document$4;
+  return document$3;
 }
 
 // external/mkdocs-material/src/templates/assets/javascripts/integrations/search/highlighter/index.ts
@@ -6520,7 +6481,7 @@ function shortestCommonPrefix(strs) {
 }
 
 // external/mkdocs-material/src/templates/assets/javascripts/integrations/version/index.ts
-function setupVersionSelector({ document$: document$4 }) {
+function setupVersionSelector({ document$: document$3 }) {
   const config7 = configuration();
   const versions$ = requestJSON(
     new URL("../versions.json", config7.base)
@@ -6581,7 +6542,7 @@ function setupVersionSelector({ document$: document$4 }) {
     const topic = getElement(".md-header__topic");
     topic.appendChild(renderVersionSelector(versions, current));
   });
-  document$4.pipe(switchMap(() => current$)).subscribe((current) => {
+  document$3.pipe(switchMap(() => current$)).subscribe((current) => {
     var _a2;
     let outdated = __md_get("__outdated", sessionStorage);
     if (outdated === null) {
@@ -6906,10 +6867,10 @@ function mountSearch(el, { index$: index$2, keyboard$: keyboard$2 }) {
 }
 
 // external/mkdocs-material/src/templates/assets/javascripts/components/search/highlight/index.ts
-function mountSearchHiglight(el, { index$: index$2, location$: location$2 }) {
+function mountSearchHiglight(el, { index$: index$2, location$: location$3 }) {
   return combineLatest([
     index$2,
-    location$2.pipe(
+    location$3.pipe(
       startWith(getLocation()),
       filter((url) => !!url.searchParams.get("h"))
     )
@@ -7399,12 +7360,12 @@ function mountBackToTop(el, { viewport$: viewport$3, header$: header$2, main$: m
 }
 
 // external/mkdocs-material/src/templates/assets/javascripts/patches/ellipsis/index.ts
-function patchEllipsis({ document$: document$4, viewport$: viewport$3 }) {
-  document$4.pipe(
+function patchEllipsis({ document$: document$3, viewport$: viewport$3 }) {
+  document$3.pipe(
     switchMap(() => getElements(".md-ellipsis")),
     mergeMap(
       (el) => watchElementVisibility(el).pipe(
-        takeUntil(document$4.pipe(skip(1))),
+        takeUntil(document$3.pipe(skip(1))),
         filter((visible) => visible),
         map(() => el),
         take(1)
@@ -7418,21 +7379,21 @@ function patchEllipsis({ document$: document$4, viewport$: viewport$3 }) {
       if (!feature("content.tooltips"))
         return EMPTY;
       return mountInlineTooltip2(host, { viewport$: viewport$3 }).pipe(
-        takeUntil(document$4.pipe(skip(1))),
+        takeUntil(document$3.pipe(skip(1))),
         finalize(() => host.removeAttribute("title"))
       );
     })
   ).subscribe();
   if (feature("content.tooltips"))
-    document$4.pipe(
+    document$3.pipe(
       switchMap(() => getElements(".md-status")),
       mergeMap((el) => mountInlineTooltip2(el, { viewport$: viewport$3 }))
     ).subscribe();
 }
 
 // external/mkdocs-material/src/templates/assets/javascripts/patches/indeterminate/index.ts
-function patchIndeterminate({ document$: document$4, tablet$: tablet$2 }) {
-  document$4.pipe(
+function patchIndeterminate({ document$: document$3, tablet$: tablet$2 }) {
+  document$3.pipe(
     switchMap(() => getElements(
       ".md-toggle--indeterminate"
     )),
@@ -7458,8 +7419,8 @@ function patchIndeterminate({ document$: document$4, tablet$: tablet$2 }) {
 function isAppleDevice() {
   return /(iPad|iPhone|iPod)/.test(navigator.userAgent);
 }
-function patchScrollfix({ document$: document$4 }) {
-  document$4.pipe(
+function patchScrollfix({ document$: document$3 }) {
+  document$3.pipe(
     switchMap(() => getElements("[data-md-scrollfix]")),
     tap((el) => el.removeAttribute("data-md-scrollfix")),
     filter(isAppleDevice),
@@ -7719,6 +7680,9 @@ var feedback$ = of(feedback).pipe(
 // src/assets/javascripts/utils/index.ts
 var import_tablesort = __toESM(require_tablesort());
 function isElementVisible(el) {
+  if (!el) {
+    return false;
+  }
   const rect = el.getBoundingClientRect();
   const vWidth = window.innerWidth || document.documentElement.clientWidth;
   const vHeight = window.innerHeight || document.documentElement.clientHeight;
@@ -7777,13 +7741,13 @@ var locationBeacon$ = merge(
   map((value) => value instanceof URL ? value : getLocation()),
   distinct()
 );
-var watchLocationChange = (urlFilter2) => {
+var watchLocationChange = (urlFilter) => {
   return locationBeacon$.pipe(
-    urlFilter2 ? filter((url) => urlFilter2(url)) : map((url) => url)
+    urlFilter ? filter((url) => urlFilter(url)) : map((url) => url)
   );
 };
-var mergedUnsubscription$ = (urlFilter2) => {
-  const location2 = watchLocationChange(urlFilter2);
+var mergedUnsubscription$ = (urlFilter) => {
+  const location2 = watchLocationChange(urlFilter);
   const beforeUnload = fromEvent(window, "beforeunload");
   return forkJoin([location2, beforeUnload]).pipe(tap(() => logger.info("Unsubscribing from subscriptions")));
 };
@@ -7794,12 +7758,12 @@ var watchTables = () => {
   };
   return merge(...observables());
 };
-var unsubscribeFromAll = (subscriptions4) => {
-  subscriptions4.forEach((subscription) => subscription.unsubscribe());
+var unsubscribeFromAll = (subscriptions3) => {
+  subscriptions3.forEach((subscription) => subscription.unsubscribe());
 };
 async function windowEvents() {
-  const { document$: document$4, location$: location$2, target$: target$2, keyboard$: keyboard$2, viewport$: viewport$3, tablet$: tablet$2, screen$: screen$2, print$: print$2, alert$: alert$2, progress$: progress$2, component$: component$2 } = window;
-  const observables = { document$: document$4, location$: location$2, target$: target$2, keyboard$: keyboard$2, viewport$: viewport$3, tablet$: tablet$2, screen$: screen$2, print$: print$2, alert$: alert$2, progress$: progress$2, component$: component$2 };
+  const { document$: document$3, location$: location$3, target$: target$2, keyboard$: keyboard$2, viewport$: viewport$3, tablet$: tablet$2, screen$: screen$2, print$: print$2, alert$: alert$2, progress$: progress$2, component$: component$2 } = window;
+  const observables = { document$: document$3, location$: location$3, target$: target$2, keyboard$: keyboard$2, viewport$: viewport$3, tablet$: tablet$2, screen$: screen$2, print$: print$2, alert$: alert$2, progress$: progress$2, component$: component$2 };
   let observablesMissing = false;
   for (const key in observables) {
     if (!globalThis[key]) {
@@ -8195,15 +8159,60 @@ var heroImages = rawHeroImages.map((image) => ({
 }));
 
 // src/assets/javascripts/hero/imageshuffle/index.ts
-var { document$: document$2 } = window;
-var stopCycling$ = new Subject();
-var CONFIG2 = { INTERVAL_TIME: 25e3 };
-var subscriptions = [];
-var portraitMediaQuery = window.matchMedia("(orientation: portrait)");
-var parallaxLayer = document.getElementById("parallax-hero-image-layer");
+var location$2 = new BehaviorSubject(new URL(window.location.href));
+function getCurrentLocation() {
+  return location$2.getValue();
+}
 var getOptimalWidth = () => {
+  if (!window) {
+    return 1280;
+  }
   const screenWidth = Math.max(window.innerWidth, window.innerHeight);
   return screenWidth <= 1280 ? 1280 : screenWidth <= 1920 ? 1920 : screenWidth <= 2560 ? 2560 : 2840;
+};
+var CONFIG2 = { INTERVAL_TIME: 25e3 };
+var isPageVisible = () => !document.hidden;
+var isAtHome = () => {
+  const loc = getCurrentLocation();
+  return isHome(loc) && isOnSite(loc);
+};
+var portraitMediaQuery = window.matchMedia("(orientation: portrait)");
+var parallaxLayer = document.getElementById("parallax-hero-image-layer");
+var optimalWidth$ = new BehaviorSubject(getOptimalWidth());
+var createHeroStateManager = () => {
+  const initialState = {
+    status: "loading",
+    isVisible: isPageVisible(),
+    isAtHome: true,
+    activeImageIndex: 0,
+    orientation: portraitMediaQuery.matches ? "portrait" : "landscape",
+    optimalWidth: optimalWidth$.value
+  };
+  const state$ = new BehaviorSubject(initialState);
+  const cleanup = new Subject();
+  const canCycle$ = state$.pipe(
+    map(
+      (state) => state.isVisible && state.isAtHome && state.status === "cycling"
+    ),
+    distinctUntilChanged(),
+    shareReplay(1)
+  );
+  return {
+    state$,
+    canCycle$,
+    cleanup$: cleanup.asObservable(),
+    updateState: (updates) => {
+      if (state$.closed) {
+        return;
+      }
+      state$.next({ ...state$.value, ...updates });
+    },
+    cleanup: () => {
+      cleanup.next();
+      cleanup.complete();
+      state$.complete();
+    }
+  };
 };
 var updateImageSources = (images, optimalWidth) => {
   images.forEach((image) => {
@@ -8214,26 +8223,15 @@ var updateImageSources = (images, optimalWidth) => {
     }
   });
 };
-function isPageVisible() {
-  return !document.hidden;
-}
-var retryWhenAtHome = retry(
-  { delay: () => watchLocationChange((url) => isHome(url) && isOnSite(url)).pipe(filter(() => isPageVisible() && parallaxLayer !== null && isElementVisible(parallaxLayer)), map((value) => {
-    if (value) {
-      return value;
-    } else {
-      return void 0;
-    }
-  })) }
-);
-function retrieveImage(imageName) {
+var retrieveImage = (imageName) => {
   return heroImages.find((image) => image.imageName === imageName);
-}
+};
 var getHeroes = () => {
   const optimalWidth = getOptimalWidth();
   return heroImages.map((image) => ({ ...image, src: image.widths[optimalWidth] }));
 };
 var allHeroes = getHeroes();
+var imageMetadata = /* @__PURE__ */ new WeakMap();
 var loadImage = (imageUrl) => {
   return getAsset(imageUrl).pipe(
     mergeMap((response) => from(response.blob())),
@@ -8248,6 +8246,12 @@ var setText = async (imgName) => {
   const textEl = document.getElementById("CTA_paragraph");
   headerEl == null ? void 0 : headerEl.setAttribute("class", `hero-parallax__image--${imgName}`);
   textEl == null ? void 0 : textEl.setAttribute("class", `hero-parallax__image--${imgName}`);
+};
+var cleanupImageResources = (image) => {
+  const currentSrc = image.src;
+  if (currentSrc.startsWith("blob:")) {
+    URL.revokeObjectURL(currentSrc);
+  }
 };
 var fetchAndSetImage = (imgSettings) => {
   const { imageName, srcset, src } = imgSettings;
@@ -8269,194 +8273,151 @@ var fetchAndSetImage = (imgSettings) => {
       return from(new Promise((resolve3) => {
         img.onload = () => {
           URL.revokeObjectURL(imageUrl);
+          imageMetadata.set(img, {
+            loadTime: Date.now(),
+            displayCount: 0,
+            width: img.width
+          });
           resolve3();
         };
       })).pipe(
-        tap(() => parallaxLayer == null ? void 0 : parallaxLayer.prepend(img))
+        tap(() => parallaxLayer == null ? void 0 : parallaxLayer.prepend(img)),
+        map(() => img)
       );
     }),
     catchError((error) => {
       logger.error("Error in fetchAndSetImage:", error);
-      return of();
-    })
-  );
-};
-function randomizeHeroes() {
-  return allHeroes.sort(() => Math.random() - 0.5);
-}
-var imageGenerator;
-function initializeImageGenerator() {
-  imageGenerator = randomizeHeroes().values();
-}
-var heroesGen = () => {
-  const nextHeroes = imageGenerator.next();
-  return nextHeroes.done ? void 0 : nextHeroes.value;
-};
-var cycleImages = () => {
-  if (!parallaxLayer) {
-    return EMPTY;
-  }
-  const images = parallaxLayer.getElementsByTagName("img");
-  const nextImage = heroesGen();
-  if (nextImage) {
-    return fetchAndSetImage(nextImage);
-  }
-  if (images.length > 1) {
-    const recycledImage = images[images.length - 1];
-    parallaxLayer.prepend(recycledImage);
-  }
-  if (images.length > 1 && nextImage === void 0) {
-    const currentImage = images[0];
-    parallaxLayer.appendChild(currentImage);
-    if (parallaxLayer == null ? void 0 : parallaxLayer.firstChild) {
-      parallaxLayer.removeChild(parallaxLayer.firstChild);
-    }
-  }
-  return EMPTY;
-};
-var startImageCycling = () => {
-  if (!parallaxLayer) {
-    return EMPTY;
-  }
-  return interval(CONFIG2.INTERVAL_TIME).pipe(
-    takeUntil(stopCycling$),
-    // Automatically stop when stopCycling$ emits
-    filter(() => isPageVisible()),
-    // Only cycle images when the page is visible
-    switchMap(() => cycleImages()),
-    catchError((err) => {
-      logger.error("Error in startImageCycling:", err);
       return EMPTY;
     })
   );
 };
-var initializeImageCycling = () => {
-  stopCycling$ = new Subject();
-  startImageCycling().subscribe({
-    next: () => logger.info("Image cycling in progress"),
-    error: (err) => logger.error("Error during image cycling:", err)
-  });
-};
-var stopImageCycling = () => {
-  stopCycling$.next();
-};
-var handleVisibilityChange = () => {
-  if (isPageVisible()) {
-    return startImageCycling();
-  } else {
-    stopImageCycling();
-    return EMPTY;
-  }
-};
-var createOrientationObservable = (mediaQuery) => fromEventPattern(
-  (handler) => mediaQuery.addEventListener("change", handler),
-  (handler) => mediaQuery.removeEventListener("change", handler),
-  (event) => event.matches
-);
-function regenerateSources(optimalWidth) {
-  const imageLayers = Array.from((parallaxLayer == null ? void 0 : parallaxLayer.getElementsByTagName("img")) || []);
-  updateImageSources(imageLayers, optimalWidth);
-  if (imageLayers.length === 0) {
-    const firstImage = heroesGen() || initializeImageGenerator();
-    if (firstImage) {
-      firstImage.src = firstImage.widths[optimalWidth];
-      fetchAndSetImage(firstImage).subscribe({
-        next: () => logger.info("First image loaded successfully"),
-        error: (err) => logger.error("Error loading first image:", err)
-      });
-    }
-  } else {
-    const nextSettings = [];
-    let result = heroesGen();
-    while (result) {
-      nextSettings.push(result);
-      result = heroesGen();
-    }
-    nextSettings.forEach((hero) => hero.src = hero.widths[optimalWidth]);
-    imageGenerator = nextSettings.values();
-  }
-}
-var orientation$ = createOrientationObservable(portraitMediaQuery).pipe(
-  skipWhile(() => !isPageVisible() || !isElementVisible(parallaxLayer)),
-  distinctUntilChanged(),
-  tap(() => {
-    const currentImage = parallaxLayer == null ? void 0 : parallaxLayer.getElementsByTagName("img")[0];
-    if (currentImage) {
-      const currentWidth = currentImage.width;
-      const optimalWidth = getOptimalWidth();
-      if (currentWidth !== optimalWidth) {
-        regenerateSources(optimalWidth);
-      }
-    }
-  }),
-  catchError((error) => {
-    logger.error("Error in orientation observable:", error);
-    return EMPTY;
-  })
-);
-var locationChange$ = watchLocationChange((url) => {
-  return url instanceof URL;
-}).pipe(
-  distinctUntilKeyChanged("pathname"),
-  filter((url) => !isHome(url) || !isOnSite(url)),
-  tap(() => stopImageCycling()),
-  catchError((error) => {
-    logger.error("Error in location change observable:", error);
-    return EMPTY;
-  })
-);
-var subscribeWithErrorHandling = (observable2, name) => {
-  return observable2.subscribe({
-    next: () => logger.info(`${name} change processed`),
-    error: (err) => logger.error(`Unhandled error in ${name} subscription:`, err),
-    complete: () => logger.info(`${name} subscription completed`)
-  });
-};
-var initSubscriptions = () => {
-  logger.info("Initializing subscriptions");
-  subscriptions.push(
-    subscribeWithErrorHandling(orientation$, "Orientation"),
-    subscribeWithErrorHandling(
-      document$2.pipe(
-        switchMap((doc) => fromEvent(doc, "visibilitychange")),
-        switchMap(() => handleVisibilityChange())
-      ),
-      "Visibility"
-    ),
-    subscribeWithErrorHandling(locationChange$, "Location")
+var createOrientationObservable = (mediaQuery) => {
+  return fromEventPattern(
+    (handler) => mediaQuery.addEventListener("change", handler),
+    (handler) => mediaQuery.removeEventListener("change", handler),
+    (event) => event.matches
   );
 };
-function loadFirstImage() {
-  const firstImage = heroesGen() || initializeImageGenerator();
-  if (firstImage) {
-    logger.info(`First image's settings loaded: ${firstImage.imageName}`);
-    firstImage.src = firstImage.widths[getOptimalWidth()];
-    logger.info(`First image's src: ${firstImage.src}`);
-    return fetchAndSetImage(firstImage).pipe(
-      switchMap(() => watchLocationChange((url) => !isHome(url) || !isOnSite(url))),
-      skipWhile(() => true),
-      tap(() => logger.info("First image loaded successfully"))
+var shuffledHeroes = [...allHeroes].sort(() => Math.random() - 0.5);
+var createImageCycler = (parallaxLayer2) => {
+  const stateManager = createHeroStateManager();
+  const { state$, canCycle$, cleanup$, updateState } = stateManager;
+  const loadImages$ = from(shuffledHeroes).pipe(
+    mergeMap((image) => fetchAndSetImage(image)),
+    takeUntil(cleanup$),
+    // When all images are loaded, check if we need size updates
+    toArray(),
+    tap((loadedImages) => {
+      const currentOptimalWidth = getOptimalWidth();
+      if (currentOptimalWidth !== state$.value.optimalWidth) {
+        updateState({ optimalWidth: currentOptimalWidth });
+        updateImageSources(loadedImages, currentOptimalWidth);
+      }
+    })
+  );
+  const loadFirstImage$ = fetchAndSetImage(shuffledHeroes[0]).pipe(
+    tap(() => updateState({ status: "cycling" }))
+  );
+  const cycle$ = interval(CONFIG2.INTERVAL_TIME).pipe(
+    withLatestFrom(canCycle$, state$),
+    filter(([_, canCycle]) => canCycle),
+    mergeMap(([_, __, state]) => {
+      const nextIndex = (state.activeImageIndex + 1) % shuffledHeroes.length;
+      const nextImage = shuffledHeroes[nextIndex];
+      return fetchAndSetImage(nextImage).pipe(
+        tap(() => {
+          const firstImage = parallaxLayer2.firstElementChild;
+          parallaxLayer2.appendChild(firstImage);
+          updateState({ activeImageIndex: nextIndex });
+          void setText(nextImage.imageName);
+        })
+      );
+    }),
+    takeUntil(cleanup$)
+  );
+  const visibility$ = fromEvent(document, "visibilitychange").pipe(
+    tap(() => {
+      updateState({
+        isVisible: isPageVisible(),
+        status: isPageVisible() ? "ready" : "paused"
+      });
+    }),
+    takeUntil(cleanup$)
+  );
+  const locationWatcher$ = watchLocationChange((url) => isHome(url) && isOnSite(url)).pipe(
+    tap((_url) => {
+      updateState({
+        isAtHome: isAtHome(),
+        status: isAtHome() ? "ready" : "stopped"
+      });
+    }),
+    takeUntil(cleanup$)
+  );
+  const createOrientationHandler = (stateManager2) => {
+    const orientationChange$ = createOrientationObservable(portraitMediaQuery);
+    const resize$ = fromEvent(window, "resize");
+    return merge(orientationChange$, resize$).pipe(
+      // Debounce to avoid too many rapid changes
+      debounceTime(100),
+      skipWhile(() => !isPageVisible() || !isElementVisible(parallaxLayer2)),
+      map(() => getOptimalWidth()),
+      distinctUntilChanged(),
+      tap((optimalWidth) => {
+        stateManager2.updateState({
+          orientation: portraitMediaQuery.matches ? "portrait" : "landscape",
+          optimalWidth
+        });
+        const imageLayers = Array.from((parallaxLayer2 == null ? void 0 : parallaxLayer2.getElementsByTagName("img")) || []);
+        updateImageSources(imageLayers, optimalWidth);
+      }),
+      takeUntil(stateManager2.cleanup$),
+      catchError((error) => {
+        logger.error("Error in viewport change handler:", error);
+        return EMPTY;
+      })
     );
-  } else {
-    return throwError(() => new Error("First image not found"));
-  }
-}
+  };
+  return {
+    start: () => {
+      const subscription = new Subscription();
+      subscription.add(visibility$.subscribe());
+      subscription.add(locationWatcher$.subscribe());
+      subscription.add(createOrientationHandler(stateManager).subscribe());
+      subscription.add(
+        loadImages$.pipe(
+          tap(() => {
+            updateState({ status: "cycling" });
+            subscription.add(cycle$.subscribe());
+          })
+        ).subscribe()
+      );
+      subscription.add(() => {
+        const images = Array.from(parallaxLayer2.getElementsByTagName("img"));
+        images.forEach(cleanupImageResources);
+      });
+      subscription.add(loadFirstImage$.subscribe(() => {
+        subscription.add(cycle$.subscribe());
+      }));
+      return subscription;
+    },
+    stop: () => {
+      stateManager.cleanup();
+    },
+    stateManager,
+    // Expose stateManager for height observable
+    debug: {
+      getState: () => state$.value,
+      getMetadata: (img) => imageMetadata.get(img)
+    }
+  };
+};
 var getImage = () => {
   const images = parallaxLayer == null ? void 0 : parallaxLayer.getElementsByTagName("img");
   if (images && images.length > 0) {
     return images[0];
-  } else {
-    return void 0;
   }
+  return void 0;
 };
-var imageHeight$ = of(getImage()).pipe(
-  retryWhenAtHome,
-  filter((img) => img !== null && img instanceof HTMLImageElement),
-  map((img) => (img == null ? void 0 : img.height) || window.innerHeight),
-  shareReplay(1),
-  filter(() => isPageVisible() && isElementVisible(parallaxLayer)),
-  distinctUntilChanged()
-);
 function setParallaxHeight(height) {
   var _a2;
   const headerHeight = ((_a2 = document.getElementById("header-target")) == null ? void 0 : _a2.clientHeight) || 95;
@@ -8471,28 +8432,83 @@ function setParallaxHeight(height) {
   const parallaxHeight = height < effectiveViewHeight ? effectiveViewHeight : Math.min(height * 1.2, maxFade);
   setCssVariable("--parallax-height", `${parallaxHeight}px`);
 }
-function shuffle$() {
-  initializeImageGenerator();
-  subscriptions.push(
-    document$2.pipe(
-      switchMap(() => imageHeight$)
-    ).subscribe({
-      next: (height) => setParallaxHeight(height)
-    })
+var cyclerRef = {
+  current: null
+};
+var createHeightObservable = (stateManager) => {
+  const imageChanges$ = stateManager.state$.pipe(
+    map(() => getImage()),
+    filter((img) => img !== null && img instanceof HTMLImageElement),
+    map((img) => img.height || window.innerHeight)
   );
-  subscriptions.push(loadFirstImage().pipe(
-    tap(() => initSubscriptions()),
-    skipUntil(document$2),
-    tap(() => initializeImageCycling()),
-    retryWhenAtHome
-  ).subscribe({
-    next: () => {
-    },
-    error: (err) => logger.error("Error during image cycling:", err)
-  }));
-  const noLongerHome$ = watchLocationChange((location2) => !isHome(location2) || !isOnSite(location2));
-  return of(noLongerHome$).pipe(
-    tap(() => mergedUnsubscription$(() => true).subscribe(() => unsubscribeFromAll(subscriptions)))
+  const viewportChanges$ = merge(
+    fromEvent(window, "resize"),
+    createOrientationObservable(portraitMediaQuery)
+  ).pipe(
+    debounceTime(100),
+    map(() => {
+      const img = getImage();
+      return (img == null ? void 0 : img.height) || window.innerHeight;
+    }),
+    filter((height) => typeof height === "number" && height > 0 && !Number.isNaN(height))
+  );
+  return merge(imageChanges$, viewportChanges$).pipe(
+    distinctUntilChanged(),
+    filter(() => isPageVisible() && isElementVisible(parallaxLayer)),
+    tap((height) => setParallaxHeight(height)),
+    catchError((error) => {
+      logger.error("Error adjusting height:", error);
+      return EMPTY;
+    }),
+    takeUntil(stateManager.cleanup$)
+  );
+};
+function shuffle$() {
+  if (!parallaxLayer) {
+    return EMPTY;
+  }
+  const cycler = createImageCycler(parallaxLayer);
+  cyclerRef.current = cycler;
+  const subscription = cycler.start();
+  subscription.add(
+    createHeightObservable(cycler.stateManager).subscribe()
+  );
+  const stopCycler$ = () => {
+    cyclerRef.current = null;
+    subscription.unsubscribe();
+    const images = parallaxLayer.getElementsByTagName("img");
+    Array.from(images).forEach((img) => {
+      cleanupImageResources(img);
+      img.innerHTML = "";
+    });
+    parallaxLayer.innerHTML = "";
+    return of(true);
+  };
+  const weCanSeeIt$ = merge(
+    fromEvent(window, "focus").pipe(filter(() => isElementVisible(parallaxLayer))),
+    fromEvent(window, "visibilitychange").pipe(filter(() => isElementVisible(parallaxLayer))),
+    of(isElementVisible(parallaxLayer))
+  );
+  const weAreBack$ = watchLocationChange((url) => isHome(url) && isOnSite(url));
+  watchLocationChange((url) => !isHome(url)).pipe(
+    first(),
+    tap((url) => {
+      if (parallaxLayer && !parallaxLayer.children.length && isOnSite(url)) {
+        fetchAndSetImage(shuffledHeroes[0]).subscribe();
+      } else {
+        cycler.stop();
+      }
+    }),
+    mergeMap((url) => iif(
+      () => isOnSite(url),
+      merge(weCanSeeIt$, weAreBack$).pipe(
+        tap(() => {
+          cyclerRef.current = cycler;
+          subscription.add(cycler.start());
+        })
+      ),
+      stopCycler$
+    ))
   );
 }
 
@@ -8625,7 +8641,7 @@ var _harness = function _harness2(targets) {
   return targets;
 };
 var _getCache = function _getCache2(target) {
-  return target._gsap || _harness(toArray(target))[0]._gsap;
+  return target._gsap || _harness(toArray2(target))[0]._gsap;
 };
 var _getProperty = function _getProperty2(target, property, v) {
   return (v = target[property]) && _isFunction(v) ? target[property]() : _isUndefined(v) && target.getAttribute && target.getAttribute(property) || v;
@@ -9012,17 +9028,17 @@ var _flatten = function _flatten2(ar, leaveStrings, accumulator) {
   }
   return ar.forEach(function(value) {
     var _accumulator;
-    return _isString(value) && !leaveStrings || _isArrayLike(value, 1) ? (_accumulator = accumulator).push.apply(_accumulator, toArray(value)) : accumulator.push(value);
+    return _isString(value) && !leaveStrings || _isArrayLike(value, 1) ? (_accumulator = accumulator).push.apply(_accumulator, toArray2(value)) : accumulator.push(value);
   }) || accumulator;
 };
-var toArray = function toArray2(value, scope, leaveStrings) {
+var toArray2 = function toArray3(value, scope, leaveStrings) {
   return _context && !scope && _context.selector ? _context.selector(value) : _isString(value) && !leaveStrings && (_coreInitted || !_wake()) ? _slice.call((scope || _doc).querySelectorAll(value), 0) : _isArray(value) ? _flatten(value, leaveStrings) : _isArrayLike(value) ? _slice.call(value, 0) : value ? [value] : [];
 };
 var selector = function selector2(value) {
-  value = toArray(value)[0] || _warn("Invalid scope") || {};
+  value = toArray2(value)[0] || _warn("Invalid scope") || {};
   return function(v) {
     var el = value.current || value.nativeElement || value;
-    return toArray(v, el.querySelectorAll ? el : el === value ? _warn("Invalid scope") || _doc.createElement("div") : value);
+    return toArray2(v, el.querySelectorAll ? el : el === value ? _warn("Invalid scope") || _doc.createElement("div") : value);
   };
 };
 var shuffle = function shuffle2(a) {
@@ -9093,7 +9109,7 @@ var snap = function snap2(snapTo, value) {
   if (!isArray4 && _isObject(snapTo)) {
     radius = isArray4 = snapTo.radius || _bigNum;
     if (snapTo.values) {
-      snapTo = toArray(snapTo.values);
+      snapTo = toArray2(snapTo.values);
       if (is2D = !_isNumber(snapTo[0])) {
         radius *= radius;
       }
@@ -10265,7 +10281,7 @@ var Timeline = /* @__PURE__ */ function(_Animation) {
     return this;
   };
   _proto2.getTweensOf = function getTweensOf2(targets, onlyActive) {
-    var a = [], parsedTargets = toArray(targets), child = this._first, isGlobalTime = _isNumber(onlyActive), children;
+    var a = [], parsedTargets = toArray2(targets), child = this._first, isGlobalTime = _isNumber(onlyActive), children;
     while (child) {
       if (child instanceof Tween) {
         if (_arrayContainsAny(child._targets, parsedTargets) && (isGlobalTime ? (!_overwritingTween || child._initted && child._ts) && child.globalTime(0) <= onlyActive && child.globalTime(child.totalDuration()) > onlyActive : !onlyActive || child.isActive())) {
@@ -10726,7 +10742,7 @@ var Tween = /* @__PURE__ */ function(_Animation2) {
       position = null;
     }
     _this3 = _Animation2.call(this, skipInherit ? vars : _inheritDefaults(vars)) || this;
-    var _this3$vars = _this3.vars, duration = _this3$vars.duration, delay2 = _this3$vars.delay, immediateRender = _this3$vars.immediateRender, stagger = _this3$vars.stagger, overwrite = _this3$vars.overwrite, keyframes = _this3$vars.keyframes, defaults2 = _this3$vars.defaults, scrollTrigger = _this3$vars.scrollTrigger, yoyoEase = _this3$vars.yoyoEase, parent = vars.parent || _globalTimeline, parsedTargets = (_isArray(targets) || _isTypedArray(targets) ? _isNumber(targets[0]) : "length" in vars) ? [targets] : toArray(targets), tl, i, copy, l, p, curTarget, staggerFunc, staggerVarsToMerge;
+    var _this3$vars = _this3.vars, duration = _this3$vars.duration, delay2 = _this3$vars.delay, immediateRender = _this3$vars.immediateRender, stagger = _this3$vars.stagger, overwrite = _this3$vars.overwrite, keyframes = _this3$vars.keyframes, defaults2 = _this3$vars.defaults, scrollTrigger = _this3$vars.scrollTrigger, yoyoEase = _this3$vars.yoyoEase, parent = vars.parent || _globalTimeline, parsedTargets = (_isArray(targets) || _isTypedArray(targets) ? _isNumber(targets[0]) : "length" in vars) ? [targets] : toArray2(targets), tl, i, copy, l, p, curTarget, staggerFunc, staggerVarsToMerge;
     _this3._targets = parsedTargets.length ? _harness(parsedTargets) : _warn("GSAP target " + targets + " not found. https://gsap.com", !_config.nullTargetWarn) || [];
     _this3._ptLookup = [];
     _this3._overwrite = overwrite;
@@ -10954,7 +10970,7 @@ var Tween = /* @__PURE__ */ function(_Animation2) {
       this.parent && tDur !== this.timeline.totalDuration() && _setDuration(this, this._dur * this.timeline._tDur / tDur, 0, 1);
       return this;
     }
-    var parsedTargets = this._targets, killingTargets = targets ? toArray(targets) : parsedTargets, propTweenLookup = this._ptLookup, firstPT = this._pt, overwrittenProps, curLookup, curOverwriteProps, props, p, pt, i;
+    var parsedTargets = this._targets, killingTargets = targets ? toArray2(targets) : parsedTargets, propTweenLookup = this._ptLookup, firstPT = this._pt, overwrittenProps, curLookup, curOverwriteProps, props, p, pt, i;
     if ((!vars || vars === "all") && _arraysMatch(parsedTargets, killingTargets)) {
       vars === "all" && (this._pt = 0);
       return _interrupt(this);
@@ -11378,7 +11394,7 @@ var _gsap = {
     return _globalTimeline.getTweensOf(targets, onlyActive);
   },
   getProperty: function getProperty(target, property, unit, uncache) {
-    _isString(target) && (target = toArray(target)[0]);
+    _isString(target) && (target = toArray2(target)[0]);
     var getter = _getCache(target || {}).get, format = unit ? _passThrough : _numericIfPossible;
     unit === "native" && (unit = "");
     return !target ? target : !property ? function(property2, unit2, uncache2) {
@@ -11386,7 +11402,7 @@ var _gsap = {
     } : format((_plugins[property] && _plugins[property].get || getter)(target, property, unit, uncache));
   },
   quickSetter: function quickSetter(target, property, unit) {
-    target = toArray(target);
+    target = toArray2(target);
     if (target.length > 1) {
       var setters = target.map(function(t) {
         return gsap.quickSetter(t, property, unit);
@@ -11434,7 +11450,7 @@ var _gsap = {
       return pluginName && !_plugins[pluginName] && !_globals[pluginName] && _warn(name + " effect requires " + pluginName + " plugin.");
     });
     _effects[name] = function(targets, vars, tl) {
-      return effect(toArray(targets), _setDefaults(vars || {}, defaults2), tl);
+      return effect(toArray2(targets), _setDefaults(vars || {}, defaults2), tl);
     };
     if (extendTimeline) {
       Timeline.prototype[name] = function(targets, vars, position) {
@@ -11507,7 +11523,7 @@ var _gsap = {
     getUnit,
     clamp,
     splitColor,
-    toArray,
+    toArray: toArray2,
     selector,
     mapRange,
     pipe: pipe2,
@@ -15312,7 +15328,7 @@ _getGSAP5() && gsap4.registerPlugin(ScrollTrigger3);
 // src/assets/javascripts/hero/animation/index.ts
 gsapWithCSS.registerPlugin(ScrollToPlugin);
 gsapWithCSS.registerPlugin(ScrollTrigger3);
-var subscriptions2 = [];
+var subscriptions = [];
 var easterEgg = document.getElementById("the-egg");
 var infoBox = document.getElementById("egg-box");
 var storedLocationState = history.state;
@@ -15422,7 +15438,7 @@ var allSubscriptions = () => {
     easterEgg,
     eggFunction
   );
-  subscriptions2.push(
+  subscriptions.push(
     eggInteraction$.subscribe({
       next: () => logger.info("Egg interaction observed"),
       error: (err) => logger.error("Error in egg interaction:", err),
@@ -15450,7 +15466,7 @@ var allSubscriptions = () => {
     document,
     eggBoxCloseFunc
   );
-  subscriptions2.push(
+  subscriptions.push(
     leaveInfoBoxInteraction$.subscribe({
       next: () => {
       },
@@ -15492,7 +15508,7 @@ var allSubscriptions = () => {
     heroSelectors,
     heroButtonFunc
   );
-  subscriptions2.push(
+  subscriptions.push(
     heroInteraction$.subscribe({
       next: () => {
         heroInteraction$.subscribe();
@@ -15503,9 +15519,9 @@ var allSubscriptions = () => {
   );
   const noLongerHome = (url) => !isHome(url) && isOnSite(url);
   const pathObservable$ = watchLocationChange((url) => noLongerHome(url)).pipe(tap(() => hideOverlay()), tap(() => logger.info("Path changed, overlay hidden")));
-  subscriptions2.push(
+  subscriptions.push(
     pathObservable$.subscribe({ next: () => {
-      unsubscribeFromAll(subscriptions2);
+      unsubscribeFromAll(subscriptions);
     } })
   );
   if (!prefersReducedMotion) {
@@ -15518,24 +15534,25 @@ var allSubscriptions = () => {
       return timeline2;
     };
     const createFadeInAnimation = () => {
+      var _a2;
       const makeScrollBatch = (selector3) => {
         const batch = [];
         ScrollTrigger3.batch(selector3, {
-          start: "top bottom",
-          end: "top top",
+          start: "top 80%",
+          end: "bottom 20%",
           interval: 0.15,
-          batchMax: 2,
+          batchMax: 4,
           onEnter: (b) => {
-            gsapWithCSS.to(b, { opacity: 1, y: 0, duration: 0.3, ease: "power2.out", stagger: { each: 0.15, grid: "auto" }, overwrite: true });
+            gsapWithCSS.to(b, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out", stagger: { each: 0.15, grid: "auto" }, overwrite: true });
           },
           onLeave: (b) => {
-            gsapWithCSS.set(b, { opacity: 0, y: -100, overwrite: true });
+            gsapWithCSS.set(b, { opacity: 0, y: -50, overwrite: true });
           },
           onEnterBack: (b) => {
-            gsapWithCSS.to(b, { opacity: 1, y: 0, duration: 0.3, ease: "power2.out", stagger: 0.15, overwrite: true });
+            gsapWithCSS.to(b, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out", stagger: 0.15, overwrite: true });
           },
           onLeaveBack: (b) => {
-            gsapWithCSS.set(b, { opacity: 0, y: 100, overwrite: true });
+            gsapWithCSS.set(b, { opacity: 0, y: 50, overwrite: true });
           }
         }).forEach((trigger) => {
           batch.push(of(trigger));
@@ -15548,87 +15565,93 @@ var allSubscriptions = () => {
           ...makeScrollBatch(".fade-in2")
         ];
       };
-      setupAnimation(".fade-in", { opacity: 0, y: 100 });
-      setupAnimation(".fade-in2", { opacity: 0, y: 100 });
-      ScrollTrigger3.addEventListener("refreshInit", () => {
-        gsapWithCSS.set(".fade-in", { y: 0, opacity: 1 });
-        gsapWithCSS.set(".fade-in2", { y: 0, opacity: 1 });
-      });
-      return fadeIns();
-    };
-    subscriptions2.push(concat(...createFadeInAnimation()).subscribe());
-    const createCtaAnimation = () => {
-      setupAnimation(".cta-ul", { scaleX: 0, transformOrigin: "left", height: "1.8em", width: "0" });
-      const ctaTimeline = createTimeline(".cta-ul", [
-        { scaleX: 1, transformOrigin: "left", duration: 0.25, height: "1.3em", width: "50%" },
-        { scaleX: 1, duration: 0.3, ease: "power2.out", height: "0.8em", width: "100%" }
-      ], {
-        scrub: 0.2,
-        start: "top 5vh",
-        trigger: ".hero__parallax",
-        onEnter: () => {
-          ctaTimeline.play();
-        },
-        scroller: ".hero__parallax"
-      });
-    };
-    subscriptions2.push(of(createCtaAnimation).subscribe());
-    const createEmphasisAnimation = () => {
-      setupAnimation(".special-ul", { scaleX: 0, transformOrigin: "left", height: "1.8em", width: "0" });
-      const emphasisTimeline = createTimeline(
-        ".special-ul",
-        [
-          { scaleX: 1, transformOrigin: "left", duration: 0.25, height: "1.3em", width: "50%" },
-          { scaleX: 1, duration: 0.3, ease: "power2.out", height: "0.8em", width: "100%" }
-        ],
-        {
+      const fadeIn2Targets = (_a2 = document.querySelector("#pt3-hero-content-section")) == null ? void 0 : _a2.querySelectorAll("li");
+      if (fadeIn2Targets) {
+        fadeIn2Targets.forEach((target) => {
+          target.classList.add("fade-in2");
+        });
+        setupAnimation(".fade-in", { opacity: 0, y: 50 });
+        setupAnimation(".fade-in2", { opacity: 0, y: 50 });
+        ScrollTrigger3.addEventListener("refreshInit", () => {
+          gsapWithCSS.set(".fade-in", { y: 0, opacity: 1 });
+          gsapWithCSS.set(".fade-in2", { y: 0, opacity: 1 });
+        });
+        return fadeIns();
+      }
+      subscriptions.push(concat(...createFadeInAnimation()).subscribe());
+      const createCtaAnimation = () => {
+        setupAnimation(".cta-ul", { scaleX: 0, transformOrigin: "left", height: "1.8em", width: "0" });
+        const ctaTimeline = createTimeline(".cta-ul", [
+          { scaleX: 1, transformOrigin: "left", duration: 0.4, height: "1.3em", width: "50%" },
+          { scaleX: 1, duration: 0.5, ease: "power2.out", height: "0.8em", width: "100%" }
+        ], {
           scrub: 0.2,
-          start: "top 140vh",
-          trigger: "#pt2-hero-section-content",
+          start: "top 99%",
+          trigger: ".hero__parallax",
           onEnter: () => {
-            emphasisTimeline.play();
+            ctaTimeline.play();
           },
-          scroller: document.body
-        }
-      );
-    };
-    subscriptions2.push(of(createEmphasisAnimation).subscribe());
-    const createSpecialHighlight = () => {
-      setupAnimation(".special-highlight", { textShadow: "0 0 0 transparent", x: 0 });
-      const specialHighlight = createTimeline(
-        ".special-highlight",
-        [
-          { textShadow: "0.02em 0.02em 0 var(--turkey-red)", x: 20, duration: 0.25 },
-          { textShadow: "0.04em 0.04em 0.06em var(--turkey-red)", x: 50, duration: 0.2, ease: "power2.out" }
-        ],
-        {
-          start: "top 240vh",
-          trigger: "#pt3-hero-section-content",
-          scroller: document.body,
-          onEnter: () => {
-            specialHighlight.play();
+          scroller: ".hero__parallax"
+        });
+      };
+      subscriptions.push(of(createCtaAnimation).subscribe());
+      const createEmphasisAnimation = () => {
+        setupAnimation(".special-ul", { scaleX: 0, transformOrigin: "left", height: "1.8em", width: "0" });
+        const emphasisTimeline = createTimeline(
+          ".special-ul",
+          [
+            { scaleX: 1, transformOrigin: "left", duration: 0.25, height: "1.3em", width: "50%" },
+            { scaleX: 1, duration: 0.3, ease: "power2.out", height: "0.8em", width: "100%" }
+          ],
+          {
+            scrub: 0.2,
+            start: "top 90%",
+            trigger: "#pt2-hero-section-content",
+            onEnter: () => {
+              emphasisTimeline.play();
+            },
+            scroller: document.body
           }
-        }
-      );
+        );
+      };
+      subscriptions.push(of(createEmphasisAnimation).subscribe());
+      const createSpecialHighlight = () => {
+        setupAnimation(".special-highlight", { textShadow: "0 0 0 transparent", x: 0 });
+        const specialHighlight = createTimeline(
+          ".special-highlight",
+          [
+            { textShadow: "0.02em 0.02em 0 var(--turkey-red)", x: 20, duration: 0.25 },
+            { textShadow: "0.04em 0.04em 0.06em var(--turkey-red)", x: 50, duration: 0.2, ease: "power2.out" }
+          ],
+          {
+            start: "top 240vh",
+            trigger: "#pt3-hero-section-content",
+            scroller: document.body,
+            onEnter: () => {
+              specialHighlight.play();
+            }
+          }
+        );
+      };
+      subscriptions.push(of(createSpecialHighlight).subscribe());
     };
-    subscriptions2.push(of(createSpecialHighlight).subscribe());
+    subscriptions.push(fromEvent(window, "hashchange").pipe().subscribe({
+      next: () => {
+        history.replaceState(storedLocationState, "", "/");
+      }
+    }));
   }
-  subscriptions2.push(fromEvent(window, "hashchange").pipe().subscribe({
+  const urlFilter = (url) => !isHome(url) && isOnSite(url) || !isOnSite(url);
+  mergedUnsubscription$(urlFilter).subscribe({
     next: () => {
-      history.replaceState(storedLocationState, "", "/");
+      unsubscribeFromAll(subscriptions);
     }
-  }));
+  });
 };
-var urlFilter = (url) => !isHome(url) && isOnSite(url) || !isOnSite(url);
-mergedUnsubscription$(urlFilter).subscribe({
-  next: () => {
-    unsubscribeFromAll(subscriptions2);
-  }
-});
 
 // src/assets/javascripts/index.ts
-var { document$: document$3 } = window;
-var subscriptions3 = [];
+var { document$: document$2 } = window;
+var subscriptions2 = [];
 var styleAssets = document.querySelectorAll("link[rel=stylesheet][href*=stylesheets]");
 var scriptAssets = document.querySelectorAll("script[src*=javascripts]");
 var fontAssets = document.querySelectorAll("link[rel=stylesheet][href*=fonts]");
@@ -15641,7 +15664,7 @@ var insertAnalytics = () => {
   document.head.appendChild(script3);
 };
 var shuffler$ = shuffle$();
-var animate$ = document$3.pipe(tap(() => allSubscriptions()));
+var animate$ = document$2.pipe(tap(() => allSubscriptions()));
 var atHome$ = locationBeacon$.pipe(distinctUntilKeyChanged("pathname"), takeWhile((url) => isHome(url)), tap(() => {
   logger.info("At home page");
   shuffler$.subscribe();
@@ -15666,19 +15689,19 @@ function initPage() {
   pageSubscriptions.push(of(bundle_exports).subscribe(), event$.subscribe(), analytics$.subscribe(), table$.subscribe(), feedback$.subscribe(), cleanCache$.subscribe(), deleteCache$.subscribe());
   logger.info("Subscribed to new page subscriptions");
 }
-var onNewPage$ = newPage$.pipe(skipUntil(document$3), tap(() => logger.info("New page detected")));
-subscriptions3.push(onNewPage$.subscribe({
+var onNewPage$ = newPage$.pipe(skipUntil(document$2), tap(() => logger.info("New page detected")));
+subscriptions2.push(onNewPage$.subscribe({
   next: () => {
     unsubscribeFromAll(pageSubscriptions);
     initPage();
   }
 }));
-subscriptions3.push(atHome$.subscribe());
-subscriptions3.push(atLicense$.subscribe());
-subscriptions3.push(atHelping$.subscribe());
+subscriptions2.push(atHome$.subscribe());
+subscriptions2.push(atLicense$.subscribe());
+subscriptions2.push(atHelping$.subscribe());
 mergedUnsubscription$((url) => !isOnSite(url)).subscribe({
   next: () => {
-    unsubscribeFromAll(subscriptions3);
+    unsubscribeFromAll(subscriptions2);
     logger.info("Unsubscribed from all subscriptions");
   },
   error: (err) => logger.error("Error in cleanup:", err)
@@ -15691,14 +15714,6 @@ mergedUnsubscription$((url) => !isOnSite(url)).subscribe({
 /**
  * @license Plain Unlicense(Public Domain)
  * @copyright No rights reserved. Created by and for Plain License www.plainlicense.org
- */
-/**
- * hero module contains the logic for the hero image shuffling on the home page.
- * It fetches the image URLs, randomizes their order, caches and loads the images on
- * the hero landing page.
- * It also handles visibility changes and screen orientation changes.
- * @copyright No rights reserved. Created by and for Plain License www.plainlicense.org
- * @license Plain Unlicense (Public Domain)
  */
 /**
  * @copyright No rights reserved. Created by and for Plain License www.plainlicense.org
@@ -15783,4 +15798,4 @@ gsap/ScrollTrigger.js:
    * @author: Jack Doyle, jack@greensock.com
   *)
 */
-//# sourceMappingURL=index.JF72V3BX.js.map
+//# sourceMappingURL=index.63MQSL2I.js.map

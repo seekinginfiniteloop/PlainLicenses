@@ -42,6 +42,7 @@ header#header-target.md-header {
   margin-top: calc(var(--nav-height) - 0.2rem);
   background: var(--zaffre);
 }
+
 /** Hero section */
 
 .hero {
@@ -253,7 +254,7 @@ h1.hero-content-section.header-mid {
   padding: 0.3rem;
   margin: 0.1rem;
   overflow: hidden;
-  font-size: clamp(14px, calc(100vw / 8), 40rem);
+  font-size: clamp(14px, calc(100vw / 9), 38rem);
   text-align: center;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -416,7 +417,10 @@ div.grid.cards.hero-card-grid p.svg {
   vertical-align: middle;
 }
 
-div.grid.cards.hero-card-grid li {
+div.grid.cards.hero-card-grid li:hover,
+div.grid.cards.hero-card-grid li:focus,
+div.grid.cards.hero-card-grid li:active,
+div.grid-cards.hero-card-grid li:focus-visible {
   border: rgba(var(--ecru-adj), 0.4) 0.1rem solid;
 }
 

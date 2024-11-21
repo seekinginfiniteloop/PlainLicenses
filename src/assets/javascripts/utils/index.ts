@@ -11,7 +11,12 @@ import { logger } from "~/log"
  * @param el HTMLElement
  * @returns true if the element is visible
  */
-export function isElementVisible(el: Element) {
+export function isElementVisible(el: Element | null) {
+
+  if (!el) {
+    return false
+  }
+
   const rect     = el.getBoundingClientRect()
   const vWidth   = window.innerWidth || document.documentElement.clientWidth
   const vHeight  = window.innerHeight || document.documentElement.clientHeight

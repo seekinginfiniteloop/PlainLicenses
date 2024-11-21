@@ -6,7 +6,7 @@ description: Our plain licenses are easy to understand and use. We divide our li
 
 # Our Licenses
 
-<div class="grid cards" markdown>
+<div class="grid cards fade-in2" markdown>
 
 -   :nounproject-public-domain:{ .lg .middle } __public domain dedications__
 
