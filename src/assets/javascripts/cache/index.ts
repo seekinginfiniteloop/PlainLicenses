@@ -53,15 +53,15 @@ const getAssetType = (url: string): string | undefined => {
  * @param url - the asset URL
  * @returns boolean indicating if the asset should be cached
  */
-const shouldHandleAsset = (url: string): boolean => {
+const shouldHandleAsset = (url: string, heroCaller: boolean): boolean => {
   const assetType = getAssetType(url)
   if (!assetType) return false
-
+  if (assetType === "image" && heroCaller) return true
   const config = ASSET_TYPES[assetType]
   if (!config?.cacheable) return false
 
 
-  if (config.skipOnHome && isHome(new URL(window.location.href)) && assetType === 'image') {
+  if (config.skipOnHome && isHome(location$.value)) && assetType === 'image') {
     return false
   }
 
@@ -126,9 +126,9 @@ const fetchAndCacheAsset = (url: string, cache: Cache): Observable<Response> =>
  * @param url - the URL of the asset
  * @returns Observable<Response>
  */
-export const getAsset = (url: string): Observable<Response> => {
+export const getAsset = (url: string, heroCaller: boolean = false): Observable<Response> => {
   // If we shouldn't handle this asset, fetch it directly
-  if (!shouldHandleAsset(url)) {
+  if (!shouldHandleAsset(url, heroCaller)) {
     return from(fetch(url)).pipe(
       catchError(error => {
         logger.error(`Error fetching asset directly: ${url}`, error)
