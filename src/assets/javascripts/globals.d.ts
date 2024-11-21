@@ -34,6 +34,18 @@ declare global {
    * Interfaces
    * ------------------------------------------------------------------------- */
 
+  interface AssetTypeConfig {
+    cacheable: boolean
+    skipOnHome?: boolean
+    contentType?: string
+  }
+  
+  interface CacheConfig {
+    CACHE_NAME: string
+    ROOT_URL: string
+    ASSET_TYPES: Record<string, AssetTypeConfig>
+  }
+
   interface TabElement {
     input: HTMLInputElement
     label: HTMLLabelElement
