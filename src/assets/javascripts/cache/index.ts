@@ -5,19 +5,6 @@ import { isHome } from "~/utils"
 
 const { location$ } = window
 
-
-interface AssetTypeConfig {
-  cacheable: boolean
-  skipOnHome?: boolean
-  contentType?: string
-}
-
-interface CacheConfig {
-  CACHE_NAME: string
-  ROOT_URL: string
-  ASSET_TYPES: Record<string, AssetTypeConfig>
-}
-
 export const CONFIG: CacheConfig = {
   CACHE_NAME: "static-assets-cache-v1",
   ROOT_URL: "assets/",
