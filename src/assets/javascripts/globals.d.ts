@@ -13,6 +13,16 @@ declare global {
    * Types
    * ------------------------------------------------------------------------- */
 
+  // Image state management
+  type HeroState = {
+    status: 'loading' | 'ready' | 'cycling' | 'paused' | 'stopped'
+    isVisible: boolean
+    isAtHome: boolean
+    activeImageIndex: number
+    orientation: 'portrait' | 'landscape'
+    optimalWidth: number
+  }
+
   type T = Type["T"]
   type R = Type["R"]
 
