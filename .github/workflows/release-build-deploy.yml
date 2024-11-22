@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - dev
   workflow_dispatch:
 
 permissions:
@@ -47,12 +48,15 @@ jobs:
             pyproject.toml
       - run: |
           bun install --no-interactive
-          bun install --no-interactive -g @linthtml/linthtml stylelint eslint prettier semantic-release-cli markdownlint-cli2 commitlint
+          bun install --no-interactive -g @linthtml/linthtml stylelint eslint prettier semantic-release-cli markdownlint-cli2 commitlint lerna
           uv python install 3.13 &&
           uv venv --allow-existing .venv &&
           source .venv/bin/activate &&
           uv sync --all-extras &&
           export NODE_ENV=production
+
+      - name: Run Lerna Versioning
+        run: npx lerna version --yes --conventional-commits
 
       - name: Release project
         env:
@@ -62,21 +66,6 @@ jobs:
           timeout_minutes: 10
           max_attempts: 3
           command: bunx -b semantic-release
-
-      - name: Release individual licenses
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set -e
-          for license in docs/licenses/*/*/; do
-            if [ -f "$license/package.json" ]; then
-              echo "Releasing $license"
-              (
-                cd $license
-                npx semantic-release -e ../../../.releaserc.json
-              )
-            fi
-          done
 
       - name: Commit updated changelogs
         run: |
@@ -186,5 +175,6 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               title: 'Workflow failed: ${{ github.workflow }}',
-              body: 'Workflow ${{ github.workflow }} failed on commit ${{ github.sha }}. Check the [workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.'
+              body: 'Workflow ${{ github.workflow }} failed on commit ${{ github.sha }}. Check the [workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.',
+              labels: ['bug']
             })
