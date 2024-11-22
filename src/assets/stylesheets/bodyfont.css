@@ -14,6 +14,20 @@
 }
 
 @font-face {
+  font-family: Bangers, Impact, Haettenschweiler, Charcoal, "Arial Narrow Bold", Gadget, sans-serif;
+  font-style: normal;
+  font-weight: 500;
+  src:
+    local("Bangers"),
+    local("Bangers Regular"),
+    local("Bangers-Regular"),
+    url("../fonts/bangers-regular.woff2") format("woff2"),
+    url("../fonts/bangers-regular.woff") format("woff");
+  /* stylelint-disable-next-line @stylistic/max-line-length */
+  unicode-range: U+000D, U+0020-002F, U+003A-0040, U+005B-007E, U+0131, U+0300, U+2013-2014, U+2018-2019, U+201C-201D, U+2026, U+25FC;
+}
+
+@font-face {
   font-family: "Source Code Pro", "Fira Code", Inconsolata, Monaco, Consolas, "Courier New", monospace;
   font-style: normal;
   font-weight: 500;

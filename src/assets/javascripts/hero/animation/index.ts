@@ -223,7 +223,7 @@ export const allSubscriptions = (): void => {
       }),
       tap(ev => {
         ev.preventDefault()
-        history.replaceState(storedLocationState, "", "/")
+        window.location.hash = ""
       }),
       tap(ev => {
         logger.info(`Hero button interaction observed on ${ev.target}`)
@@ -307,9 +307,11 @@ export const allSubscriptions = (): void => {
         })
         return fadeIns()
       }
-      subscriptions.push(concat(...createFadeInAnimation()).subscribe())
+      return []
+    }
+    subscriptions.push(concat(...createFadeInAnimation()).subscribe())
 
-      const createCtaAnimation = () => {
+    const createCtaAnimation = () => {
         setupAnimation(".cta-ul", { scaleX: 0, transformOrigin: "left", height: "1.8em", width: "0" })
         const ctaTimeline = createTimeline(".cta-ul", [
           { scaleX: 1, transformOrigin: "left", duration: 0.4, height: "1.3em", width: "50%" },
@@ -322,9 +324,9 @@ export const allSubscriptions = (): void => {
           scroller: ".hero__parallax"
         })
       }
-      subscriptions.push(of(createCtaAnimation).subscribe())
+    subscriptions.push(of(createCtaAnimation).subscribe())
 
-      const createEmphasisAnimation = () => {
+    const createEmphasisAnimation = () => {
         setupAnimation(".special-ul", { scaleX: 0, transformOrigin: "left", height: "1.8em", width: "0" })
         const emphasisTimeline = createTimeline(".special-ul", [
           { scaleX: 1, transformOrigin: "left", duration: 0.25, height: "1.3em", width: "50%" },
@@ -339,9 +341,9 @@ export const allSubscriptions = (): void => {
           }
         )
       }
-      subscriptions.push(of(createEmphasisAnimation).subscribe())
+    subscriptions.push(of(createEmphasisAnimation).subscribe())
 
-      const createSpecialHighlight = () => {
+    const createSpecialHighlight = () => {
         setupAnimation(".special-highlight", { textShadow: "0 0 0 transparent", x: 0 })
         const specialHighlight = createTimeline(".special-highlight", [
           { textShadow: "0.02em 0.02em 0 var(--turkey-red)", x: 20, duration: 0.25 },
@@ -354,8 +356,8 @@ export const allSubscriptions = (): void => {
             onEnter: () => { specialHighlight.play() }
           })
       }
-      subscriptions.push(of(createSpecialHighlight).subscribe())
-    }
+    subscriptions.push(of(createSpecialHighlight).subscribe())
+  }
     subscriptions.push(fromEvent(window, "hashchange").pipe(
     ).subscribe({
       next: () => {
@@ -364,11 +366,10 @@ export const allSubscriptions = (): void => {
     }))
   }
 
-  const urlFilter = (url: URL) => (!isHome(url) && isOnSite(url)) || !isOnSite(url)
+const urlFilter = (url: URL) => (!isHome(url) && isOnSite(url)) || !isOnSite(url)
 
-  mergedUnsubscription$(urlFilter).subscribe({
+mergedUnsubscription$(urlFilter).subscribe({
     next: () => {
       unsubscribeFromAll(subscriptions)
     }
   })
-}

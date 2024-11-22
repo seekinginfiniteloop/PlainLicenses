@@ -1,9 +1,6 @@
-import { Observable, from, of } from "rxjs"
-import { catchError, map, mergeMap, switchMap, tap } from "rxjs/operators"
+import { Observable, from, fromEvent, of, throwError } from "rxjs"
+import { catchError, defaultIfEmpty, map, mergeMap, switchMap, tap } from "rxjs/operators"
 import { logger } from "~/log"
-import { isHome } from "~/utils"
-
-const { location$ } = window
 
 export const CONFIG: CacheConfig = {
   CACHE_NAME: "static-assets-cache-v1",
@@ -41,27 +38,41 @@ const openCache = (): Observable<Cache> => from(caches.open(CONFIG.CACHE_NAME))
  * @returns the asset type or undefined
  */
 const getAssetType = (url: string): string | undefined => {
-  if (url.includes('/images/')) return 'image'
-  if (url.includes('/fonts/')) return 'font'
-  if (url.includes('/stylesheets/')) return 'style'
-  if (url.includes('/javascripts/')) return 'script'
+  if (url.includes('/images/')) {
+    return 'image'
+  }
+  if (url.includes('/fonts/')) {
+    return 'font'
+  }
+  if (url.includes('/stylesheets/')) {
+    return 'style'
+  }
+  if (url.includes('/javascripts/')) {
+    return 'script'
+  }
   return undefined
 }
 
 /**
  * Checks if an asset should be handled by the cache system
  * @param url - the asset URL
+ * @param heroCaller - boolean indicating if the asset is being called by the hero component
  * @returns boolean indicating if the asset should be cached
  */
 const shouldHandleAsset = (url: string, heroCaller: boolean): boolean => {
   const assetType = getAssetType(url)
-  if (!assetType) return false
-  if (assetType === "image" && heroCaller) return true
-  const config = ASSET_TYPES[assetType]
-  if (!config?.cacheable) return false
+  if (!assetType) {
+    return false
+  }
+  if (assetType === "image" && heroCaller) {
+    return true
+  }
+  const asset = CONFIG.ASSET_TYPES[assetType]
+  if (!asset?.cacheable) {
+    return false
+  }
 
-
-  if (config.skipOnHome && isHome(location$.value)) && assetType === 'image') {
+  if (asset.skipOnHome && assetType === 'image' && url.includes('hero')) {
     return false
   }
 
@@ -75,12 +86,14 @@ const shouldHandleAsset = (url: string, heroCaller: boolean): boolean => {
  * @returns a new response with the correct content type
  */
 const createTypedResponse = (response: Response, assetType: string): Response => {
-  const config = ASSET_TYPES[assetType]
-  if (!config?.contentType) return response
+  const asset = CONFIG.ASSET_TYPES[assetType]
+  if (!asset?.contentType) {
+    return response
+  }
 
   const headers = new Headers(response.headers)
-  headers.set('Content-Type', config.contentType)
-  
+  headers.set('Content-Type', asset.contentType)
+
   return new Response(response.body, {
     status: response.status,
     statusText: response.statusText,
@@ -124,6 +137,7 @@ const fetchAndCacheAsset = (url: string, cache: Cache): Observable<Response> =>
 /**
  * Gets an asset from the cache or fetches it
  * @param url - the URL of the asset
+ * @param heroCaller - boolean indicating if the asset is being called by the hero component
  * @returns Observable<Response>
  */
 export const getAsset = (url: string, heroCaller: boolean = false): Observable<Response> => {
@@ -146,7 +160,7 @@ export const getAsset = (url: string, heroCaller: boolean = false): Observable<R
           if (response) {
             const cachedHash = extractHashFromUrl(response.url)
             const requestedHash = extractHashFromUrl(url)
-            
+
             if (cachedHash === requestedHash) {
               logger.info(`Asset retrieved from cache: ${url}`)
               return of(createTypedResponse(response, assetType))

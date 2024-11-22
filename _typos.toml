@@ -5,6 +5,9 @@ check-filename = true
 extend-ignore-re = [
     "(?s)(#|//)\\s*spellchecker:off.*?\\n\\s*(#|//)\\s*spellchecker:on",
 ]
+extend-ignore-identifiers-re = [
+    "iif", "iife", "i18n", "i18next", "i18n-t", "i18n-tc"
+]
 
 [files]
 ignore-hidden = true

@@ -15,12 +15,13 @@ declare global {
 
   // Image state management
   type HeroState = {
-    status: 'loading' | 'ready' | 'cycling' | 'paused' | 'stopped'
+    status: 'loading' | 'ready' | 'cycling' | 'paused' | 'stopped' | 'error'
     isVisible: boolean
     isAtHome: boolean
     activeImageIndex: number
     orientation: 'portrait' | 'landscape'
     optimalWidth: number
+    lastActiveTime: number
   }
 
   type T = Type["T"]
@@ -44,12 +45,25 @@ declare global {
    * Interfaces
    * ------------------------------------------------------------------------- */
 
+  interface ImageCycler {
+    loadImages$: Observable<HTMLImageElement>
+    cycle$: Observable<HTMLImageElement | undefined>
+    stateManager: typeof stateManager
+    start: () => Subscription
+    stop: () => void
+    debug: {
+      getState: () => HeroState
+      getMetadata: (img: HTMLImageElement) => any
+    }
+  }
+
+
   interface AssetTypeConfig {
     cacheable: boolean
     skipOnHome?: boolean
     contentType?: string
   }
-  
+
   interface CacheConfig {
     CACHE_NAME: string
     ROOT_URL: string

@@ -12,7 +12,7 @@ import { feedback$ } from "~/feedback"
 import { watchLicense } from "~/licenses"
 import { logger } from "~/log"
 import { isHome, isLicense, isOnSite, locationBeacon$, mergedUnsubscription$, unsubscribeFromAll, watchLocationChange, watchTables, windowEvents } from "~/utils"
-import { cacheAssets, cleanupCache, deleteOldCache } from "./cache"
+import { cacheAssets, cleanupCache, deleteOldCache, getAsset } from "./cache"
 import { shuffle$ } from "./hero/imageshuffle"
 import { allSubscriptions } from "./hero/animation"
 
@@ -23,9 +23,66 @@ const subscriptions: Subscription[] = []
 const styleAssets = document.querySelectorAll("link[rel=stylesheet][href*=stylesheets]")
 const scriptAssets = document.querySelectorAll("script[src*=javascripts]")
 const fontAssets = document.querySelectorAll("link[rel=stylesheet][href*=fonts]")
+const imageAssets = document.querySelectorAll("img[src]")
 
 document.documentElement.classList.remove("no-js")
 document.documentElement.classList.add("js")
+
+// Function to preload fonts using the cache
+const preloadFonts = () => {
+  const fontUrls = Array.from(fontAssets)
+    .map(el => el.getAttribute('href'))
+    .filter((url): url is string => url !== null)
+
+  return merge(
+    ...fontUrls.map(url =>
+      getAsset(url).pipe(
+        tap(response => {
+          response.blob().then(blob => {
+            const blobUrl = URL.createObjectURL(blob)
+            const fontFamily = url.includes('inter') ? 'Inter' :
+                             url.includes('sourcecodepro') ? 'Source Code Pro' :
+                             url.includes('raleway') ? 'Raleway' : 'Bangers'
+
+            const font = new FontFace(fontFamily, `url(${blobUrl})`)
+
+            font.load().then(loadedFont => {
+              document.fonts.load(`url(${blobUrl})`).then(() => {
+                logger.info(`Font loaded from cache: ${url}`)
+              })
+              URL.revokeObjectURL(blobUrl)
+              logger.info(`Font loaded from cache: ${url}`)
+            }).catch(error => {
+              logger.error(`Error loading font: ${fontFamily}`, error)
+            })
+          })
+        })
+      )
+    )
+  )
+}
+
+// Function to preload other static assets
+const preloadStaticAssets = () => {
+  const styleUrls = Array.from(styleAssets)
+    .map(el => el.getAttribute('href'))
+    .filter((url): url is string => url !== null)
+
+  const scriptUrls = Array.from(scriptAssets)
+    .map(el => el.getAttribute('src'))
+    .filter((url): url is string => url !== null)
+
+  const imageUrls = Array.from(imageAssets)
+    .map(el => el.getAttribute('src'))
+    .filter((url): url is string => url !== null)
+
+  return merge(
+    ...styleUrls.map(url => getAsset(url)),
+    ...scriptUrls.map(url => getAsset(url)),
+    ...imageUrls.map(url => getAsset(url))
+  )
+}
+
 
 const insertAnalytics = () => {
   const script = document.createElement("script")
@@ -58,13 +115,13 @@ const atLicense$ = locationBeacon$.pipe(
   })
 )
 
-const isHelpingIndex = (url: URL) =>
+const isHelpingIndex = (url: URL) => url.pathname.includes("helping") && (
   (url.pathname.split("/").length === 3 && url.pathname.endsWith("index.html")) ||
-  (url.pathname.split("/").length === 2 && url.pathname.endsWith("/"))
+  (url.pathname.split("/").length === 2 && url.pathname.endsWith("/")))
 
 const atHelping$ = locationBeacon$.pipe(
   distinctUntilKeyChanged("pathname"),
-  takeWhile((url: URL) => url.pathname.includes("helping") && isHelpingIndex(url)),
+  takeWhile((url: URL) => isHelpingIndex(url)),
   tap(() => logger.info("At helping page"))
 )
 
@@ -76,7 +133,8 @@ const cleanCache$ = cleanupCache(8000).pipe(
     merge(
       cacheAssets("stylesheets", styleAssets as NodeListOf<HTMLElement>),
       cacheAssets("javascripts", scriptAssets as NodeListOf<HTMLElement>),
-      cacheAssets("fonts", fontAssets as NodeListOf<HTMLElement>)
+      cacheAssets("fonts", fontAssets as NodeListOf<HTMLElement>),
+      cacheAssets("images", imageAssets as NodeListOf<HTMLElement>),
     )
   ),
   tap(() => logger.info("Assets cached"))
@@ -103,6 +161,8 @@ let pageSubscriptions: Subscription[] = []
 function initPage() {
   logger.info("New page loaded")
   pageSubscriptions.push(
+    preloadFonts().subscribe(),
+    preloadStaticAssets().subscribe(),
     of(bundle).subscribe(),
     event$.subscribe(),
     analytics$.subscribe(),

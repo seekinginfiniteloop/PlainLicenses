@@ -3339,13 +3339,6 @@ function fromEventPattern(addHandler, removeHandler, resultSelector) {
   });
 }
 
-// node_modules/rxjs/dist/esm5/internal/observable/iif.js
-function iif(condition, trueResult, falseResult) {
-  return defer(function() {
-    return condition() ? trueResult : falseResult;
-  });
-}
-
 // node_modules/rxjs/dist/esm5/internal/observable/timer.js
 function timer(dueTime, intervalOrScheduler, scheduler) {
   if (dueTime === void 0) {
@@ -3631,21 +3624,6 @@ function scanInternals(accumulator, seed, hasSeed, emitOnNext, emitBeforeComplet
       subscriber.complete();
     }));
   };
-}
-
-// node_modules/rxjs/dist/esm5/internal/operators/reduce.js
-function reduce(accumulator, seed) {
-  return operate(scanInternals(accumulator, seed, arguments.length >= 2, false, true));
-}
-
-// node_modules/rxjs/dist/esm5/internal/operators/toArray.js
-var arrReducer = function(arr, value) {
-  return arr.push(value), arr;
-};
-function toArray() {
-  return operate(function(source, subscriber) {
-    reduce(arrReducer, [])(source).subscribe(subscriber);
-  });
 }
 
 // node_modules/rxjs/dist/esm5/internal/operators/combineLatest.js
@@ -7741,13 +7719,13 @@ var locationBeacon$ = merge(
   map((value) => value instanceof URL ? value : getLocation()),
   distinct()
 );
-var watchLocationChange = (urlFilter) => {
+var watchLocationChange = (urlFilter2) => {
   return locationBeacon$.pipe(
-    urlFilter ? filter((url) => urlFilter(url)) : map((url) => url)
+    urlFilter2 ? filter((url) => urlFilter2(url)) : map((url) => url)
   );
 };
-var mergedUnsubscription$ = (urlFilter) => {
-  const location2 = watchLocationChange(urlFilter);
+var mergedUnsubscription$ = (urlFilter2) => {
+  const location2 = watchLocationChange(urlFilter2);
   const beforeUnload = fromEvent(window, "beforeunload");
   return forkJoin([location2, beforeUnload]).pipe(tap(() => logger.info("Unsubscribing from subscriptions")));
 };
@@ -7883,9 +7861,76 @@ var watchLicense = () => {
 // src/assets/javascripts/cache/index.ts
 var CONFIG = {
   CACHE_NAME: "static-assets-cache-v1",
-  ROOT_URL: "assets/"
+  ROOT_URL: "assets/",
+  ASSET_TYPES: {
+    image: {
+      cacheable: true,
+      skipOnHome: false,
+      contentType: "image"
+    },
+    font: {
+      cacheable: true,
+      skipOnHome: false,
+      contentType: "font"
+    },
+    style: {
+      cacheable: true,
+      skipOnHome: false,
+      contentType: "text/css"
+    },
+    script: {
+      cacheable: true,
+      skipOnHome: false,
+      contentType: "application/javascript"
+    }
+  }
 };
 var openCache = () => from(caches.open(CONFIG.CACHE_NAME));
+var getAssetType = (url) => {
+  if (url.includes("/images/")) {
+    return "image";
+  }
+  if (url.includes("/fonts/")) {
+    return "font";
+  }
+  if (url.includes("/stylesheets/")) {
+    return "style";
+  }
+  if (url.includes("/javascripts/")) {
+    return "script";
+  }
+  return void 0;
+};
+var shouldHandleAsset = (url, heroCaller) => {
+  const assetType = getAssetType(url);
+  if (!assetType) {
+    return false;
+  }
+  if (assetType === "image" && heroCaller) {
+    return true;
+  }
+  const asset = CONFIG.ASSET_TYPES[assetType];
+  if (!(asset == null ? void 0 : asset.cacheable)) {
+    return false;
+  }
+  if (asset.skipOnHome && assetType === "image" && url.includes("hero")) {
+    return false;
+  }
+  return true;
+};
+var createTypedResponse = (response, assetType) => {
+  const asset = CONFIG.ASSET_TYPES[assetType];
+  if (!(asset == null ? void 0 : asset.contentType)) {
+    return response;
+  }
+  const headers = new Headers(response.headers);
+  headers.set("Content-Type", asset.contentType);
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers
+  });
+};
 var extractHashFromUrl = (url) => {
   const match = url.match(/\.([a-f0-9]{8})\.[^/.]+$/);
   return match ? match[1] : void 0;
@@ -7905,32 +7950,47 @@ var fetchAndCacheAsset = (url, cache) => from(fetch(url)).pipe(
     return throwError(() => new Error(`Failed to fetch and cache asset: ${url}`));
   })
 );
-var getAsset = (url) => openCache().pipe(
-  switchMap(
-    (cache) => from(cache.match(url)).pipe(
-      switchMap((response) => {
-        if (response) {
-          const cachedHash = extractHashFromUrl(response.url);
-          const requestedHash = extractHashFromUrl(url);
-          if (cachedHash === requestedHash) {
-            return of(response);
+var getAsset = (url, heroCaller = false) => {
+  if (!shouldHandleAsset(url, heroCaller)) {
+    return from(fetch(url)).pipe(
+      catchError((error) => {
+        logger.error(`Error fetching asset directly: ${url}`, error);
+        return throwError(() => new Error(`Failed to fetch asset: ${url}`));
+      })
+    );
+  }
+  const assetType = getAssetType(url);
+  return openCache().pipe(
+    switchMap(
+      (cache) => from(cache.match(url)).pipe(
+        switchMap((response) => {
+          if (response) {
+            const cachedHash = extractHashFromUrl(response.url);
+            const requestedHash = extractHashFromUrl(url);
+            if (cachedHash === requestedHash) {
+              logger.info(`Asset retrieved from cache: ${url}`);
+              return of(createTypedResponse(response, assetType));
+            } else {
+              return from(cache.delete(url)).pipe(
+                switchMap(() => fetchAndCacheAsset(url, cache)),
+                map((response2) => createTypedResponse(response2, assetType)),
+                tap(() => logger.info(`Asset updated: ${url}`))
+              );
+            }
           } else {
-            return from(cache.delete(url)).pipe(
-              switchMap(() => fetchAndCacheAsset(url, cache)),
-              tap(() => logger.info(`Asset updated: ${url}`))
+            return fetchAndCacheAsset(url, cache).pipe(
+              map((response2) => createTypedResponse(response2, assetType))
             );
           }
-        } else {
-          return fetchAndCacheAsset(url, cache);
-        }
-      })
-    )
-  ),
-  catchError((error) => {
-    logger.error(`Error in getAsset: ${url}`, error);
-    return throwError(() => new Error(`Failed to get asset: ${url}`));
-  })
-);
+        })
+      )
+    ),
+    catchError((error) => {
+      logger.error(`Error in getAsset: ${url}`, error);
+      return throwError(() => new Error(`Failed to get asset: ${url}`));
+    })
+  );
+};
 function extractUrlFromElement(type, el) {
   return type === "javascripts" ? el.src : el.href;
 }
@@ -8164,13 +8224,10 @@ function getCurrentLocation() {
   return location$2.getValue();
 }
 var getOptimalWidth = () => {
-  if (!window) {
-    return 1280;
-  }
   const screenWidth = Math.max(window.innerWidth, window.innerHeight);
   return screenWidth <= 1280 ? 1280 : screenWidth <= 1920 ? 1920 : screenWidth <= 2560 ? 2560 : 2840;
 };
-var CONFIG2 = { INTERVAL_TIME: 25e3 };
+var CONFIG2 = { INTERVAL_TIME: 25e3, CLEANUP_DELAY: 6e4 };
 var isPageVisible = () => !document.hidden;
 var isAtHome = () => {
   const loc = getCurrentLocation();
@@ -8186,10 +8243,12 @@ var createHeroStateManager = () => {
     isAtHome: true,
     activeImageIndex: 0,
     orientation: portraitMediaQuery.matches ? "portrait" : "landscape",
-    optimalWidth: optimalWidth$.value
+    optimalWidth: optimalWidth$.value,
+    lastActiveTime: Date.now()
   };
   const state$ = new BehaviorSubject(initialState);
-  const cleanup = new Subject();
+  const cleanup2 = new Subject();
+  let cleanupTimeout = null;
   const canCycle$ = state$.pipe(
     map(
       (state) => state.isVisible && state.isAtHome && state.status === "cycling"
@@ -8197,23 +8256,48 @@ var createHeroStateManager = () => {
     distinctUntilChanged(),
     shareReplay(1)
   );
+  const scheduleCleanup = () => {
+    if (cleanupTimeout) {
+      window.clearTimeout(cleanupTimeout);
+    }
+    cleanupTimeout = window.setTimeout(() => {
+      if (!state$.value.isVisible && !state$.value.isAtHome) {
+        cleanup2.next();
+        cleanup2.complete();
+      }
+    }, CONFIG2.CLEANUP_DELAY);
+  };
   return {
     state$,
     canCycle$,
-    cleanup$: cleanup.asObservable(),
+    cleanup$: cleanup2.asObservable(),
     updateState: (updates) => {
       if (state$.closed) {
         return;
       }
-      state$.next({ ...state$.value, ...updates });
+      const newState = { ...state$.value, ...updates };
+      if (updates.isVisible || updates.isAtHome) {
+        newState.lastActiveTime = Date.now();
+      }
+      if (updates.isVisible === false || updates.isAtHome === false) {
+        scheduleCleanup();
+      } else if (cleanupTimeout) {
+        window.clearTimeout(cleanupTimeout);
+        cleanupTimeout = null;
+      }
+      state$.next(newState);
     },
     cleanup: () => {
-      cleanup.next();
-      cleanup.complete();
+      if (cleanupTimeout) {
+        window.clearTimeout(cleanupTimeout);
+      }
+      cleanup2.next();
+      cleanup2.complete();
       state$.complete();
     }
   };
 };
+var stateManager = createHeroStateManager();
 var updateImageSources = (images, optimalWidth) => {
   images.forEach((image) => {
     const imageName = image.classList[1].split("--")[1];
@@ -8233,7 +8317,7 @@ var getHeroes = () => {
 var allHeroes = getHeroes();
 var imageMetadata = /* @__PURE__ */ new WeakMap();
 var loadImage = (imageUrl) => {
-  return getAsset(imageUrl).pipe(
+  return getAsset(imageUrl, true).pipe(
     mergeMap((response) => from(response.blob())),
     catchError((error) => {
       logger.error("Error loading image:", error);
@@ -8261,6 +8345,7 @@ var fetchAndSetImage = (imgSettings) => {
   return loadImage(src).pipe(
     mergeMap((imageBlob) => {
       const img = new Image();
+      const loading = (parallaxLayer == null ? void 0 : parallaxLayer.getElementsByTagName("img").length) !== 0 ? "lazy" : "eager";
       const imageUrl = URL.createObjectURL(imageBlob);
       img.src = src;
       img.srcset = srcset;
@@ -8268,7 +8353,7 @@ var fetchAndSetImage = (imgSettings) => {
       img.alt = "";
       img.classList.add("hero-parallax__image", `hero-parallax__image--${imageName}`);
       img.draggable = false;
-      img.loading = "eager";
+      img.loading = loading;
       void setText(imageName);
       return from(new Promise((resolve3) => {
         img.onload = () => {
@@ -8280,10 +8365,15 @@ var fetchAndSetImage = (imgSettings) => {
           });
           resolve3();
         };
-      })).pipe(
-        tap(() => parallaxLayer == null ? void 0 : parallaxLayer.prepend(img)),
-        map(() => img)
-      );
+      })).pipe(tap(() => {
+        const images = (parallaxLayer == null ? void 0 : parallaxLayer.getElementsByTagName("img")) || [];
+        if (images.length > 1) {
+          const oldImage = images[images.length - 1];
+          cleanupImageResources(oldImage);
+          oldImage.remove();
+        }
+        parallaxLayer == null ? void 0 : parallaxLayer.prepend(img);
+      }), map(() => img));
     }),
     catchError((error) => {
       logger.error("Error in fetchAndSetImage:", error);
@@ -8298,25 +8388,73 @@ var createOrientationObservable = (mediaQuery) => {
     (event) => event.matches
   );
 };
-var shuffledHeroes = [...allHeroes].sort(() => Math.random() - 0.5);
-var createImageCycler = (parallaxLayer2) => {
-  const stateManager = createHeroStateManager();
-  const { state$, canCycle$, cleanup$, updateState } = stateManager;
-  const loadImages$ = from(shuffledHeroes).pipe(
-    mergeMap((image) => fetchAndSetImage(image)),
-    takeUntil(cleanup$),
-    // When all images are loaded, check if we need size updates
-    toArray(),
-    tap((loadedImages) => {
-      const currentOptimalWidth = getOptimalWidth();
-      if (currentOptimalWidth !== state$.value.optimalWidth) {
-        updateState({ optimalWidth: currentOptimalWidth });
-        updateImageSources(loadedImages, currentOptimalWidth);
-      }
+var createVisibilityAndLocationObservable = () => {
+  return merge(
+    fromEvent(document, "visibilitychange").pipe(
+      tap(() => {
+        stateManager.updateState({
+          isVisible: isPageVisible(),
+          status: isPageVisible() ? "ready" : "paused"
+        });
+      })
+    ),
+    watchLocationChange((url) => isHome(url) && isOnSite(url)).pipe(
+      tap(() => {
+        stateManager.updateState({
+          isAtHome: isAtHome(),
+          status: isAtHome() ? "ready" : "stopped"
+        });
+      })
+    )
+  ).pipe(takeUntil(stateManager.cleanup$));
+};
+var createOrientationHandler = () => {
+  const orientationChange$ = createOrientationObservable(portraitMediaQuery);
+  const resize$ = fromEvent(window, "resize");
+  return merge(orientationChange$, resize$).pipe(
+    debounceTime(100),
+    skipWhile(() => !isPageVisible() || !isElementVisible(parallaxLayer)),
+    map(getOptimalWidth),
+    distinctUntilChanged(),
+    tap((optimalWidth) => {
+      stateManager.updateState({
+        orientation: portraitMediaQuery.matches ? "portrait" : "landscape",
+        optimalWidth
+      });
+      const imageLayers = Array.from((parallaxLayer == null ? void 0 : parallaxLayer.getElementsByTagName("img")) || []);
+      updateImageSources(imageLayers, optimalWidth);
+    }),
+    takeUntil(stateManager.cleanup$),
+    catchError((error) => {
+      logger.error("Error in viewport change handler:", error);
+      return EMPTY;
     })
   );
-  const loadFirstImage$ = fetchAndSetImage(shuffledHeroes[0]).pipe(
-    tap(() => updateState({ status: "cycling" }))
+};
+var shuffledHeroes = [...allHeroes].sort(() => Math.random() - 0.5);
+var createImageCycler = (parallaxLayer2) => {
+  const { state$, canCycle$, cleanup$, updateState } = stateManager;
+  const loadedImages = /* @__PURE__ */ new Set();
+  const loadImages$ = from([shuffledHeroes[0]]).pipe(
+    mergeMap(fetchAndSetImage),
+    takeUntil(cleanup$),
+    tap((image) => {
+      loadedImages.add(shuffledHeroes[0].imageName);
+      const currentOptimalWidth = getOptimalWidth();
+      if (currentOptimalWidth !== state$.value.optimalWidth) {
+        stateManager.updateState({
+          optimalWidth: currentOptimalWidth,
+          activeImageIndex: 0,
+          status: "cycling"
+        });
+        updateImageSources([image], currentOptimalWidth);
+      }
+    }),
+    catchError((error) => {
+      logger.error("Failed to load initial image:", error);
+      updateState({ status: "error" });
+      return EMPTY;
+    })
   );
   const cycle$ = interval(CONFIG2.INTERVAL_TIME).pipe(
     withLatestFrom(canCycle$, state$),
@@ -8324,92 +8462,87 @@ var createImageCycler = (parallaxLayer2) => {
     mergeMap(([_, __, state]) => {
       const nextIndex = (state.activeImageIndex + 1) % shuffledHeroes.length;
       const nextImage = shuffledHeroes[nextIndex];
-      return fetchAndSetImage(nextImage).pipe(
-        tap(() => {
-          const firstImage = parallaxLayer2.firstElementChild;
-          parallaxLayer2.appendChild(firstImage);
-          updateState({ activeImageIndex: nextIndex });
-          void setText(nextImage.imageName);
-        })
-      );
+      if (!loadedImages.has(nextImage.imageName)) {
+        return fetchAndSetImage(nextImage).pipe(
+          tap(() => {
+            loadedImages.add(nextImage.imageName);
+            const firstImage = parallaxLayer2.firstElementChild;
+            parallaxLayer2.appendChild(firstImage);
+            updateState({ activeImageIndex: nextIndex });
+            void setText(nextImage.imageName);
+          }),
+          catchError((error) => {
+            logger.error(`Failed to load image ${nextImage.imageName}:`, error);
+            return EMPTY;
+          })
+        );
+      } else {
+        return of(void 0).pipe(
+          tap(() => {
+            const firstImage = parallaxLayer2.firstElementChild;
+            parallaxLayer2.appendChild(firstImage);
+            updateState({ activeImageIndex: nextIndex });
+            void setText(nextImage.imageName);
+          })
+        );
+      }
     }),
     takeUntil(cleanup$)
   );
-  const visibility$ = fromEvent(document, "visibilitychange").pipe(
-    tap(() => {
-      updateState({
-        isVisible: isPageVisible(),
-        status: isPageVisible() ? "ready" : "paused"
-      });
-    }),
-    takeUntil(cleanup$)
-  );
-  const locationWatcher$ = watchLocationChange((url) => isHome(url) && isOnSite(url)).pipe(
-    tap((_url) => {
-      updateState({
-        isAtHome: isAtHome(),
-        status: isAtHome() ? "ready" : "stopped"
-      });
-    }),
-    takeUntil(cleanup$)
-  );
-  const createOrientationHandler = (stateManager2) => {
-    const orientationChange$ = createOrientationObservable(portraitMediaQuery);
-    const resize$ = fromEvent(window, "resize");
-    return merge(orientationChange$, resize$).pipe(
-      // Debounce to avoid too many rapid changes
-      debounceTime(100),
-      skipWhile(() => !isPageVisible() || !isElementVisible(parallaxLayer2)),
-      map(() => getOptimalWidth()),
-      distinctUntilChanged(),
-      tap((optimalWidth) => {
-        stateManager2.updateState({
-          orientation: portraitMediaQuery.matches ? "portrait" : "landscape",
-          optimalWidth
-        });
-        const imageLayers = Array.from((parallaxLayer2 == null ? void 0 : parallaxLayer2.getElementsByTagName("img")) || []);
-        updateImageSources(imageLayers, optimalWidth);
-      }),
-      takeUntil(stateManager2.cleanup$),
-      catchError((error) => {
-        logger.error("Error in viewport change handler:", error);
-        return EMPTY;
-      })
-    );
-  };
   return {
+    loadImages$,
+    cycle$,
+    stateManager,
     start: () => {
       const subscription = new Subscription();
-      subscription.add(visibility$.subscribe());
-      subscription.add(locationWatcher$.subscribe());
-      subscription.add(createOrientationHandler(stateManager).subscribe());
+      subscription.add(createVisibilityAndLocationObservable().subscribe());
+      subscription.add(createOrientationHandler().subscribe());
       subscription.add(
         loadImages$.pipe(
           tap(() => {
-            updateState({ status: "cycling" });
+            stateManager.updateState({ status: "cycling" });
             subscription.add(cycle$.subscribe());
           })
         ).subscribe()
       );
       subscription.add(() => {
-        const images = Array.from(parallaxLayer2.getElementsByTagName("img"));
-        images.forEach(cleanupImageResources);
+        const images = parallaxLayer2 == null ? void 0 : parallaxLayer2.getElementsByTagName("img");
+        if (images) {
+          Array.from(images).forEach(cleanupImageResources);
+        }
       });
-      subscription.add(loadFirstImage$.subscribe(() => {
-        subscription.add(cycle$.subscribe());
-      }));
       return subscription;
     },
     stop: () => {
       stateManager.cleanup();
     },
-    stateManager,
-    // Expose stateManager for height observable
     debug: {
-      getState: () => state$.value,
+      getState: () => stateManager.state$.value,
       getMetadata: (img) => imageMetadata.get(img)
     }
   };
+};
+var cyclerRef = { current: null };
+var initCycler = () => {
+  var _a2;
+  if (!parallaxLayer) {
+    return;
+  }
+  if ((_a2 = cyclerRef.current) == null ? void 0 : _a2.stop) {
+    cyclerRef.current.stop();
+  }
+  cyclerRef.current = createImageCycler(parallaxLayer);
+  const subscription = cyclerRef.current.start();
+  return () => {
+    var _a3;
+    subscription == null ? void 0 : subscription.unsubscribe();
+    (_a3 = cyclerRef.current) == null ? void 0 : _a3.stop();
+    cyclerRef.current = null;
+  };
+};
+var cleanup = initCycler();
+var stopCycler = () => {
+  cleanup == null ? void 0 : cleanup();
 };
 var getImage = () => {
   const images = parallaxLayer == null ? void 0 : parallaxLayer.getElementsByTagName("img");
@@ -8432,11 +8565,8 @@ function setParallaxHeight(height) {
   const parallaxHeight = height < effectiveViewHeight ? effectiveViewHeight : Math.min(height * 1.2, maxFade);
   setCssVariable("--parallax-height", `${parallaxHeight}px`);
 }
-var cyclerRef = {
-  current: null
-};
-var createHeightObservable = (stateManager) => {
-  const imageChanges$ = stateManager.state$.pipe(
+var createHeightObservable = (stateManager2) => {
+  const imageChanges$ = stateManager2.state$.pipe(
     map(() => getImage()),
     filter((img) => img !== null && img instanceof HTMLImageElement),
     map((img) => img.height || window.innerHeight)
@@ -8460,57 +8590,35 @@ var createHeightObservable = (stateManager) => {
       logger.error("Error adjusting height:", error);
       return EMPTY;
     }),
-    takeUntil(stateManager.cleanup$)
+    takeUntil(stateManager2.cleanup$)
   );
 };
-function shuffle$() {
+var shuffle$ = () => {
   if (!parallaxLayer) {
     return EMPTY;
   }
-  const cycler = createImageCycler(parallaxLayer);
-  cyclerRef.current = cycler;
-  const subscription = cycler.start();
-  subscription.add(
-    createHeightObservable(cycler.stateManager).subscribe()
-  );
-  const stopCycler$ = () => {
-    cyclerRef.current = null;
-    subscription.unsubscribe();
-    const images = parallaxLayer.getElementsByTagName("img");
-    Array.from(images).forEach((img) => {
-      cleanupImageResources(img);
-      img.innerHTML = "";
-    });
-    parallaxLayer.innerHTML = "";
-    return of(true);
-  };
-  const weCanSeeIt$ = merge(
-    fromEvent(window, "focus").pipe(filter(() => isElementVisible(parallaxLayer))),
-    fromEvent(window, "visibilitychange").pipe(filter(() => isElementVisible(parallaxLayer))),
-    of(isElementVisible(parallaxLayer))
-  );
-  const weAreBack$ = watchLocationChange((url) => isHome(url) && isOnSite(url));
-  watchLocationChange((url) => !isHome(url)).pipe(
-    first(),
-    tap((url) => {
+  const cycler = cyclerRef.current;
+  if (!cycler) {
+    return EMPTY;
+  }
+  const subscription = new Subscription();
+  subscription.add(createHeightObservable(cycler.stateManager).subscribe());
+  return watchLocationChange((url) => !isHome(url)).pipe(
+    switchMap((url) => {
       if (parallaxLayer && !parallaxLayer.children.length && isOnSite(url)) {
-        fetchAndSetImage(shuffledHeroes[0]).subscribe();
-      } else {
-        cycler.stop();
+        return fetchAndSetImage(shuffledHeroes[0]).pipe(map(() => void 0));
       }
+      cycler.stop();
+      return of(stopCycler());
     }),
-    mergeMap((url) => iif(
-      () => isOnSite(url),
-      merge(weCanSeeIt$, weAreBack$).pipe(
-        tap(() => {
-          cyclerRef.current = cycler;
-          subscription.add(cycler.start());
-        })
-      ),
-      stopCycler$
-    ))
+    takeUntil(cycler.stateManager.cleanup$),
+    catchError((error) => {
+      logger.error("Error in shuffle$:", error);
+      return EMPTY;
+    }),
+    finalize(() => subscription.unsubscribe())
   );
-}
+};
 
 // node_modules/gsap/gsap-core.js
 function _assertThisInitialized(self) {
@@ -8641,7 +8749,7 @@ var _harness = function _harness2(targets) {
   return targets;
 };
 var _getCache = function _getCache2(target) {
-  return target._gsap || _harness(toArray2(target))[0]._gsap;
+  return target._gsap || _harness(toArray(target))[0]._gsap;
 };
 var _getProperty = function _getProperty2(target, property, v) {
   return (v = target[property]) && _isFunction(v) ? target[property]() : _isUndefined(v) && target.getAttribute && target.getAttribute(property) || v;
@@ -9028,17 +9136,17 @@ var _flatten = function _flatten2(ar, leaveStrings, accumulator) {
   }
   return ar.forEach(function(value) {
     var _accumulator;
-    return _isString(value) && !leaveStrings || _isArrayLike(value, 1) ? (_accumulator = accumulator).push.apply(_accumulator, toArray2(value)) : accumulator.push(value);
+    return _isString(value) && !leaveStrings || _isArrayLike(value, 1) ? (_accumulator = accumulator).push.apply(_accumulator, toArray(value)) : accumulator.push(value);
   }) || accumulator;
 };
-var toArray2 = function toArray3(value, scope, leaveStrings) {
+var toArray = function toArray2(value, scope, leaveStrings) {
   return _context && !scope && _context.selector ? _context.selector(value) : _isString(value) && !leaveStrings && (_coreInitted || !_wake()) ? _slice.call((scope || _doc).querySelectorAll(value), 0) : _isArray(value) ? _flatten(value, leaveStrings) : _isArrayLike(value) ? _slice.call(value, 0) : value ? [value] : [];
 };
 var selector = function selector2(value) {
-  value = toArray2(value)[0] || _warn("Invalid scope") || {};
+  value = toArray(value)[0] || _warn("Invalid scope") || {};
   return function(v) {
     var el = value.current || value.nativeElement || value;
-    return toArray2(v, el.querySelectorAll ? el : el === value ? _warn("Invalid scope") || _doc.createElement("div") : value);
+    return toArray(v, el.querySelectorAll ? el : el === value ? _warn("Invalid scope") || _doc.createElement("div") : value);
   };
 };
 var shuffle = function shuffle2(a) {
@@ -9109,7 +9217,7 @@ var snap = function snap2(snapTo, value) {
   if (!isArray4 && _isObject(snapTo)) {
     radius = isArray4 = snapTo.radius || _bigNum;
     if (snapTo.values) {
-      snapTo = toArray2(snapTo.values);
+      snapTo = toArray(snapTo.values);
       if (is2D = !_isNumber(snapTo[0])) {
         radius *= radius;
       }
@@ -10281,7 +10389,7 @@ var Timeline = /* @__PURE__ */ function(_Animation) {
     return this;
   };
   _proto2.getTweensOf = function getTweensOf2(targets, onlyActive) {
-    var a = [], parsedTargets = toArray2(targets), child = this._first, isGlobalTime = _isNumber(onlyActive), children;
+    var a = [], parsedTargets = toArray(targets), child = this._first, isGlobalTime = _isNumber(onlyActive), children;
     while (child) {
       if (child instanceof Tween) {
         if (_arrayContainsAny(child._targets, parsedTargets) && (isGlobalTime ? (!_overwritingTween || child._initted && child._ts) && child.globalTime(0) <= onlyActive && child.globalTime(child.totalDuration()) > onlyActive : !onlyActive || child.isActive())) {
@@ -10742,7 +10850,7 @@ var Tween = /* @__PURE__ */ function(_Animation2) {
       position = null;
     }
     _this3 = _Animation2.call(this, skipInherit ? vars : _inheritDefaults(vars)) || this;
-    var _this3$vars = _this3.vars, duration = _this3$vars.duration, delay2 = _this3$vars.delay, immediateRender = _this3$vars.immediateRender, stagger = _this3$vars.stagger, overwrite = _this3$vars.overwrite, keyframes = _this3$vars.keyframes, defaults2 = _this3$vars.defaults, scrollTrigger = _this3$vars.scrollTrigger, yoyoEase = _this3$vars.yoyoEase, parent = vars.parent || _globalTimeline, parsedTargets = (_isArray(targets) || _isTypedArray(targets) ? _isNumber(targets[0]) : "length" in vars) ? [targets] : toArray2(targets), tl, i, copy, l, p, curTarget, staggerFunc, staggerVarsToMerge;
+    var _this3$vars = _this3.vars, duration = _this3$vars.duration, delay2 = _this3$vars.delay, immediateRender = _this3$vars.immediateRender, stagger = _this3$vars.stagger, overwrite = _this3$vars.overwrite, keyframes = _this3$vars.keyframes, defaults2 = _this3$vars.defaults, scrollTrigger = _this3$vars.scrollTrigger, yoyoEase = _this3$vars.yoyoEase, parent = vars.parent || _globalTimeline, parsedTargets = (_isArray(targets) || _isTypedArray(targets) ? _isNumber(targets[0]) : "length" in vars) ? [targets] : toArray(targets), tl, i, copy, l, p, curTarget, staggerFunc, staggerVarsToMerge;
     _this3._targets = parsedTargets.length ? _harness(parsedTargets) : _warn("GSAP target " + targets + " not found. https://gsap.com", !_config.nullTargetWarn) || [];
     _this3._ptLookup = [];
     _this3._overwrite = overwrite;
@@ -10970,7 +11078,7 @@ var Tween = /* @__PURE__ */ function(_Animation2) {
       this.parent && tDur !== this.timeline.totalDuration() && _setDuration(this, this._dur * this.timeline._tDur / tDur, 0, 1);
       return this;
     }
-    var parsedTargets = this._targets, killingTargets = targets ? toArray2(targets) : parsedTargets, propTweenLookup = this._ptLookup, firstPT = this._pt, overwrittenProps, curLookup, curOverwriteProps, props, p, pt, i;
+    var parsedTargets = this._targets, killingTargets = targets ? toArray(targets) : parsedTargets, propTweenLookup = this._ptLookup, firstPT = this._pt, overwrittenProps, curLookup, curOverwriteProps, props, p, pt, i;
     if ((!vars || vars === "all") && _arraysMatch(parsedTargets, killingTargets)) {
       vars === "all" && (this._pt = 0);
       return _interrupt(this);
@@ -11394,7 +11502,7 @@ var _gsap = {
     return _globalTimeline.getTweensOf(targets, onlyActive);
   },
   getProperty: function getProperty(target, property, unit, uncache) {
-    _isString(target) && (target = toArray2(target)[0]);
+    _isString(target) && (target = toArray(target)[0]);
     var getter = _getCache(target || {}).get, format = unit ? _passThrough : _numericIfPossible;
     unit === "native" && (unit = "");
     return !target ? target : !property ? function(property2, unit2, uncache2) {
@@ -11402,7 +11510,7 @@ var _gsap = {
     } : format((_plugins[property] && _plugins[property].get || getter)(target, property, unit, uncache));
   },
   quickSetter: function quickSetter(target, property, unit) {
-    target = toArray2(target);
+    target = toArray(target);
     if (target.length > 1) {
       var setters = target.map(function(t) {
         return gsap.quickSetter(t, property, unit);
@@ -11450,7 +11558,7 @@ var _gsap = {
       return pluginName && !_plugins[pluginName] && !_globals[pluginName] && _warn(name + " effect requires " + pluginName + " plugin.");
     });
     _effects[name] = function(targets, vars, tl) {
-      return effect(toArray2(targets), _setDefaults(vars || {}, defaults2), tl);
+      return effect(toArray(targets), _setDefaults(vars || {}, defaults2), tl);
     };
     if (extendTimeline) {
       Timeline.prototype[name] = function(targets, vars, position) {
@@ -11523,7 +11631,7 @@ var _gsap = {
     getUnit,
     clamp,
     splitColor,
-    toArray: toArray2,
+    toArray,
     selector,
     mapRange,
     pipe: pipe2,
@@ -15483,7 +15591,7 @@ var allSubscriptions = () => {
       }),
       tap((ev) => {
         ev.preventDefault();
-        history.replaceState(storedLocationState, "", "/");
+        window.location.hash = "";
       }),
       tap((ev) => {
         logger.info(`Hero button interaction observed on ${ev.target}`);
@@ -15578,76 +15686,77 @@ var allSubscriptions = () => {
         });
         return fadeIns();
       }
-      subscriptions.push(concat(...createFadeInAnimation()).subscribe());
-      const createCtaAnimation = () => {
-        setupAnimation(".cta-ul", { scaleX: 0, transformOrigin: "left", height: "1.8em", width: "0" });
-        const ctaTimeline = createTimeline(".cta-ul", [
-          { scaleX: 1, transformOrigin: "left", duration: 0.4, height: "1.3em", width: "50%" },
-          { scaleX: 1, duration: 0.5, ease: "power2.out", height: "0.8em", width: "100%" }
-        ], {
-          scrub: 0.2,
-          start: "top 99%",
-          trigger: ".hero__parallax",
-          onEnter: () => {
-            ctaTimeline.play();
-          },
-          scroller: ".hero__parallax"
-        });
-      };
-      subscriptions.push(of(createCtaAnimation).subscribe());
-      const createEmphasisAnimation = () => {
-        setupAnimation(".special-ul", { scaleX: 0, transformOrigin: "left", height: "1.8em", width: "0" });
-        const emphasisTimeline = createTimeline(
-          ".special-ul",
-          [
-            { scaleX: 1, transformOrigin: "left", duration: 0.25, height: "1.3em", width: "50%" },
-            { scaleX: 1, duration: 0.3, ease: "power2.out", height: "0.8em", width: "100%" }
-          ],
-          {
-            scrub: 0.2,
-            start: "top 90%",
-            trigger: "#pt2-hero-section-content",
-            onEnter: () => {
-              emphasisTimeline.play();
-            },
-            scroller: document.body
-          }
-        );
-      };
-      subscriptions.push(of(createEmphasisAnimation).subscribe());
-      const createSpecialHighlight = () => {
-        setupAnimation(".special-highlight", { textShadow: "0 0 0 transparent", x: 0 });
-        const specialHighlight = createTimeline(
-          ".special-highlight",
-          [
-            { textShadow: "0.02em 0.02em 0 var(--turkey-red)", x: 20, duration: 0.25 },
-            { textShadow: "0.04em 0.04em 0.06em var(--turkey-red)", x: 50, duration: 0.2, ease: "power2.out" }
-          ],
-          {
-            start: "top 240vh",
-            trigger: "#pt3-hero-section-content",
-            scroller: document.body,
-            onEnter: () => {
-              specialHighlight.play();
-            }
-          }
-        );
-      };
-      subscriptions.push(of(createSpecialHighlight).subscribe());
+      return [];
     };
-    subscriptions.push(fromEvent(window, "hashchange").pipe().subscribe({
-      next: () => {
-        history.replaceState(storedLocationState, "", "/");
-      }
-    }));
+    subscriptions.push(concat(...createFadeInAnimation()).subscribe());
+    const createCtaAnimation = () => {
+      setupAnimation(".cta-ul", { scaleX: 0, transformOrigin: "left", height: "1.8em", width: "0" });
+      const ctaTimeline = createTimeline(".cta-ul", [
+        { scaleX: 1, transformOrigin: "left", duration: 0.4, height: "1.3em", width: "50%" },
+        { scaleX: 1, duration: 0.5, ease: "power2.out", height: "0.8em", width: "100%" }
+      ], {
+        scrub: 0.2,
+        start: "top 99%",
+        trigger: ".hero__parallax",
+        onEnter: () => {
+          ctaTimeline.play();
+        },
+        scroller: ".hero__parallax"
+      });
+    };
+    subscriptions.push(of(createCtaAnimation).subscribe());
+    const createEmphasisAnimation = () => {
+      setupAnimation(".special-ul", { scaleX: 0, transformOrigin: "left", height: "1.8em", width: "0" });
+      const emphasisTimeline = createTimeline(
+        ".special-ul",
+        [
+          { scaleX: 1, transformOrigin: "left", duration: 0.25, height: "1.3em", width: "50%" },
+          { scaleX: 1, duration: 0.3, ease: "power2.out", height: "0.8em", width: "100%" }
+        ],
+        {
+          scrub: 0.2,
+          start: "top 90%",
+          trigger: "#pt2-hero-section-content",
+          onEnter: () => {
+            emphasisTimeline.play();
+          },
+          scroller: document.body
+        }
+      );
+    };
+    subscriptions.push(of(createEmphasisAnimation).subscribe());
+    const createSpecialHighlight = () => {
+      setupAnimation(".special-highlight", { textShadow: "0 0 0 transparent", x: 0 });
+      const specialHighlight = createTimeline(
+        ".special-highlight",
+        [
+          { textShadow: "0.02em 0.02em 0 var(--turkey-red)", x: 20, duration: 0.25 },
+          { textShadow: "0.04em 0.04em 0.06em var(--turkey-red)", x: 50, duration: 0.2, ease: "power2.out" }
+        ],
+        {
+          start: "top 240vh",
+          trigger: "#pt3-hero-section-content",
+          scroller: document.body,
+          onEnter: () => {
+            specialHighlight.play();
+          }
+        }
+      );
+    };
+    subscriptions.push(of(createSpecialHighlight).subscribe());
   }
-  const urlFilter = (url) => !isHome(url) && isOnSite(url) || !isOnSite(url);
-  mergedUnsubscription$(urlFilter).subscribe({
+  subscriptions.push(fromEvent(window, "hashchange").pipe().subscribe({
     next: () => {
-      unsubscribeFromAll(subscriptions);
+      history.replaceState(storedLocationState, "", "/");
     }
-  });
+  }));
 };
+var urlFilter = (url) => !isHome(url) && isOnSite(url) || !isOnSite(url);
+mergedUnsubscription$(urlFilter).subscribe({
+  next: () => {
+    unsubscribeFromAll(subscriptions);
+  }
+});
 
 // src/assets/javascripts/index.ts
 var { document$: document$2 } = window;
@@ -15655,8 +15764,34 @@ var subscriptions2 = [];
 var styleAssets = document.querySelectorAll("link[rel=stylesheet][href*=stylesheets]");
 var scriptAssets = document.querySelectorAll("script[src*=javascripts]");
 var fontAssets = document.querySelectorAll("link[rel=stylesheet][href*=fonts]");
+var imageAssets = document.querySelectorAll("img[src]");
 document.documentElement.classList.remove("no-js");
 document.documentElement.classList.add("js");
+var preloadFonts = () => {
+  const fontUrls = Array.from(fontAssets).map((el) => el.getAttribute("href")).filter((url) => url !== null);
+  return merge(...fontUrls.map((url) => getAsset(url).pipe(tap((response) => {
+    response.blob().then((blob) => {
+      const blobUrl = URL.createObjectURL(blob);
+      const fontFamily = url.includes("inter") ? "Inter" : url.includes("sourcecodepro") ? "Source Code Pro" : url.includes("raleway") ? "Raleway" : "Bangers";
+      const font = new FontFace(fontFamily, `url(${blobUrl})`);
+      font.load().then((loadedFont) => {
+        document.fonts.load(`url(${blobUrl})`).then(() => {
+          logger.info(`Font loaded from cache: ${url}`);
+        });
+        URL.revokeObjectURL(blobUrl);
+        logger.info(`Font loaded from cache: ${url}`);
+      }).catch((error) => {
+        logger.error(`Error loading font: ${fontFamily}`, error);
+      });
+    });
+  }))));
+};
+var preloadStaticAssets = () => {
+  const styleUrls = Array.from(styleAssets).map((el) => el.getAttribute("href")).filter((url) => url !== null);
+  const scriptUrls = Array.from(scriptAssets).map((el) => el.getAttribute("src")).filter((url) => url !== null);
+  const imageUrls = Array.from(imageAssets).map((el) => el.getAttribute("src")).filter((url) => url !== null);
+  return merge(...styleUrls.map((url) => getAsset(url)), ...scriptUrls.map((url) => getAsset(url)), ...imageUrls.map((url) => getAsset(url)));
+};
 var insertAnalytics = () => {
   const script3 = document.createElement("script");
   script3.type = "text/javascript";
@@ -15675,10 +15810,10 @@ var atLicense$ = locationBeacon$.pipe(distinctUntilKeyChanged("pathname"), takeW
   logger.info("At license page");
   license$.subscribe();
 }));
-var isHelpingIndex = (url) => url.pathname.split("/").length === 3 && url.pathname.endsWith("index.html") || url.pathname.split("/").length === 2 && url.pathname.endsWith("/");
-var atHelping$ = locationBeacon$.pipe(distinctUntilKeyChanged("pathname"), takeWhile((url) => url.pathname.includes("helping") && isHelpingIndex(url)), tap(() => logger.info("At helping page")));
+var isHelpingIndex = (url) => url.pathname.includes("helping") && (url.pathname.split("/").length === 3 && url.pathname.endsWith("index.html") || url.pathname.split("/").length === 2 && url.pathname.endsWith("/"));
+var atHelping$ = locationBeacon$.pipe(distinctUntilKeyChanged("pathname"), takeWhile((url) => isHelpingIndex(url)), tap(() => logger.info("At helping page")));
 var table$ = watchTables();
-var cleanCache$ = cleanupCache(8e3).pipe(tap(() => logger.info("Attempting to clean up cache")), mergeMap(() => merge(cacheAssets("stylesheets", styleAssets), cacheAssets("javascripts", scriptAssets), cacheAssets("fonts", fontAssets))), tap(() => logger.info("Assets cached")));
+var cleanCache$ = cleanupCache(8e3).pipe(tap(() => logger.info("Attempting to clean up cache")), mergeMap(() => merge(cacheAssets("stylesheets", styleAssets), cacheAssets("javascripts", scriptAssets), cacheAssets("fonts", fontAssets), cacheAssets("images", imageAssets))), tap(() => logger.info("Assets cached")));
 var analytics$ = watchLocationChange((url) => isOnSite(url)).pipe(distinctUntilKeyChanged("pathname"), tap(() => insertAnalytics()));
 var newPage$ = locationBeacon$.pipe(distinctUntilKeyChanged("pathname"), tap(() => logger.info("New page loaded")));
 var event$ = of(windowEvents());
@@ -15686,7 +15821,7 @@ var deleteCache$ = deleteOldCache();
 var pageSubscriptions = [];
 function initPage() {
   logger.info("New page loaded");
-  pageSubscriptions.push(of(bundle_exports).subscribe(), event$.subscribe(), analytics$.subscribe(), table$.subscribe(), feedback$.subscribe(), cleanCache$.subscribe(), deleteCache$.subscribe());
+  pageSubscriptions.push(preloadFonts().subscribe(), preloadStaticAssets().subscribe(), of(bundle_exports).subscribe(), event$.subscribe(), analytics$.subscribe(), table$.subscribe(), feedback$.subscribe(), cleanCache$.subscribe(), deleteCache$.subscribe());
   logger.info("Subscribed to new page subscriptions");
 }
 var onNewPage$ = newPage$.pipe(skipUntil(document$2), tap(() => logger.info("New page detected")));
@@ -15798,4 +15933,4 @@ gsap/ScrollTrigger.js:
    * @author: Jack Doyle, jack@greensock.com
   *)
 */
-//# sourceMappingURL=index.63MQSL2I.js.map
+//# sourceMappingURL=index.TBW7YSEW.js.map
