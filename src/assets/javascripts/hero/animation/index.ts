@@ -122,32 +122,35 @@ const smoothScroll$ = (el: Element): Observable<void> => {
     logger.error(`Target element ${target} not found within document.`)
     return of(void 0)
   }
-    const scrollPositions = {
-      wayPoint: wayPointElement ? wayPointElement.offsetTop : targetElement.offsetTop,
-      target: targetElement.offsetTop
-    }
-  if (scrollPositions && !(scrollPositions.wayPoint)) {
+
+  const scrollPositions = {
+    wayPoint: wayPointElement ? wayPointElement.offsetTop : targetElement.offsetTop,
+    target: targetElement.offsetTop
+  }
+
+  logger.info(`firstScrollDuration: ${firstScrollDuration}, secondScrollDuration: ${secondScrollDuration}, scrollPositions: ${JSON.stringify(scrollPositions)}`)
+
+  if (!scrollPositions.wayPoint) {
     scrollPositions.wayPoint = scrollPositions.target
     firstScrollDuration = duration
     secondScrollDuration = 0
   }
+
   tl.add(gsap.to(document.body, {
     duration: firstScrollDuration,
     scrollTo: { y: scrollPositions.wayPoint, autoKill: false },
     ease: "power3"
-  }
-  ))
+  }))
+  
   if (secondScrollDuration > 0) {
     tl.add(gsap.to(document.body, {
       duration: secondScrollDuration,
       scrollTo: { y: scrollPositions.target, autoKill: false },
       ease: "power3"
-    }
-    ), `+=${pause}`)
+    }), `+=${pause}`)
   }
-  tl.play()
-
-  return of(void 0)
+  
+  return of(tl.play())
 }
 
 /** Subscribes to all user interaction observables and handles the corresponding actions. */
