@@ -17,22 +17,27 @@
     "custom-theme": "overrides",
     "external": "external",
     "ci": ".github",
-    "dev-scripts": "scripts",
+    "dev-scripts": "bin",
     "dev-container": ".devcontainer"
   },
   "scripts": {
     "commit": "bun run -b git-cz",
     "release": "bun run -b semantic-release",
-    "check": "bun run check:build && bun run check:style:css && bun run check:style:ts && bun run check:style:markdown",
+    "check": "bun run check:build && bun run check:style:css && bun run check:style:ts && bun run check:style:markdown && bun run check:style:html && bun run check:style:python",
     "check:build": "tsc --noEmit",
     "check:style:css": "bun run -b stylelint \"src/**/*.css\"",
     "check:style:ts": "bun run -b eslint --cache \"src/**/*.ts\" \"*.ts\" \"*.mjs\"",
     "check:style:markdown": "bunx -b markdownlint-cli2 --fix --config .markdownlint.yml \"*.md\" \"docs/**/*.md\" \"docs/*.md\" \"packages/changelogs/*.md\"",
-    "fix": "bun run fix:style:css && bun run fix:style:ts",
+    "check:style:html": "bunx -b linthtml --config .linthtmlrc.yaml \"*.html\" \"overrides/**/*.html\" \"overrides/*.html\"",
+    "check:style:python": "ruff --config ruff.toml \"*.py\" \"overrides/hooks/*.py\" \"bin/*.py\" check",
+    "fix": "bun run fix:style:css && bun run fix:style:ts && bun run fix:style:markdown && bun run fix:style:html && bun run fix:style:python",
     "fix:style:css": "bun run -b stylelint --fix \"src/**/*.css\"",
     "fix:style:ts": "bun run -b eslint --cache --fix \"src/**/*.ts\" \"*.ts\" \"*.mjs\"",
-    "build": "bunx tsx src/build/index.ts",
-    "runall": "pre-commit run -a && bun run check && bun run fix && bun run build",
+    "fix:style:markdown": "bunx -b markdownlint-cli2 --fix --config .markdownlint.yml \"*.md\" \"docs/**/*.md\" \"docs/*.md\" \"packages/changelogs/*.md\"",
+    "fix:style:html": "bunx -b linthtml --fix --config .linthtmlrc.yaml \"*.html\" \"overrides/**/*.html\" \"overrides/*.html\"",
+    "fix:style:python": "ruff --config ruff.toml \"*.py\" \"overrides/hooks/*.py\" \"bin/*.py\" format",
+    "build": "bunx -b tsx src/build/index.ts",
+    "runall": "bun run check && bun run fix && bun run build",
     "upgrade": "bun update && uv sync --upgrade && pre-commit autoupdate"
   },
   "repository": {
@@ -175,5 +180,8 @@
         "@semantic-release/github"
       ]
     ]
+  },
+  "dependencies": {
+    "gsap": "^3.12.5"
   }
 }

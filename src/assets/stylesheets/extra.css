@@ -3,6 +3,7 @@
   --header-height: 3rem;
   --head-element-height: calc(var(--nav-height) + var(--header-height) + 0.2rem);
   --parallax-height: calc(((100vh - var(--header-height)) * 1.4));
+
   /* base value -- we adjust dynamically in js */
   --fade-height: calc(var(--parallax-height));
 }
@@ -26,9 +27,9 @@ html {
 .md-typeset div.details,
 .md-typeset div.admonition,
 .md-typeset div.summary,
-.md-typeset div.admonition>label,
-.md-typeset div.details>label,
-.md-typeset div.summary>label {
+.md-typeset div.admonition> label,
+.md-typeset div.details> label,
+.md-typeset div.summary> label {
   font-size: 0.9rem;
 }
 
@@ -48,7 +49,6 @@ html {
   background-color: var(--zaffre);
   transition: all ease-out 200ms;
 }
-
 
 .md-typeset dl p {
   font-family: Inter, "Noto Sans", "Open Sans", Lato, Helvetica, Arial, system-ui, sans-serif;
@@ -87,15 +87,15 @@ body {
 .md-typeset h1 {
   margin: 0.6rem 0 1rem;
   font-size: 1.75rem;
-  line-height: 1.2;
   font-weight: 450;
+  line-height: 1.2;
 }
 
 .md-typeset h2 {
   margin: 1rem 0 0.75rem;
   font-size: 1.45rem;
-  line-height: 1.3;
   font-weight: 400;
+  line-height: 1.3;
 }
 
 .md-typeset h3 {
@@ -108,22 +108,23 @@ body {
 .md-typeset h4 {
   margin: 1rem 0 0.6rem;
   font-size: 1.2rem;
-  line-height: 1.5;
   font-weight: 300;
+  line-height: 1.5;
 }
 
 .md-typeset h5,
 .md-typeset h6 {
   margin: 1rem 0 0.5rem;
   font-size: 1.1rem;
-  line-height: 1.6;
   font-weight: 300;
+  line-height: 1.6;
 }
 
 .md-typeset div.md-typeset__table,
 .md-typeset table:not([class]) {
-  font-size: clamp(0.8rem, .9rem, 1rem);
+  font-size: clamp(0.8rem, 0.9rem, 1rem);
 }
+
 .md-typeset .md-typeset__table {
   margin-inline: 5%;
   text-align: center;
@@ -166,8 +167,8 @@ a.md-header__button.md-logo img {
 .md-tabs__link {
   align-items: baseline;
   margin: 0.3rem 1rem;
-  font-weight: 500;
   font-size: 1.15rem;
+  font-weight: 500;
   transition: all ease-out 200ms;
 }
 
@@ -231,14 +232,16 @@ a.md-nav__link--active {
 
 .md-typeset .progress.candystripe .progress-bar {
   background-image:
-    linear-gradient(135deg,
+    linear-gradient(
+      135deg,
       var(--emerald) 27%,
       transparent 27%,
       transparent 52%,
       var(--emerald) 52%,
       var(--emerald) 77%,
       transparent 77%,
-      transparent);
+      transparent
+    );
   background-size: 2rem 2rem;
 }
 

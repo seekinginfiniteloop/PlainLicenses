@@ -6441,14 +6441,14 @@ body {
 .md-typeset h1 {
   margin: 0.6rem 0 1rem;
   font-size: 1.75rem;
-  line-height: 1.2;
   font-weight: 450;
+  line-height: 1.2;
 }
 .md-typeset h2 {
   margin: 1rem 0 0.75rem;
   font-size: 1.45rem;
-  line-height: 1.3;
   font-weight: 400;
+  line-height: 1.3;
 }
 .md-typeset h3 {
   margin: 1rem 0 0.7rem;
@@ -6459,19 +6459,19 @@ body {
 .md-typeset h4 {
   margin: 1rem 0 0.6rem;
   font-size: 1.2rem;
-  line-height: 1.5;
   font-weight: 300;
+  line-height: 1.5;
 }
 .md-typeset h5,
 .md-typeset h6 {
   margin: 1rem 0 0.5rem;
   font-size: 1.1rem;
-  line-height: 1.6;
   font-weight: 300;
+  line-height: 1.6;
 }
 .md-typeset div.md-typeset__table,
 .md-typeset table:not([class]) {
-  font-size: clamp(0.8rem, .9rem, 1rem);
+  font-size: clamp(0.8rem, 0.9rem, 1rem);
 }
 .md-typeset .md-typeset__table {
   margin-inline: 5%;
@@ -6507,8 +6507,8 @@ a.md-header__button.md-logo img {
 .md-tabs__link {
   align-items: baseline;
   margin: 0.3rem 1rem;
-  font-weight: 500;
   font-size: 1.15rem;
+  font-weight: 500;
   transition: all ease-out 200ms;
 }
 li.md-tabs__item a.md-tabs__link:hover {
@@ -6623,8 +6623,8 @@ article[data-embedded-license] .md-typeset details.license {
 }
 article[data-embedded-license] .md-typeset .license > .admonition-title,
 article[data-embedded-license] .md-typeset .license > details.question > summary {
-  background-color: rgba(var(--dark-emerald-adj), 0.1);
   color: var(--zaffre);
+  background-color: rgba(var(--dark-emerald-adj), 0.1);
 }
 [data-md-color-scheme=slate] article[data-embedded-license] .md-typeset .license > .admonition-title,
 [data-md-color-scheme=slate] article[data-embedded-license] .md-typeset .license > details.question > summary {
@@ -6701,50 +6701,50 @@ h1.license-title {
   font-weight: 600;
 }
 .js .md-typeset .tabbed-labels::before {
-  background: var(--selected-color);
-  bottom: 0;
-  content: "";
-  display: block;
-  height: 0.15rem;
-  left: 0;
   position: absolute;
-  transform: translateX(var(--md-indicator-x));
+  bottom: 0;
+  left: 0;
+  display: block;
+  width: var(--md-indicator-width);
+  height: 0.15rem;
+  content: "";
+  background: var(--selected-color);
   transition:
     width 225ms,
-    background-color .25s,
-    transform .25s;
-  transition-timing-function: cubic-bezier(.4, 0, .2, 1);
-  width: var(--md-indicator-width);
+    background-color 250ms,
+    transform 250ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateX(var(--md-indicator-x));
 }
 .js .md-typeset .tabbed-labels--linked > label > a {
   padding: 0.4rem;
 }
 .js .md-typeset .tabbed-labels > label {
-  cursor: pointer;
-  display: block;
-  font-size: clamp(0.75rem, 0.88rem, 1rem);
-  margin: 0;
   position: relative;
-  text-align: center;
-  transition: color 125ms, background-color 125ms;
+  display: block;
   padding: 0.4rem;
+  margin: 0;
+  font-size: clamp(0.75rem, 0.88rem, 1rem);
+  text-align: center;
+  cursor: pointer;
   border-bottom: 0.063rem solid var(--md-default-fg-color--lightest);
+  transition: color 125ms, background-color 125ms;
 }
 .md-typeset .tabbed-control .tabbed-button::after,
 .md-typeset .tabbed-control .tabbed-button::before {
   width: 1.1rem;
-  vertical-align: middle;
   padding: 0.025rem 0.075rem;
+  vertical-align: middle;
 }
 label[for=reader] {
-  margin-left: 0.075rem;
   padding-left: 0.1rem;
+  margin-left: 0.075rem;
 }
 .md-nav.md-nav--secondary .quick_links a.quicklink_group.selected {
-  color: var(--selected-color);
-  fill: var(--selected-color);
   padding-bottom: -0.063rem;
+  color: var(--selected-color);
   border-bottom: 0.063rem solid var(--selected-color);
+  fill: var(--selected-color);
 }
 .js .md-typeset .tabbed-labels > label:hover,
 .js .md-typeset .tabbed-labels > label:focus,
@@ -6805,8 +6805,8 @@ input#official ~ .tabbed-content .tabbed-block {
   color: var(--hover-color);
 }
 #about_license {
+  padding: 1rem 0.5rem;
   margin: 0.5rem;
-  padding: 1rem .5rem;
 }
 p.md-nav__description.license {
   position: relative;
@@ -6821,18 +6821,18 @@ p.md-nav__description.license {
   border-bottom: 0.125rem solid var(--md-accent-bg-color);
 }
 .md-nav.md-nav--secondary .quick_links {
-  display: flex;
   position: relative;
+  display: flex;
   flex-flow: row wrap;
   align-items: flex-start;
   align-self: flex-end;
   justify-content: space-evenly;
-  font-weight: 700;
   width: 100%;
   min-height: 2rem;
   max-height: 4rem;
   padding: 0.3rem 0.1rem;
   margin: 0.5rem 0.2rem;
+  font-weight: 700;
 }
 .md-nav.md-nav--secondary .quick_links .quicklink_group {
   min-width: 1.5rem;
@@ -6842,25 +6842,25 @@ p.md-nav__description.license {
   fill: var(--md-default-fg-color);
 }
 .md-nav.md-nav--secondary .quick_links .quicklink_group::after {
-  content: attr(data-iden) " view";
   position: absolute;
   left: 50%;
-  transform: translateX(-50%);
+  z-index: 10;
+  padding: 0.1rem;
   font-size: 0.75rem;
-  white-space: nowrap;
   color: var(--md-accent-bg-color);
-  padding: 0.1rem 0.1rem;
+  white-space: nowrap;
+  pointer-events: none;
+  content: attr(data-iden) " view";
   opacity: 0;
   transition: opacity 125ms;
-  pointer-events: none;
-  z-index: 10;
+  transform: translateX(-50%);
 }
 .md-nav.md-nav--secondary .quick_links .quicklink_group:hover::after,
 .md-nav.md-nav--secondary .quick_links .quicklink_group:focus::after,
 .md-nav.md-nav--secondary .quick_links .quicklink_group:focus-visible::after {
   display: inline-block;
-  opacity: 1;
   margin-top: 0.4rem;
+  opacity: 1;
 }
 .license_about_intro_container {
   box-sizing: content-box;
@@ -6885,9 +6885,9 @@ p.md-nav__description.license {
   overflow: hidden auto;
 }
 #license-sidebar-inner .md-tags {
+  position: relative;
   display: flex;
   flex-flow: row wrap;
-  position: relative;
   gap: 0.25rem;
   align-items: flex-start;
   align-self: flex-end;
@@ -6935,38 +6935,39 @@ p.md-nav__description.license {
   transition: background-color 125ms;
 }
 #license-sidebar-inner .md-tag-icon[href]::after {
-  text-align: center;
-  content: attr(id);
   position: absolute;
   top: 100%;
   left: 50%;
-  transform: translateX(-50%);
+  z-index: 10;
+  padding: 0.1rem;
   font-size: 0.75rem;
-  white-space: nowrap;
   color: var(--md-accent-bg-color);
-  padding: 0.1rem 0.1rem;
+  text-align: center;
+  white-space: nowrap;
+  pointer-events: none;
+  content: attr(id);
   opacity: 0;
   transition: opacity 125ms;
-  pointer-events: none;
-  z-index: 10;
+  transform: translateX(-50%);
 }
 #license-sidebar-inner .md-tag-icon[href]:hover::after,
 #license-sidebar-inner .md-tag-icon[href]:focus::after,
 #license-sidebar-inner .md-tag-icon[href]:focus-visible::after {
+  left: 50%;
   display: inline-block;
   width: 100%;
-  left: 50%;
-  opacity: 1;
   margin-top: 0.5rem;
+  opacity: 1;
 }
 [dir=ltr] .md-nav--secondary > details.question > summary::after {
-  right: .25rem;
+  right: 0.25rem;
 }
 .md-nav--secondary details.question {
+  box-sizing: border-box;
   display: flow-root;
   padding: 0 0.75rem;
-  overflow: visible;
   margin: 3rem 0.15rem;
+  overflow: visible;
   font-size: clamp(0.9rem, 0.95rem, 1rem);
   color: var(--md-admonition-fg-color);
   background-color: var(--md-admonition-bg-color);
@@ -6974,7 +6975,6 @@ p.md-nav__description.license {
   border-radius: 0.25rem;
   transition: box-shadow 125ms;
   page-break-inside: avoid;
-  box-sizing: border-box;
 }
 .md-nav--secondary > details.question a,
 .md-nav--secondary > details.question a:visited {
@@ -6989,18 +6989,18 @@ p.md-nav__description.license {
   box-shadow: 0 0 0 0.0625rem var(--md-default-fg-color--lightest);
 }
 .md-nav--secondary > details.question summary {
-  display: block;
   position: relative;
-  padding-block: 0.5rem;
-  padding-inline: 2.5rem .75rem;
-  padding-inline-end: 2.25rem;
-  overflow: hidden;
-  cursor: pointer;
+  display: block;
   min-height: 1.25rem;
+  padding-block: 0.5rem;
+  padding-inline: 2.5rem 0.75rem;
+  padding-inline-end: 2.25rem;
   margin-block: 0;
   margin-inline: -0.75rem;
-  font-weight: 700;
+  overflow: hidden;
   font-size: clamp(0.9rem, 1rem, 1.2rem);
+  font-weight: 700;
+  cursor: pointer;
   background-color: rgba(var(--aquamarine-adj), 0.1);
   border: none;
   border-inline-start-width: 0.25rem;
@@ -7026,7 +7026,7 @@ p.md-nav__description.license {
   width: 1.25rem;
   height: 1.25rem;
   content: "";
-  background-color: currentColor;
+  background-color: currentcolor;
   mask-image: var(--md-details-icon);
   mask-repeat: no-repeat;
   mask-position: center;
@@ -7075,8 +7075,8 @@ header#header-target.md-header {
   left: 0;
   z-index: 1000;
   display: inline-flex;
-  padding: 0.1rem;
   align-self: flex-start;
+  padding: 0.1rem;
   margin-top: calc(var(--nav-height) - 0.2rem);
   background: var(--zaffre);
 }
@@ -7642,16 +7642,16 @@ a#yoshimi-link:focus {
 @keyframes glow {
   from {
     text-shadow:
-      0.01rem 0.01rem 0 var(--oxford-blue),
+      0.02rem 0.02rem 0 var(--oxford-blue),
       0 0 0.16rem var(--emerald),
-      0.03rem 0.03rem 0 var(--ecru);
+      0.045rem 0.045rem 0 var(--ecru);
   }
   to {
     text-shadow:
-      0.01rem 0.01rem 0 var(--oxford-blue),
-      0 0 0.25rem var(--emerald),
-      0 0 0.27rem var(--emerald),
-      0.04rem 0.04rem 0 var(--ecru);
+      0.015rem 0.015rem 0 var(--oxford-blue),
+      0 0 0.5rem var(--emerald),
+      0 0 0.5rem var(--emerald),
+      0.08rem 0.08rem 0 var(--ecru);
   }
 }
 #CTA_header {
@@ -7878,4 +7878,4 @@ a#yoshimi-link:focus {
 }
 
 /* src/assets/stylesheets/bundle.css */
-/*# sourceMappingURL=bundle.BWTUIAMY.css.map */
+/*# sourceMappingURL=bundle.XPPR7DPR.css.map */

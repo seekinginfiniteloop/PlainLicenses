@@ -21,6 +21,7 @@ import {
   finalize,
   map,
   mergeMap,
+  share,
   skipWhile,
   switchMap,
   takeUntil,
@@ -237,10 +238,9 @@ const fetchAndSetImage = (imgSettings: HeroImage): Observable<HTMLImageElement> 
   }
 
   return loadImage(src).pipe(
-    mergeMap(imageBlob => {
+    switchMap(_imageBlob => {
       const img = new Image()
       const loading = parallaxLayer?.getElementsByTagName('img').length !== 0 ? "lazy" : "eager"
-      const imageUrl = URL.createObjectURL(imageBlob)
       img.src = src
       img.srcset = srcset
       img.sizes = "(max-width: 1280px) 1280px, (max-width: 1920px) 1920px, (max-width: 2560px) 2560px, 3840px"
@@ -250,25 +250,17 @@ const fetchAndSetImage = (imgSettings: HeroImage): Observable<HTMLImageElement> 
       img.loading = loading
       void setText(imageName)
 
-      return from(new Promise<void>(resolve => {
-        img.onload = () => {
-          URL.revokeObjectURL(imageUrl)
+      return of(img).pipe(
+        tap(() => {
           imageMetadata.set(img, {
             loadTime: Date.now(),
             displayCount: 0,
             width: img.width
           })
-          resolve()
-        }
-      })).pipe(tap(() => {
-        const images = parallaxLayer?.getElementsByTagName('img') || []
-        if (images.length > 1) {
-          const oldImage = images[images.length - 1] as HTMLImageElement
-          cleanupImageResources(oldImage)
-          oldImage.remove()
-        }
-        parallaxLayer?.prepend(img)
-      }), map(() => img))
+          parallaxLayer?.prepend(img)
+        }),
+        map(() => img)
+      )
     }),
     catchError(error => {
       logger.error("Error in fetchAndSetImage:", error)
@@ -276,6 +268,7 @@ const fetchAndSetImage = (imgSettings: HeroImage): Observable<HTMLImageElement> 
     })
   )
 }
+
 
 /**
  * Creates an observable for orientation changes
@@ -341,21 +334,16 @@ const shuffledHeroes = [...allHeroes].sort(() => Math.random() - 0.5)
 const createImageCycler = (parallaxLayer: HTMLElement): ImageCycler => {
   const { state$, canCycle$, cleanup$, updateState } = stateManager
   const loadedImages = new Set<string>()
-
+  // Load initial image
   const loadImages$ = from([shuffledHeroes[0]]).pipe(
     mergeMap(fetchAndSetImage),
     takeUntil(cleanup$),
-    tap(image => {
+    tap(_image => {
       loadedImages.add(shuffledHeroes[0].imageName)
-      const currentOptimalWidth = getOptimalWidth()
-      if (currentOptimalWidth !== state$.value.optimalWidth) {
-        stateManager.updateState({
-          optimalWidth: currentOptimalWidth,
-          activeImageIndex: 0,
-          status: 'cycling'
-        })
-        updateImageSources([image], currentOptimalWidth)
-      }
+      updateState({
+        activeImageIndex: 0,
+        status: 'cycling'
+      })
     }),
     catchError(error => {
       logger.error("Failed to load initial image:", error)
@@ -368,16 +356,14 @@ const createImageCycler = (parallaxLayer: HTMLElement): ImageCycler => {
     withLatestFrom(canCycle$, state$),
     filter(([_, canCycle]) => canCycle),
     mergeMap(([_, __, state]) => {
+      updateState({ status: 'cycling' })
       const nextIndex = (state.activeImageIndex + 1) % shuffledHeroes.length
       const nextImage = shuffledHeroes[nextIndex]
-
-      // Only fetch if not already loaded
+      // If not all images loaded yet, fetch next
       if (!loadedImages.has(nextImage.imageName)) {
         return fetchAndSetImage(nextImage).pipe(
           tap(() => {
             loadedImages.add(nextImage.imageName)
-            const firstImage = parallaxLayer.firstElementChild as HTMLElement
-            parallaxLayer.appendChild(firstImage)
             updateState({ activeImageIndex: nextIndex })
             void setText(nextImage.imageName)
           }),
@@ -386,17 +372,7 @@ const createImageCycler = (parallaxLayer: HTMLElement): ImageCycler => {
             return EMPTY
           })
         )
-      } else {
-        // Image already loaded, just cycle
-        return of(undefined).pipe(
-          tap(() => {
-            const firstImage = parallaxLayer.firstElementChild as HTMLElement
-            parallaxLayer.appendChild(firstImage)
-            updateState({ activeImageIndex: nextIndex })
-            void setText(nextImage.imageName)
-          })
-        )
-      }
+      } else {return of(undefined)}
     }),
     takeUntil(cleanup$)
   )
@@ -420,7 +396,6 @@ const createImageCycler = (parallaxLayer: HTMLElement): ImageCycler => {
           })
         ).subscribe()
       )
-
       // Add cleanup
       subscription.add(() => {
         const images = parallaxLayer?.getElementsByTagName('img')
@@ -517,7 +492,9 @@ const createHeightObservable = (stateManager: ReturnType<typeof createHeroStateM
   const imageChanges$ = stateManager.state$.pipe(
     map(() => getImage()),
     filter((img): img is HTMLImageElement => img !== null && img instanceof HTMLImageElement),
-    map(img => img.height || window.innerHeight)
+    map(img => img.height),
+    filter(height => typeof height === 'number' && height > 0 && !Number.isNaN(height)),
+    shareReplay(1)
   )
 
   const viewportChanges$ = merge(
@@ -529,12 +506,11 @@ const createHeightObservable = (stateManager: ReturnType<typeof createHeroStateM
       const img = getImage()
       return img?.height || window.innerHeight
     }),
-    filter(height => typeof height === 'number' && height > 0 && !Number.isNaN(height))
-  )
+    filter(height => typeof height === 'number' && height > 0 && !Number.isNaN(height)), shareReplay(1))
 
   return merge(imageChanges$, viewportChanges$).pipe(
     distinctUntilChanged(),
-    filter(() => isPageVisible() && isElementVisible(parallaxLayer as Element)),
+    filter(() => isPageVisible()),
     tap(height => setParallaxHeight(height)),
     catchError(error => {
       logger.error("Error adjusting height:", error)

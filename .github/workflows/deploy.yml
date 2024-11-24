@@ -1,0 +1,79 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ github.workspace }}
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+      - name: Add build packages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libcairo2 libcairo2-dev libfreetype6-dev libffi-dev libjpeg-dev libpng-dev libz-dev &&
+          chmod +x bin/*
+          bin/setup-repo.sh
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: site
+      - name: setup UV
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
+          enable-cache: true
+          cache-dependency-glob: |
+            pyproject.toml
+      - run: |
+          uv python install 3.13 &&
+          uv venv --allow-existing .venv &&
+          source .venv/bin/activate &&
+          uv sync --all-extras &&
+      - name: deploy mkdocs
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email "actions@github.com"
+          mkdocs gh-deploy --force -m "bot(site): deploy site"
+
+  notify:
+    needs: [deploy]
+    if: failure()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Create GitHub Issue
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: 'Workflow failed: ${{ github.workflow }}',
+              body: 'Workflow ${{ github.workflow }} failed on commit ${{ github.sha }}. Check the [workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.',
+              labels: ['bug']
+            })

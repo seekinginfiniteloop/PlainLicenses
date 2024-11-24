@@ -1778,18 +1778,18 @@ function pipeFromArray(fns) {
 
 // node_modules/rxjs/dist/esm5/internal/Observable.js
 var Observable = function() {
-  function Observable61(subscribe) {
+  function Observable60(subscribe) {
     if (subscribe) {
       this._subscribe = subscribe;
     }
   }
-  Observable61.prototype.lift = function(operator) {
-    var observable2 = new Observable61();
+  Observable60.prototype.lift = function(operator) {
+    var observable2 = new Observable60();
     observable2.source = this;
     observable2.operator = operator;
     return observable2;
   };
-  Observable61.prototype.subscribe = function(observerOrNext, error, complete) {
+  Observable60.prototype.subscribe = function(observerOrNext, error, complete) {
     var _this = this;
     var subscriber = isSubscriber(observerOrNext) ? observerOrNext : new SafeSubscriber(observerOrNext, error, complete);
     errorContext(function() {
@@ -1798,14 +1798,14 @@ var Observable = function() {
     });
     return subscriber;
   };
-  Observable61.prototype._trySubscribe = function(sink) {
+  Observable60.prototype._trySubscribe = function(sink) {
     try {
       return this._subscribe(sink);
     } catch (err) {
       sink.error(err);
     }
   };
-  Observable61.prototype.forEach = function(next, promiseCtor) {
+  Observable60.prototype.forEach = function(next, promiseCtor) {
     var _this = this;
     promiseCtor = getPromiseCtor(promiseCtor);
     return new promiseCtor(function(resolve3, reject) {
@@ -1824,21 +1824,21 @@ var Observable = function() {
       _this.subscribe(subscriber);
     });
   };
-  Observable61.prototype._subscribe = function(subscriber) {
+  Observable60.prototype._subscribe = function(subscriber) {
     var _a2;
     return (_a2 = this.source) === null || _a2 === void 0 ? void 0 : _a2.subscribe(subscriber);
   };
-  Observable61.prototype[observable] = function() {
+  Observable60.prototype[observable] = function() {
     return this;
   };
-  Observable61.prototype.pipe = function() {
+  Observable60.prototype.pipe = function() {
     var operations = [];
     for (var _i2 = 0; _i2 < arguments.length; _i2++) {
       operations[_i2] = arguments[_i2];
     }
     return pipeFromArray(operations)(this);
   };
-  Observable61.prototype.toPromise = function(promiseCtor) {
+  Observable60.prototype.toPromise = function(promiseCtor) {
     var _this = this;
     promiseCtor = getPromiseCtor(promiseCtor);
     return new promiseCtor(function(resolve3, reject) {
@@ -1852,10 +1852,10 @@ var Observable = function() {
       });
     });
   };
-  Observable61.create = function(subscribe) {
-    return new Observable61(subscribe);
+  Observable60.create = function(subscribe) {
+    return new Observable60(subscribe);
   };
-  return Observable61;
+  return Observable60;
 }();
 function getPromiseCtor(promiseCtor) {
   var _a2;
@@ -8343,10 +8343,9 @@ var fetchAndSetImage = (imgSettings) => {
     return EMPTY;
   }
   return loadImage(src).pipe(
-    mergeMap((imageBlob) => {
+    switchMap((_imageBlob) => {
       const img = new Image();
       const loading = (parallaxLayer == null ? void 0 : parallaxLayer.getElementsByTagName("img").length) !== 0 ? "lazy" : "eager";
-      const imageUrl = URL.createObjectURL(imageBlob);
       img.src = src;
       img.srcset = srcset;
       img.sizes = "(max-width: 1280px) 1280px, (max-width: 1920px) 1920px, (max-width: 2560px) 2560px, 3840px";
@@ -8355,25 +8354,17 @@ var fetchAndSetImage = (imgSettings) => {
       img.draggable = false;
       img.loading = loading;
       void setText(imageName);
-      return from(new Promise((resolve3) => {
-        img.onload = () => {
-          URL.revokeObjectURL(imageUrl);
+      return of(img).pipe(
+        tap(() => {
           imageMetadata.set(img, {
             loadTime: Date.now(),
             displayCount: 0,
             width: img.width
           });
-          resolve3();
-        };
-      })).pipe(tap(() => {
-        const images = (parallaxLayer == null ? void 0 : parallaxLayer.getElementsByTagName("img")) || [];
-        if (images.length > 1) {
-          const oldImage = images[images.length - 1];
-          cleanupImageResources(oldImage);
-          oldImage.remove();
-        }
-        parallaxLayer == null ? void 0 : parallaxLayer.prepend(img);
-      }), map(() => img));
+          parallaxLayer == null ? void 0 : parallaxLayer.prepend(img);
+        }),
+        map(() => img)
+      );
     }),
     catchError((error) => {
       logger.error("Error in fetchAndSetImage:", error);
@@ -8438,17 +8429,12 @@ var createImageCycler = (parallaxLayer2) => {
   const loadImages$ = from([shuffledHeroes[0]]).pipe(
     mergeMap(fetchAndSetImage),
     takeUntil(cleanup$),
-    tap((image) => {
+    tap((_image) => {
       loadedImages.add(shuffledHeroes[0].imageName);
-      const currentOptimalWidth = getOptimalWidth();
-      if (currentOptimalWidth !== state$.value.optimalWidth) {
-        stateManager.updateState({
-          optimalWidth: currentOptimalWidth,
-          activeImageIndex: 0,
-          status: "cycling"
-        });
-        updateImageSources([image], currentOptimalWidth);
-      }
+      updateState({
+        activeImageIndex: 0,
+        status: "cycling"
+      });
     }),
     catchError((error) => {
       logger.error("Failed to load initial image:", error);
@@ -8460,14 +8446,13 @@ var createImageCycler = (parallaxLayer2) => {
     withLatestFrom(canCycle$, state$),
     filter(([_, canCycle]) => canCycle),
     mergeMap(([_, __, state]) => {
+      updateState({ status: "cycling" });
       const nextIndex = (state.activeImageIndex + 1) % shuffledHeroes.length;
       const nextImage = shuffledHeroes[nextIndex];
       if (!loadedImages.has(nextImage.imageName)) {
         return fetchAndSetImage(nextImage).pipe(
           tap(() => {
             loadedImages.add(nextImage.imageName);
-            const firstImage = parallaxLayer2.firstElementChild;
-            parallaxLayer2.appendChild(firstImage);
             updateState({ activeImageIndex: nextIndex });
             void setText(nextImage.imageName);
           }),
@@ -8477,14 +8462,7 @@ var createImageCycler = (parallaxLayer2) => {
           })
         );
       } else {
-        return of(void 0).pipe(
-          tap(() => {
-            const firstImage = parallaxLayer2.firstElementChild;
-            parallaxLayer2.appendChild(firstImage);
-            updateState({ activeImageIndex: nextIndex });
-            void setText(nextImage.imageName);
-          })
-        );
+        return of(void 0);
       }
     }),
     takeUntil(cleanup$)
@@ -8569,7 +8547,9 @@ var createHeightObservable = (stateManager2) => {
   const imageChanges$ = stateManager2.state$.pipe(
     map(() => getImage()),
     filter((img) => img !== null && img instanceof HTMLImageElement),
-    map((img) => img.height || window.innerHeight)
+    map((img) => img.height),
+    filter((height) => typeof height === "number" && height > 0 && !Number.isNaN(height)),
+    shareReplay(1)
   );
   const viewportChanges$ = merge(
     fromEvent(window, "resize"),
@@ -8580,11 +8560,12 @@ var createHeightObservable = (stateManager2) => {
       const img = getImage();
       return (img == null ? void 0 : img.height) || window.innerHeight;
     }),
-    filter((height) => typeof height === "number" && height > 0 && !Number.isNaN(height))
+    filter((height) => typeof height === "number" && height > 0 && !Number.isNaN(height)),
+    shareReplay(1)
   );
   return merge(imageChanges$, viewportChanges$).pipe(
     distinctUntilChanged(),
-    filter(() => isPageVisible() && isElementVisible(parallaxLayer)),
+    filter(() => isPageVisible()),
     tap((height) => setParallaxHeight(height)),
     catchError((error) => {
       logger.error("Error adjusting height:", error);
@@ -15439,7 +15420,8 @@ gsapWithCSS.registerPlugin(ScrollTrigger3);
 var subscriptions = [];
 var easterEgg = document.getElementById("the-egg");
 var infoBox = document.getElementById("egg-box");
-var storedLocationState = history.state;
+var FIRST_SCROLL_RATIO = 0.4;
+var SECOND_SCROLL_RATIO = 0.6;
 if (easterEgg && infoBox) {
   easterEgg.style.display = "block";
 }
@@ -15480,55 +15462,73 @@ var getScrollTargets = (el) => {
   const duration = parseFloat(el.getAttribute("data-scroll-duration") || "2");
   return { target, wayPoint, wayPointPause, duration };
 };
+var scrollBackup = (el) => {
+  el.scrollIntoView({ behavior: "auto" });
+};
 var smoothScroll$ = (el) => {
   const { target, wayPoint, wayPointPause, duration } = getScrollTargets(el);
-  logger.info(`Setting scroll parameters: target: ${target.id}, wayPoint: ${wayPoint.id}, wayPointPause: ${wayPointPause}, duration: ${duration}`);
-  const targetElement = target;
-  const wayPointElement = wayPoint;
-  if (prefersReducedMotion) {
-    const anchorTarget = targetElement.offsetTop;
-    document.body.scrollTo({ top: anchorTarget, behavior: "auto" });
-    return of(void 0);
-  }
-  const tl = gsapWithCSS.timeline();
-  let firstScrollDuration = duration * 0.4;
-  let secondScrollDuration = duration * 0.6;
-  const pause = wayPointPause || 0;
-  if (!targetElement) {
+  logger.info(`Setting scroll parameters: target: ${target}, wayPoint: ${wayPoint}, wayPointPause: ${wayPointPause}, duration: ${duration}`);
+  if (!(target instanceof HTMLElement)) {
     logger.error(`Target element ${target} not found within document.`);
-    return of(void 0);
+    return of(false);
   }
-  const scrollPositions = {
-    wayPoint: wayPointElement ? wayPointElement.offsetTop : targetElement.offsetTop,
-    target: targetElement.offsetTop
-  };
-  if (scrollPositions && !scrollPositions.wayPoint) {
-    scrollPositions.wayPoint = scrollPositions.target;
-    firstScrollDuration = duration;
-    secondScrollDuration = 0;
+  if (prefersReducedMotion) {
+    scrollBackup(target);
+    return of(true);
   }
-  tl.add(gsapWithCSS.to(
-    document.body,
-    {
+  try {
+    const html = document.scrollingElement;
+    const currentScroll = html.scrollTop;
+    const scrollPositions = {
+      wayPoint: wayPoint instanceof HTMLElement ? wayPoint.offsetTop : target.offsetTop,
+      target: target.offsetTop
+    };
+    const tl = gsapWithCSS.timeline({
+      paused: true,
+      defaults: {
+        ease: "power3.inOut",
+        overwrite: "auto"
+      }
+    });
+    const firstScrollDuration = duration * FIRST_SCROLL_RATIO;
+    const secondScrollDuration = duration * SECOND_SCROLL_RATIO;
+    const pause = wayPointPause || 0;
+    logger.info(`Current scroll: ${currentScroll}, firstScrollDuration: ${firstScrollDuration}, secondScrollDuration: ${secondScrollDuration}, scrollPositions: ${JSON.stringify(scrollPositions)}`);
+    tl.to(html, {
       duration: firstScrollDuration,
       scrollTo: { y: scrollPositions.wayPoint, autoKill: false },
-      ease: "power3"
-    }
-  ));
-  if (secondScrollDuration > 0) {
-    tl.add(gsapWithCSS.to(
-      document.body,
-      {
+      immediateRender: false
+    });
+    if (secondScrollDuration > 0) {
+      tl.to(html, {
         duration: secondScrollDuration,
         scrollTo: { y: scrollPositions.target, autoKill: false },
-        ease: "power3"
-      }
-    ), `+=${pause}`);
+        immediateRender: false
+      }, `+=${pause}`);
+    }
+    return new Observable((observer) => {
+      tl.eventCallback("onComplete", () => {
+        logger.info("Smooth scroll completed");
+        observer.next(true);
+        observer.complete();
+      });
+      tl.play();
+    }).pipe(
+      catchError((err) => {
+        logger.error(`Error in Smooth Scroll: ${JSON.stringify(err)}`);
+        scrollBackup(target);
+        return of(false);
+      })
+    );
+  } catch (err) {
+    logger.error("Error in smooth scroll: ", JSON.stringify(err));
+    scrollBackup(target);
+    return of(false);
   }
-  tl.play();
-  return of(void 0);
 };
 var allSubscriptions = () => {
+  document.body.style.scrollBehavior = "instant";
+  document.body.style.overflowY = "scroll";
   const eggFunction = (event$2) => {
     return event$2.pipe(
       withLatestFrom(infoBoxVisible$),
@@ -15583,15 +15583,21 @@ var allSubscriptions = () => {
     })
   );
   const heroSelectors = Array.from(document.querySelectorAll(".hero-target-selector"));
+  const nerfedSelectors = heroSelectors.map((selector3) => {
+    selector3.addEventListener(
+      "click",
+      (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+      }
+    );
+    return selector3;
+  });
   const heroButtonFunc = (event$2) => {
     return event$2.pipe(
       filter((ev) => {
         const target = ev.target;
-        return heroSelectors.some((selector3) => selector3.contains(target));
-      }),
-      tap((ev) => {
-        ev.preventDefault();
-        window.location.hash = "";
+        return nerfedSelectors.some((selector3) => selector3.contains(target));
       }),
       tap((ev) => {
         logger.info(`Hero button interaction observed on ${ev.target}`);
@@ -15599,12 +15605,12 @@ var allSubscriptions = () => {
           hideOverlay();
         }
         const target = ev.target;
-        const targetedElement = heroSelectors.find((selector3) => selector3.contains(target));
+        const targetedElement = nerfedSelectors.find((selector3) => selector3.contains(target));
         if (targetedElement) {
           smoothScroll$(targetedElement).subscribe({
             next: () => {
             },
-            error: (err) => logger.error("Error in smooth scroll:", err),
+            error: (err) => logger.error("Error in smooth scroll:", JSON.stringify(err)),
             complete: () => logger.info("Smooth scroll observable completed")
           });
         }
@@ -15613,7 +15619,7 @@ var allSubscriptions = () => {
     );
   };
   const heroInteraction$ = createInteractionObservable(
-    heroSelectors,
+    nerfedSelectors,
     heroButtonFunc
   );
   subscriptions.push(
@@ -15642,42 +15648,75 @@ var allSubscriptions = () => {
       return timeline2;
     };
     const createFadeInAnimation = () => {
-      var _a2;
+      var _a2, _b;
       const makeScrollBatch = (selector3) => {
         const batch = [];
         ScrollTrigger3.batch(selector3, {
-          start: "top 80%",
-          end: "bottom 20%",
-          interval: 0.15,
-          batchMax: 4,
+          start: "top 90%",
+          // Show sooner
+          end: "bottom 10%",
+          // Hide later
+          interval: 0.2,
+          // Faster sequence
+          batchMax: 5,
+          // Smoother batching
           onEnter: (b) => {
-            gsapWithCSS.to(b, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out", stagger: { each: 0.15, grid: "auto" }, overwrite: true });
+            gsapWithCSS.to(b, {
+              opacity: 1,
+              y: 0,
+              duration: 1,
+              ease: "power1.out",
+              stagger: { each: 0.3, grid: "auto" },
+              overwrite: true
+            });
           },
           onLeave: (b) => {
-            gsapWithCSS.set(b, { opacity: 0, y: -50, overwrite: true });
+            gsapWithCSS.to(b, {
+              opacity: 0,
+              y: -50,
+              duration: 0.3,
+              ease: "power1.in"
+            });
           },
           onEnterBack: (b) => {
-            gsapWithCSS.to(b, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out", stagger: 0.15, overwrite: true });
+            gsapWithCSS.to(b, {
+              opacity: 1,
+              y: 0,
+              duration: 0.5,
+              ease: "power1.out",
+              stagger: 0.1
+            });
           },
           onLeaveBack: (b) => {
-            gsapWithCSS.set(b, { opacity: 0, y: 50, overwrite: true });
+            gsapWithCSS.to(b, {
+              opacity: 0,
+              y: 50,
+              duration: 0.3,
+              ease: "power1.in"
+            });
           }
-        }).forEach((trigger) => {
-          batch.push(of(trigger));
-        });
+        }).forEach((trigger) => batch.push(of(trigger)));
         return batch;
       };
+      const fadeInTargets = (_a2 = document.querySelector("#pt2-hero-content-section")) == null ? void 0 : _a2.querySelectorAll("*");
+      if (fadeInTargets) {
+        fadeInTargets.forEach((target) => {
+          target.classList.add("fade-in");
+        });
+      }
+      const fadeIn2Targets = (_b = document.querySelector("#pt3-hero-content-section")) == null ? void 0 : _b.querySelectorAll("*");
+      if (fadeIn2Targets) {
+        fadeIn2Targets.forEach((target) => {
+          target.classList.add("fade-in2");
+        });
+      }
       const fadeIns = () => {
         return [
           ...makeScrollBatch(".fade-in"),
           ...makeScrollBatch(".fade-in2")
         ];
       };
-      const fadeIn2Targets = (_a2 = document.querySelector("#pt3-hero-content-section")) == null ? void 0 : _a2.querySelectorAll("li");
       if (fadeIn2Targets) {
-        fadeIn2Targets.forEach((target) => {
-          target.classList.add("fade-in2");
-        });
         setupAnimation(".fade-in", { opacity: 0, y: 50 });
         setupAnimation(".fade-in2", { opacity: 0, y: 50 });
         ScrollTrigger3.addEventListener("refreshInit", () => {
@@ -15690,68 +15729,108 @@ var allSubscriptions = () => {
     };
     subscriptions.push(concat(...createFadeInAnimation()).subscribe());
     const createCtaAnimation = () => {
-      setupAnimation(".cta-ul", { scaleX: 0, transformOrigin: "left", height: "1.8em", width: "0" });
+      setupAnimation(".cta-ul", {
+        scaleX: 0,
+        transformOrigin: "left",
+        height: "1.8em",
+        width: "0"
+      });
       const ctaTimeline = createTimeline(".cta-ul", [
-        { scaleX: 1, transformOrigin: "left", duration: 0.4, height: "1.3em", width: "50%" },
-        { scaleX: 1, duration: 0.5, ease: "power2.out", height: "0.8em", width: "100%" }
-      ], {
-        scrub: 0.2,
-        start: "top 99%",
-        trigger: ".hero__parallax",
-        onEnter: () => {
-          ctaTimeline.play();
+        {
+          scaleX: 1,
+          transformOrigin: "left",
+          duration: 0.4,
+          height: "1.3em",
+          width: "50%"
         },
-        scroller: ".hero__parallax"
+        {
+          scaleX: 1,
+          duration: 0.5,
+          ease: "power2.out",
+          height: "0.8em",
+          width: "100%"
+        }
+      ], {
+        scrub: true,
+        start: "top top",
+        // Starts immediately when page loads
+        trigger: "body",
+        onEnter: () => ctaTimeline.play(),
+        once: true
+        // Only plays once
       });
     };
     subscriptions.push(of(createCtaAnimation).subscribe());
     const createEmphasisAnimation = () => {
-      setupAnimation(".special-ul", { scaleX: 0, transformOrigin: "left", height: "1.8em", width: "0" });
-      const emphasisTimeline = createTimeline(
-        ".special-ul",
-        [
-          { scaleX: 1, transformOrigin: "left", duration: 0.25, height: "1.3em", width: "50%" },
-          { scaleX: 1, duration: 0.3, ease: "power2.out", height: "0.8em", width: "100%" }
-        ],
+      setupAnimation(".special-ul", {
+        scaleX: 0,
+        transformOrigin: "left",
+        height: "1.8em",
+        width: "0"
+      });
+      const emphasisTimeline = createTimeline(".special-ul", [
         {
-          scrub: 0.2,
-          start: "top 90%",
-          trigger: "#pt2-hero-section-content",
-          onEnter: () => {
-            emphasisTimeline.play();
-          },
-          scroller: document.body
+          scaleX: 1,
+          transformOrigin: "left",
+          duration: 0.25,
+          height: "1.3em",
+          width: "50%"
+        },
+        {
+          scaleX: 1,
+          duration: 0.3,
+          ease: "power2.out",
+          height: "0.8em",
+          width: "100%"
         }
-      );
+      ], {
+        scrub: 0.5,
+        start: "top 90%",
+        end: "top 70%",
+        trigger: "#pt2-hero-section-content",
+        onEnter: () => emphasisTimeline.play()
+      });
     };
     subscriptions.push(of(createEmphasisAnimation).subscribe());
     const createSpecialHighlight = () => {
-      setupAnimation(".special-highlight", { textShadow: "0 0 0 transparent", x: 0 });
-      const specialHighlight = createTimeline(
-        ".special-highlight",
-        [
-          { textShadow: "0.02em 0.02em 0 var(--turkey-red)", x: 20, duration: 0.25 },
-          { textShadow: "0.04em 0.04em 0.06em var(--turkey-red)", x: 50, duration: 0.2, ease: "power2.out" }
-        ],
+      setupAnimation(".special-highlight", {
+        textShadow: "0 0 0 transparent",
+        x: 0
+      });
+      return createTimeline(".special-highlight", [
         {
-          start: "top 240vh",
-          trigger: "#pt3-hero-section-content",
-          scroller: document.body,
-          onEnter: () => {
-            specialHighlight.play();
-          }
+          textShadow: "0.02em 0.02em 0 var(--turkey-red)",
+          x: 20,
+          duration: 0.25
+        },
+        {
+          textShadow: "0.04em 0.04em 0.06em var(--turkey-red)",
+          x: 50,
+          duration: 0.2,
+          ease: "power2.out"
         }
-      );
+      ], {
+        start: "top 85%",
+        // Start when element is 85% from top
+        end: "bottom 15%",
+        // End when element is 15% from bottom
+        trigger: ".special-highlight",
+        toggleActions: "play pause resume reset",
+        scrub: 0.5
+      });
     };
     subscriptions.push(of(createSpecialHighlight).subscribe());
+    subscriptions.push(fromEvent(window, "hashchange").pipe().subscribe({
+      next: () => {
+        window.location.hash = "";
+      }
+    }));
   }
-  subscriptions.push(fromEvent(window, "hashchange").pipe().subscribe({
-    next: () => {
-      history.replaceState(storedLocationState, "", "/");
-    }
-  }));
 };
 var urlFilter = (url) => !isHome(url) && isOnSite(url) || !isOnSite(url);
+if (!urlFilter(new URL(window.location.href)) && subscriptions.length === 0) {
+  allSubscriptions();
+}
 mergedUnsubscription$(urlFilter).subscribe({
   next: () => {
     unsubscribeFromAll(subscriptions);
@@ -15933,4 +16012,4 @@ gsap/ScrollTrigger.js:
    * @author: Jack Doyle, jack@greensock.com
   *)
 */
-//# sourceMappingURL=index.TBW7YSEW.js.map
+//# sourceMappingURL=index.M4RH6NJH.js.map

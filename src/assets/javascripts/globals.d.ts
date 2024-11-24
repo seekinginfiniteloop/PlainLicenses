@@ -45,6 +45,14 @@ declare global {
    * Interfaces
    * ------------------------------------------------------------------------- */
 
+
+  interface ScrollTargets {
+    target: Element
+    wayPoint: Element
+    wayPointPause: number
+    duration: number
+  }
+
   interface ImageCycler {
     loadImages$: Observable<HTMLImageElement>
     cycle$: Observable<HTMLImageElement | undefined>

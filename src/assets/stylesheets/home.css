@@ -23,8 +23,8 @@ header#header-target.md-header {
   left: 0;
   z-index: 1000;
   display: inline-flex;
-  padding: 0.1rem;
   align-self: flex-start;
+  padding: 0.1rem;
   margin-top: calc(var(--nav-height) - 0.2rem);
   background: var(--zaffre);
 }

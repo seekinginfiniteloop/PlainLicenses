@@ -34,17 +34,17 @@
 @keyframes glow {
   from {
     text-shadow:
-      0.01rem 0.01rem 0 var(--oxford-blue),
+      0.02rem 0.02rem 0 var(--oxford-blue),
       0 0 0.16rem var(--emerald),
-      0.03rem 0.03rem 0 var(--ecru);
+      0.045rem 0.045rem 0 var(--ecru);
   }
 
   to {
     text-shadow:
-      0.01rem 0.01rem 0 var(--oxford-blue),
-      0 0 0.25rem var(--emerald),
-      0 0 0.27rem var(--emerald),
-      0.04rem 0.04rem 0 var(--ecru);
+      0.015rem 0.015rem 0 var(--oxford-blue),
+      0 0 0.5rem var(--emerald),
+      0 0 0.5rem var(--emerald),
+      0.08rem 0.08rem 0 var(--ecru);
   }
 }
 

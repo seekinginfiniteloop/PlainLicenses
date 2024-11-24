@@ -1,12 +1,12 @@
 {
   "metaOutput": {
-    "docs/assets/javascripts/index.TBW7YSEW.js.map": {
-      "bytes": 1696342,
+    "docs/assets/javascripts/index.M4RH6NJH.js.map": {
+      "bytes": 1698287,
       "inputs": [],
       "exports": []
     },
-    "docs/assets/javascripts/index.TBW7YSEW.js": {
-      "bytes": 593336,
+    "docs/assets/javascripts/index.M4RH6NJH.js": {
+      "bytes": 594448,
       "inputs": [
         "node_modules/focus-visible/dist/focus-visible.js",
         "node_modules/escape-html/index.js",
@@ -331,13 +331,13 @@
       ],
       "exports": []
     },
-    "docs/assets/stylesheets/bundle.BWTUIAMY.css.map": {
-      "bytes": 339765,
+    "docs/assets/stylesheets/bundle.XPPR7DPR.css.map": {
+      "bytes": 339824,
       "inputs": [],
       "exports": []
     },
-    "docs/assets/stylesheets/bundle.BWTUIAMY.css": {
-      "bytes": 218486,
+    "docs/assets/stylesheets/bundle.XPPR7DPR.css": {
+      "bytes": 218482,
       "inputs": [
         "external/mkdocs-material/material/templates/assets/stylesheets/palette.06af60db.min.css",
         "external/mkdocs-material/material/templates/assets/stylesheets/main.0253249f.min.css",
