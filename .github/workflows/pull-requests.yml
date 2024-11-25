@@ -19,6 +19,7 @@ jobs:
         with:
           fetch-depth: 0
           submodules: recursive
+          ssh-key: ${{ secrets.ACTION_SSH_KEY }}
       - name: inspect links
         uses: umbrelladocs/action-linkspector@v1
         with:
