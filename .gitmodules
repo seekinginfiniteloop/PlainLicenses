@@ -1,7 +1,7 @@
 [submodule "external/license-list-data"]
 	path = external/license-list-data
 	url = https://github.com/spdx/license-list-data.git
-	url = git@github:spdx/license-list-data.git
+	url = git@github.com:spdx/license-list-data.git
 	branch = main
     ignore = all
 [submodule "external/mkdocs-material"]
