@@ -40,7 +40,7 @@ jobs:
         with:
           name: site
       - name: setup UV
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@v4
         with:
           version: "latest"
           enable-cache: true
