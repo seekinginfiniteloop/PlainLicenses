@@ -27,6 +27,7 @@ jobs:
         with:
           fetch-depth: 0
           submodules: recursive
+          ssh-key: ${{ secrets.ACTION_SSH_KEY }}
       - name: Add build packages
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
