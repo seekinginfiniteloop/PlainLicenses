@@ -15447,7 +15447,7 @@ var showOverlay = () => {
 };
 var prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 logger.info(`Prefers reduced motion: ${prefersReducedMotion}`);
-var getScrollTargets = (el) => {
+var findScrollTargets = (el) => {
   const targetData = el.getAttribute("data-anchor-target");
   if (!targetData) {
     throw new Error("Target attribute not found");
@@ -15462,7 +15462,10 @@ var getScrollTargets = (el) => {
   const duration = parseFloat(el.getAttribute("data-scroll-duration") || "2");
   return { target, wayPoint, wayPointPause, duration };
 };
-var scrollBackup = (el) => {
+var getScrollTargets = (el) => {
+  return findScrollTargets(el);
+};
+var scrollFallback = (el) => {
   el.scrollIntoView({ behavior: "auto" });
 };
 var smoothScroll$ = (el) => {
@@ -15473,7 +15476,7 @@ var smoothScroll$ = (el) => {
     return of(false);
   }
   if (prefersReducedMotion) {
-    scrollBackup(target);
+    scrollFallback(target);
     return of(true);
   }
   try {
@@ -15487,7 +15490,11 @@ var smoothScroll$ = (el) => {
       paused: true,
       defaults: {
         ease: "power3.inOut",
-        overwrite: "auto"
+        overwrite: "auto",
+        fastScrollEnd: true
+      },
+      onUpdate: () => {
+        ScrollTrigger3.update();
       }
     });
     const firstScrollDuration = duration * FIRST_SCROLL_RATIO;
@@ -15497,18 +15504,21 @@ var smoothScroll$ = (el) => {
     tl.to(html, {
       duration: firstScrollDuration,
       scrollTo: { y: scrollPositions.wayPoint, autoKill: false },
-      immediateRender: false
+      immediateRender: false,
+      onStart: () => ScrollTrigger3.refresh()
     });
     if (secondScrollDuration > 0) {
       tl.to(html, {
         duration: secondScrollDuration,
         scrollTo: { y: scrollPositions.target, autoKill: false },
-        immediateRender: false
+        immediateRender: false,
+        onStart: () => ScrollTrigger3.refresh()
       }, `+=${pause}`);
     }
     return new Observable((observer) => {
       tl.eventCallback("onComplete", () => {
         logger.info("Smooth scroll completed");
+        ScrollTrigger3.refresh();
         observer.next(true);
         observer.complete();
       });
@@ -15516,13 +15526,13 @@ var smoothScroll$ = (el) => {
     }).pipe(
       catchError((err) => {
         logger.error(`Error in Smooth Scroll: ${JSON.stringify(err)}`);
-        scrollBackup(target);
+        scrollFallback(target);
         return of(false);
       })
     );
   } catch (err) {
     logger.error("Error in smooth scroll: ", JSON.stringify(err));
-    scrollBackup(target);
+    scrollFallback(target);
     return of(false);
   }
 };
@@ -15533,7 +15543,6 @@ var allSubscriptions = () => {
     return event$2.pipe(
       withLatestFrom(infoBoxVisible$),
       filter(([_, isVisible]) => !isVisible),
-      // Proceed only if the info box is not visible
       tap(([ev]) => ev.preventDefault()),
       tap(() => {
         showOverlay();
@@ -15557,7 +15566,6 @@ var allSubscriptions = () => {
     return event$2.pipe(
       withLatestFrom(infoBoxVisible$),
       filter(([_, isVisible]) => isVisible),
-      // Only proceed if the info box is visible
       filter(([ev]) => {
         const target = ev.target;
         return !infoBox.contains(target) && !(easterEgg == null ? void 0 : easterEgg.contains(target)) || (target == null ? void 0 : target.closest("#egg-box-close")) !== null;
@@ -15625,26 +15633,40 @@ var allSubscriptions = () => {
   subscriptions.push(
     heroInteraction$.subscribe({
       next: () => {
-        heroInteraction$.subscribe();
       },
       error: (err) => logger.error("Error in hero button interaction:", err),
       complete: () => logger.info("Hero button interaction observable completed")
     })
   );
   const noLongerHome = (url) => !isHome(url) && isOnSite(url);
-  const pathObservable$ = watchLocationChange((url) => noLongerHome(url)).pipe(tap(() => hideOverlay()), tap(() => logger.info("Path changed, overlay hidden")));
+  const pathObservable$ = watchLocationChange((url) => noLongerHome(url)).pipe(
+    tap(() => hideOverlay()),
+    tap(() => logger.info("Path changed, overlay hidden"))
+  );
   subscriptions.push(
-    pathObservable$.subscribe({ next: () => {
-      unsubscribeFromAll(subscriptions);
-    } })
+    pathObservable$.subscribe({
+      next: () => {
+        unsubscribeFromAll(subscriptions);
+      }
+    })
   );
   if (!prefersReducedMotion) {
     const setupAnimation = (selector3, properties) => {
       gsapWithCSS.set(selector3, properties);
     };
     const createTimeline = (selector3, animations, scrollTrigger) => {
-      const timeline2 = gsapWithCSS.timeline(scrollTrigger);
-      animations.forEach((animation) => timeline2.add(gsapWithCSS.to(selector3, animation)));
+      const timeline2 = gsapWithCSS.timeline({
+        scrollTrigger: {
+          ...scrollTrigger,
+          onRefresh: () => {
+            logger.info(`ScrollTrigger refreshed for ${selector3}`);
+          },
+          onUpdate: () => {
+            logger.info(`ScrollTrigger updated for ${selector3}`);
+          }
+        }
+      });
+      animations.forEach((animation) => timeline2.to(selector3, animation));
       return timeline2;
     };
     const createFadeInAnimation = () => {
@@ -15653,29 +15675,45 @@ var allSubscriptions = () => {
         const batch = [];
         ScrollTrigger3.batch(selector3, {
           start: "top 90%",
-          // Show sooner
           end: "bottom 10%",
-          // Hide later
           interval: 0.2,
-          // Faster sequence
-          batchMax: 5,
-          // Smoother batching
+          batchMax: 8,
+          scroller: document.scrollingElement,
+          fastScrollEnd: true,
           onEnter: (b) => {
-            gsapWithCSS.to(b, {
-              opacity: 1,
-              y: 0,
-              duration: 1,
-              ease: "power1.out",
-              stagger: { each: 0.3, grid: "auto" },
-              overwrite: true
-            });
+            gsapWithCSS.fromTo(
+              b,
+              {
+                opacity: 0,
+                y: 50,
+                duration: 0.75,
+                ease: "power3.inOut",
+                stagger: { each: 0.2, grid: "auto" },
+                scrub: 0.5,
+                fastScrollEnd: true,
+                overwrite: true
+              },
+              {
+                opacity: 1,
+                y: 0,
+                duration: 0.75,
+                ease: "power3.inOut",
+                stagger: { each: 0.2, grid: "auto" },
+                scrub: 0.5,
+                fastScrollEnd: true,
+                overwrite: true
+              }
+            );
           },
           onLeave: (b) => {
             gsapWithCSS.to(b, {
               opacity: 0,
               y: -50,
               duration: 0.3,
-              ease: "power1.in"
+              scrub: 0.5,
+              fastScrollEnd: true,
+              ease: "power1.in",
+              overwrite: true
             });
           },
           onEnterBack: (b) => {
@@ -15683,8 +15721,11 @@ var allSubscriptions = () => {
               opacity: 1,
               y: 0,
               duration: 0.5,
-              ease: "power1.out",
-              stagger: 0.1
+              ease: "sine",
+              scrub: 0.5,
+              fastScrollEnd: true,
+              stagger: 0.1,
+              overwrite: true
             });
           },
           onLeaveBack: (b) => {
@@ -15692,50 +15733,37 @@ var allSubscriptions = () => {
               opacity: 0,
               y: 50,
               duration: 0.3,
-              ease: "power1.in"
+              scrub: 0.5,
+              fastScrollEnd: true,
+              ease: "power1.out",
+              overwrite: true
             });
           }
-        }).forEach((trigger) => batch.push(of(trigger)));
+        }).sort().forEach((trigger) => batch.push(of(trigger)));
         return batch;
       };
-      const fadeInTargets = (_a2 = document.querySelector("#pt2-hero-content-section")) == null ? void 0 : _a2.querySelectorAll("*");
+      const fadeInTargets = (_a2 = document.querySelector("#pt2-hero-content-section")) == null ? void 0 : _a2.querySelectorAll(":not(br)");
+      const fadeIn2Targets = (_b = document.querySelector("#pt3-hero-content-section")) == null ? void 0 : _b.querySelectorAll(":not(br)");
+      ScrollTrigger3.addEventListener("refresh", () => {
+        fadeInTargets == null ? void 0 : fadeInTargets.forEach((el) => gsapWithCSS.set(el, { clearProps: "all" }));
+        fadeIn2Targets == null ? void 0 : fadeIn2Targets.forEach((el) => gsapWithCSS.set(el, { clearProps: "all" }));
+      });
       if (fadeInTargets) {
         fadeInTargets.forEach((target) => {
           target.classList.add("fade-in");
         });
       }
-      const fadeIn2Targets = (_b = document.querySelector("#pt3-hero-content-section")) == null ? void 0 : _b.querySelectorAll("*");
       if (fadeIn2Targets) {
         fadeIn2Targets.forEach((target) => {
           target.classList.add("fade-in2");
         });
       }
-      const fadeIns = () => {
-        return [
-          ...makeScrollBatch(".fade-in"),
-          ...makeScrollBatch(".fade-in2")
-        ];
-      };
-      if (fadeIn2Targets) {
-        setupAnimation(".fade-in", { opacity: 0, y: 50 });
-        setupAnimation(".fade-in2", { opacity: 0, y: 50 });
-        ScrollTrigger3.addEventListener("refreshInit", () => {
-          gsapWithCSS.set(".fade-in", { y: 0, opacity: 1 });
-          gsapWithCSS.set(".fade-in2", { y: 0, opacity: 1 });
-        });
-        return fadeIns();
-      }
-      return [];
+      setupAnimation(".fade-in", { opacity: 0, y: 50 });
+      setupAnimation(".fade-in2", { opacity: 0, y: 50 });
+      return [[...makeScrollBatch(".fade-in")], [...makeScrollBatch(".fade-in2")]];
     };
-    subscriptions.push(concat(...createFadeInAnimation()).subscribe());
-    const createCtaAnimation = () => {
-      setupAnimation(".cta-ul", {
-        scaleX: 0,
-        transformOrigin: "left",
-        height: "1.8em",
-        width: "0"
-      });
-      const ctaTimeline = createTimeline(".cta-ul", [
+    const initializeAnimations = () => {
+      const ctaAnimation = createTimeline(".cta-ul", [
         {
           scaleX: 1,
           transformOrigin: "left",
@@ -15751,24 +15779,14 @@ var allSubscriptions = () => {
           width: "100%"
         }
       ], {
-        scrub: true,
+        trigger: ".md-header",
+        scroller: document.scrollingElement,
+        fastScrollEnd: true,
         start: "top top",
-        // Starts immediately when page loads
-        trigger: "body",
-        onEnter: () => ctaTimeline.play(),
-        once: true
-        // Only plays once
+        end: "top 80%",
+        scrub: 0.5
       });
-    };
-    subscriptions.push(of(createCtaAnimation).subscribe());
-    const createEmphasisAnimation = () => {
-      setupAnimation(".special-ul", {
-        scaleX: 0,
-        transformOrigin: "left",
-        height: "1.8em",
-        width: "0"
-      });
-      const emphasisTimeline = createTimeline(".special-ul", [
+      const emphasisAnimation = createTimeline(".special-ul", [
         {
           scaleX: 1,
           transformOrigin: "left",
@@ -15784,20 +15802,15 @@ var allSubscriptions = () => {
           width: "100%"
         }
       ], {
-        scrub: 0.5,
+        trigger: "#pt2-hero-section-content",
+        scroller: document.scrollingElement,
+        fastScrollEnd: true,
         start: "top 90%",
         end: "top 70%",
-        trigger: "#pt2-hero-section-content",
-        onEnter: () => emphasisTimeline.play()
+        scrub: 0.5,
+        markers: true
       });
-    };
-    subscriptions.push(of(createEmphasisAnimation).subscribe());
-    const createSpecialHighlight = () => {
-      setupAnimation(".special-highlight", {
-        textShadow: "0 0 0 transparent",
-        x: 0
-      });
-      return createTimeline(".special-highlight", [
+      const highlightAnimation = createTimeline(".special-highlight", [
         {
           textShadow: "0.02em 0.02em 0 var(--turkey-red)",
           x: 20,
@@ -15810,21 +15823,58 @@ var allSubscriptions = () => {
           ease: "power2.out"
         }
       ], {
-        start: "top 85%",
-        // Start when element is 85% from top
-        end: "bottom 15%",
-        // End when element is 15% from bottom
         trigger: ".special-highlight",
-        toggleActions: "play pause resume reset",
+        scroller: document.scrollingElement,
+        fastScrollEnd: true,
+        start: "top 85%",
+        end: "bottom 15%",
         scrub: 0.5
       });
+      setupAnimation(".cta-ul", {
+        scaleX: 0,
+        transformOrigin: "left",
+        height: "1.8em",
+        width: "0"
+      });
+      setupAnimation(".special-ul", {
+        scaleX: 0,
+        transformOrigin: "left",
+        height: "1.8em",
+        width: "0"
+      });
+      setupAnimation(".special-highlight", {
+        textShadow: "0 0 0 transparent",
+        x: 0
+      });
+      const fadeAnimations = createFadeInAnimation();
+      const fadeIn1 = fadeAnimations[0];
+      const fadeIn2 = fadeAnimations[1];
+      const timeline2 = gsapWithCSS.timeline();
+      timeline2.add(ctaAnimation);
+      concat(...fadeIn1).subscribe((trigger) => {
+        if (trigger.animation) {
+          timeline2.add(trigger.animation);
+        }
+      });
+      timeline2.add(emphasisAnimation);
+      concat(...fadeIn2).subscribe({ next: (trigger) => {
+        if (trigger.animation) {
+          timeline2.add(trigger.animation);
+        }
+      } });
+      timeline2.add(highlightAnimation);
     };
-    subscriptions.push(of(createSpecialHighlight).subscribe());
-    subscriptions.push(fromEvent(window, "hashchange").pipe().subscribe({
-      next: () => {
-        window.location.hash = "";
-      }
-    }));
+    initializeAnimations();
+    window.addEventListener("resize", () => {
+      ScrollTrigger3.refresh();
+    });
+    subscriptions.push(
+      fromEvent(window, "hashchange").subscribe({
+        next: () => {
+          window.location.hash = "";
+        }
+      })
+    );
   }
 };
 var urlFilter = (url) => !isHome(url) && isOnSite(url) || !isOnSite(url);
@@ -16012,4 +16062,4 @@ gsap/ScrollTrigger.js:
    * @author: Jack Doyle, jack@greensock.com
   *)
 */
-//# sourceMappingURL=index.M4RH6NJH.js.map
+//# sourceMappingURL=index.IZ6IJEDC.js.map

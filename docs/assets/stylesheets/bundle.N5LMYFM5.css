@@ -7260,7 +7260,8 @@ svg#arrow-down:hover {
   flex-flow: column nowrap;
   place-items: center center;
   place-self: center center;
-  justify-content: space-evenly;
+  justify-content: center;
+  justify-items: center;
   width: 100vw;
   height: calc(100vh - var(--header-height));
   padding-top: 0.01rem;
@@ -7310,9 +7311,6 @@ h1.hero-content-section.header-mid.line {
   text-transform: uppercase;
   white-space: nowrap;
   user-select: none;
-}
-.ul {
-  text-decoration: solid underline var(--emerald) 1.8rem;
 }
 #pt2-3-buffer {
   position: relative;
@@ -7608,6 +7606,33 @@ a#yoshimi-link:focus {
     translate: 0% 20%;
   }
 }
+.cta-ul,
+.special-ul {
+  position: absolute;
+  bottom: -0.1em;
+  left: 0;
+  z-index: -1;
+  width: 0;
+  height: 0.8em;
+  content: "";
+  background-color: var(--turkey-red);
+  opacity: 0.3;
+}
+.cta-container,
+.special-container {
+  position: relative;
+  display: inline-block;
+  justify-content: center;
+  justify-self: center;
+  width: 100%;
+  text-align: center;
+}
+.special-highlight {
+  position: relative;
+  display: inline-block;
+  text-shadow: 0 0 0 transparent;
+  transform: translateX(0);
+}
 
 /* src/assets/stylesheets/heroimages.css */
 .hero-parallax__image {
@@ -7878,4 +7903,4 @@ a#yoshimi-link:focus {
 }
 
 /* src/assets/stylesheets/bundle.css */
-/*# sourceMappingURL=bundle.XPPR7DPR.css.map */
+/*# sourceMappingURL=bundle.N5LMYFM5.css.map */

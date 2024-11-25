@@ -216,7 +216,8 @@ svg#arrow-down:hover {
   flex-flow: column nowrap;
   place-items: center center;
   place-self: center center;
-  justify-content: space-evenly;
+  justify-content: center;
+  justify-items: center;
   width: 100vw;
   height: calc(100vh - var(--header-height));
   padding-top: 0.01rem;
@@ -261,10 +262,6 @@ h1.hero-content-section.header-mid.line {
   text-transform: uppercase;
   white-space: nowrap;
   user-select: none;
-}
-
-.ul {
-  text-decoration: solid underline var(--emerald) 1.8rem;
 }
 
 #pt2-3-buffer {
@@ -578,4 +575,45 @@ a#yoshimi-link:focus {
     scale: 1.4;
     translate: 0% 20%;
   }
+}
+
+/* Underline styles */
+.cta-ul,
+.special-ul {
+  position: absolute;
+  bottom: -0.1em;
+  left: 0;
+
+  /* Width starts at 0 and animates to 100% */
+  z-index: -1;
+
+  /* This will be animated */
+  width: 0;
+
+  /* or your preferred color */
+  height: 0.8em;
+  content: "";
+  background-color: var(--turkey-red);
+  opacity: 0.3;
+}
+
+/* Container for underlined text needs relative positioning */
+.cta-container,
+.special-container {
+  position: relative;
+  display: inline-block;
+  justify-content: center;
+  justify-self: center;
+  width: 100%;
+  text-align: center;
+}
+
+/* Special highlight for text shadow effect */
+.special-highlight {
+  position: relative;
+  display: inline-block;
+
+  /* Initial state - will be animated by GSAP */
+  text-shadow: 0 0 0 transparent;
+  transform: translateX(0);
 }

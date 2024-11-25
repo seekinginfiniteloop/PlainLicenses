@@ -20,6 +20,7 @@ import {
 } from "rxjs"
 import {
   catchError,
+  concatAll,
   filter,
   map,
   tap,
@@ -121,12 +122,10 @@ const scrollFallback = (el: Element): void => {
   el.scrollIntoView({ behavior: "auto" })
 }
 
-
-
 /**
  * Creates an observable that scrolls to a specified element with a smooth animation.
  * @param el The element to scroll to.
- * @returns Observable&lt;void> - An observable of void.
+ * @returns Observable&lt;boolean> - An observable of void.
  */
 const smoothScroll$ = (el: Element): Observable<boolean> => {
   const { target, wayPoint, wayPointPause, duration } = getScrollTargets(el)
@@ -150,11 +149,17 @@ const smoothScroll$ = (el: Element): Observable<boolean> => {
       target: target.offsetTop
     }
 
+    // Create main timeline
     const tl = gsap.timeline({
       paused: true,
       defaults: {
         ease: "power3.inOut",
-        overwrite: 'auto'
+        overwrite: 'auto',
+        fastScrollEnd: true,
+      },
+      onUpdate: () => {
+        // Force ScrollTrigger to check for updates during animation
+        ScrollTrigger.update()
       }
     })
 
@@ -164,23 +169,27 @@ const smoothScroll$ = (el: Element): Observable<boolean> => {
 
     logger.info(`Current scroll: ${currentScroll}, firstScrollDuration: ${firstScrollDuration}, secondScrollDuration: ${secondScrollDuration}, scrollPositions: ${JSON.stringify(scrollPositions)}`)
 
+    // Add scroll animations to timeline
     tl.to(html, {
       duration: firstScrollDuration,
       scrollTo: { y: scrollPositions.wayPoint, autoKill: false },
-      immediateRender: false
+      immediateRender: false,
+      onStart: () => ScrollTrigger.refresh()
     })
 
     if (secondScrollDuration > 0) {
       tl.to(html, {
         duration: secondScrollDuration,
         scrollTo: { y: scrollPositions.target, autoKill: false },
-        immediateRender: false
+        immediateRender: false,
+        onStart: () => ScrollTrigger.refresh()
       }, `+=${pause}`)
     }
 
     return new Observable<boolean>(observer => {
       tl.eventCallback('onComplete', () => {
         logger.info('Smooth scroll completed')
+        ScrollTrigger.refresh()
         observer.next(true)
         observer.complete()
       })
@@ -208,7 +217,7 @@ export const allSubscriptions = (): void => {
   const eggFunction = (event$: Observable<Event>): Observable<void> => {
     return event$.pipe(
       withLatestFrom(infoBoxVisible$),
-      filter(([_, isVisible]) => !isVisible), // Proceed only if the info box is not visible
+      filter(([_, isVisible]) => !isVisible),
       tap(([ev]) => ev.preventDefault()),
       tap(() => {
         showOverlay()
@@ -237,7 +246,7 @@ export const allSubscriptions = (): void => {
   ): Observable<void> => {
     return event$.pipe(
       withLatestFrom(infoBoxVisible$),
-      filter(([_, isVisible]) => isVisible), // Only proceed if the info box is visible
+      filter(([_, isVisible]) => isVisible),
       filter(([ev]) => {
         const target = ev.target as Element | null
         return (!infoBox.contains(target) && !easterEgg?.contains(target)) || target?.closest("#egg-box-close") !== null
@@ -306,57 +315,91 @@ export const allSubscriptions = (): void => {
     heroButtonFunc
   )
 
-    subscriptions.push(
-      heroInteraction$.subscribe({
-      next: () => { heroInteraction$.subscribe() },
+  subscriptions.push(
+    heroInteraction$.subscribe({
+      next: () => { },
       error: err => logger.error("Error in hero button interaction:", err),
       complete: () => logger.info("Hero button interaction observable completed")
     })
-    )
-
+  )
 
   const noLongerHome = (url: URL) => !isHome(url) && isOnSite(url)
-  const pathObservable$ = watchLocationChange((url) => noLongerHome(url)).pipe(tap(() => hideOverlay()), tap(() => logger.info("Path changed, overlay hidden")))
+  const pathObservable$ = watchLocationChange((url) => noLongerHome(url)).pipe(
+    tap(() => hideOverlay()),
+    tap(() => logger.info("Path changed, overlay hidden"))
+  )
 
   subscriptions.push(
-    pathObservable$.subscribe({ next: () => { unsubscribeFromAll(subscriptions) } }))
+    pathObservable$.subscribe({
+      next: () => { unsubscribeFromAll(subscriptions) }
+    })
+  )
 
   if (!prefersReducedMotion) {
-
     const setupAnimation = (selector: string, properties: gsap.TweenVars) => {
       gsap.set(selector, properties)
     }
 
     const createTimeline = (selector: string, animations: gsap.TweenVars[], scrollTrigger: ScrollTrigger.Vars) => {
-      const timeline = gsap.timeline(scrollTrigger)
-      animations.forEach(animation => timeline.add(gsap.to(selector, animation)))
+      const timeline = gsap.timeline({
+        scrollTrigger: {
+          ...scrollTrigger,
+
+          onRefresh: () => {
+            logger.info(`ScrollTrigger refreshed for ${selector}`)
+          },
+          onUpdate: () => {
+            logger.info(`ScrollTrigger updated for ${selector}`)
+          }
+        }
+      })
+      animations.forEach(animation => timeline.to(selector, animation))
       return timeline
     }
 
-    const createFadeInAnimation = (): Observable<ScrollTrigger>[] => {
+    const createFadeInAnimation = (): Observable<ScrollTrigger>[][] => {
       const makeScrollBatch = (selector: string) => {
         const batch: Observable<ScrollTrigger>[] = []
         ScrollTrigger.batch(selector, {
-          start: "top 90%", // Show sooner
-          end: "bottom 10%", // Hide later
+          start: "top 90%",
+          end: "bottom 10%",
           interval: 0.2,
-          batchMax: 5, // Smoother batching
+          batchMax: 8,
+          scroller: document.scrollingElement,
+          fastScrollEnd: true,
           onEnter: (b: Element[]) => {
-            gsap.to(b, {
+            gsap.fromTo(b, {
+              opacity: 0,
+              y: 50,
+              duration: 0.75,
+              ease: "power3.inOut",
+              stagger: { each: 0.2, grid: "auto" },
+              scrub: 0.5,
+              fastScrollEnd: true,
+              overwrite: true,
+            },
+              {
               opacity: 1,
               y: 0,
-              duration: 1,
-              ease: "power1.out",
-              stagger: { each: 0.3, grid: "auto" },
-              overwrite: true
-            })
+              duration: 0.75,
+              ease: "power3.inOut",
+              stagger: { each: 0.2, grid: "auto" },
+              scrub: 0.5,
+              fastScrollEnd: true,
+              overwrite: true,
+              }
+            )
+
           },
           onLeave: (b: Element[]) => {
             gsap.to(b, {
               opacity: 0,
               y: -50,
               duration: 0.3,
-              ease: "power1.in"
+              scrub: 0.5,
+              fastScrollEnd: true,
+              ease: "power1.in",
+              overwrite: true,
             })
           },
           onEnterBack: (b: Element[]) => {
@@ -364,8 +407,11 @@ export const allSubscriptions = (): void => {
               opacity: 1,
               y: 0,
               duration: 0.5,
-              ease: "power1.out",
-              stagger: 0.1
+              ease: "sine",
+              scrub: 0.5,
+              fastScrollEnd: true,
+              stagger: 0.1,
+              overwrite: true,
             })
           },
           onLeaveBack: (b: Element[]) => {
@@ -373,108 +419,96 @@ export const allSubscriptions = (): void => {
               opacity: 0,
               y: 50,
               duration: 0.3,
-              ease: "power1.in"
+              scrub: 0.5,
+              fastScrollEnd: true,
+              ease: "power1.out",
+              overwrite: true,
             })
           }
-        }).forEach((trigger: ScrollTrigger) => batch.push(of(trigger)))
+        }).sort().forEach((trigger: ScrollTrigger) => batch.push(of(trigger)))
         return batch
       }
-      const fadeInTargets = document.querySelector("#pt2-hero-content-section")?.querySelectorAll("*")
+
+      // Initialize elements before creating ScrollTriggers
+      const fadeInTargets = document.querySelector("#pt2-hero-content-section")?.querySelectorAll(":not(br)")
+      const fadeIn2Targets = document.querySelector("#pt3-hero-content-section")?.querySelectorAll(":not(br)")
+
+      // Reset all animations on refresh
+      ScrollTrigger.addEventListener("refresh", () => {
+        fadeInTargets?.forEach(el => gsap.set(el, { clearProps: "all" }))
+        fadeIn2Targets?.forEach(el => gsap.set(el, { clearProps: "all" }))
+      })
+
       if (fadeInTargets) {
         fadeInTargets.forEach(target => { target.classList.add("fade-in") })
       }
-      const fadeIn2Targets = document.querySelector("#pt3-hero-content-section")?.querySelectorAll("*")
       if (fadeIn2Targets) {
         fadeIn2Targets.forEach(target => { target.classList.add("fade-in2") })
       }
-      const fadeIns = (): Observable<ScrollTrigger>[] => {
-        return [...makeScrollBatch(".fade-in"), ...makeScrollBatch(".fade-in2")
-        ]
-      }
 
-      if (fadeIn2Targets) {
-        setupAnimation(".fade-in", { opacity: 0, y: 50 })
-        setupAnimation(".fade-in2", { opacity: 0, y: 50 })
-        ScrollTrigger.addEventListener("refreshInit", () => {
-          gsap.set(".fade-in", { y: 0, opacity: 1 })
-          gsap.set(".fade-in2", { y: 0, opacity: 1 })
-        })
-        return fadeIns()
-      }
-      return []
+      setupAnimation(".fade-in", { opacity: 0, y: 50 })
+      setupAnimation(".fade-in2", { opacity: 0, y: 50 })
+
+      return [[...makeScrollBatch(".fade-in")], [...makeScrollBatch(".fade-in2")]]
     }
-    subscriptions.push(concat(...createFadeInAnimation()).subscribe())
 
-    const createCtaAnimation = () => {
-        setupAnimation(".cta-ul", {
-          scaleX: 0,
+// Initialize all ScrollTrigger animations
+    const initializeAnimations = () => {
+      // Create fade animations
+
+      // Create and register CTA animation
+      const ctaAnimation = createTimeline(".cta-ul", [
+        {
+          scaleX: 1,
           transformOrigin: "left",
-          height: "1.8em",
-          width: "0"
-        })
-        const ctaTimeline = createTimeline(".cta-ul", [
-          {
-            scaleX: 1,
-            transformOrigin: "left",
-            duration: 0.4,
-            height: "1.3em",
-            width: "50%"
-          },
-          {
-            scaleX: 1,
-            duration: 0.5,
-            ease: "power2.out",
-            height: "0.8em",
-            width: "100%"
-          }
-        ], {
-          scrub: true,
-          start: "top top", // Starts immediately when page loads
-          trigger: "body",
-          onEnter: () => ctaTimeline.play(),
-          once: true // Only plays once
-        })
-      }
-    subscriptions.push(of(createCtaAnimation).subscribe())
-
-    const createEmphasisAnimation = () => {
-        setupAnimation(".special-ul", {
-          scaleX: 0,
-          transformOrigin: "left",
-          height: "1.8em",
-          width: "0"
-        })
-        const emphasisTimeline = createTimeline(".special-ul", [
-          {
-            scaleX: 1,
-            transformOrigin: "left",
-            duration: 0.25,
-            height: "1.3em",
-            width: "50%"
-          },
-          {
-            scaleX: 1,
-            duration: 0.3,
-            ease: "power2.out",
-            height: "0.8em",
-            width: "100%"
-          }
-        ], {
-          scrub: 0.5,
-          start: "top 90%",
-          end: "top 70%",
-          trigger: "#pt2-hero-section-content",
-          onEnter: () => emphasisTimeline.play()
-        })
-      }
-    subscriptions.push(of(createEmphasisAnimation).subscribe())
-
-    const createSpecialHighlight = () => {
-      setupAnimation(".special-highlight", {
-        textShadow: "0 0 0 transparent",
-        x: 0
+          duration: 0.4,
+          height: "1.3em",
+          width: "50%"
+        },
+        {
+          scaleX: 1,
+          duration: 0.5,
+          ease: "power2.out",
+          height: "0.8em",
+          width: "100%"
+        }
+      ], {
+        trigger: ".md-header",
+        scroller: document.scrollingElement,
+        fastScrollEnd: true,
+        start: "top top",
+        end: "top 80%",
+        scrub: 0.5,
       })
-      return createTimeline(".special-highlight", [
+
+      // Create and register emphasis animation
+      const emphasisAnimation = createTimeline(".special-ul", [
+        {
+          scaleX: 1,
+          transformOrigin: "left",
+          duration: 0.25,
+          height: "1.3em",
+          width: "50%"
+        },
+        {
+          scaleX: 1,
+          duration: 0.3,
+          ease: "power2.out",
+          height: "0.8em",
+          width: "100%"
+        }
+      ], {
+        trigger: "#pt2-hero-section-content",
+        scroller: document.scrollingElement,
+        fastScrollEnd: true,
+        start: "top 90%",
+        end: "top 70%",
+        scrub: 0.5,
+        markers: true
+      })
+
+      // Create and register highlight animation
+      const highlightAnimation = createTimeline(".special-highlight", [
         {
           textShadow: "0.02em 0.02em 0 var(--turkey-red)",
           x: 20,
@@ -487,23 +521,68 @@ export const allSubscriptions = (): void => {
           ease: "power2.out"
         }
       ], {
-              start: "top 85%", // Start when element is 85% from top
-              end: "bottom 15%", // End when element is 15% from bottom
-              trigger: ".special-highlight",
-              toggleActions: "play pause resume reset",
-              scrub: 0.5
-            })
-    }
-    subscriptions.push(of(createSpecialHighlight).subscribe())
+        trigger: ".special-highlight",
+        scroller: document.scrollingElement,
+        fastScrollEnd: true,
+        start: "top 85%",
+        end: "bottom 15%",
+        scrub: 0.5,
+      })
 
-    subscriptions.push(fromEvent(window, "hashchange").pipe(
-    ).subscribe({
+      // Set initial states
+      setupAnimation(".cta-ul", {
+        scaleX: 0,
+        transformOrigin: "left",
+        height: "1.8em",
+        width: "0"
+      })
+      setupAnimation(".special-ul", {
+        scaleX: 0,
+        transformOrigin: "left",
+        height: "1.8em",
+        width: "0"
+      })
+      setupAnimation(".special-highlight", {
+        textShadow: "0 0 0 transparent",
+        x: 0
+      })
+      const fadeAnimations = createFadeInAnimation()
+      const fadeIn1 = fadeAnimations[0]
+      const fadeIn2 = fadeAnimations[1]
+    const timeline = gsap.timeline()
+      timeline.add(ctaAnimation)
+      concat(...fadeIn1).subscribe(trigger => {
+        if (trigger.animation) {
+          timeline.add(trigger.animation)
+        }
+      })
+      timeline.add(emphasisAnimation)
+      concat(...fadeIn2).subscribe({next: trigger => {
+        if (trigger.animation) {
+          timeline.add(trigger.animation)
+        }
+      }})
+      timeline.add(highlightAnimation)
+    }
+
+    // Initialize animations when the page loads
+    initializeAnimations()
+
+    // Refresh ScrollTrigger when window is resized
+    window.addEventListener("resize", () => {
+      ScrollTrigger.refresh()
+    })
+
+    // Handle hash changes
+    subscriptions.push(
+      fromEvent(window, "hashchange").subscribe({
         next: () => {
           window.location.hash = ""
         }
-      }))
+      })
+    )
   }
-  }
+}
 
 const urlFilter = (url: URL) => (!isHome(url) && isOnSite(url)) || !isOnSite(url)
 
@@ -512,7 +591,7 @@ if (!urlFilter(new URL(window.location.href)) && subscriptions.length === 0) {
 }
 
 mergedUnsubscription$(urlFilter).subscribe({
-      next: () => {
-        unsubscribeFromAll(subscriptions)
-      }
-    })
+  next: () => {
+    unsubscribeFromAll(subscriptions)
+  }
+})
