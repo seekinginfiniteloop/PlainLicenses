@@ -30,9 +30,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
           submodules: recursive
-          ssh-key: ${{ secrets.ACTION_SSH_KEY }}
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         env:
