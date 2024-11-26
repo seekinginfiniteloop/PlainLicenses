@@ -57,10 +57,6 @@ jobs:
       - name: Run Formatting and Fixing
         run: |
           bun run fix --no-interactive
-      - name: sourcery code review
-        uses: sourcery-ai/action@v1
-        with:
-          token: ${{ secrets.SOURCERY_TOKEN }}
       - name: Commit changes
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
