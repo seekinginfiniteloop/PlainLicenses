@@ -76,7 +76,7 @@ notify:
   runs-on: ubuntu-latest
   permissions:
     contents: read
-    pull-requests: write
+    pull-requests: read
     issues: write
   steps:
     - name: Create GitHub Issue
