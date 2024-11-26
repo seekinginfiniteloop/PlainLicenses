@@ -45,7 +45,7 @@ jobs:
           cache-dependency-glob: |
             pyproject.toml
       - run: |
-          bun install --no-interactive
+          bun install --no-interactive --frozen-lockfile
           bun install --no-interactive -g @linthtml/linthtml stylelint eslint prettier markdownlint-cli2
           uv python install 3.13 &&
           uv venv --allow-existing .venv &&
