@@ -21,7 +21,6 @@ import {
   finalize,
   map,
   mergeMap,
-  share,
   skipWhile,
   switchMap,
   takeUntil,

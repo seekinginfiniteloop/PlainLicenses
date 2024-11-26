@@ -19,7 +19,7 @@ const heroLocationObserver$ = watchLocationChange(onHeroPage).pipe(tap(() => {
 const themeSubject = new Subject<{ element: Element, scheme: string, media: string }>()
 
   // Set up mutation observer for attribute changes
-const setupThemeObserver = () => {
+export const setupThemeObserver = () => {
     const targets = Array.from(document.querySelectorAll('[data-md-color-scheme][data-md-color-media]'))
     if (!targets.length) {
       logger.error('Theme target elements not found')
@@ -78,5 +78,3 @@ const setupThemeObserver = () => {
   const noLongerHome = (url: URL) => !isHome(url) && !isOnSite(url)
   watchLocationChange(noLongerHome).pipe(delay(10000), tap(() => cleanup())).subscribe()
 }
-
-setupThemeObserver()

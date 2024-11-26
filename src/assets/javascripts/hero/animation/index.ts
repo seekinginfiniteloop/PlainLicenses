@@ -370,65 +370,50 @@ export const allSubscriptions = (): void => {
       }
       setupInitialStates()
 
-      const makeScrollBatch = (selector: string) => {
-        const batch: Observable<ScrollTrigger>[] = []
-        ScrollTrigger.batch(selector, {
-          start: "top 90%",
-          end: "bottom 10%",
-          interval: 0.1, // Reduced for smoother batching
-          batchMax: 3, // Reduced for better performance
-          onEnter: (elements: Element[]) => {
-            gsap.to(elements, {
-              autoAlpha: 1, // Use autoAlpha instead of opacity
-              y: 0,
-              duration: 0.75,
-              ease: "power2.out",
-              stagger: {
-                amount: 0.3,
-                from: "start"
-              },
-              overwrite: "auto",
-              immediateRender: false,
-              scrub: 0.5,
-              fastScrollEnd: true
-            })
+const makeScrollBatch = (selector: string) => {
+    const batch: Observable<ScrollTrigger>[] = []
+    ScrollTrigger.batch(selector, {
+      start: "top 95%",
+      end: "top -10%",
+      interval: 0.1,
+      batchMax: 8,
+      onEnter: (elements: Element[]) => {
+        gsap.to(elements, {
+          autoAlpha: 1,
+          y: 0,
+          duration: 0.75,
+          ease: "power2.out",
+          scrub: 0.5,
+          stagger: {
+            amount: 0.3,
+            from: "start"
           },
-          onLeave: (elements: Element[]) => {
-            gsap.to(elements, {
-              autoAlpha: 0,
-              y: -50,
-              duration: 0.5,
-              overwrite: "auto",
-              immediateRender: false,
-              scrub: 0.5,
-              fastScrollEnd: true
-            })
-          },
-          onEnterBack: (elements: Element[]) => {
-            gsap.to(elements, {
-              autoAlpha: 1,
-              y: 0,
-              duration: 0.5,
-              overwrite: "auto",
-              immediateRender: false,
-              scrub: 0.5,
-              fastScrollEnd: true
-            })
-          },
-          onLeaveBack: (elements: Element[]) => {
-            gsap.to(elements, {
-              autoAlpha: 0,
-              y: 50,
-              duration: 0.5,
-              overwrite: "auto",
-              immediateRender: false,
-              scrub: 0.5,
-              fastScrollEnd: true
-            })
+          overwrite: false,
+          immediateRender: true,
+          fastScrollEnd: true,
+          snap: {
+            snapTo: 0.1,
+            duration: { min: 0.2, max: 0.5 }
           }
         })
-        return batch
+      },
+      onEnterBack: (elements: Element[]) => {
+        gsap.to(elements, {
+          autoAlpha: 1,
+          y: 0,
+          duration: 0.5,
+          overwrite: false,
+          immediateRender: true,
+          fastScrollEnd: true,
+          snap: {
+            snapTo: 0.1,
+            duration: { min: 0.2, max: 0.5 }
+          }
+        })
       }
+    })
+    return batch
+}
 
       // Initialize elements before creating ScrollTriggers
       const fadeInTargets = document.querySelector("#pt2-hero-content-section")?.querySelectorAll(":not(br)")
@@ -546,10 +531,10 @@ export const allSubscriptions = (): void => {
       setupAnimation(".special-highlight", {
         textShadow: "0 0 0 transparent",
         x: 0,
-        start: ">"
       })
       const fadeAnimations = createFadeInAnimation()
       const fadeIn1 = fadeAnimations[0]
+
       const fadeIn2 = fadeAnimations[1]
       const timeline = gsap.timeline()
       timeline.add(ctaAnimation)

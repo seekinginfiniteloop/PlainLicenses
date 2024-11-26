@@ -13,6 +13,7 @@ import { watchLicense } from "~/licenses"
 import { logger } from "~/log"
 import { isHome, isLicense, isOnSite, locationBeacon$, mergedUnsubscription$, unsubscribeFromAll, watchLocationChange, watchTables, windowEvents } from "~/utils"
 import { cacheAssets, cleanupCache, deleteOldCache, getAsset } from "./cache"
+import { setupThemeObserver } from "./hero"
 import { shuffle$ } from "./hero/imageshuffle"
 import { allSubscriptions } from "./hero/animation"
 
@@ -99,6 +100,7 @@ const atHome$ = locationBeacon$.pipe(
   takeWhile((url: URL) => isHome(url)),
   tap(() => {
     logger.info("At home page")
+    setupThemeObserver()
     shuffler$.subscribe()
     animate$.subscribe()
   })
