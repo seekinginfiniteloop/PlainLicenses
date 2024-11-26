@@ -477,7 +477,7 @@ export const allSubscriptions = (): void => {
         scroller: document.scrollingElement,
         fastScrollEnd: true,
         start: "top top",
-        end: "top 80%",
+        end: "top 50%",
         scrub: 0.5,
       })
 

@@ -7277,24 +7277,23 @@ svg#arrow-down:hover {
   container-name: hero-message;
   contain: content;
 }
+#pt2-hero-content-section h1 {
+  max-height: 95vh;
+  overflow: contain;
+}
 h1.hero-content-section.header-mid {
   z-index: 50;
-  display: block;
+  display: flex;
+  flex-direction: column;
+  place-content: center center;
+  place-items: center center;
+  justify-content: center;
   width: 100vw;
+  max-width: 100vw;
+  max-height: calc(100vh - var(--header-height) - 0.6rem);
   padding: 0.3rem;
   margin: 0.1rem;
-  overflow: hidden;
-  font-size: clamp(14px, calc(100vw / 9), 38rem);
-  text-align: center;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  opacity: 1;
-}
-h1.hero-content-section.header-mid.line {
-  display: inline-block;
-  max-width: 100vw;
-  max-height: (100vh - var(--header-height) - 0.6rem);
-  padding: 0.3rem;
+  overflow: contain;
   font-family:
     Bangers,
     Impact,
@@ -7303,14 +7302,28 @@ h1.hero-content-section.header-mid.line {
     "Arial Narrow Bold",
     Gadget,
     sans-serif;
+  font-size: clamp(14px, calc(100vw / 12), 31rem);
+  line-height: 1;
+  text-align: center;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+  user-select: none;
+  opacity: 1;
+}
+h1.hero-content-section.header-mid.line {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  place-content: center center;
+  place-items: center center;
+  justify-content: center;
   color: var(--atomic-tangerine);
   text-shadow:
     0.04rem 0.04rem 0 var(--blue-blue),
     0.05rem 0.05rem 0.01rem var(--aquamarine),
     0.06rem 0.06rem 0 var(--night);
-  text-transform: uppercase;
   white-space: nowrap;
-  user-select: none;
 }
 #pt2-3-buffer {
   position: relative;
@@ -7609,11 +7622,11 @@ a#yoshimi-link:focus {
 .cta-ul,
 .special-ul {
   position: absolute;
-  bottom: -0.1em;
+  bottom: -1rem;
   left: 0;
   z-index: -1;
   width: 0;
-  height: 0.8em;
+  height: 1rem;
   content: "";
   background-color: var(--turkey-red);
   opacity: 0.3;
@@ -7621,15 +7634,21 @@ a#yoshimi-link:focus {
 .cta-container,
 .special-container {
   position: relative;
-  display: inline-block;
+  display: flex;
   justify-content: center;
-  justify-self: center;
   width: 100%;
+  margin: 0 auto;
+  text-align: center;
+}
+h1.hero-content-section.header-mid.line span {
+  display: block;
+  width: 100%;
+  padding: 0;
+  margin: 0;
   text-align: center;
 }
 .special-highlight {
   position: relative;
-  display: inline-block;
   text-shadow: 0 0 0 transparent;
   transform: translateX(0);
 }
@@ -7903,4 +7922,4 @@ a#yoshimi-link:focus {
 }
 
 /* src/assets/stylesheets/bundle.css */
-/*# sourceMappingURL=bundle.N5LMYFM5.css.map */
+/*# sourceMappingURL=bundle.UZJRJIJA.css.map */

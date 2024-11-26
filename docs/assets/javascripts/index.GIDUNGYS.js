@@ -15783,7 +15783,7 @@ var allSubscriptions = () => {
         scroller: document.scrollingElement,
         fastScrollEnd: true,
         start: "top top",
-        end: "top 80%",
+        end: "top 50%",
         scrub: 0.5
       });
       const emphasisAnimation = createTimeline(".special-ul", [
@@ -16062,4 +16062,4 @@ gsap/ScrollTrigger.js:
    * @author: Jack Doyle, jack@greensock.com
   *)
 */
-//# sourceMappingURL=index.IZ6IJEDC.js.map
+//# sourceMappingURL=index.GIDUNGYS.js.map

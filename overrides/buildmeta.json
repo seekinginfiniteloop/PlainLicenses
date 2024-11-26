@@ -1,5 +1,5 @@
 {
   "noScriptImage": "\n  <img srcset=\"docs/assets/images/hero/minimal/minimal_1280.42dcf0b0.avif 1280w, docs/assets/images/hero/minimal/minimal_1920.71ca07e0.avif 1920w, docs/assets/images/hero/minimal/minimal_2560.c5549cbf.avif 2560w, docs/assets/images/hero/minimal/minimal_3840.6c643286.avif 3840w\" alt=\"hero image\" class=\"hero-parallax__image hero-parallax__image--minimal\" src=\"docs/assets/images/hero/minimal/minimal_1280.42dcf0b0.avif\" alt=\"hero image\"\n  sizes=\"(max-width: 1280px) 1280px, (max-width: 1920px) 1920px, (max-width: 2560px) 2560px, 3840px\" loading=\"eager\" fetchpriority=\"high\" draggable=\"false\"\n  style=\"align-content:flex-start;align-self:flex-start\">\n  ",
-  "SCRIPTBUNDLE": "assets/javascripts/index.IZ6IJEDC.js",
-  "CSSBUNDLE": "assets/stylesheets/bundle.N5LMYFM5.css"
+  "SCRIPTBUNDLE": "assets/javascripts/index.GIDUNGYS.js",
+  "CSSBUNDLE": "assets/stylesheets/bundle.UZJRJIJA.css"
 }
