@@ -19,9 +19,6 @@ jobs:
       run:
         shell: bash
         working-directory: ${{ github.workspace }}
-    permissions:
-      contents: write
-      pull-requests: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
