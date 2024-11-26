@@ -58,7 +58,7 @@ jobs:
         run: |
           bun run fix --no-interactive
       - name: sourcery code review
-      - uses: sourcery-ai/action@v1
+        uses: sourcery-ai/action@v1
         with:
           token: ${{ secrets.SOURCERY_TOKEN }}
       - name: Commit changes
