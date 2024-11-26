@@ -246,6 +246,7 @@ svg#arrow-down:hover {
 }
 
 #pt2-hero-content-section h1 {
+  min-width: 100vw;
   max-height: 90vh;
   overflow: contain;
 }
@@ -259,8 +260,7 @@ h1.hero-content-section.header-mid {
   justify-content: center;
   width: 100vw;
   max-width: 100vw;
-  max-height: calc(100vh - var(--header-height) - 0.6rem);
-  padding: 0.3rem;
+  padding: 0.2rem 1rem 0.1rem;
   margin: 0.1rem;
   overflow: contain;
   font-family: Bangers, Impact, Haettenschweiler, Charcoal, "Arial Narrow Bold", Gadget, sans-serif;
@@ -297,7 +297,7 @@ h1.hero-content-section.header-mid.line {
   place-self: center center;
   min-width: 100vw;
   max-width: 105vw;
-  min-height: (calc(100vh - var(--header-height)) * 0.4);
+  min-height: calc((100vh - var(--header-height)) * 0.4);
   max-height: 80vh;
   padding-top: 20vh;
   padding-bottom: 20vh;
@@ -313,12 +313,11 @@ h1.hero-content-section.header-mid.line {
   z-index: 10;
   box-sizing: border-box;
   place-items: start center;
-  width: 105vw;
   min-width: 100vw;
-  height: calc(100vh - var(--header-height));
-  min-height: calc(100vh - var(--header-height));
+  max-width: 105vw;
+  height: 100vh;
   padding: 1rem;
-  margin: 1rem 0;
+  margin: 0.5rem 0;
   overflow: hidden visible;
   scroll-snap-type: y proximity;
   scroll-snap-align: start;
@@ -335,9 +334,10 @@ h1.hero-content-section.header-mid.line {
   grid-area: head;
   place-self: center center;
   width: 100%;
+  max-height: 15%;
   margin-top: 0.3rem;
   font-family: Bangers, Impact, Haettenschweiler, Charcoal, "Arial Narrow Bold", Gadget, sans-serif;
-  font-size: clamp(10px, calc(100vw / 26), 16rem);
+  font-size: clamp(12px, calc(100vw / 26), 16rem);
   color: var(--emerald);
   text-align: center;
   text-shadow: 0.01rem 0.01rem 0 var(--oxford-blue);

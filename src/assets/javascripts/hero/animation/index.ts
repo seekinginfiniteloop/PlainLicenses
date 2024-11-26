@@ -20,7 +20,6 @@ import {
 } from "rxjs"
 import {
   catchError,
-  concatAll,
   filter,
   map,
   tap,
@@ -80,6 +79,7 @@ logger.info(`Prefers reduced motion: ${prefersReducedMotion}`)
 /* ------------------------------------------------------------------------ */
 /*                            Animation Utilities                           */
 /* ------------------------------------------------------------------------ */
+
 
 /**
  * Gets scroll target values from data attributes on a specified element.
@@ -358,74 +358,75 @@ export const allSubscriptions = (): void => {
     }
 
     const createFadeInAnimation = (): Observable<ScrollTrigger>[][] => {
+      const setupInitialStates = () => {
+        const style = document.createElement('style')
+        style.textContent = `
+    .fade-in, .fade-in2 {
+      visibility: hidden;
+      opacity: 0;
+    }
+  `
+        document.head.appendChild(style)
+      }
+      setupInitialStates()
+
       const makeScrollBatch = (selector: string) => {
         const batch: Observable<ScrollTrigger>[] = []
         ScrollTrigger.batch(selector, {
           start: "top 90%",
           end: "bottom 10%",
-          interval: 0.2,
-          batchMax: 8,
-          scroller: document.scrollingElement,
-          fastScrollEnd: true,
-          onEnter: (b: Element[]) => {
-            gsap.fromTo(b, {
-              opacity: 0,
-              y: 50,
-              duration: 0.75,
-              ease: "power3.inOut",
-              stagger: { each: 0.2, grid: "auto" },
-              scrub: 0.5,
-              fastScrollEnd: true,
-              overwrite: true,
-            },
-              {
-              opacity: 1,
+          interval: 0.1, // Reduced for smoother batching
+          batchMax: 3, // Reduced for better performance
+          onEnter: (elements: Element[]) => {
+            gsap.to(elements, {
+              autoAlpha: 1, // Use autoAlpha instead of opacity
               y: 0,
               duration: 0.75,
-              ease: "power3.inOut",
-              stagger: { each: 0.2, grid: "auto" },
+              ease: "power2.out",
+              stagger: {
+                amount: 0.3,
+                from: "start"
+              },
+              overwrite: "auto",
+              immediateRender: false,
               scrub: 0.5,
-              fastScrollEnd: true,
-              overwrite: true,
-              }
-            )
-
-          },
-          onLeave: (b: Element[]) => {
-            gsap.to(b, {
-              opacity: 0,
-              y: -50,
-              duration: 0.3,
-              scrub: 0.5,
-              fastScrollEnd: true,
-              ease: "power1.in",
-              overwrite: true,
+              fastScrollEnd: true
             })
           },
-          onEnterBack: (b: Element[]) => {
-            gsap.to(b, {
-              opacity: 1,
+          onLeave: (elements: Element[]) => {
+            gsap.to(elements, {
+              autoAlpha: 0,
+              y: -50,
+              duration: 0.5,
+              overwrite: "auto",
+              immediateRender: false,
+              scrub: 0.5,
+              fastScrollEnd: true
+            })
+          },
+          onEnterBack: (elements: Element[]) => {
+            gsap.to(elements, {
+              autoAlpha: 1,
               y: 0,
               duration: 0.5,
-              ease: "sine",
+              overwrite: "auto",
+              immediateRender: false,
               scrub: 0.5,
-              fastScrollEnd: true,
-              stagger: 0.1,
-              overwrite: true,
+              fastScrollEnd: true
             })
           },
-          onLeaveBack: (b: Element[]) => {
-            gsap.to(b, {
-              opacity: 0,
+          onLeaveBack: (elements: Element[]) => {
+            gsap.to(elements, {
+              autoAlpha: 0,
               y: 50,
-              duration: 0.3,
+              duration: 0.5,
+              overwrite: "auto",
+              immediateRender: false,
               scrub: 0.5,
-              fastScrollEnd: true,
-              ease: "power1.out",
-              overwrite: true,
+              fastScrollEnd: true
             })
           }
-        }).sort().forEach((trigger: ScrollTrigger) => batch.push(of(trigger)))
+        })
         return batch
       }
 
@@ -452,7 +453,7 @@ export const allSubscriptions = (): void => {
       return [[...makeScrollBatch(".fade-in")], [...makeScrollBatch(".fade-in2")]]
     }
 
-// Initialize all ScrollTrigger animations
+    // Initialize all ScrollTrigger animations
     const initializeAnimations = () => {
       // Create fade animations
 
@@ -463,7 +464,7 @@ export const allSubscriptions = (): void => {
           transformOrigin: "left",
           duration: 0.4,
           height: "1.3em",
-          width: "50%"
+          width: "50%",
         },
         {
           scaleX: 1,
@@ -504,7 +505,6 @@ export const allSubscriptions = (): void => {
         start: "top 90%",
         end: "top 70%",
         scrub: 0.5,
-        markers: true
       })
 
       // Create and register highlight animation
@@ -540,16 +540,18 @@ export const allSubscriptions = (): void => {
         scaleX: 0,
         transformOrigin: "left",
         height: "1.8em",
-        width: "0"
+        width: "0",
+        start: ">"
       })
       setupAnimation(".special-highlight", {
         textShadow: "0 0 0 transparent",
-        x: 0
+        x: 0,
+        start: ">"
       })
       const fadeAnimations = createFadeInAnimation()
       const fadeIn1 = fadeAnimations[0]
       const fadeIn2 = fadeAnimations[1]
-    const timeline = gsap.timeline()
+      const timeline = gsap.timeline()
       timeline.add(ctaAnimation)
       concat(...fadeIn1).subscribe(trigger => {
         if (trigger.animation) {
@@ -557,11 +559,13 @@ export const allSubscriptions = (): void => {
         }
       })
       timeline.add(emphasisAnimation)
-      concat(...fadeIn2).subscribe({next: trigger => {
-        if (trigger.animation) {
-          timeline.add(trigger.animation)
+      concat(...fadeIn2).subscribe({
+        next: trigger => {
+          if (trigger.animation) {
+            timeline.add(trigger.animation)
+          }
         }
-      }})
+      })
       timeline.add(highlightAnimation)
     }
 

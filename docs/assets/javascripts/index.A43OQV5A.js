@@ -15671,75 +15671,77 @@ var allSubscriptions = () => {
     };
     const createFadeInAnimation = () => {
       var _a2, _b;
+      const setupInitialStates = () => {
+        const style = document.createElement("style");
+        style.textContent = `
+    .fade-in, .fade-in2 {
+      visibility: hidden;
+      opacity: 0;
+    }
+  `;
+        document.head.appendChild(style);
+      };
+      setupInitialStates();
       const makeScrollBatch = (selector3) => {
         const batch = [];
         ScrollTrigger3.batch(selector3, {
           start: "top 90%",
           end: "bottom 10%",
-          interval: 0.2,
-          batchMax: 8,
-          scroller: document.scrollingElement,
-          fastScrollEnd: true,
-          onEnter: (b) => {
-            gsapWithCSS.fromTo(
-              b,
-              {
-                opacity: 0,
-                y: 50,
-                duration: 0.75,
-                ease: "power3.inOut",
-                stagger: { each: 0.2, grid: "auto" },
-                scrub: 0.5,
-                fastScrollEnd: true,
-                overwrite: true
+          interval: 0.1,
+          // Reduced for smoother batching
+          batchMax: 3,
+          // Reduced for better performance
+          onEnter: (elements) => {
+            gsapWithCSS.to(elements, {
+              autoAlpha: 1,
+              // Use autoAlpha instead of opacity
+              y: 0,
+              duration: 0.75,
+              ease: "power2.out",
+              stagger: {
+                amount: 0.3,
+                from: "start"
               },
-              {
-                opacity: 1,
-                y: 0,
-                duration: 0.75,
-                ease: "power3.inOut",
-                stagger: { each: 0.2, grid: "auto" },
-                scrub: 0.5,
-                fastScrollEnd: true,
-                overwrite: true
-              }
-            );
-          },
-          onLeave: (b) => {
-            gsapWithCSS.to(b, {
-              opacity: 0,
-              y: -50,
-              duration: 0.3,
+              overwrite: "auto",
+              immediateRender: false,
               scrub: 0.5,
-              fastScrollEnd: true,
-              ease: "power1.in",
-              overwrite: true
+              fastScrollEnd: true
             });
           },
-          onEnterBack: (b) => {
-            gsapWithCSS.to(b, {
-              opacity: 1,
+          onLeave: (elements) => {
+            gsapWithCSS.to(elements, {
+              autoAlpha: 0,
+              y: -50,
+              duration: 0.5,
+              overwrite: "auto",
+              immediateRender: false,
+              scrub: 0.5,
+              fastScrollEnd: true
+            });
+          },
+          onEnterBack: (elements) => {
+            gsapWithCSS.to(elements, {
+              autoAlpha: 1,
               y: 0,
               duration: 0.5,
-              ease: "sine",
+              overwrite: "auto",
+              immediateRender: false,
               scrub: 0.5,
-              fastScrollEnd: true,
-              stagger: 0.1,
-              overwrite: true
+              fastScrollEnd: true
             });
           },
-          onLeaveBack: (b) => {
-            gsapWithCSS.to(b, {
-              opacity: 0,
+          onLeaveBack: (elements) => {
+            gsapWithCSS.to(elements, {
+              autoAlpha: 0,
               y: 50,
-              duration: 0.3,
+              duration: 0.5,
+              overwrite: "auto",
+              immediateRender: false,
               scrub: 0.5,
-              fastScrollEnd: true,
-              ease: "power1.out",
-              overwrite: true
+              fastScrollEnd: true
             });
           }
-        }).sort().forEach((trigger) => batch.push(of(trigger)));
+        });
         return batch;
       };
       const fadeInTargets = (_a2 = document.querySelector("#pt2-hero-content-section")) == null ? void 0 : _a2.querySelectorAll(":not(br)");
@@ -15807,8 +15809,7 @@ var allSubscriptions = () => {
         fastScrollEnd: true,
         start: "top 90%",
         end: "top 70%",
-        scrub: 0.5,
-        markers: true
+        scrub: 0.5
       });
       const highlightAnimation = createTimeline(".special-highlight", [
         {
@@ -15840,11 +15841,13 @@ var allSubscriptions = () => {
         scaleX: 0,
         transformOrigin: "left",
         height: "1.8em",
-        width: "0"
+        width: "0",
+        start: ">"
       });
       setupAnimation(".special-highlight", {
         textShadow: "0 0 0 transparent",
-        x: 0
+        x: 0,
+        start: ">"
       });
       const fadeAnimations = createFadeInAnimation();
       const fadeIn1 = fadeAnimations[0];
@@ -15857,11 +15860,13 @@ var allSubscriptions = () => {
         }
       });
       timeline2.add(emphasisAnimation);
-      concat(...fadeIn2).subscribe({ next: (trigger) => {
-        if (trigger.animation) {
-          timeline2.add(trigger.animation);
+      concat(...fadeIn2).subscribe({
+        next: (trigger) => {
+          if (trigger.animation) {
+            timeline2.add(trigger.animation);
+          }
         }
-      } });
+      });
       timeline2.add(highlightAnimation);
     };
     initializeAnimations();
@@ -16062,4 +16067,4 @@ gsap/ScrollTrigger.js:
    * @author: Jack Doyle, jack@greensock.com
   *)
 */
-//# sourceMappingURL=index.GIDUNGYS.js.map
+//# sourceMappingURL=index.A43OQV5A.js.map

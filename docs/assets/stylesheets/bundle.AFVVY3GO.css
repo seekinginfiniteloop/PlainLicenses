@@ -7251,6 +7251,14 @@ svg#arrow-down:hover {
     opacity: 0.7;
   }
 }
+@keyframes background-pan {
+  from {
+    background-position: 0% center;
+  }
+  to {
+    background-position: -200% center;
+  }
+}
 #pt2-hero-content-section {
   position: relative;
   left: 0;
@@ -7278,7 +7286,8 @@ svg#arrow-down:hover {
   contain: content;
 }
 #pt2-hero-content-section h1 {
-  max-height: 95vh;
+  min-width: 100vw;
+  max-height: 90vh;
   overflow: contain;
 }
 h1.hero-content-section.header-mid {
@@ -7290,8 +7299,7 @@ h1.hero-content-section.header-mid {
   justify-content: center;
   width: 100vw;
   max-width: 100vw;
-  max-height: calc(100vh - var(--header-height) - 0.6rem);
-  padding: 0.3rem;
+  padding: 0.2rem 1rem 0.1rem;
   margin: 0.1rem;
   overflow: contain;
   font-family:
@@ -7333,7 +7341,7 @@ h1.hero-content-section.header-mid.line {
   place-self: center center;
   min-width: 100vw;
   max-width: 105vw;
-  min-height: (calc(100vh - var(--header-height)) * 0.4);
+  min-height: calc((100vh - var(--header-height)) * 0.4);
   max-height: 80vh;
   padding-top: 20vh;
   padding-bottom: 20vh;
@@ -7348,12 +7356,11 @@ h1.hero-content-section.header-mid.line {
   z-index: 10;
   box-sizing: border-box;
   place-items: start center;
-  width: 105vw;
   min-width: 100vw;
-  height: calc(100vh - var(--header-height));
-  min-height: calc(100vh - var(--header-height));
+  max-width: 105vw;
+  height: 100vh;
   padding: 1rem;
-  margin: 1rem 0;
+  margin: 0.5rem 0;
   overflow: hidden visible;
   scroll-snap-type: y proximity;
   scroll-snap-align: start;
@@ -7369,6 +7376,7 @@ h1.hero-content-section.header-mid.line {
   grid-area: head;
   place-self: center center;
   width: 100%;
+  max-height: 15%;
   margin-top: 0.3rem;
   font-family:
     Bangers,
@@ -7378,7 +7386,7 @@ h1.hero-content-section.header-mid.line {
     "Arial Narrow Bold",
     Gadget,
     sans-serif;
-  font-size: clamp(10px, calc(100vw / 26), 16rem);
+  font-size: clamp(12px, calc(100vw / 26), 16rem);
   color: var(--emerald);
   text-align: center;
   text-shadow: 0.01rem 0.01rem 0 var(--oxford-blue);
@@ -7652,6 +7660,51 @@ h1.hero-content-section.header-mid.line span {
   text-shadow: 0 0 0 transparent;
   transform: translateX(0);
 }
+.magic-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  color: var(--background);
+}
+.magic-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 2;
+  background:
+    linear-gradient(
+      to right,
+      var(--blue),
+      var(--darkblue),
+      var(--purple),
+      var(--blue));
+  background-clip: text;
+  background-size: 200%;
+  transform: translateY(-50%) translateX(-50%);
+  animation: background-pan 3000ms linear infinite;
+  -webkit-text-fill-color: transparent;
+}
+.magic-underline {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 1;
+  display: inline-block;
+  font-weight: 400;
+  line-height: 0.9;
+  text-align: center;
+  border-bottom: 3px solid rgba(255, 255, 255, 0);
+  transition: border-color 400ms ease;
+  transition: border-color 400ms ease;
+  transition: border-color 400ms ease;
+  transition: border-color 400ms ease;
+  transform: translateY(-50%) translateX(-50%);
+  -webkit-text-stroke: 6px var(--background);
+  -webkit-text-fill-color: transparent;
+}
+.magic-container:hover .magic-underline {
+  border-color: rgba(255, 255, 255, 1);
+}
 
 /* src/assets/stylesheets/heroimages.css */
 .hero-parallax__image {
@@ -7922,4 +7975,4 @@ h1.hero-content-section.header-mid.line span {
 }
 
 /* src/assets/stylesheets/bundle.css */
-/*# sourceMappingURL=bundle.UZJRJIJA.css.map */
+/*# sourceMappingURL=bundle.AFVVY3GO.css.map */
