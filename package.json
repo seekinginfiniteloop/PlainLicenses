@@ -83,6 +83,7 @@
     "inquirer": "^9.3.7",
     "issue-parser": "^7.0.1",
     "lerna": "^8.1.9",
+    "lines-and-columns": "^2.0.4",
     "markdownlint-cli2": "^0.15.0",
     "node": "^22.11.0",
     "prettier": "^3.3.3",
