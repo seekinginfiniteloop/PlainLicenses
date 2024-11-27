@@ -264,7 +264,7 @@ p.md-nav__description.license {
   color: var(--md-default-fg-color--light);
   text-align: center;
   vertical-align: bottom;
-  border-bottom: 0.125rem solid var(--md-accent-bg-color);
+  border-bottom: 0.125rem solid var(--md-accent-fg-color);
 }
 
 /* styling for quicklinks on right sidebar for licenses */
@@ -297,7 +297,7 @@ p.md-nav__description.license {
   z-index: 10;
   padding: 0.1rem;
   font-size: 0.75rem;
-  color: var(--md-accent-bg-color);
+  color: var(--md-accent-fg-color);
   white-space: nowrap;
   pointer-events: none;
   content: attr(data-iden) " view";
@@ -405,7 +405,7 @@ p.md-nav__description.license {
   z-index: 10;
   padding: 0.1rem;
   font-size: 0.75rem;
-  color: var(--md-accent-bg-color);
+  color: var(--md-accent-fg-color);
   text-align: center;
   white-space: nowrap;
   pointer-events: none;

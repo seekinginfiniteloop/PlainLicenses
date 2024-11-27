@@ -53,17 +53,24 @@
             </div>
         </div>
 
-        <!-- Color palette toggle -->
-        {% if config.theme.palette %}
-        {% if not config.theme.palette is mapping %}
-        {% include "partials/palette.html" %}
-        {% endif %}
-        {% endif %}
-
-        <!-- User preference: color palette -->
-        {% if not config.theme.palette is mapping %}
-        {% include "partials/javascripts/palette.html" %}
-        {% endif %}
+        <form class="md-header__option" data-md-component="palette" style="opacity:0;visibility:hidden;" aria-hidden="true">
+            {% for option in config.theme.palette %}
+            {% set scheme = "slate" %}
+            {% set primary = "custom" %}
+            {% set accent = "custom" %}
+            <input class="md-option" data-md-color-media="dark"
+                data-md-color-scheme="{{ scheme | replace(' ', '-') }}"
+                data-md-color-primary="{{ primary | replace(' ', '-') }}"
+                data-md-color-accent="{{ accent | replace(' ', '-') }}" aria-hidden="true" type="radio"
+                name="__palette" id="__palette_{{ loop.index0 }}" />
+            {% if option.toggle %}
+            <label class="md-header__button md-icon" title="{{ option.toggle.name }}"
+                for="__palette_{{ loop.index % loop.length }}" hidden>
+                {% include ".icons/" ~ option.toggle.icon ~ ".svg" %}
+            </label>
+            {% endif %}
+            {% endfor %}
+        </form>
 
         <!-- Site language selector -->
         {% if config.extra.alternate %}

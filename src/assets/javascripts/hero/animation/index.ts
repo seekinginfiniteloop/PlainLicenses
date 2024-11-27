@@ -208,7 +208,10 @@ const smoothScroll$ = (el: Element): Observable<boolean> => {
   }
 }
 
-/** Subscribes to all user interaction observables and handles the corresponding actions. */
+/* ------------------------------------------------------------------------ */
+/*                        All Animation Subscriptions                       */
+/* ------------------------------------------------------------------------ */
+
 export const allSubscriptions = (): void => {
   document.body.style.scrollBehavior = "instant"
   document.body.style.overflowY = "scroll"
@@ -370,59 +373,90 @@ export const allSubscriptions = (): void => {
       }
       setupInitialStates()
 
-const makeScrollBatch = (selector: string) => {
+const makeScrollBatch = (selector: string, optionalParams?: gsap.TweenVars) => {
     const batch: Observable<ScrollTrigger>[] = []
-    ScrollTrigger.batch(selector, {
-      start: "top 95%",
-      end: "top -10%",
-      interval: 0.1,
-      batchMax: 8,
-      onEnter: (elements: Element[]) => {
-        gsap.to(elements, {
-          autoAlpha: 1,
-          y: 0,
-          duration: 0.75,
-          ease: "power2.out",
-          scrub: 0.5,
-          stagger: {
-            amount: 0.3,
-            from: "start"
-          },
-          overwrite: false,
-          immediateRender: true,
-          fastScrollEnd: true,
-          snap: {
-            snapTo: 0.1,
-            duration: { min: 0.2, max: 0.5 }
-          }
-        })
-      },
-      onEnterBack: (elements: Element[]) => {
-        gsap.to(elements, {
-          autoAlpha: 1,
-          y: 0,
-          duration: 0.5,
-          overwrite: false,
-          immediateRender: true,
-          fastScrollEnd: true,
-          snap: {
-            snapTo: 0.1,
-            duration: { min: 0.2, max: 0.5 }
-          }
-        })
-      }
+  ScrollTrigger.batch(selector, {
+    start: "top 95%",
+    end: "top -20%",
+    interval: 0.1,
+    batchMax: 8,
+    onEnter: (elements: Element[]) => {
+      gsap.to(elements, {
+        opacity: 1,
+        visibility: "visible",
+        y: 0,
+        duration: 0.75,
+        ease: "power2.out",
+        stagger: {
+          amount: 0.3,
+          from: "start"
+        },
+        overwrite: false,
+        immediateRender: true,
+        fastScrollEnd: true,
+        snap: {
+          snapTo: 0.1,
+          duration: { min: 0.2, max: 0.5 },
+          ...optionalParams
+        }
+      })
+    },
+    onEnterBack: (elements: Element[]) => {
+      gsap.to(elements, {
+        opacity: 1,
+        visibility: "visible",
+        y: 0,
+        duration: 0.5,
+        overwrite: false,
+        immediateRender: true,
+        fastScrollEnd: true,
+        snap: {
+          snapTo: 0.1,
+          duration: { min: 0.2, max: 0.5 }
+        }
+
+      })
+    },
+    onLeave: (elements: Element[]) => {
+      gsap.to(elements, {
+        opacity: 0,
+        y: 50,
+        duration: 0.5,
+        overwrite: false,
+        immediateRender: true,
+        fastScrollEnd: true,
+        snap: {
+          snapTo: 0.1,
+          duration: { min: 0.2, max: 0.5 }
+        }
+      })
+    },
+    onLeaveBack: (elements: Element[]) => {
+      gsap.to(elements, {
+        opacity: 0,
+        y: 50,
+        duration: 0.5,
+        overwrite: false,
+        immediateRender: true,
+        fastScrollEnd: true,
+        snap: {
+          snapTo: 0.1,
+          duration: { min: 0.2, max: 0.5 }
+        }
+      })
+    }
     })
     return batch
 }
 
       // Initialize elements before creating ScrollTriggers
-      const fadeInTargets = document.querySelector("#pt2-hero-content-section")?.querySelectorAll(":not(br)")
+      const fadeInTargets = document.querySelector("#pt2-hero-content-section")?.querySelectorAll("span")
       const fadeIn2Targets = document.querySelector("#pt3-hero-content-section")?.querySelectorAll(":not(br)")
 
       // Reset all animations on refresh
       ScrollTrigger.addEventListener("refresh", () => {
-        fadeInTargets?.forEach(el => gsap.set(el, { clearProps: "all" }))
-        fadeIn2Targets?.forEach(el => gsap.set(el, { clearProps: "all" }))
+        fadeInTargets?.forEach(el => gsap.set(el, { clearProps: "translateY" }))
+        fadeIn2Targets?.forEach(el => gsap.set(el, { clearProps: "translateY" }))
       })
 
       if (fadeInTargets) {
@@ -435,72 +469,22 @@ const makeScrollBatch = (selector: string) => {
       setupAnimation(".fade-in", { opacity: 0, y: 50 })
       setupAnimation(".fade-in2", { opacity: 0, y: 50 })
 
-      return [[...makeScrollBatch(".fade-in")], [...makeScrollBatch(".fade-in2")]]
+      return [[...makeScrollBatch(".fade-in", {pin: "h1", scrub: 0.5})], [...makeScrollBatch(".fade-in2", {maxDuration: 4, })]]
     }
 
     // Initialize all ScrollTrigger animations
     const initializeAnimations = () => {
       // Create fade animations
 
-      // Create and register CTA animation
-      const ctaAnimation = createTimeline(".cta-ul", [
-        {
-          scaleX: 1,
-          transformOrigin: "left",
-          duration: 0.4,
-          height: "1.3em",
-          width: "50%",
-        },
-        {
-          scaleX: 1,
-          duration: 0.5,
-          ease: "power2.out",
-          height: "0.8em",
-          width: "100%"
-        }
-      ], {
-        trigger: ".md-header",
-        scroller: document.scrollingElement,
-        fastScrollEnd: true,
-        start: "top top",
-        end: "top 50%",
-        scrub: 0.5,
-      })
-
-      // Create and register emphasis animation
-      const emphasisAnimation = createTimeline(".special-ul", [
-        {
-          scaleX: 1,
-          transformOrigin: "left",
-          duration: 0.25,
-          height: "1.3em",
-          width: "50%"
-        },
-        {
-          scaleX: 1,
-          duration: 0.3,
-          ease: "power2.out",
-          height: "0.8em",
-          width: "100%"
-        }
-      ], {
-        trigger: "#pt2-hero-section-content",
-        scroller: document.scrollingElement,
-        fastScrollEnd: true,
-        start: "top 90%",
-        end: "top 70%",
-        scrub: 0.5,
-      })
-
       // Create and register highlight animation
       const highlightAnimation = createTimeline(".special-highlight", [
         {
-          textShadow: "0.02em 0.02em 0 var(--turkey-red)",
+          textShadow: "0.03em 0.03em 0 var(--turkey-red)",
           x: 20,
           duration: 0.25
         },
         {
-          textShadow: "0.04em 0.04em 0.06em var(--turkey-red)",
+          textShadow: "0.06em 0.06em 0.08em var(--turkey-red)",
           x: 50,
           duration: 0.2,
           ease: "power2.out"
@@ -514,36 +498,22 @@ const makeScrollBatch = (selector: string) => {
         scrub: 0.5,
       })
 
-      // Set initial states
-      setupAnimation(".cta-ul", {
-        scaleX: 0,
-        transformOrigin: "left",
-        height: "1.8em",
-        width: "0"
-      })
-      setupAnimation(".special-ul", {
-        scaleX: 0,
-        transformOrigin: "left",
-        height: "1.8em",
-        width: "0",
-        start: ">"
-      })
       setupAnimation(".special-highlight", {
         textShadow: "0 0 0 transparent",
         x: 0,
+        repeat: -1,
+        start: ">"
       })
       const fadeAnimations = createFadeInAnimation()
       const fadeIn1 = fadeAnimations[0]
 
       const fadeIn2 = fadeAnimations[1]
       const timeline = gsap.timeline()
-      timeline.add(ctaAnimation)
       concat(...fadeIn1).subscribe(trigger => {
         if (trigger.animation) {
           timeline.add(trigger.animation)
         }
       })
-      timeline.add(emphasisAnimation)
       concat(...fadeIn2).subscribe({
         next: trigger => {
           if (trigger.animation) {

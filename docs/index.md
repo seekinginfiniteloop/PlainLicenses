@@ -32,7 +32,7 @@ hide:
 
     :nounproject-formats:{ .xl .ecru }
     We offer each of our plain language licenses in multiple formats so you can get clear terms in a couple of clicks.
-    You can get a plain language license in our reader-friendly [page view](licenses/permissive/mit/index.md#reader "The Plain MIT in our Reader View"), [Markdown](licenses/permissive/mit/index.md#markdown "The Plain MIT License in Markdown"), or [plain text](licenses/permissive/mit/index.md#plaintext "The Plain MIT License in plaintext"). We're working on more formats, so check back soon.
+    You can get a plain language license in our reader-friendly [page view](licenses/permissive/mit/index.md#reader "The Plain MIT in our Reader View"), an [HTML embed link](licenses/permissive/mit/index.md#html), [Markdown](licenses/permissive/mit/index.md#markdown "The Plain MIT License in Markdown"), or [plain text](licenses/permissive/mit/index.md#plaintext "The Plain MIT License in plaintext"). We're working on more formats, so check back soon.
 
     __[:octicons-arrow-right-24: ready to use](licenses/permissive/mit/index.md "Same license; many formats")__
 

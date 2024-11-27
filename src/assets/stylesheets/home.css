@@ -230,7 +230,7 @@ svg#arrow-down:hover {
   justify-content: center;
   justify-items: center;
   width: 100vw;
-  height: calc(100vh - var(--header-height));
+  height: calc(100vh + 1.02rem);
   padding-top: 0.01rem;
   padding-bottom: 0.01rem;
   margin-top: 1rem;
@@ -247,7 +247,7 @@ svg#arrow-down:hover {
 
 #pt2-hero-content-section h1 {
   min-width: 100vw;
-  max-height: 90vh;
+  max-height: 95vh;
   overflow: contain;
 }
 
@@ -315,7 +315,7 @@ h1.hero-content-section.header-mid.line {
   place-items: start center;
   min-width: 100vw;
   max-width: 105vw;
-  height: 100vh;
+  height: calc(100vh + 1rem);
   padding: 1rem;
   margin: 0.5rem 0;
   overflow: hidden visible;
@@ -602,26 +602,6 @@ a#yoshimi-link:focus {
   }
 }
 
-/* Underline styles */
-.cta-ul,
-.special-ul {
-  position: absolute;
-  bottom: -1rem;
-  left: 0;
-
-  /* Width starts at 0 and animates to 100% */
-  z-index: -1;
-
-  /* This will be animated */
-  width: 0;
-
-  /* or your preferred color */
-  height: 1rem;
-  content: "";
-  background-color: var(--turkey-red);
-  opacity: 0.3;
-}
-
 /* Container for underlined text needs relative positioning */
 .cta-container,
 .special-container {
@@ -648,58 +628,4 @@ h1.hero-content-section.header-mid.line span {
   /* Initial state - will be animated by GSAP */
   text-shadow: 0 0 0 transparent;
   transform: translateX(0);
-}
-
-.magic-container {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  color: var(--background);
-}
-
-.magic-text {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  z-index: 2;
-  background:
-    linear-gradient(
-      to right,
-      var(--blue),
-      var(--darkblue),
-      var(--purple),
-      var(--blue)
-    );
-  background-clip: text;
-  background-size: 200%;
-  transform: translateY(-50%) translateX(-50%);
-  animation: background-pan 3000ms linear infinite;
-  -webkit-text-fill-color: transparent;
-}
-
-.magic-underline {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  z-index: 1;
-  display: inline-block;
-  font-weight: 400;
-  line-height: 0.9;
-  text-align: center;
-  border-bottom: 3px solid rgba(255, 255, 255, 0);
-  transition: border-color 400ms ease;
-  transition: border-color 400ms ease;
-
-  /* FF3.7+ */
-  transition: border-color 400ms ease;
-
-  /* Opera 10.5 */
-  transition: border-color 400ms ease;
-  transform: translateY(-50%) translateX(-50%);
-  -webkit-text-stroke: 6px var(--background);
-  -webkit-text-fill-color: transparent;
-}
-
-.magic-container:hover .magic-underline {
-  border-color: rgba(255, 255, 255, 1);
 }
