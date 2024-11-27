@@ -15860,7 +15860,7 @@ var preloadFonts = () => {
       const blobUrl = URL.createObjectURL(blob);
       const fontFamily = url.includes("inter") ? "Inter" : url.includes("sourcecodepro") ? "Source Code Pro" : url.includes("raleway") ? "Raleway" : "Bangers";
       const font = new FontFace(fontFamily, `url(${blobUrl})`);
-      font.load().then((loadedFont) => {
+      font.load().then((_loadedFont) => {
         document.fonts.load(`url(${blobUrl})`).then(() => {
           logger.info(`Font loaded from cache: ${url}`);
         });
@@ -15886,7 +15886,20 @@ var insertAnalytics = () => {
 };
 var shuffler$ = shuffle$();
 var animate$ = document$2.pipe(tap(() => allSubscriptions()));
-var atHome$ = locationBeacon$.pipe(distinctUntilKeyChanged("pathname"), takeWhile((url) => isHome(url)), tap(() => {
+var getHeroLinks = () => {
+  return Array.from(document.getElementsByTagName("a")).map((a) => a).map((a) => {
+    return new URL(a.href || "");
+  }).filter((url) => url instanceof URL && ((url.pathname === "/" || url.pathname === "/index.html") && (url.host === "www.plainlicense.org" || url.host === "plainlicense.org" || url.host === "127.0.0.1:8000")));
+};
+var heroLinks = getHeroLinks();
+var linkWatcher$ = fromEvent(document, "click").pipe(filter((e) => {
+  var _a2;
+  const target = e.target;
+  const link = (_a2 = target.closest("a")) == null ? void 0 : _a2.href;
+  return !!heroLinks.find((url) => url.href === link) || false;
+}));
+var homeBeacon$ = locationBeacon$.pipe(distinctUntilKeyChanged("pathname"), takeWhile((url) => isHome(url)));
+var atHome$ = merge(homeBeacon$, linkWatcher$).pipe(tap(() => {
   logger.info("At home page");
   document.body.setAttribute("data-md-color-scheme", "slate");
   shuffler$.subscribe();
@@ -16020,4 +16033,4 @@ gsap/ScrollTrigger.js:
    * @author: Jack Doyle, jack@greensock.com
   *)
 */
-//# sourceMappingURL=index.PHWZ5Y3R.js.map
+//# sourceMappingURL=index.LSL54Q72.js.map

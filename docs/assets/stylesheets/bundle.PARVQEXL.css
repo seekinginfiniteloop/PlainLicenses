@@ -6593,6 +6593,16 @@ a.md-nav__link--active {
 .progress-0plus .progress-bar {
   background-color: var(--turkey-red);
 }
+.md-post .md-post__header {
+  font-size: 0.85rem;
+}
+.md-typeset .footnote {
+  font-size: 0.85rem;
+}
+li.md-meta__item,
+li.md-meta__link {
+  font-size: 0.85rem;
+}
 
 /* src/assets/stylesheets/license.css */
 :root,
@@ -7918,4 +7928,4 @@ h1.hero-content-section.header-mid.line span {
 }
 
 /* src/assets/stylesheets/bundle.css */
-/*# sourceMappingURL=bundle.AAEDZNAJ.css.map */
+/*# sourceMappingURL=bundle.PARVQEXL.css.map */

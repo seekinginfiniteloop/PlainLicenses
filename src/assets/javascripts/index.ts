@@ -6,8 +6,8 @@
  * specific pages like the home page, license pages, and helping page.
 **/
 import * as bundle from "@/bundle"
-import { Subscription, merge, of } from "rxjs"
-import { distinctUntilKeyChanged, mergeMap, skipUntil, takeWhile, tap } from "rxjs/operators"
+import { Subscription, fromEvent, merge, of } from "rxjs"
+import { distinctUntilKeyChanged, filter, mergeMap, skipUntil, takeWhile, tap } from "rxjs/operators"
 import { feedback$ } from "~/feedback"
 import { watchLicense } from "~/licenses"
 import { logger } from "~/log"
@@ -46,7 +46,7 @@ const preloadFonts = () => {
 
             const font = new FontFace(fontFamily, `url(${blobUrl})`)
 
-            font.load().then(loadedFont => {
+            font.load().then(_loadedFont => {
               document.fonts.load(`url(${blobUrl})`).then(() => {
                 logger.info(`Font loaded from cache: ${url}`)
               })
@@ -94,9 +94,26 @@ const insertAnalytics = () => {
 const shuffler$ = shuffle$()
 const animate$ = document$.pipe(tap(() => allSubscriptions()))
 
-const atHome$ = locationBeacon$.pipe(
+const getHeroLinks = () => {
+  return Array.from(document.getElementsByTagName("a")).map(a => a as HTMLAnchorElement).map(a => { return new URL(a.href || "") }).
+    filter(url => url instanceof URL && ((url.pathname === "/" || url.pathname === "/index.html") && (url.host === "www.plainlicense.org" || url.host === "plainlicense.org" || url.host === "127.0.0.1:8000"))) }
+
+const heroLinks = getHeroLinks()
+
+const linkWatcher$ = fromEvent(document, "click").pipe(filter((e: Event) => {
+  const target = e.target as HTMLElement
+  const link = target.closest("a")?.href
+    return !!(heroLinks.find(url => url.href === link)) || false
+}))
+
+const homeBeacon$ = locationBeacon$.pipe(
   distinctUntilKeyChanged("pathname"),
-  takeWhile((url: URL) => isHome(url)),
+  takeWhile((url: URL) => isHome(url)))
+
+const atHome$ = merge(
+  homeBeacon$,
+  linkWatcher$
+).pipe(
   tap(() => {
     logger.info("At home page")
     document.body.setAttribute("data-md-color-scheme", "slate")
