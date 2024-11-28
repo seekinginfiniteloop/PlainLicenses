@@ -1,11 +1,11 @@
 import { getLocation } from "~/browser"
 import * as bundle from "~/bundle"
 import { BehaviorSubject, Observable, Subscription, forkJoin, fromEvent, merge, of } from "rxjs"
-import { distinct, filter, map, shareReplay, tap } from "rxjs/operators"
+import { debounceTime, distinct, filter, map, shareReplay, skipUntil, tap } from "rxjs/operators"
 import Tablesort from "tablesort"
 import { logger } from "~/log"
 
-
+const NAV_EXIT_DELAY = 60000
 export const prefersReducedMotion = () => { return window.matchMedia("(prefers-reduced-motion: reduce)").matches }
 
 /**
@@ -89,18 +89,41 @@ const isDev = (url: URL) => { return (url.hostname === "localhost" && url.port =
 export const isOnSite = (url: URL) => { return isProd(url) || isDev(url)
 }
 
+export const siteExit$ = locationBeacon$.pipe(
+  filter(url => !isOnSite(url)),
+  debounceTime(NAV_EXIT_DELAY), // 60 seconds
+  filter(url => !isOnSite(url)), // Double check we're still off-site
+);
+
 // obserable for current location
 const locationBehavior$ = new BehaviorSubject<URL>(getLocation())
 const isValidEvent = (value: Event | null) => {
   return value !== null && value instanceof (Event)
 }
 
+const locationBehavior$ = new BehaviorSubject<URL>(getLocation())
+
+const navigationEvents$ = 'navigation' in window ? 
+  fromEvent(window.navigation, 'navigate').pipe(
+    filter((event: Event) => event instanceof NavigateEvent),
+    map((event: Event) => new URL((event as NavigateEvent).destination.url))
+  ) :
+  merge(
+    fromEvent(window, "popstate"),
+    fromEvent(window, 'hashchange'),
+    fromEvent(window, "pageswap"),
+  ).pipe(
+    filter(isValidEvent),
+    map(() => getLocation())
+  );
+
 export const locationBeacon$ = merge(
   locationBehavior$,
-  fromEvent(window, "popstate").pipe(filter((value) => isValidEvent(value))),
-  fromEvent(window, 'hashchange').pipe(filter((value) => isValidEvent(value)))).pipe(filter((value) => value !== null), shareReplay(1),
-  map(value => value instanceof URL ? value : getLocation()),
-  distinct()
+  navigationEvents$
+).pipe(
+  filter((value) => value !== null),
+  shareReplay(1),
+  distinctUntilChanged()
 )
 
 export const watchLocationChange = (urlFilter: ((_url: URL) => boolean) | undefined) => {
@@ -118,7 +141,7 @@ export const mergedUnsubscription$ = (urlFilter: (_url: URL) => boolean): Observ
   const location: Observable<URL> = watchLocationChange(urlFilter)
   const beforeUnload: Observable<Event> = fromEvent(window, "beforeunload")
 
-  return forkJoin([location, beforeUnload]).pipe(tap(() => logger.info("Unsubscribing from subscriptions")))
+  return forkJoin([location, beforeUnload]).pipe(filter(() => !isOnSite), skipUntil(), tap(() => logger.info("Unsubscribing from subscriptions")))
 }
 
 /**
