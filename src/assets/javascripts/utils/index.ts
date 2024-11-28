@@ -120,29 +120,7 @@ export const locationBeacon$ = merge(
   distinctUntilChanged(), shareReplay(1)
 )
 
-export const siteExit$ = locationBeacon$.
-  filter(url => !isOnSite(url)),
-  debounceTime(NAV_EXIT_DELAY), // 60 seconds
-  filter(url => !isOnSite(url)), // Double check we're still off-site
-);
 
-export const watchLocationChange = (urlFilter: ((_url: URL) => boolean) | undefined) => {
-  return locationBeacon$.pipe(
-    urlFilter ? filter(url => urlFilter(url)) : map(url => url)
-  )
-}
-
-/**
- * Merge location and beforeunload events with a URL filter.
- * @param urlFilter A function that filters URLs.
- * @returns An observable of merged location and beforeunload events.
- */
-export const mergedUnsubscription$ = (urlFilter: (_url: URL) => boolean): Observable<[URL, Event]> => {
-  const location: Observable<URL> = watchLocationChange(urlFilter)
-  const beforeUnload: Observable<Event> = fromEvent(window, "beforeunload")
-
-  return forkJoin([location, beforeUnload]).pipe(filter(() => !isOnSite), skipUntil(), tap(() => logger.info("Unsubscribing from subscriptions")))
-}
 
 /**
  * Push a new URL to the browser history.
@@ -157,10 +135,6 @@ export const watchTables = () => {
   const tables = document.querySelectorAll("article table:not([class])")
   const observables = () => { return tables.length > 0 ? Array.from(tables).map(table => of(table).pipe(map(table => table as HTMLTableElement), tap((table) => new Tablesort(table)))) : [] }
   return merge(...observables())
-}
-
-export const unsubscribeFromAll = (subscriptions: Subscription[]) => {
-  subscriptions.forEach(subscription => subscription.unsubscribe())
 }
 
 /**
@@ -180,3 +154,52 @@ export async function windowEvents() {
     bundle // reload material entrypoint
   }
 }
+
+const NAV_EXIT_DELAY = 60000;
+
+class SubscriptionManager {
+  private subscriptions: Subscription[] = [];
+  private siteExit$ = new Subject<void>();
+  private pageExit$ = new Subject<void>();
+
+  constructor() {
+    this.setupSiteExit();
+  }
+
+  private setupSiteExit() {
+    locationBeacon$.pipe(
+      filter(url => !isOnSite(url)),
+      debounceTime(NAV_EXIT_DELAY),
+      filter(url => !isOnSite(url))
+    ).subscribe(() => {
+      this.siteExit$.next();
+    });
+  }
+
+  public addSubscription(subscription: Subscription, isSiteWide: boolean = false) {
+    this.subscriptions.push(subscription);
+    if (isSiteWide) {
+      this.siteExit$.subscribe(() => subscription.unsubscribe());
+    } else {
+      this.pageExit$.subscribe(() => subscription.unsubscribe());
+    }
+  }
+
+  public clearPageSubscriptions() {
+    this.pageExit$.next();
+    this.subscriptions = this.subscriptions.filter(sub => !sub.closed);
+  }
+
+  public clearAllSubscriptions() {
+    this.siteExit$.next();
+    this.pageExit$.next();
+    this.subscriptions.forEach(sub => sub.unsubscribe());
+    this.subscriptions = [];
+  }
+}
+
+// Attach the instance to the window object
+// window.subscriptionManager = new SubscriptionManager();
+
+// Example usage:
+// window.subscriptionManager.addSubscription(yourSubscription, true);
