@@ -91,36 +91,48 @@ const insertAnalytics = () => {
   document.head.appendChild(script)
 }
 
-const shuffler$ = shuffle$()
-const animate$ = document$.pipe(tap(() => allSubscriptions()))
+const shuffler$ = shuffle$();
+const animate$ = document$.pipe(tap(() => allSubscriptions()));
 
 const getHeroLinks = () => {
-  return Array.from(document.getElementsByTagName("a")).map(a => a as HTMLAnchorElement).map(a => { return new URL(a.href || "") }).
-    filter(url => url instanceof URL && ((url.pathname === "/" || url.pathname === "/index.html") && (url.host === "www.plainlicense.org" || url.host === "plainlicense.org" || url.host === "127.0.0.1:8000"))) }
+  return Array.from(document.getElementsByTagName("a"))
+    .map(a => a as HTMLAnchorElement)
+    .map(a => new URL(a.href || ""))
+    .filter(url => 
+      url instanceof URL && 
+      (url.pathname === "/" || url.pathname === "/index.html") && 
+      (url.host === "www.plainlicense.org" || url.host === "plainlicense.org" || url.host === "127.0.0.1:8000")
+    );
+};
 
-const heroLinks = getHeroLinks()
+const heroLinks = getHeroLinks();
 
-const linkWatcher$ = fromEvent(document, "click").pipe(filter((e: Event) => {
-  const target = e.target as HTMLElement
-  const link = target.closest("a")?.href
-    return !!(heroLinks.find(url => url.href === link)) || false
-}))
+const linkWatcher$ = fromEvent(document, "click").pipe(
+  filter((e: Event) => {
+    const target = e.target as HTMLElement;
+    const link = target.closest("a")?.href;
+    const isHeroLink = !!heroLinks.find(url => url.href === link);
+    if (isHeroLink) {
+      logger.info("Hero link clicked:", link);
+    }
+    return isHeroLink;
+  })
+);
 
 const homeBeacon$ = locationBeacon$.pipe(
   distinctUntilKeyChanged("pathname"),
-  takeWhile((url: URL) => isHome(url)))
+  takeWhile((url: URL) => isHome(url)),
+  tap((url: URL) => logger.info("Navigated to home page:", url.pathname))
+);
 
-const atHome$ = merge(
-  homeBeacon$,
-  linkWatcher$
-).pipe(
+const atHome$ = merge(homeBeacon$, linkWatcher$).pipe(
   tap(() => {
-    logger.info("At home page")
-    document.body.setAttribute("data-md-color-scheme", "slate")
-    shuffler$.subscribe()
-    animate$.subscribe()
+    logger.info("At home page");
+    document.body.setAttribute("data-md-color-scheme", "slate");
+    shuffler$.subscribe();
+    animate$.subscribe();
   })
-)
+);
 
 const license$ = watchLicense()
 
