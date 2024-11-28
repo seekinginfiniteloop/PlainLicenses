@@ -1,8 +1,8 @@
 /* Default settings */
 
 .hero-parallax__image {
-  --scale: 1.1;
-  --object-fit: fill;
+  --scale: 1;
+  --object-fit: cover;
   --perspective: 50rem;
   --perspective-origin: center bottom;
   --object-position: center bottom;
@@ -17,18 +17,21 @@
   flex-grow: 2;
   grid-column-start: 1;
   place-self: start start;
-  min-width: 100%;
-  min-height: calc((100vh * 0.3) - var(--header-height));
-  max-height: var(--parallax-height);
+  width: 100%;
+  min-width: 100vw;
+  max-width: 3840px;
+  height: 100%;
   padding-bottom: 1rem;
   margin-bottom: 0.1rem;
   overflow: hidden visible;
   object-fit: var(--object-fit);
   object-position: center bottom;
   background: var(--gunmetal);
+  transform-origin: center center;
   scale: var(--scale);
   perspective: var(--perspective);
   perspective-origin: center bottom;
+  will-change: transform;
 }
 
 @keyframes glow {
@@ -101,16 +104,6 @@ so it made sense for them to live here
   }
 }
 
-.cta-ul {
-  position: relative;
-  display: inline-block;
-}
-
-.special-ul {
-  position: relative;
-  display: inline-block;
-}
-
 .special-highlight {
   position: relative;
   display: inline-block;
@@ -136,21 +129,18 @@ so it made sense for them to live here
   --p-color: var(--aqua);
   --perspective-origin: 30% 20%;
   --scale: 1;
-  --translate-y: -30%;
 }
 
 .hero-parallax__image--fantasy {
   --h1-color: var(--white);
   --p-color: var(--mindaro);
   --scale: 1;
-  --translate-y: -20%;
 }
 
 .hero-parallax__image--farcical {
   --h1-color: var(--atomic-tangerine);
   --p-color: var(--aqua);
-  --sccale: 1;
-  --translate-y: -35%;
+  --scale: 1;
 }
 
 .hero-parallax__image--fauvist {
@@ -163,7 +153,6 @@ so it made sense for them to live here
   --p-color: var(--white);
   --scale: 1;
   --perspective: 50rem;
-  --translate-y: -25%;
 }
 
 .hero-parallax__image--mystical {
@@ -171,14 +160,12 @@ so it made sense for them to live here
   --p-color: var(--white);
   --scale: 1;
   --perspective: 40rem;
-  --translate-y: -25%;
 }
 
 .hero-parallax__image--surreal {
   --h1-color: var(--white);
   --p-color: var(--atomic-tangerine);
   --scale: 1;
-  --translate-y: -25%;
 }
 
 /* Portrait orientation */
@@ -186,7 +173,6 @@ so it made sense for them to live here
   .hero-parallax__image {
     --scale: 1.4;
     --object-fit: cover;
-    --translate-y: 20%;
   }
 
   .hero-parallax__image--anime {
@@ -194,7 +180,6 @@ so it made sense for them to live here
     --p-color: var(--white);
     --perspective: -50rem;
     --scale: 1.8;
-    --translate-y: 40%;
   }
 
   .hero-parallax__image--artbrut {
@@ -221,13 +206,11 @@ so it made sense for them to live here
   .hero-parallax__image--farcical {
     --h1-color: var(--mindaro);
     --p-color: var(--aqua);
-    --translate-y: 16%;
   }
 
   .hero-parallax__image--fauvist {
     --h1-color: var(--mindaro);
     --p-color: var(--white);
-    --translate-y: 18%;
   }
 
   .hero-parallax__image--minimal {
@@ -247,27 +230,21 @@ so it made sense for them to live here
 }
 
 .hero-parallax__layer .hero-parallax__image:not(:first-child) {
+  position: absolute;
+  top: 0;
   z-index: -300;
   opacity: 0;
-  transition: opacity 600ms ease-out, perspective 500ms ease;
 }
 
 .hero-parallax__layer .hero-parallax__image:first-child {
-  align-content: flex-start;
-  align-self: flex-start;
-  overflow: hidden visible;
-  opacity: 1;
-  transition:
-    transform 500ms ease, scale 500ms ease, translate 500ms ease, opacity /
-    1500ms ease-in, perspective 500ms ease, perspective-origin 500ms ease;
-  transform: translate(var(--translate-x), var(--translate-y));
+  top: 0;
+  transform: translate(var(--translate-x), var(--translate-y)) scale(var(--scale));
 }
 
 /* TODO: get the overlay to actually show without messing up everything */
 .fade-overlay {
   --fade-height: var(--parallax-height);
 
-  position: absolute;
   top: 0;
   left: 0;
   z-index: 5;

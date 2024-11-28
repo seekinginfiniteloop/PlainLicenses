@@ -26,7 +26,7 @@ import {
   withLatestFrom
 } from "rxjs/operators"
 
-import { createInteractionObservable, isHome, isOnSite, mergedUnsubscription$, unsubscribeFromAll, watchLocationChange } from "~/utils"
+import { createInteractionObservable, isHome, isOnSite, mergedUnsubscription$, prefersReducedMotion, unsubscribeFromAll, watchLocationChange } from "~/utils"
 import { logger } from "~/log"
 
 gsap.registerPlugin(ScrollToPlugin)
@@ -73,8 +73,7 @@ const showOverlay = (): void => {
   }
 }
 
-const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
-logger.info(`Prefers reduced motion: ${prefersReducedMotion}`)
+logger.info(`Prefers reduced motion: ${prefersReducedMotion()}`)
 
 /* ------------------------------------------------------------------------ */
 /*                            Animation Utilities                           */
@@ -136,7 +135,7 @@ const smoothScroll$ = (el: Element): Observable<boolean> => {
     return of(false)
   }
 
-  if (prefersReducedMotion) {
+  if (prefersReducedMotion()) {
     scrollFallback(target)
     return of(true)
   }
@@ -338,7 +337,7 @@ export const allSubscriptions = (): void => {
     })
   )
 
-  if (!prefersReducedMotion) {
+  if (!prefersReducedMotion()) {
     const setupAnimation = (selector: string, properties: gsap.TweenVars) => {
       gsap.set(selector, properties)
     }

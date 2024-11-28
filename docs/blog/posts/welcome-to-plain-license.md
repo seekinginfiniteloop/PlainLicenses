@@ -38,7 +38,7 @@ Here's what our licenses say in simple terms:
 | [public domain](../../licenses/public-domain/index.md) | "It's yours. It's everyone's. Do what you want." |
 | [permissive](../../licenses/permissive/index.md) | "Use it how you want, just say where you got it." [^1] |
 | [copyleft](../../licenses/copyleft/index.md) | "Share your work the same way you got it." |
-| [source available](../../licenses/source-available/) | "You can see it, but you can only use it for certain things." |
+| [source available](../../licenses/source-available/index.md) | "You can see it, but you can only use it for certain things." |
 | proprietary [^2] | "It's all mine." :nounproject-seagull: |
 
 [^1]: Usually. Some permissive licenses act similar to a public domain dedication.

@@ -7100,7 +7100,6 @@ header#header-target.md-header {
   align-items: flex-start;
   align-self: flex-start;
   width: 100vw;
-  min-height: calc((100vh * 1.8) - var(--header-height));
   object-fit: cover;
   background: rgb(var(--gunmetal));
 }
@@ -7115,8 +7114,8 @@ header#header-target.md-header {
   align-self: flex-start;
   order: -1;
   width: 100vw;
-  min-height: var(--parallax-height);
-  max-height: calc((100vh * 1.6) - var(--header-height));
+  min-height: 130vh;
+  max-height: 180vh;
   padding-bottom: 2rem;
   margin-top: -2.4rem;
   margin-bottom: 0.1rem;
@@ -7137,8 +7136,8 @@ header#header-target.md-header {
   place-content: start center;
   order: -1;
   width: 100vw;
-  min-height: calc((100vh - var(--header-height)));
-  max-height: max(var(--parallax-height), calc((100vh * 1.4) - var(--header-height)));
+  min-height: 100vh;
+  max-height: var(--parallax-height);
   padding-bottom: 25vh;
   overflow: hidden;
   pointer-events: auto;
@@ -7396,7 +7395,7 @@ h1.hero-content-section.header-mid.line {
     "Arial Narrow Bold",
     Gadget,
     sans-serif;
-  font-size: clamp(12px, calc(100vw / 26), 16rem);
+  font-size: clamp(12px, calc(100vw / 24), 16rem);
   color: var(--emerald);
   text-align: center;
   text-shadow: 0.01rem 0.01rem 0 var(--oxford-blue);
@@ -7424,7 +7423,7 @@ h1.hero-content-section.header-mid.line {
   --grid-template-rows: repeat(2, 1fr);
   --grid-template-columns: repeat(3, 1fr);
 }
-@media screen and (min-width <= 416px) {
+@media screen and (min-width <= 600px) {
   :root {
     --gap: 2vh;
     --min-width: 80vw;
@@ -7433,7 +7432,7 @@ h1.hero-content-section.header-mid.line {
     --grid-template-columns: repeat(1, 1fr);
   }
 }
-@media screen and (min-width > 416px) and (orientation: portrait) {
+@media screen and (min-width > 600px) and (orientation: portrait) {
   :root {
     --gap: 2vh;
     --min-width: 80vw;
@@ -7633,8 +7632,8 @@ a#yoshimi-link:focus {
   }
   .hero-parallax__image {
     object-fit: cover;
-    scale: 1.4;
-    translate: 0% 20%;
+    scale: 1;
+    translate: 0%;
   }
 }
 .cta-container,
@@ -7661,8 +7660,8 @@ h1.hero-content-section.header-mid.line span {
 
 /* src/assets/stylesheets/heroimages.css */
 .hero-parallax__image {
-  --scale: 1.1;
-  --object-fit: fill;
+  --scale: 1;
+  --object-fit: cover;
   --perspective: 50rem;
   --perspective-origin: center bottom;
   --object-position: center bottom;
@@ -7676,18 +7675,21 @@ h1.hero-content-section.header-mid.line span {
   flex-grow: 2;
   grid-column-start: 1;
   place-self: start start;
-  min-width: 100%;
-  min-height: calc((100vh * 0.3) - var(--header-height));
-  max-height: var(--parallax-height);
+  width: 100%;
+  min-width: 100vw;
+  max-width: 3840px;
+  height: 100%;
   padding-bottom: 1rem;
   margin-bottom: 0.1rem;
   overflow: hidden visible;
   object-fit: var(--object-fit);
   object-position: center bottom;
   background: var(--gunmetal);
+  transform-origin: center center;
   scale: var(--scale);
   perspective: var(--perspective);
   perspective-origin: center bottom;
+  will-change: transform;
 }
 @keyframes glow {
   from {
@@ -7760,14 +7762,6 @@ h1.hero-content-section.header-mid.line span {
     font-size: clamp(12px, calc(100vw / 22), 6rem);
   }
 }
-.cta-ul {
-  position: relative;
-  display: inline-block;
-}
-.special-ul {
-  position: relative;
-  display: inline-block;
-}
 .special-highlight {
   position: relative;
   display: inline-block;
@@ -7789,19 +7783,16 @@ h1.hero-content-section.header-mid.line span {
   --p-color: var(--aqua);
   --perspective-origin: 30% 20%;
   --scale: 1;
-  --translate-y: -30%;
 }
 .hero-parallax__image--fantasy {
   --h1-color: var(--white);
   --p-color: var(--mindaro);
   --scale: 1;
-  --translate-y: -20%;
 }
 .hero-parallax__image--farcical {
   --h1-color: var(--atomic-tangerine);
   --p-color: var(--aqua);
-  --sccale: 1;
-  --translate-y: -35%;
+  --scale: 1;
 }
 .hero-parallax__image--fauvist {
   --h1-color: var(--mindaro);
@@ -7812,33 +7803,28 @@ h1.hero-content-section.header-mid.line span {
   --p-color: var(--white);
   --scale: 1;
   --perspective: 50rem;
-  --translate-y: -25%;
 }
 .hero-parallax__image--mystical {
   --h1-color: var(--blue-blue);
   --p-color: var(--white);
   --scale: 1;
   --perspective: 40rem;
-  --translate-y: -25%;
 }
 .hero-parallax__image--surreal {
   --h1-color: var(--white);
   --p-color: var(--atomic-tangerine);
   --scale: 1;
-  --translate-y: -25%;
 }
 @media (orientation: portrait) {
   .hero-parallax__image {
     --scale: 1.4;
     --object-fit: cover;
-    --translate-y: 20%;
   }
   .hero-parallax__image--anime {
     --h1-color: var(--atomic-tangerine);
     --p-color: var(--white);
     --perspective: -50rem;
     --scale: 1.8;
-    --translate-y: 40%;
   }
   .hero-parallax__image--artbrut {
     --h1-color: var(--atomic-tangerine);
@@ -7860,12 +7846,10 @@ h1.hero-content-section.header-mid.line span {
   .hero-parallax__image--farcical {
     --h1-color: var(--mindaro);
     --p-color: var(--aqua);
-    --translate-y: 16%;
   }
   .hero-parallax__image--fauvist {
     --h1-color: var(--mindaro);
     --p-color: var(--white);
-    --translate-y: 18%;
   }
   .hero-parallax__image--minimal {
     --h1-color: var(--atomic-tangerine);
@@ -7881,27 +7865,17 @@ h1.hero-content-section.header-mid.line span {
   }
 }
 .hero-parallax__layer .hero-parallax__image:not(:first-child) {
+  position: absolute;
+  top: 0;
   z-index: -300;
   opacity: 0;
-  transition: opacity 600ms ease-out, perspective 500ms ease;
 }
 .hero-parallax__layer .hero-parallax__image:first-child {
-  align-content: flex-start;
-  align-self: flex-start;
-  overflow: hidden visible;
-  opacity: 1;
-  transition:
-    transform 500ms ease,
-    scale 500ms ease,
-    translate 500ms ease,
-    opacity / 1500ms ease-in,
-    perspective 500ms ease,
-    perspective-origin 500ms ease;
-  transform: translate(var(--translate-x), var(--translate-y));
+  top: 0;
+  transform: translate(var(--translate-x), var(--translate-y)) scale(var(--scale));
 }
 .fade-overlay {
   --fade-height: var(--parallax-height);
-  position: absolute;
   top: 0;
   left: 0;
   z-index: 5;
@@ -7928,4 +7902,4 @@ h1.hero-content-section.header-mid.line span {
 }
 
 /* src/assets/stylesheets/bundle.css */
-/*# sourceMappingURL=bundle.PARVQEXL.css.map */
+/*# sourceMappingURL=bundle.EPXYE23W.css.map */

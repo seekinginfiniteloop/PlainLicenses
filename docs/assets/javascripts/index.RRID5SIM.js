@@ -7657,6 +7657,9 @@ var feedback$ = of(feedback).pipe(
 
 // src/assets/javascripts/utils/index.ts
 var import_tablesort = __toESM(require_tablesort());
+var prefersReducedMotion = () => {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+};
 function isElementVisible(el) {
   if (!el) {
     return false;
@@ -8089,515 +8092,6 @@ var deleteOldCache = () => {
     )),
     map(() => true),
     defaultIfEmpty(false)
-  );
-};
-
-// src/assets/javascripts/hero/imageshuffle/data/index.ts
-function replaceDocs(src) {
-  const protocol = location.protocol === "http:" ? "http:" : "https:";
-  const { host } = location;
-  return src.replace(/docs/g, `${protocol}//${host}`);
-}
-var rawHeroImages = [
-  {
-    "imageName": "anime",
-    "parent": "docs/assets/images/hero/anime",
-    "widths": {
-      "1280": "docs/assets/images/hero/anime/anime_1280.3fcea899.avif",
-      "1920": "docs/assets/images/hero/anime/anime_1920.c254a9db.avif",
-      "2560": "docs/assets/images/hero/anime/anime_2560.d93b987e.avif",
-      "3840": "docs/assets/images/hero/anime/anime_3840.d38bd5ff.avif"
-    },
-    "srcset": "docs/assets/images/hero/anime/anime_1280.3fcea899.avif 1280w, docs/assets/images/hero/anime/anime_1920.c254a9db.avif 1920w, docs/assets/images/hero/anime/anime_2560.d93b987e.avif 2560w, docs/assets/images/hero/anime/anime_3840.d38bd5ff.avif 3840w"
-  },
-  {
-    "imageName": "artbrut",
-    "parent": "docs/assets/images/hero/artbrut",
-    "widths": {
-      "1280": "docs/assets/images/hero/artbrut/artbrut_1280.9d423493.avif",
-      "1920": "docs/assets/images/hero/artbrut/artbrut_1920.b33e189e.avif",
-      "2560": "docs/assets/images/hero/artbrut/artbrut_2560.f941065b.avif",
-      "3840": "docs/assets/images/hero/artbrut/artbrut_3840.06f2db57.avif"
-    },
-    "srcset": "docs/assets/images/hero/artbrut/artbrut_1280.9d423493.avif 1280w, docs/assets/images/hero/artbrut/artbrut_1920.b33e189e.avif 1920w, docs/assets/images/hero/artbrut/artbrut_2560.f941065b.avif 2560w, docs/assets/images/hero/artbrut/artbrut_3840.06f2db57.avif 3840w"
-  },
-  {
-    "imageName": "comic",
-    "parent": "docs/assets/images/hero/comic",
-    "widths": {
-      "1280": "docs/assets/images/hero/comic/comic_1280.80029dc5.avif",
-      "1920": "docs/assets/images/hero/comic/comic_1920.ccb36986.avif",
-      "2560": "docs/assets/images/hero/comic/comic_2560.2309f695.avif",
-      "3840": "docs/assets/images/hero/comic/comic_3840.d5bf4b07.avif"
-    },
-    "srcset": "docs/assets/images/hero/comic/comic_1280.80029dc5.avif 1280w, docs/assets/images/hero/comic/comic_1920.ccb36986.avif 1920w, docs/assets/images/hero/comic/comic_2560.2309f695.avif 2560w, docs/assets/images/hero/comic/comic_3840.d5bf4b07.avif 3840w"
-  },
-  {
-    "imageName": "fanciful",
-    "parent": "docs/assets/images/hero/fanciful",
-    "widths": {
-      "1280": "docs/assets/images/hero/fanciful/fanciful_1280.97c5119b.avif",
-      "1920": "docs/assets/images/hero/fanciful/fanciful_1920.8a8d1e24.avif",
-      "2560": "docs/assets/images/hero/fanciful/fanciful_2560.d846fdc9.avif",
-      "3840": "docs/assets/images/hero/fanciful/fanciful_3840.2aa6eb29.avif"
-    },
-    "srcset": "docs/assets/images/hero/fanciful/fanciful_1280.97c5119b.avif 1280w, docs/assets/images/hero/fanciful/fanciful_1920.8a8d1e24.avif 1920w, docs/assets/images/hero/fanciful/fanciful_2560.d846fdc9.avif 2560w, docs/assets/images/hero/fanciful/fanciful_3840.2aa6eb29.avif 3840w"
-  },
-  {
-    "imageName": "fantasy",
-    "parent": "docs/assets/images/hero/fantasy",
-    "widths": {
-      "1280": "docs/assets/images/hero/fantasy/fantasy_1280.cc724b8d.avif",
-      "1920": "docs/assets/images/hero/fantasy/fantasy_1920.b0945961.avif",
-      "2560": "docs/assets/images/hero/fantasy/fantasy_2560.87ecf4b7.avif",
-      "3840": "docs/assets/images/hero/fantasy/fantasy_3840.76aef34a.avif"
-    },
-    "srcset": "docs/assets/images/hero/fantasy/fantasy_1280.cc724b8d.avif 1280w, docs/assets/images/hero/fantasy/fantasy_1920.b0945961.avif 1920w, docs/assets/images/hero/fantasy/fantasy_2560.87ecf4b7.avif 2560w, docs/assets/images/hero/fantasy/fantasy_3840.76aef34a.avif 3840w"
-  },
-  {
-    "imageName": "farcical",
-    "parent": "docs/assets/images/hero/farcical",
-    "widths": {
-      "1280": "docs/assets/images/hero/farcical/farcical_1280.0bcf4abf.avif",
-      "1920": "docs/assets/images/hero/farcical/farcical_1920.eb4e92aa.avif",
-      "2560": "docs/assets/images/hero/farcical/farcical_2560.b70c1efb.avif",
-      "3840": "docs/assets/images/hero/farcical/farcical_3840.512c28b7.avif"
-    },
-    "srcset": "docs/assets/images/hero/farcical/farcical_1280.0bcf4abf.avif 1280w, docs/assets/images/hero/farcical/farcical_1920.eb4e92aa.avif 1920w, docs/assets/images/hero/farcical/farcical_2560.b70c1efb.avif 2560w, docs/assets/images/hero/farcical/farcical_3840.512c28b7.avif 3840w"
-  },
-  {
-    "imageName": "fauvist",
-    "parent": "docs/assets/images/hero/fauvist",
-    "widths": {
-      "1280": "docs/assets/images/hero/fauvist/fauvist_1280.9e323bee.avif",
-      "1920": "docs/assets/images/hero/fauvist/fauvist_1920.e5d68503.avif",
-      "2560": "docs/assets/images/hero/fauvist/fauvist_2560.e70f1931.avif",
-      "3840": "docs/assets/images/hero/fauvist/fauvist_3840.500219d3.avif"
-    },
-    "srcset": "docs/assets/images/hero/fauvist/fauvist_1280.9e323bee.avif 1280w, docs/assets/images/hero/fauvist/fauvist_1920.e5d68503.avif 1920w, docs/assets/images/hero/fauvist/fauvist_2560.e70f1931.avif 2560w, docs/assets/images/hero/fauvist/fauvist_3840.500219d3.avif 3840w"
-  },
-  {
-    "imageName": "minimal",
-    "parent": "docs/assets/images/hero/minimal",
-    "widths": {
-      "1280": "docs/assets/images/hero/minimal/minimal_1280.42dcf0b0.avif",
-      "1920": "docs/assets/images/hero/minimal/minimal_1920.71ca07e0.avif",
-      "2560": "docs/assets/images/hero/minimal/minimal_2560.c5549cbf.avif",
-      "3840": "docs/assets/images/hero/minimal/minimal_3840.6c643286.avif"
-    },
-    "srcset": "docs/assets/images/hero/minimal/minimal_1280.42dcf0b0.avif 1280w, docs/assets/images/hero/minimal/minimal_1920.71ca07e0.avif 1920w, docs/assets/images/hero/minimal/minimal_2560.c5549cbf.avif 2560w, docs/assets/images/hero/minimal/minimal_3840.6c643286.avif 3840w"
-  },
-  {
-    "imageName": "mystical",
-    "parent": "docs/assets/images/hero/mystical",
-    "widths": {
-      "1280": "docs/assets/images/hero/mystical/mystical_1280.f50a7c79.avif",
-      "1920": "docs/assets/images/hero/mystical/mystical_1920.14eadafd.avif",
-      "2560": "docs/assets/images/hero/mystical/mystical_2560.31500c69.avif",
-      "3840": "docs/assets/images/hero/mystical/mystical_3840.67cbaa60.avif"
-    },
-    "srcset": "docs/assets/images/hero/mystical/mystical_1280.f50a7c79.avif 1280w, docs/assets/images/hero/mystical/mystical_1920.14eadafd.avif 1920w, docs/assets/images/hero/mystical/mystical_2560.31500c69.avif 2560w, docs/assets/images/hero/mystical/mystical_3840.67cbaa60.avif 3840w"
-  },
-  {
-    "imageName": "surreal",
-    "parent": "docs/assets/images/hero/surreal",
-    "widths": {
-      "1280": "docs/assets/images/hero/surreal/surreal_1280.aebe2db9.avif",
-      "1920": "docs/assets/images/hero/surreal/surreal_1920.e5c0cbd2.avif",
-      "2560": "docs/assets/images/hero/surreal/surreal_2560.484a1d5c.avif",
-      "3840": "docs/assets/images/hero/surreal/surreal_3840.6fd8d29c.avif"
-    },
-    "srcset": "docs/assets/images/hero/surreal/surreal_1280.aebe2db9.avif 1280w, docs/assets/images/hero/surreal/surreal_1920.e5c0cbd2.avif 1920w, docs/assets/images/hero/surreal/surreal_2560.484a1d5c.avif 2560w, docs/assets/images/hero/surreal/surreal_3840.6fd8d29c.avif 3840w"
-  }
-];
-var heroImages = rawHeroImages.map((image) => ({
-  imageName: image.imageName,
-  src: image.src ? replaceDocs(image.src) : void 0,
-  widths: Object.fromEntries(Object.entries(image.widths).map(([key, value]) => [key, replaceDocs(value)])),
-  srcset: replaceDocs(image.srcset),
-  parent: replaceDocs(image.parent)
-}));
-
-// src/assets/javascripts/hero/imageshuffle/index.ts
-var location$2 = new BehaviorSubject(new URL(window.location.href));
-function getCurrentLocation() {
-  return location$2.getValue();
-}
-var getOptimalWidth = () => {
-  const screenWidth = Math.max(window.innerWidth, window.innerHeight);
-  return screenWidth <= 1280 ? 1280 : screenWidth <= 1920 ? 1920 : screenWidth <= 2560 ? 2560 : 2840;
-};
-var CONFIG2 = { INTERVAL_TIME: 25e3, CLEANUP_DELAY: 6e4 };
-var isPageVisible = () => !document.hidden;
-var isAtHome = () => {
-  const loc = getCurrentLocation();
-  return isHome(loc) && isOnSite(loc);
-};
-var portraitMediaQuery = window.matchMedia("(orientation: portrait)");
-var parallaxLayer = document.getElementById("parallax-hero-image-layer");
-var optimalWidth$ = new BehaviorSubject(getOptimalWidth());
-var createHeroStateManager = () => {
-  const initialState = {
-    status: "loading",
-    isVisible: isPageVisible(),
-    isAtHome: true,
-    activeImageIndex: 0,
-    orientation: portraitMediaQuery.matches ? "portrait" : "landscape",
-    optimalWidth: optimalWidth$.value,
-    lastActiveTime: Date.now()
-  };
-  const state$ = new BehaviorSubject(initialState);
-  const cleanup2 = new Subject();
-  let cleanupTimeout = null;
-  const canCycle$ = state$.pipe(
-    map(
-      (state) => state.isVisible && state.isAtHome && state.status === "cycling"
-    ),
-    distinctUntilChanged(),
-    shareReplay(1)
-  );
-  const scheduleCleanup = () => {
-    if (cleanupTimeout) {
-      window.clearTimeout(cleanupTimeout);
-    }
-    cleanupTimeout = window.setTimeout(() => {
-      if (!state$.value.isVisible && !state$.value.isAtHome) {
-        cleanup2.next();
-        cleanup2.complete();
-      }
-    }, CONFIG2.CLEANUP_DELAY);
-  };
-  return {
-    state$,
-    canCycle$,
-    cleanup$: cleanup2.asObservable(),
-    updateState: (updates) => {
-      if (state$.closed) {
-        return;
-      }
-      const newState = { ...state$.value, ...updates };
-      if (updates.isVisible || updates.isAtHome) {
-        newState.lastActiveTime = Date.now();
-      }
-      if (updates.isVisible === false || updates.isAtHome === false) {
-        scheduleCleanup();
-      } else if (cleanupTimeout) {
-        window.clearTimeout(cleanupTimeout);
-        cleanupTimeout = null;
-      }
-      state$.next(newState);
-    },
-    cleanup: () => {
-      if (cleanupTimeout) {
-        window.clearTimeout(cleanupTimeout);
-      }
-      cleanup2.next();
-      cleanup2.complete();
-      state$.complete();
-    }
-  };
-};
-var stateManager = createHeroStateManager();
-var updateImageSources = (images, optimalWidth) => {
-  images.forEach((image) => {
-    const imageName = image.classList[1].split("--")[1];
-    const foundImage = retrieveImage(imageName);
-    if (foundImage) {
-      image.src = foundImage.widths[optimalWidth];
-    }
-  });
-};
-var retrieveImage = (imageName) => {
-  return heroImages.find((image) => image.imageName === imageName);
-};
-var getHeroes = () => {
-  const optimalWidth = getOptimalWidth();
-  return heroImages.map((image) => ({ ...image, src: image.widths[optimalWidth] }));
-};
-var allHeroes = getHeroes();
-var imageMetadata = /* @__PURE__ */ new WeakMap();
-var loadImage = (imageUrl) => {
-  return getAsset(imageUrl, true).pipe(
-    mergeMap((response) => from(response.blob())),
-    catchError((error) => {
-      logger.error("Error loading image:", error);
-      return throwError(() => new Error("Failed to load image"));
-    })
-  );
-};
-var setText = async (imgName) => {
-  const headerEl = document.getElementById("CTA_header");
-  const textEl = document.getElementById("CTA_paragraph");
-  headerEl == null ? void 0 : headerEl.setAttribute("class", `hero-parallax__image--${imgName}`);
-  textEl == null ? void 0 : textEl.setAttribute("class", `hero-parallax__image--${imgName}`);
-};
-var cleanupImageResources = (image) => {
-  const currentSrc = image.src;
-  if (currentSrc.startsWith("blob:")) {
-    URL.revokeObjectURL(currentSrc);
-  }
-};
-var fetchAndSetImage = (imgSettings) => {
-  const { imageName, srcset, src } = imgSettings;
-  if (!src) {
-    return EMPTY;
-  }
-  return loadImage(src).pipe(
-    switchMap((_imageBlob) => {
-      const img = new Image();
-      const loading = (parallaxLayer == null ? void 0 : parallaxLayer.getElementsByTagName("img").length) !== 0 ? "lazy" : "eager";
-      img.src = src;
-      img.srcset = srcset;
-      img.sizes = "(max-width: 1280px) 1280px, (max-width: 1920px) 1920px, (max-width: 2560px) 2560px, 3840px";
-      img.alt = "";
-      img.classList.add("hero-parallax__image", `hero-parallax__image--${imageName}`);
-      img.draggable = false;
-      img.loading = loading;
-      void setText(imageName);
-      return of(img).pipe(
-        tap(() => {
-          imageMetadata.set(img, {
-            loadTime: Date.now(),
-            displayCount: 0,
-            width: img.width
-          });
-          parallaxLayer == null ? void 0 : parallaxLayer.prepend(img);
-        }),
-        map(() => img)
-      );
-    }),
-    catchError((error) => {
-      logger.error("Error in fetchAndSetImage:", error);
-      return EMPTY;
-    })
-  );
-};
-var createOrientationObservable = (mediaQuery) => {
-  return fromEventPattern(
-    (handler) => mediaQuery.addEventListener("change", handler),
-    (handler) => mediaQuery.removeEventListener("change", handler),
-    (event) => event.matches
-  );
-};
-var createVisibilityAndLocationObservable = () => {
-  return merge(
-    fromEvent(document, "visibilitychange").pipe(
-      tap(() => {
-        stateManager.updateState({
-          isVisible: isPageVisible(),
-          status: isPageVisible() ? "ready" : "paused"
-        });
-      })
-    ),
-    watchLocationChange((url) => isHome(url) && isOnSite(url)).pipe(
-      tap(() => {
-        stateManager.updateState({
-          isAtHome: isAtHome(),
-          status: isAtHome() ? "ready" : "stopped"
-        });
-      })
-    )
-  ).pipe(takeUntil(stateManager.cleanup$));
-};
-var createOrientationHandler = () => {
-  const orientationChange$ = createOrientationObservable(portraitMediaQuery);
-  const resize$ = fromEvent(window, "resize");
-  return merge(orientationChange$, resize$).pipe(
-    debounceTime(100),
-    skipWhile(() => !isPageVisible() || !isElementVisible(parallaxLayer)),
-    map(getOptimalWidth),
-    distinctUntilChanged(),
-    tap((optimalWidth) => {
-      stateManager.updateState({
-        orientation: portraitMediaQuery.matches ? "portrait" : "landscape",
-        optimalWidth
-      });
-      const imageLayers = Array.from((parallaxLayer == null ? void 0 : parallaxLayer.getElementsByTagName("img")) || []);
-      updateImageSources(imageLayers, optimalWidth);
-    }),
-    takeUntil(stateManager.cleanup$),
-    catchError((error) => {
-      logger.error("Error in viewport change handler:", error);
-      return EMPTY;
-    })
-  );
-};
-var shuffledHeroes = [...allHeroes].sort(() => Math.random() - 0.5);
-var createImageCycler = (parallaxLayer2) => {
-  const { state$, canCycle$, cleanup$, updateState } = stateManager;
-  const loadedImages = /* @__PURE__ */ new Set();
-  const loadImages$ = from([shuffledHeroes[0]]).pipe(
-    mergeMap(fetchAndSetImage),
-    takeUntil(cleanup$),
-    tap((_image) => {
-      loadedImages.add(shuffledHeroes[0].imageName);
-      updateState({
-        activeImageIndex: 0,
-        status: "cycling"
-      });
-    }),
-    catchError((error) => {
-      logger.error("Failed to load initial image:", error);
-      updateState({ status: "error" });
-      return EMPTY;
-    })
-  );
-  const cycle$ = interval(CONFIG2.INTERVAL_TIME).pipe(
-    withLatestFrom(canCycle$, state$),
-    filter(([_, canCycle]) => canCycle),
-    mergeMap(([_, __, state]) => {
-      updateState({ status: "cycling" });
-      const nextIndex = (state.activeImageIndex + 1) % shuffledHeroes.length;
-      const nextImage = shuffledHeroes[nextIndex];
-      if (!loadedImages.has(nextImage.imageName)) {
-        return fetchAndSetImage(nextImage).pipe(
-          tap(() => {
-            loadedImages.add(nextImage.imageName);
-            updateState({ activeImageIndex: nextIndex });
-            void setText(nextImage.imageName);
-          }),
-          catchError((error) => {
-            logger.error(`Failed to load image ${nextImage.imageName}:`, error);
-            return EMPTY;
-          })
-        );
-      } else {
-        return of(void 0);
-      }
-    }),
-    takeUntil(cleanup$)
-  );
-  return {
-    loadImages$,
-    cycle$,
-    stateManager,
-    start: () => {
-      const subscription = new Subscription();
-      subscription.add(createVisibilityAndLocationObservable().subscribe());
-      subscription.add(createOrientationHandler().subscribe());
-      subscription.add(
-        loadImages$.pipe(
-          tap(() => {
-            stateManager.updateState({ status: "cycling" });
-            subscription.add(cycle$.subscribe());
-          })
-        ).subscribe()
-      );
-      subscription.add(() => {
-        const images = parallaxLayer2 == null ? void 0 : parallaxLayer2.getElementsByTagName("img");
-        if (images) {
-          Array.from(images).forEach(cleanupImageResources);
-        }
-      });
-      return subscription;
-    },
-    stop: () => {
-      stateManager.cleanup();
-    },
-    debug: {
-      getState: () => stateManager.state$.value,
-      getMetadata: (img) => imageMetadata.get(img)
-    }
-  };
-};
-var cyclerRef = { current: null };
-var initCycler = () => {
-  var _a2;
-  if (!parallaxLayer) {
-    return;
-  }
-  if ((_a2 = cyclerRef.current) == null ? void 0 : _a2.stop) {
-    cyclerRef.current.stop();
-  }
-  cyclerRef.current = createImageCycler(parallaxLayer);
-  const subscription = cyclerRef.current.start();
-  return () => {
-    var _a3;
-    subscription == null ? void 0 : subscription.unsubscribe();
-    (_a3 = cyclerRef.current) == null ? void 0 : _a3.stop();
-    cyclerRef.current = null;
-  };
-};
-var cleanup = initCycler();
-var stopCycler = () => {
-  cleanup == null ? void 0 : cleanup();
-};
-var getImage = () => {
-  const images = parallaxLayer == null ? void 0 : parallaxLayer.getElementsByTagName("img");
-  if (images && images.length > 0) {
-    return images[0];
-  }
-  return void 0;
-};
-function setParallaxHeight(height) {
-  var _a2;
-  const headerHeight = ((_a2 = document.getElementById("header-target")) == null ? void 0 : _a2.clientHeight) || 95;
-  setCssVariable("--header-height", `${headerHeight}px`);
-  const effectiveViewHeight = window.innerHeight - headerHeight;
-  const maxFade = effectiveViewHeight * 1.4;
-  if (!parallaxLayer || height <= 0) {
-    const currentValue = document.documentElement.style.getPropertyValue("--fade-height");
-    setCssVariable("--fade-height", Math.max(Number(currentValue), effectiveViewHeight).toString());
-  }
-  setCssVariable("--fade-height", `${Math.min(height * 1.2, maxFade, effectiveViewHeight)}px`);
-  const parallaxHeight = height < effectiveViewHeight ? effectiveViewHeight : Math.min(height * 1.2, maxFade);
-  setCssVariable("--parallax-height", `${parallaxHeight}px`);
-}
-var createHeightObservable = (stateManager2) => {
-  const imageChanges$ = stateManager2.state$.pipe(
-    map(() => getImage()),
-    filter((img) => img !== null && img instanceof HTMLImageElement),
-    map((img) => img.height),
-    filter((height) => typeof height === "number" && height > 0 && !Number.isNaN(height)),
-    shareReplay(1)
-  );
-  const viewportChanges$ = merge(
-    fromEvent(window, "resize"),
-    createOrientationObservable(portraitMediaQuery)
-  ).pipe(
-    debounceTime(100),
-    map(() => {
-      const img = getImage();
-      return (img == null ? void 0 : img.height) || window.innerHeight;
-    }),
-    filter((height) => typeof height === "number" && height > 0 && !Number.isNaN(height)),
-    shareReplay(1)
-  );
-  return merge(imageChanges$, viewportChanges$).pipe(
-    distinctUntilChanged(),
-    filter(() => isPageVisible()),
-    tap((height) => setParallaxHeight(height)),
-    catchError((error) => {
-      logger.error("Error adjusting height:", error);
-      return EMPTY;
-    }),
-    takeUntil(stateManager2.cleanup$)
-  );
-};
-var shuffle$ = () => {
-  if (!parallaxLayer) {
-    return EMPTY;
-  }
-  const cycler = cyclerRef.current;
-  if (!cycler) {
-    return EMPTY;
-  }
-  const subscription = new Subscription();
-  subscription.add(createHeightObservable(cycler.stateManager).subscribe());
-  return watchLocationChange((url) => !isHome(url)).pipe(
-    switchMap((url) => {
-      if (parallaxLayer && !parallaxLayer.children.length && isOnSite(url)) {
-        return fetchAndSetImage(shuffledHeroes[0]).pipe(map(() => void 0));
-      }
-      cycler.stop();
-      return of(stopCycler());
-    }),
-    takeUntil(cycler.stateManager.cleanup$),
-    catchError((error) => {
-      logger.error("Error in shuffle$:", error);
-      return EMPTY;
-    }),
-    finalize(() => subscription.unsubscribe())
   );
 };
 
@@ -12861,6 +12355,635 @@ gsap.registerPlugin(CSSPlugin);
 var gsapWithCSS = gsap.registerPlugin(CSSPlugin) || gsap;
 var TweenMaxWithCSS = gsapWithCSS.core.Tween;
 
+// src/assets/javascripts/hero/imageshuffle/data/index.ts
+function replaceDocs(src) {
+  const protocol = location.protocol === "http:" ? "http:" : "https:";
+  const { host } = location;
+  return src.replace(/docs/g, `${protocol}//${host}`);
+}
+var rawHeroImages = [
+  {
+    "imageName": "anime",
+    "parent": "docs/assets/images/hero/anime",
+    "widths": {
+      "1280": "docs/assets/images/hero/anime/anime_1280.3fcea899.avif",
+      "1920": "docs/assets/images/hero/anime/anime_1920.c254a9db.avif",
+      "2560": "docs/assets/images/hero/anime/anime_2560.d93b987e.avif",
+      "3840": "docs/assets/images/hero/anime/anime_3840.d38bd5ff.avif"
+    },
+    "srcset": "docs/assets/images/hero/anime/anime_1280.3fcea899.avif 1280w, docs/assets/images/hero/anime/anime_1920.c254a9db.avif 1920w, docs/assets/images/hero/anime/anime_2560.d93b987e.avif 2560w, docs/assets/images/hero/anime/anime_3840.d38bd5ff.avif 3840w"
+  },
+  {
+    "imageName": "artbrut",
+    "parent": "docs/assets/images/hero/artbrut",
+    "widths": {
+      "1280": "docs/assets/images/hero/artbrut/artbrut_1280.9d423493.avif",
+      "1920": "docs/assets/images/hero/artbrut/artbrut_1920.b33e189e.avif",
+      "2560": "docs/assets/images/hero/artbrut/artbrut_2560.f941065b.avif",
+      "3840": "docs/assets/images/hero/artbrut/artbrut_3840.06f2db57.avif"
+    },
+    "srcset": "docs/assets/images/hero/artbrut/artbrut_1280.9d423493.avif 1280w, docs/assets/images/hero/artbrut/artbrut_1920.b33e189e.avif 1920w, docs/assets/images/hero/artbrut/artbrut_2560.f941065b.avif 2560w, docs/assets/images/hero/artbrut/artbrut_3840.06f2db57.avif 3840w"
+  },
+  {
+    "imageName": "comic",
+    "parent": "docs/assets/images/hero/comic",
+    "widths": {
+      "1280": "docs/assets/images/hero/comic/comic_1280.80029dc5.avif",
+      "1920": "docs/assets/images/hero/comic/comic_1920.ccb36986.avif",
+      "2560": "docs/assets/images/hero/comic/comic_2560.2309f695.avif",
+      "3840": "docs/assets/images/hero/comic/comic_3840.d5bf4b07.avif"
+    },
+    "srcset": "docs/assets/images/hero/comic/comic_1280.80029dc5.avif 1280w, docs/assets/images/hero/comic/comic_1920.ccb36986.avif 1920w, docs/assets/images/hero/comic/comic_2560.2309f695.avif 2560w, docs/assets/images/hero/comic/comic_3840.d5bf4b07.avif 3840w"
+  },
+  {
+    "imageName": "fanciful",
+    "parent": "docs/assets/images/hero/fanciful",
+    "widths": {
+      "1280": "docs/assets/images/hero/fanciful/fanciful_1280.97c5119b.avif",
+      "1920": "docs/assets/images/hero/fanciful/fanciful_1920.8a8d1e24.avif",
+      "2560": "docs/assets/images/hero/fanciful/fanciful_2560.d846fdc9.avif",
+      "3840": "docs/assets/images/hero/fanciful/fanciful_3840.2aa6eb29.avif"
+    },
+    "srcset": "docs/assets/images/hero/fanciful/fanciful_1280.97c5119b.avif 1280w, docs/assets/images/hero/fanciful/fanciful_1920.8a8d1e24.avif 1920w, docs/assets/images/hero/fanciful/fanciful_2560.d846fdc9.avif 2560w, docs/assets/images/hero/fanciful/fanciful_3840.2aa6eb29.avif 3840w"
+  },
+  {
+    "imageName": "fantasy",
+    "parent": "docs/assets/images/hero/fantasy",
+    "widths": {
+      "1280": "docs/assets/images/hero/fantasy/fantasy_1280.cc724b8d.avif",
+      "1920": "docs/assets/images/hero/fantasy/fantasy_1920.b0945961.avif",
+      "2560": "docs/assets/images/hero/fantasy/fantasy_2560.87ecf4b7.avif",
+      "3840": "docs/assets/images/hero/fantasy/fantasy_3840.76aef34a.avif"
+    },
+    "srcset": "docs/assets/images/hero/fantasy/fantasy_1280.cc724b8d.avif 1280w, docs/assets/images/hero/fantasy/fantasy_1920.b0945961.avif 1920w, docs/assets/images/hero/fantasy/fantasy_2560.87ecf4b7.avif 2560w, docs/assets/images/hero/fantasy/fantasy_3840.76aef34a.avif 3840w"
+  },
+  {
+    "imageName": "farcical",
+    "parent": "docs/assets/images/hero/farcical",
+    "widths": {
+      "1280": "docs/assets/images/hero/farcical/farcical_1280.0bcf4abf.avif",
+      "1920": "docs/assets/images/hero/farcical/farcical_1920.eb4e92aa.avif",
+      "2560": "docs/assets/images/hero/farcical/farcical_2560.b70c1efb.avif",
+      "3840": "docs/assets/images/hero/farcical/farcical_3840.512c28b7.avif"
+    },
+    "srcset": "docs/assets/images/hero/farcical/farcical_1280.0bcf4abf.avif 1280w, docs/assets/images/hero/farcical/farcical_1920.eb4e92aa.avif 1920w, docs/assets/images/hero/farcical/farcical_2560.b70c1efb.avif 2560w, docs/assets/images/hero/farcical/farcical_3840.512c28b7.avif 3840w"
+  },
+  {
+    "imageName": "fauvist",
+    "parent": "docs/assets/images/hero/fauvist",
+    "widths": {
+      "1280": "docs/assets/images/hero/fauvist/fauvist_1280.9e323bee.avif",
+      "1920": "docs/assets/images/hero/fauvist/fauvist_1920.e5d68503.avif",
+      "2560": "docs/assets/images/hero/fauvist/fauvist_2560.e70f1931.avif",
+      "3840": "docs/assets/images/hero/fauvist/fauvist_3840.500219d3.avif"
+    },
+    "srcset": "docs/assets/images/hero/fauvist/fauvist_1280.9e323bee.avif 1280w, docs/assets/images/hero/fauvist/fauvist_1920.e5d68503.avif 1920w, docs/assets/images/hero/fauvist/fauvist_2560.e70f1931.avif 2560w, docs/assets/images/hero/fauvist/fauvist_3840.500219d3.avif 3840w"
+  },
+  {
+    "imageName": "minimal",
+    "parent": "docs/assets/images/hero/minimal",
+    "widths": {
+      "1280": "docs/assets/images/hero/minimal/minimal_1280.42dcf0b0.avif",
+      "1920": "docs/assets/images/hero/minimal/minimal_1920.71ca07e0.avif",
+      "2560": "docs/assets/images/hero/minimal/minimal_2560.c5549cbf.avif",
+      "3840": "docs/assets/images/hero/minimal/minimal_3840.6c643286.avif"
+    },
+    "srcset": "docs/assets/images/hero/minimal/minimal_1280.42dcf0b0.avif 1280w, docs/assets/images/hero/minimal/minimal_1920.71ca07e0.avif 1920w, docs/assets/images/hero/minimal/minimal_2560.c5549cbf.avif 2560w, docs/assets/images/hero/minimal/minimal_3840.6c643286.avif 3840w"
+  },
+  {
+    "imageName": "mystical",
+    "parent": "docs/assets/images/hero/mystical",
+    "widths": {
+      "1280": "docs/assets/images/hero/mystical/mystical_1280.f50a7c79.avif",
+      "1920": "docs/assets/images/hero/mystical/mystical_1920.14eadafd.avif",
+      "2560": "docs/assets/images/hero/mystical/mystical_2560.31500c69.avif",
+      "3840": "docs/assets/images/hero/mystical/mystical_3840.67cbaa60.avif"
+    },
+    "srcset": "docs/assets/images/hero/mystical/mystical_1280.f50a7c79.avif 1280w, docs/assets/images/hero/mystical/mystical_1920.14eadafd.avif 1920w, docs/assets/images/hero/mystical/mystical_2560.31500c69.avif 2560w, docs/assets/images/hero/mystical/mystical_3840.67cbaa60.avif 3840w"
+  },
+  {
+    "imageName": "surreal",
+    "parent": "docs/assets/images/hero/surreal",
+    "widths": {
+      "1280": "docs/assets/images/hero/surreal/surreal_1280.aebe2db9.avif",
+      "1920": "docs/assets/images/hero/surreal/surreal_1920.e5c0cbd2.avif",
+      "2560": "docs/assets/images/hero/surreal/surreal_2560.484a1d5c.avif",
+      "3840": "docs/assets/images/hero/surreal/surreal_3840.6fd8d29c.avif"
+    },
+    "srcset": "docs/assets/images/hero/surreal/surreal_1280.aebe2db9.avif 1280w, docs/assets/images/hero/surreal/surreal_1920.e5c0cbd2.avif 1920w, docs/assets/images/hero/surreal/surreal_2560.484a1d5c.avif 2560w, docs/assets/images/hero/surreal/surreal_3840.6fd8d29c.avif 3840w"
+  }
+];
+var heroImages = rawHeroImages.map((image) => ({
+  imageName: image.imageName,
+  src: image.src ? replaceDocs(image.src) : void 0,
+  widths: Object.fromEntries(Object.entries(image.widths).map(([key, value]) => [key, replaceDocs(value)])),
+  srcset: replaceDocs(image.srcset),
+  parent: replaceDocs(image.parent)
+}));
+
+// src/assets/javascripts/hero/imageshuffle/index.ts
+var location$2 = new BehaviorSubject(new URL(window.location.href));
+function getCurrentLocation() {
+  return location$2.getValue();
+}
+var getOptimalWidth = () => {
+  const screenWidth = Math.max(window.innerWidth, window.innerHeight);
+  return screenWidth <= 1175 ? 1280 : screenWidth <= 1850 ? 1920 : screenWidth <= 2400 ? 2560 : 3840;
+};
+var CONFIG2 = { INTERVAL_TIME: 2e4, CLEANUP_DELAY: 6e4 };
+var ANIMATION_CONFIG = {
+  ENTER: {
+    opacity: 1,
+    duration: 1.2,
+    ease: "power2.inOut"
+  },
+  EXIT: {
+    opacity: 0,
+    duration: 0.5,
+    ease: "power2.out"
+  },
+  PAN: {
+    intervals: 4,
+    duration: 30,
+    ease: "none",
+    buffer: 48,
+    cleanup: /* @__PURE__ */ new Map(),
+    focalZone: {
+      horizontalWeight: 0.66,
+      // Center 2/3rds
+      verticalWeight: 0.66,
+      bias: 0.7
+      // How much to favor the focal zone
+    }
+  }
+};
+var isPageVisible = () => !document.hidden;
+var isAtHome = () => {
+  const loc = getCurrentLocation();
+  return isHome(loc) && isOnSite(loc);
+};
+var portraitMediaQuery = window.matchMedia("(orientation: portrait)");
+var parallaxLayer = document.getElementById("parallax-hero-image-layer");
+var optimalWidth$ = new BehaviorSubject(getOptimalWidth());
+var createHeroStateManager = () => {
+  const initialState = {
+    status: "loading",
+    isVisible: isPageVisible(),
+    isAtHome: true,
+    activeImageIndex: 0,
+    orientation: portraitMediaQuery.matches ? "portrait" : "landscape",
+    optimalWidth: optimalWidth$.value,
+    lastActiveTime: Date.now()
+  };
+  const state$ = new BehaviorSubject(initialState);
+  const cleanup2 = new Subject();
+  let cleanupTimeout = null;
+  const canCycle$ = state$.pipe(
+    map(
+      (state) => state.isVisible && state.isAtHome && state.status === "cycling"
+    ),
+    distinctUntilChanged(),
+    shareReplay(1)
+  );
+  const scheduleCleanup = () => {
+    if (cleanupTimeout) {
+      window.clearTimeout(cleanupTimeout);
+    }
+    cleanupTimeout = window.setTimeout(() => {
+      if (!state$.value.isVisible && !state$.value.isAtHome) {
+        cleanup2.next();
+        cleanup2.complete();
+      }
+    }, CONFIG2.CLEANUP_DELAY);
+  };
+  return {
+    state$,
+    canCycle$,
+    cleanup$: cleanup2.asObservable(),
+    updateState: (updates) => {
+      if (state$.closed) {
+        return;
+      }
+      const newState = { ...state$.value, ...updates };
+      if (updates.isVisible || updates.isAtHome) {
+        newState.lastActiveTime = Date.now();
+      }
+      if (updates.isVisible === false || updates.isAtHome === false) {
+        scheduleCleanup();
+      } else if (cleanupTimeout) {
+        window.clearTimeout(cleanupTimeout);
+        cleanupTimeout = null;
+      }
+      state$.next(newState);
+    },
+    cleanup: () => {
+      if (cleanupTimeout) {
+        window.clearTimeout(cleanupTimeout);
+      }
+      cleanup2.next();
+      cleanup2.complete();
+      state$.complete();
+    }
+  };
+};
+var stateManager = createHeroStateManager();
+var calculateWeightedPanRange = (total, viewport, weight, bias) => {
+  if (total <= viewport) {
+    return 0;
+  }
+  const excess = total - viewport;
+  const focalZoneSize = total * weight;
+  const panRange = -(excess + ANIMATION_CONFIG.PAN.buffer);
+  const focalZoneRatio = focalZoneSize / total;
+  return panRange * bias * focalZoneRatio;
+};
+var createPanAnimation = (img) => {
+  var _a2;
+  const existing = ANIMATION_CONFIG.PAN.cleanup.get(img);
+  if (existing) {
+    existing.kill();
+    ANIMATION_CONFIG.PAN.cleanup.delete(img);
+  }
+  logger.info("Creating pan animation");
+  const { focalZone, intervals, duration } = ANIMATION_CONFIG.PAN;
+  const viewportHeight = window.innerHeight - (((_a2 = document.getElementById("header-target")) == null ? void 0 : _a2.clientHeight) || 95);
+  const viewportWidth = window.innerWidth;
+  const imageWidth = img.naturalWidth;
+  const imageHeight = img.naturalHeight;
+  const xPan = calculateWeightedPanRange(imageWidth, viewportWidth, focalZone.horizontalWeight, focalZone.bias);
+  const yPan = calculateWeightedPanRange(imageHeight, viewportHeight, focalZone.verticalWeight, focalZone.bias);
+  logger.info(`Pan ranges: x=${xPan}, y=${yPan}; viewport: ${viewportWidth}x${viewportHeight}; image: ${imageWidth}x${imageHeight}; focal zone: ${focalZone.horizontalWeight}x${focalZone.verticalWeight}`);
+  if (!xPan && !yPan) {
+    return;
+  }
+  const generateKeyframes = (maxPan) => {
+    const frames = [];
+    const focalBias = focalZone.bias;
+    for (let i = 0; i <= intervals; i++) {
+      const progress = i / intervals;
+      const weight = Math.sin(progress * Math.PI);
+      const position = maxPan * weight * (progress < 0.5 ? focalBias : 1);
+      frames.push(position);
+    }
+    return frames;
+  };
+  const xKeyframes = xPan ? generateKeyframes(xPan) : [0];
+  const yKeyframes = yPan ? generateKeyframes(yPan) : [0];
+  const tl = gsapWithCSS.timeline({ repeat: -1 });
+  const segmentDuration = duration / intervals;
+  gsapWithCSS.set(img, { x: xKeyframes[0], y: yKeyframes[0] });
+  for (let i = 1; i <= intervals; i++) {
+    tl.to(img, {
+      x: xKeyframes[i % xKeyframes.length],
+      y: yKeyframes[i % yKeyframes.length],
+      duration: segmentDuration,
+      ease: ANIMATION_CONFIG.PAN.ease
+    });
+  }
+  ANIMATION_CONFIG.PAN.cleanup.set(img, tl);
+  return tl;
+};
+var updateImageSources = (images, optimalWidth) => {
+  images.forEach((image) => {
+    const imageName = image.classList[1].split("--")[1];
+    const foundImage = retrieveImage(imageName);
+    if (foundImage) {
+      image.src = foundImage.widths[optimalWidth];
+    }
+  });
+};
+var retrieveImage = (imageName) => {
+  return heroImages.find((image) => image.imageName === imageName);
+};
+var getHeroes = () => {
+  const optimalWidth = getOptimalWidth();
+  return heroImages.map((image) => ({ ...image, src: image.widths[optimalWidth] }));
+};
+var allHeroes = getHeroes();
+var imageMetadata = /* @__PURE__ */ new WeakMap();
+var loadImage = (imageUrl) => {
+  return getAsset(imageUrl, true).pipe(
+    mergeMap((response) => from(response.blob())),
+    catchError((error) => {
+      logger.error("Error loading image:", error);
+      return throwError(() => new Error("Failed to load image"));
+    })
+  );
+};
+var setText = async (imgName) => {
+  const headerEl = document.getElementById("CTA_header");
+  const textEl = document.getElementById("CTA_paragraph");
+  headerEl == null ? void 0 : headerEl.setAttribute("class", `hero-parallax__image--${imgName}`);
+  textEl == null ? void 0 : textEl.setAttribute("class", `hero-parallax__image--${imgName}`);
+};
+var cleanupImageResources = (image) => {
+  const currentSrc = image.src;
+  if (currentSrc.startsWith("blob:")) {
+    URL.revokeObjectURL(currentSrc);
+  }
+};
+var fetchAndSetImage = (imgSettings) => {
+  const { imageName, srcset, src } = imgSettings;
+  if (!src) {
+    return EMPTY;
+  }
+  return loadImage(src).pipe(
+    switchMap((_imageBlob) => {
+      const img = new Image();
+      const loading = (parallaxLayer == null ? void 0 : parallaxLayer.getElementsByTagName("img").length) !== 0 ? "lazy" : "eager";
+      img.src = src;
+      img.srcset = srcset;
+      img.sizes = `
+        (max-width: 1175px) 1280px,
+        (max-width: 1850px) 1920px,
+        (max-width: 2400px) 2560px,
+        3840px
+      `;
+      img.alt = "";
+      img.classList.add("hero-parallax__image", `hero-parallax__image--${imageName}`);
+      img.draggable = false;
+      img.loading = loading;
+      void setText(imageName);
+      return of(img).pipe(
+        tap(() => {
+          gsapWithCSS.set(img, { opacity: ANIMATION_CONFIG.ENTER.opacity });
+          imageMetadata.set(img, {
+            loadTime: Date.now(),
+            displayCount: 0,
+            width: img.width,
+            actualWidth: getOptimalWidth()
+          });
+          parallaxLayer == null ? void 0 : parallaxLayer.prepend(img);
+        }),
+        map(() => img)
+      );
+    }),
+    catchError((error) => {
+      logger.error("Error in fetchAndSetImage:", error);
+      return EMPTY;
+    })
+  );
+};
+var animateImageTransition = (currentImage, newImage) => {
+  const tl = gsapWithCSS.timeline();
+  const panEffect = createPanAnimation(newImage);
+  tl.to(currentImage, {
+    opacity: ANIMATION_CONFIG.EXIT.opacity,
+    duration: ANIMATION_CONFIG.EXIT.duration,
+    ease: ANIMATION_CONFIG.EXIT.ease
+  }).to(newImage, {
+    opacity: ANIMATION_CONFIG.ENTER.opacity,
+    duration: ANIMATION_CONFIG.ENTER.duration,
+    ease: ANIMATION_CONFIG.ENTER.ease
+  }, "<");
+  if (panEffect && !prefersReducedMotion) {
+    tl.add(panEffect, ">");
+  }
+  return tl;
+};
+var createOrientationObservable = (mediaQuery) => {
+  return fromEventPattern(
+    (handler) => mediaQuery.addEventListener("change", handler),
+    (handler) => mediaQuery.removeEventListener("change", handler),
+    (event) => event.matches
+  );
+};
+var createVisibilityAndLocationObservable = () => {
+  return merge(
+    fromEvent(document, "visibilitychange").pipe(
+      tap(() => {
+        stateManager.updateState({
+          isVisible: isPageVisible(),
+          status: isPageVisible() ? "ready" : "paused"
+        });
+      })
+    ),
+    watchLocationChange((url) => isHome(url) && isOnSite(url)).pipe(
+      tap(() => {
+        stateManager.updateState({
+          isAtHome: isAtHome(),
+          status: isAtHome() ? "ready" : "stopped"
+        });
+      })
+    )
+  ).pipe(takeUntil(stateManager.cleanup$));
+};
+var createOrientationHandler = () => {
+  const orientationChange$ = createOrientationObservable(portraitMediaQuery);
+  const resize$ = fromEvent(window, "resize");
+  return merge(orientationChange$, resize$).pipe(
+    debounceTime(100),
+    skipWhile(() => !isPageVisible() || !isElementVisible(parallaxLayer)),
+    map(getOptimalWidth),
+    distinctUntilChanged(),
+    tap((optimalWidth) => {
+      stateManager.updateState({
+        orientation: portraitMediaQuery.matches ? "portrait" : "landscape",
+        optimalWidth
+      });
+      const imageLayers = Array.from((parallaxLayer == null ? void 0 : parallaxLayer.getElementsByTagName("img")) || []);
+      updateImageSources(imageLayers, optimalWidth);
+    }),
+    takeUntil(stateManager.cleanup$),
+    catchError((error) => {
+      logger.error("Error in viewport change handler:", error);
+      return EMPTY;
+    })
+  );
+};
+var shuffledHeroes = [...allHeroes].sort(() => Math.random() - 0.5);
+var createImageCycler = (parallaxLayer2) => {
+  const { state$, canCycle$, cleanup$, updateState } = stateManager;
+  const loadedImages = /* @__PURE__ */ new Set();
+  const loadImages$ = from([shuffledHeroes[0]]).pipe(
+    mergeMap(fetchAndSetImage),
+    takeUntil(cleanup$),
+    tap((_image) => {
+      loadedImages.add(shuffledHeroes[0].imageName);
+      updateState({
+        activeImageIndex: 0,
+        status: "cycling"
+      });
+    }),
+    catchError((error) => {
+      logger.error("Failed to load initial image:", error);
+      updateState({ status: "error" });
+      return EMPTY;
+    })
+  );
+  const cycle$ = interval(CONFIG2.INTERVAL_TIME).pipe(
+    withLatestFrom(canCycle$, state$),
+    filter(([_, canCycle]) => canCycle),
+    mergeMap(([_, __, state]) => {
+      updateState({ status: "cycling" });
+      const nextIndex = (state.activeImageIndex + 1) % shuffledHeroes.length;
+      const nextImage = shuffledHeroes[nextIndex];
+      const currentImage = parallaxLayer2 == null ? void 0 : parallaxLayer2.getElementsByTagName("img")[0];
+      if (!loadedImages.has(nextImage.imageName)) {
+        return fetchAndSetImage(nextImage).pipe(
+          tap((newImage) => {
+            loadedImages.add(nextImage.imageName);
+            if (currentImage) {
+              animateImageTransition(currentImage, newImage);
+            } else {
+              const tl = gsapWithCSS.timeline();
+              tl.to(newImage, {
+                opacity: 1,
+                duration: ANIMATION_CONFIG.ENTER.duration,
+                ease: ANIMATION_CONFIG.ENTER.ease
+              });
+              const panAnimation = createPanAnimation(newImage);
+              if (panAnimation && !prefersReducedMotion) {
+                tl.add(panAnimation, ">");
+              }
+            }
+            updateState({ activeImageIndex: nextIndex });
+            void setText(nextImage.imageName);
+          }),
+          catchError((error) => {
+            logger.error(`Failed to load image ${nextImage.imageName}:`, error);
+            return EMPTY;
+          })
+        );
+      }
+      return of(void 0);
+    }),
+    takeUntil(cleanup$)
+  );
+  return {
+    loadImages$,
+    cycle$,
+    stateManager,
+    start: () => {
+      const subscription = new Subscription();
+      subscription.add(createVisibilityAndLocationObservable().subscribe());
+      subscription.add(createOrientationHandler().subscribe());
+      subscription.add(
+        loadImages$.pipe(
+          tap(() => {
+            stateManager.updateState({ status: "cycling" });
+            subscription.add(cycle$.subscribe());
+          })
+        ).subscribe()
+      );
+      subscription.add(() => {
+        const images = parallaxLayer2 == null ? void 0 : parallaxLayer2.getElementsByTagName("img");
+        if (images) {
+          Array.from(images).forEach(cleanupImageResources);
+        }
+      });
+      return subscription;
+    },
+    stop: () => {
+      stateManager.cleanup();
+    },
+    debug: {
+      getState: () => stateManager.state$.value,
+      getMetadata: (img) => imageMetadata.get(img)
+    }
+  };
+};
+var cyclerRef = { current: null };
+var initCycler = () => {
+  var _a2;
+  if (!parallaxLayer) {
+    return;
+  }
+  if ((_a2 = cyclerRef.current) == null ? void 0 : _a2.stop) {
+    cyclerRef.current.stop();
+  }
+  cyclerRef.current = createImageCycler(parallaxLayer);
+  const subscription = cyclerRef.current.start();
+  return () => {
+    var _a3;
+    subscription == null ? void 0 : subscription.unsubscribe();
+    (_a3 = cyclerRef.current) == null ? void 0 : _a3.stop();
+    cyclerRef.current = null;
+  };
+};
+var cleanup = initCycler();
+var stopCycler = () => {
+  cleanup == null ? void 0 : cleanup();
+};
+var getImage = () => {
+  const images = parallaxLayer == null ? void 0 : parallaxLayer.getElementsByTagName("img");
+  if (images && images.length > 0) {
+    return images[0];
+  }
+  return void 0;
+};
+function setParallaxHeight(height) {
+  var _a2;
+  const headerHeight = ((_a2 = document.getElementById("header-target")) == null ? void 0 : _a2.clientHeight) || 95;
+  setCssVariable("--header-height", `${headerHeight}px`);
+  const effectiveViewHeight = window.innerHeight - headerHeight;
+  const maxFade = effectiveViewHeight * 1.4;
+  if (!parallaxLayer || height <= 0) {
+    const currentValue = document.documentElement.style.getPropertyValue("--fade-height");
+    setCssVariable("--fade-height", Math.max(Number(currentValue), effectiveViewHeight).toString());
+  }
+  setCssVariable("--fade-height", `${Math.min(height * 1.2, maxFade, effectiveViewHeight)}px`);
+  const parallaxHeight = height < effectiveViewHeight ? effectiveViewHeight : Math.min(height * 1.2, maxFade);
+  setCssVariable("--parallax-height", `${parallaxHeight}px`);
+}
+var createHeightObservable = (stateManager2) => {
+  const imageChanges$ = stateManager2.state$.pipe(
+    map(() => getImage()),
+    filter((img) => img !== null && img instanceof HTMLImageElement),
+    map((img) => img.height),
+    filter((height) => typeof height === "number" && height > 0 && !Number.isNaN(height)),
+    shareReplay(1)
+  );
+  const viewportChanges$ = merge(
+    fromEvent(window, "resize"),
+    createOrientationObservable(portraitMediaQuery)
+  ).pipe(
+    debounceTime(100),
+    map(() => {
+      const img = getImage();
+      return (img == null ? void 0 : img.height) || window.innerHeight;
+    }),
+    filter((height) => typeof height === "number" && height > 0 && !Number.isNaN(height)),
+    shareReplay(1)
+  );
+  return merge(imageChanges$, viewportChanges$).pipe(
+    distinctUntilChanged(),
+    filter(() => isPageVisible()),
+    tap((height) => setParallaxHeight(height)),
+    catchError((error) => {
+      logger.error("Error adjusting height:", error);
+      return EMPTY;
+    }),
+    takeUntil(stateManager2.cleanup$)
+  );
+};
+var shuffle$ = () => {
+  if (!parallaxLayer) {
+    return EMPTY;
+  }
+  const cycler = cyclerRef.current;
+  if (!cycler) {
+    return EMPTY;
+  }
+  const subscription = new Subscription();
+  subscription.add(createHeightObservable(cycler.stateManager).subscribe());
+  return watchLocationChange((url) => !isHome(url)).pipe(
+    switchMap((url) => {
+      if (parallaxLayer && !parallaxLayer.children.length && isOnSite(url)) {
+        return fetchAndSetImage(shuffledHeroes[0]).pipe(map(() => void 0));
+      }
+      cycler.stop();
+      return of(stopCycler());
+    }),
+    takeUntil(cycler.stateManager.cleanup$),
+    catchError((error) => {
+      logger.error("Error in shuffle$:", error);
+      return EMPTY;
+    }),
+    finalize(() => subscription.unsubscribe())
+  );
+};
+
 // node_modules/gsap/ScrollToPlugin.js
 var gsap2;
 var _coreInitted2;
@@ -15445,8 +15568,7 @@ var showOverlay = () => {
     infoBoxVisibleSubject.next(true);
   }
 };
-var prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-logger.info(`Prefers reduced motion: ${prefersReducedMotion}`);
+logger.info(`Prefers reduced motion: ${prefersReducedMotion()}`);
 var findScrollTargets = (el) => {
   const targetData = el.getAttribute("data-anchor-target");
   if (!targetData) {
@@ -15475,7 +15597,7 @@ var smoothScroll$ = (el) => {
     logger.error(`Target element ${target} not found within document.`);
     return of(false);
   }
-  if (prefersReducedMotion) {
+  if (prefersReducedMotion()) {
     scrollFallback(target);
     return of(true);
   }
@@ -15650,7 +15772,7 @@ var allSubscriptions = () => {
       }
     })
   );
-  if (!prefersReducedMotion) {
+  if (!prefersReducedMotion()) {
     const setupAnimation = (selector3, properties) => {
       gsapWithCSS.set(selector3, properties);
     };
@@ -16033,4 +16155,4 @@ gsap/ScrollTrigger.js:
    * @author: Jack Doyle, jack@greensock.com
   *)
 */
-//# sourceMappingURL=index.LSL54Q72.js.map
+//# sourceMappingURL=index.RRID5SIM.js.map

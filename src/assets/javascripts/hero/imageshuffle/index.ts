@@ -1,3 +1,4 @@
+import gsap from "gsap"
 import {
   BehaviorSubject,
   EMPTY,
@@ -28,7 +29,7 @@ import {
   withLatestFrom
 } from "rxjs/operators"
 
-import { isElementVisible, isHome, isOnSite, setCssVariable, watchLocationChange } from "~/utils"
+import { isElementVisible, isHome, isOnSite, prefersReducedMotion, setCssVariable, watchLocationChange } from "~/utils"
 import { getAsset } from "~/cache"
 import { HeroImage, heroImages } from "~/hero/imageshuffle/data"
 import { logger } from "~/log"
@@ -49,14 +50,40 @@ function getCurrentLocation() {
  */
 const getOptimalWidth = () => {
   const screenWidth = Math.max(window.innerWidth, window.innerHeight)
-  return screenWidth <= 1280 ? 1280
-    : screenWidth <= 1920 ? 1920
-    : screenWidth <= 2560 ? 2560
-    : 2840
+  return screenWidth <= 1175 ? 1280
+    : screenWidth <= 1850 ? 1920
+    : screenWidth <= 2400 ? 2560
+    : 3840
 }
 
 // Configuration and DOM references
-const CONFIG = { INTERVAL_TIME: 25000, CLEANUP_DELAY: 60000 } as const
+const CONFIG = { INTERVAL_TIME: 20000, CLEANUP_DELAY: 60000 } as const
+
+const ANIMATION_CONFIG = {
+  ENTER: {
+    opacity: 1,
+    duration: 1.2,
+    ease: "power2.inOut"
+  },
+  EXIT: {
+    opacity: 0,
+    duration: 0.5,
+    ease: "power2.out"
+  },
+  PAN: {
+    intervals: 4,
+    duration: 30,
+    ease: "none",
+    buffer: 48,
+    cleanup: new Map<HTMLImageElement, GSAPTimeline>(),
+    focalZone: {
+      horizontalWeight: 0.66, // Center 2/3rds
+      verticalWeight: 0.66,
+      bias: 0.7 // How much to favor the focal zone
+    }
+  }
+} as const
+
 const isPageVisible = () => !document.hidden
 const isAtHome = () => {
   const loc = getCurrentLocation()
@@ -144,6 +171,104 @@ const createHeroStateManager = () => {
 
 const stateManager = createHeroStateManager()
 
+
+/**
+ * Calculates weighted pan range with focal zone bias
+ * @param total the total width or height of the image
+ * @param viewport the viewport width or height
+ * @param weight the weight to apply to the focal zone
+ * @param bias the bias to apply to the pan range
+ * @returns the weighted pan range
+ */
+const calculateWeightedPanRange = (
+  total: number,
+  viewport: number,
+  weight: number,
+  bias: number
+) => {
+  if (total <= viewport) {
+    return 0
+  }
+
+  const excess = total - viewport
+  const focalZoneSize = total * weight
+  const panRange = -(excess + ANIMATION_CONFIG.PAN.buffer)
+
+  // Scale pan range based on focal zone size relative to total size
+  const focalZoneRatio = focalZoneSize / total
+  return panRange * bias * focalZoneRatio
+}
+
+/**
+ * Creates pan animation with focal zone bias. Pans an image horizontally and
+ * vertically without exposing edges. Applies weights to favor the focal zone of
+ * the image.
+ * @param img the image to pan
+ * @returns the gsap animation
+ */
+const createPanAnimation = (img: HTMLImageElement) => {
+  const existing = ANIMATION_CONFIG.PAN.cleanup.get(img)
+  if (existing) {
+    existing.kill()
+    ANIMATION_CONFIG.PAN.cleanup.delete(img)
+  }
+  logger.info("Creating pan animation")
+  const { focalZone, intervals, duration } = ANIMATION_CONFIG.PAN
+  const viewportHeight = window.innerHeight - (document.getElementById("header-target")?.clientHeight || 95)
+  const viewportWidth = window.innerWidth
+
+  const imageWidth = img.naturalWidth
+  const imageHeight = img.naturalHeight
+
+  // Calculate ranges
+  const xPan = calculateWeightedPanRange(imageWidth, viewportWidth, focalZone.horizontalWeight, focalZone.bias)
+  const yPan = calculateWeightedPanRange(imageHeight, viewportHeight, focalZone.verticalWeight, focalZone.bias)
+
+  logger.info(`Pan ranges: x=${xPan}, y=${yPan}; viewport: ${viewportWidth}x${viewportHeight}; image: ${imageWidth}x${imageHeight}; focal zone: ${focalZone.horizontalWeight}x${focalZone.verticalWeight}`)
+
+  if (!xPan && !yPan) {
+    return
+  }
+
+  // Generate keyframe positions weighted toward focal zone
+  const generateKeyframes = (maxPan: number) => {
+    const frames = []
+    const focalBias = focalZone.bias
+
+    for (let i = 0; i <= intervals; i++) {
+      const progress = i / intervals
+      // Weight toward focal zone using sine curve
+      const weight = Math.sin(progress * Math.PI)
+      const position = maxPan * weight * (progress < 0.5 ? focalBias : 1)
+      frames.push(position)
+    }
+    return frames
+  }
+
+  const xKeyframes = xPan ? generateKeyframes(xPan) : [0]
+  const yKeyframes = yPan ? generateKeyframes(yPan) : [0]
+
+  // Create timeline with multiple segments
+  const tl = gsap.timeline({ repeat: -1 })
+  const segmentDuration = duration / intervals
+
+  // Reset to first position
+  gsap.set(img, { x: xKeyframes[0], y: yKeyframes[0] })
+
+
+  // Add segments to timeline
+  for (let i = 1; i <= intervals; i++) {
+    tl.to(img, {
+      x: xKeyframes[i % xKeyframes.length],
+      y: yKeyframes[i % yKeyframes.length],
+      duration: segmentDuration,
+      ease: ANIMATION_CONFIG.PAN.ease
+    })
+  }
+  ANIMATION_CONFIG.PAN.cleanup.set(img, tl)
+  return tl
+}
+
 /**
  * Updates image sources based on optimal width
  * @param images the hero images
@@ -186,6 +311,7 @@ const imageMetadata = new WeakMap<HTMLImageElement, {
   loadTime: number
   displayCount: number
   width: number
+  actualWidth: number
 }>()
 
 /**
@@ -242,7 +368,12 @@ const fetchAndSetImage = (imgSettings: HeroImage): Observable<HTMLImageElement> 
       const loading = parallaxLayer?.getElementsByTagName('img').length !== 0 ? "lazy" : "eager"
       img.src = src
       img.srcset = srcset
-      img.sizes = "(max-width: 1280px) 1280px, (max-width: 1920px) 1920px, (max-width: 2560px) 2560px, 3840px"
+      img.sizes = `
+        (max-width: 1175px) 1280px,
+        (max-width: 1850px) 1920px,
+        (max-width: 2400px) 2560px,
+        3840px
+      `
       img.alt = ""
       img.classList.add("hero-parallax__image", `hero-parallax__image--${imageName}`)
       img.draggable = false
@@ -251,10 +382,12 @@ const fetchAndSetImage = (imgSettings: HeroImage): Observable<HTMLImageElement> 
 
       return of(img).pipe(
         tap(() => {
+          gsap.set(img, { opacity: ANIMATION_CONFIG.ENTER.opacity })
           imageMetadata.set(img, {
             loadTime: Date.now(),
             displayCount: 0,
-            width: img.width
+            width: img.width,
+            actualWidth: getOptimalWidth()
           })
           parallaxLayer?.prepend(img)
         }),
@@ -268,6 +401,31 @@ const fetchAndSetImage = (imgSettings: HeroImage): Observable<HTMLImageElement> 
   )
 }
 
+/**
+ * Animates the transition between two images
+ * @param currentImage the current image
+ * @param newImage the new image
+ * @returns the gsap timeline for image transition
+ */
+const animateImageTransition = (currentImage: HTMLImageElement, newImage: HTMLImageElement) => {
+  const tl = gsap.timeline()
+  const panEffect = createPanAnimation(newImage)
+  tl.to(currentImage, {
+    opacity: ANIMATION_CONFIG.EXIT.opacity,
+    duration: ANIMATION_CONFIG.EXIT.duration,
+    ease: ANIMATION_CONFIG.EXIT.ease
+  })
+  .to(newImage, {
+    opacity: ANIMATION_CONFIG.ENTER.opacity,
+    duration: ANIMATION_CONFIG.ENTER.duration,
+    ease: ANIMATION_CONFIG.ENTER.ease,
+  }, "<") // Start at same time as exit animation
+  if (panEffect && !prefersReducedMotion) {
+    tl.add(panEffect, ">")
+  }
+
+  return tl
+}
 
 /**
  * Creates an observable for orientation changes
@@ -358,11 +516,26 @@ const createImageCycler = (parallaxLayer: HTMLElement): ImageCycler => {
       updateState({ status: 'cycling' })
       const nextIndex = (state.activeImageIndex + 1) % shuffledHeroes.length
       const nextImage = shuffledHeroes[nextIndex]
-      // If not all images loaded yet, fetch next
+      const currentImage = parallaxLayer?.getElementsByTagName('img')[0]
+      if (!currentImage) {
+        const tl = gsap.timeline()
+        // add handling for panning first image
+      }
+
       if (!loadedImages.has(nextImage.imageName)) {
         return fetchAndSetImage(nextImage).pipe(
-          tap(() => {
+          tap((newImage) => {
             loadedImages.add(nextImage.imageName)
+            if (currentImage) {
+              animateImageTransition(currentImage, newImage)
+            } else {
+              gsap.to(newImage, {
+                opacity: 1,
+                duration: ANIMATION_CONFIG.ENTER.duration,
+                ease: ANIMATION_CONFIG.ENTER.ease
+              })
+
+            }
             updateState({ activeImageIndex: nextIndex })
             void setText(nextImage.imageName)
           }),
@@ -371,7 +544,8 @@ const createImageCycler = (parallaxLayer: HTMLElement): ImageCycler => {
             return EMPTY
           })
         )
-      } else {return of(undefined)}
+      }
+      return of(undefined)
     }),
     takeUntil(cleanup$)
   )

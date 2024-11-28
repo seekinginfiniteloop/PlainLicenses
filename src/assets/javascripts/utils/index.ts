@@ -6,6 +6,8 @@ import Tablesort from "tablesort"
 import { logger } from "~/log"
 
 
+export const prefersReducedMotion = () => { return window.matchMedia("(prefers-reduced-motion: reduce)").matches }
+
 /**
  * Check if an element is visible in the viewport
  * @param el HTMLElement
