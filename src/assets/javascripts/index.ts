@@ -216,14 +216,28 @@ subscriptions.push(onNewPage$.subscribe({
   }
 }))
 
-subscriptions.push(atHome$.subscribe())
-subscriptions.push(atLicense$.subscribe())
-subscriptions.push(atHelping$.subscribe())
+subscriptions.push(atHome$.subscribe({
+  next: () => {
+    logger.info("Home page scripts executed");
+  },
+  error: (err: Error) => logger.error("Error in atHome$ subscription:", err)
+}));
+
+subscriptions.push(onNewPage$.subscribe({
+  next: () => {
+    unsubscribeFromAll(pageSubscriptions);
+    initPage();
+  },
+  error: (err: Error) => logger.error("Error in onNewPage$ subscription:", err)
+}));
+
+subscriptions.push(atLicense$.subscribe());
+subscriptions.push(atHelping$.subscribe());
 
 mergedUnsubscription$(url => !isOnSite(url)).subscribe({
   next: () => {
-    unsubscribeFromAll(subscriptions)
-    logger.info("Unsubscribed from all subscriptions")
+    unsubscribeFromAll(subscriptions);
+    logger.info("Unsubscribed from all subscriptions");
   },
   error: (err: Error) => logger.error("Error in cleanup:", err)
-})
+});
