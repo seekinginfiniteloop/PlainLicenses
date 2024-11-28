@@ -90,13 +90,11 @@ const isDev = (url: URL) => { return (url.hostname === "localhost" && url.port =
 export const isOnSite = (url: URL) => { return isProd(url) || isDev(url)
 }
 
-// obserable for current location
+// observable for current location
 const locationBehavior$ = new BehaviorSubject<URL>(getLocation())
 const isValidEvent = (value: Event | null) => {
   return value !== null && value instanceof (Event)
 }
-
-const locationBehavior$ = new BehaviorSubject<URL>(getLocation())
 
 const navigationEvents$ = 'navigation' in window ? 
   fromEvent(window.navigation, 'navigate').pipe(
@@ -109,7 +107,8 @@ const navigationEvents$ = 'navigation' in window ?
     fromEvent(window, "pageswap"),
   ).pipe(
     filter(isValidEvent),
-    map(() => getLocation())
+    map(() => getLocation()),
+    shareReplay(1)
   );
 
 export const locationBeacon$ = merge(
@@ -155,15 +154,14 @@ export async function windowEvents() {
   }
 }
 
-const NAV_EXIT_DELAY = 60000;
-
-class SubscriptionManager {
+export class SubscriptionManager {
   private subscriptions: Subscription[] = [];
   private siteExit$ = new Subject<void>();
   private pageExit$ = new Subject<void>();
 
   constructor() {
     this.setupSiteExit();
+    this.setupPageExit();
   }
 
   private setupSiteExit() {
@@ -173,6 +171,15 @@ class SubscriptionManager {
       filter(url => !isOnSite(url))
     ).subscribe(() => {
       this.siteExit$.next();
+    });
+  }
+
+  private setupPageExit() {
+    locationBeacon$.pipe(
+      debounceTime(10), // Small debounce to ensure the navigation event is captured
+      filter(url => isOnSite(url)), // Only trigger for on-site navigation
+    ).subscribe(() => {
+      this.pageExit$.next();
     });
   }
 
@@ -203,3 +210,4 @@ class SubscriptionManager {
 
 // Example usage:
 // window.subscriptionManager.addSubscription(yourSubscription, true);
+
