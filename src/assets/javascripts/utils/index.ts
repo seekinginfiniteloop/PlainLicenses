@@ -6,6 +6,7 @@ import Tablesort from "tablesort"
 import { logger } from "~/log"
 
 const NAV_EXIT_DELAY = 60000
+
 export const prefersReducedMotion = () => { return window.matchMedia("(prefers-reduced-motion: reduce)").matches }
 
 /**
@@ -89,12 +90,6 @@ const isDev = (url: URL) => { return (url.hostname === "localhost" && url.port =
 export const isOnSite = (url: URL) => { return isProd(url) || isDev(url)
 }
 
-export const siteExit$ = locationBeacon$.pipe(
-  filter(url => !isOnSite(url)),
-  debounceTime(NAV_EXIT_DELAY), // 60 seconds
-  filter(url => !isOnSite(url)), // Double check we're still off-site
-);
-
 // obserable for current location
 const locationBehavior$ = new BehaviorSubject<URL>(getLocation())
 const isValidEvent = (value: Event | null) => {
@@ -119,12 +114,17 @@ const navigationEvents$ = 'navigation' in window ?
 
 export const locationBeacon$ = merge(
   locationBehavior$,
-  navigationEvents$
+  navigationEvent$
 ).pipe(
   filter((value) => value !== null),
-  shareReplay(1),
-  distinctUntilChanged()
+  distinctUntilChanged(), shareReplay(1)
 )
+
+export const siteExit$ = locationBeacon$.
+  filter(url => !isOnSite(url)),
+  debounceTime(NAV_EXIT_DELAY), // 60 seconds
+  filter(url => !isOnSite(url)), // Double check we're still off-site
+);
 
 export const watchLocationChange = (urlFilter: ((_url: URL) => boolean) | undefined) => {
   return locationBeacon$.pipe(
@@ -177,6 +177,6 @@ export async function windowEvents() {
     }
   }
   if (observablesMissing) {
-    bundle
+    bundle // reload material entrypoint
   }
 }
