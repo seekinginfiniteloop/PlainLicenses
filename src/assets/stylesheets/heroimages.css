@@ -21,7 +21,7 @@
   min-width: 100vw;
   max-width: 3840px;
   height: 100%;
-  padding-bottom: 1rem;
+  padding: var(--header-height) 0 1rem 0;
   margin-bottom: 0.1rem;
   overflow: hidden visible;
   object-fit: var(--object-fit);

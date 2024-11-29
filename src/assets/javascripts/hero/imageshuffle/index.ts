@@ -29,7 +29,7 @@ import {
   withLatestFrom
 } from "rxjs/operators"
 
-import { isElementVisible, isHome, isOnSite, prefersReducedMotion, setCssVariable, watchLocationChange } from "~/utils"
+import { isElementVisible, isHome, isOnSite, prefersReducedMotion, setCssVariable, watchLocationChange$ } from "~/utils"
 import { getAsset } from "~/cache"
 import { HeroImage, heroImages } from "~/hero/imageshuffle/data"
 import { logger } from "~/log"
@@ -450,7 +450,7 @@ const createVisibilityAndLocationObservable = () => {
         })
       })
     ),
-    watchLocationChange(url => isHome(url) && isOnSite(url)).pipe(
+    watchLocationChange$(url => isHome(url) && isOnSite(url)).pipe(
       tap(() => {
         stateManager.updateState({
           isAtHome: isAtHome(),
@@ -707,15 +707,24 @@ export const shuffle$ = () => {
 
   subscription.add(createHeightObservable(cycler.stateManager).subscribe())
 
-  return watchLocationChange(url => !isHome(url)).pipe(
+  return watchLocationChange$(url => !isHome(url)).pipe(
     switchMap((url) => {
       if (parallaxLayer && !parallaxLayer.children.length && isOnSite(url)) {
-        return fetchAndSetImage(shuffledHeroes[0]).pipe(map(() => void 0))
+        return fetchAndSetImage(shuffledHeroes[0]).pipe(
+          filter((img) => img !== null && img instanceof HTMLImageElement),
+          tap((img) => {
+            const tl = gsap.timeline()
+            gsap.set(img, { opacity: 1 })
+            const panAnimation = createPanAnimation(img)
+            if (panAnimation) {
+              tl.add(panAnimation, ">")
+            }
+          }),
+          map(() => void 0)
+        )
       }
-      cycler.stop()
-      return of(stopCycler())
+      return EMPTY
     }),
-    takeUntil(cycler.stateManager.cleanup$),
     catchError(error => {
       logger.error("Error in shuffle$:", error)
       return EMPTY

@@ -6354,7 +6354,6 @@ html .md-typeset .footnote-ref {
 :root {
   --nav-height: 3rem;
   --header-height: 3rem;
-  --head-element-height: calc(var(--nav-height) + var(--header-height) + 0.2rem);
   --parallax-height: calc(((100vh - var(--header-height)) * 1.4));
   --fade-height: calc(var(--parallax-height));
 }
@@ -6364,8 +6363,6 @@ html {
 @media screen and (orientation: portrait) {
   :root {
     --nav-height: 0;
-    --header-height: 3rem;
-    --head-element-height: calc(var(--nav-height) + var(--header-height) + 0.2rem);
   }
   nav.md-nav {
     display: none;
@@ -7679,7 +7676,7 @@ h1.hero-content-section.header-mid.line span {
   min-width: 100vw;
   max-width: 3840px;
   height: 100%;
-  padding-bottom: 1rem;
+  padding: var(--header-height) 0 1rem 0;
   margin-bottom: 0.1rem;
   overflow: hidden visible;
   object-fit: var(--object-fit);
@@ -7902,4 +7899,4 @@ h1.hero-content-section.header-mid.line span {
 }
 
 /* src/assets/stylesheets/bundle.css */
-/*# sourceMappingURL=bundle.EPXYE23W.css.map */
+/*# sourceMappingURL=bundle.ONGN6BJ2.css.map */

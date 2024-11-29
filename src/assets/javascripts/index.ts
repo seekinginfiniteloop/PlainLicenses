@@ -6,19 +6,19 @@
  * specific pages like the home page, license pages, and helping page.
 **/
 import * as bundle from "@/bundle"
-import { Subscription, fromEvent, merge, of } from "rxjs"
-import { distinctUntilKeyChanged, filter, mergeMap, skipUntil, takeWhile, tap } from "rxjs/operators"
+import { Subscription, merge, of } from "rxjs"
+import { distinctUntilChanged, distinctUntilKeyChanged, filter, mergeMap, skipUntil, tap } from "rxjs/operators"
 import { feedback$ } from "~/feedback"
 import { watchLicense } from "~/licenses"
 import { logger } from "~/log"
-import { isHome, isLicense, isOnSite, locationBeacon$, mergedUnsubscription$, unsubscribeFromAll, watchLocationChange, watchTables, windowEvents } from "~/utils"
+import { getSubscriptionManager, isHelpingIndex, isHome, isLicense, isOnSite, locationBeacon$, watchLocationChange$, watchTable$, windowEvents } from "~/utils"
 import { cacheAssets, cleanupCache, deleteOldCache, getAsset } from "./cache"
 import { shuffle$ } from "./hero/imageshuffle"
-import { allSubscriptions } from "./hero/animation"
+import { subscribeToAnimations } from "./hero/animation"
 
 const { document$ } = window
 
-const subscriptions: Subscription[] = []
+const manager = getSubscriptionManager()
 
 const styleAssets = document.querySelectorAll("link[rel=stylesheet][href*=stylesheets]")
 const scriptAssets = document.querySelectorAll("script[src*=javascripts]")
@@ -27,6 +27,14 @@ const imageAssets = document.querySelectorAll("img[src]")
 
 document.documentElement.classList.remove("no-js")
 document.documentElement.classList.add("js")
+
+
+/* ------------------------------------------------------------------------ */
+/*                      Setup Subscription Observables                      */
+/* ------------------------------------------------------------------------ */
+
+
+/* -------------------------------- Caching ------------------------------- */
 
 // Function to preload fonts using the cache
 const preloadFonts = () => {
@@ -84,79 +92,6 @@ const preloadStaticAssets = () => {
 }
 
 
-const insertAnalytics = () => {
-  const script = document.createElement("script")
-  script.type = "text/javascript"
-  script.src = "https://app.tinyanalytics.io/pixel/ei74pg7dZSNOtFvI"
-  document.head.appendChild(script)
-}
-
-const shuffler$ = shuffle$();
-const animate$ = document$.pipe(tap(() => allSubscriptions()));
-
-const getHeroLinks = () => {
-  return Array.from(document.getElementsByTagName("a"))
-    .map(a => a as HTMLAnchorElement)
-    .map(a => new URL(a.href || ""))
-    .filter(url => 
-      url instanceof URL && 
-      (url.pathname === "/" || url.pathname === "/index.html") && 
-      (url.host === "www.plainlicense.org" || url.host === "plainlicense.org" || url.host === "127.0.0.1:8000")
-    );
-};
-
-const heroLinks = getHeroLinks();
-
-const linkWatcher$ = fromEvent(document, "click").pipe(
-  filter((e: Event) => {
-    const target = e.target as HTMLElement;
-    const link = target.closest("a")?.href;
-    const isHeroLink = !!heroLinks.find(url => url.href === link);
-    if (isHeroLink) {
-      logger.info("Hero link clicked:", link);
-    }
-    return isHeroLink;
-  })
-);
-
-const homeBeacon$ = locationBeacon$.pipe(
-  distinctUntilKeyChanged("pathname"),
-  takeWhile((url: URL) => isHome(url)),
-  tap((url: URL) => logger.info("Navigated to home page:", url.pathname))
-);
-
-const atHome$ = merge(homeBeacon$, linkWatcher$).pipe(
-  tap(() => {
-    logger.info("At home page");
-    document.body.setAttribute("data-md-color-scheme", "slate");
-    shuffler$.subscribe();
-    animate$.subscribe();
-  })
-);
-
-const license$ = watchLicense()
-
-const atLicense$ = locationBeacon$.pipe(
-  distinctUntilKeyChanged("pathname"),
-  takeWhile((url: URL) => isLicense(url)),
-  tap(() => {
-    logger.info("At license page")
-    license$.subscribe()
-  })
-)
-
-const isHelpingIndex = (url: URL) => url.pathname.includes("helping") && (
-  (url.pathname.split("/").length === 3 && url.pathname.endsWith("index.html")) ||
-  (url.pathname.split("/").length === 2 && url.pathname.endsWith("/")))
-
-const atHelping$ = locationBeacon$.pipe(
-  distinctUntilKeyChanged("pathname"),
-  takeWhile((url: URL) => isHelpingIndex(url)),
-  tap(() => logger.info("At helping page"))
-)
-
-const table$ = watchTables()
-
 const cleanCache$ = cleanupCache(8000).pipe(
   tap(() => logger.info("Attempting to clean up cache")),
   mergeMap(() =>
@@ -170,27 +105,72 @@ const cleanCache$ = cleanupCache(8000).pipe(
   tap(() => logger.info("Assets cached"))
 )
 
-const analytics$ = watchLocationChange((url) => isOnSite(url)).pipe(
+const deleteCache$ = deleteOldCache()
+
+/* --------------------------- Page Observables --------------------------- */
+
+const shuffler$ = shuffle$()
+const animate$ = document$.pipe(tap(() => subscribeToAnimations()))
+
+const homeBeacon$ = locationBeacon$.pipe(
+  filter((url): url is URL => url instanceof URL),
   distinctUntilKeyChanged("pathname"),
-  tap(() => insertAnalytics())
+  tap(() => logger.info("New page loaded")),
+  tap(() => logger.info("Navigated to home page")),
+  filter((url: URL) => isHome(url)),
+  distinctUntilChanged(),
 )
+
+const atHome$ = homeBeacon$.pipe(
+  tap(() => {
+    logger.info("At home page")
+    document.body.setAttribute("data-md-color-scheme", "slate")
+    manager.addSubscription(shuffler$.subscribe())
+    manager.addSubscription(animate$.subscribe())
+  })
+)
+
+const license$ = watchLicense()
+
+const atLicense$ = locationBeacon$.pipe(
+  distinctUntilKeyChanged("pathname"),
+  filter((url) => url instanceof URL && isOnSite(url) && isLicense(url)),
+  distinctUntilChanged(),
+  tap(() => logger.info("At license page"))
+)
+
+const atHelping$ = locationBeacon$.pipe(
+  distinctUntilKeyChanged("pathname"),
+  filter((url) => url instanceof URL && isOnSite(url) && isHelpingIndex(url)),
+  tap(() => logger.info("At helping page")),
+  distinctUntilChanged(),
+)
+
+const table$ = watchTable$()
+
+const insertAnalytics = () => {
+  const script = document.createElement("script")
+  script.type = "text/javascript"
+  script.src = "https://app.tinyanalytics.io/pixel/ei74pg7dZSNOtFvI"
+  document.head.appendChild(script)
+}
 
 const newPage$ = locationBeacon$.pipe(
   distinctUntilKeyChanged("pathname"),
   tap(() => logger.info("New page loaded"))
 )
 
-const event$ = of(windowEvents())
-const deleteCache$ = deleteOldCache()
-
-let pageSubscriptions: Subscription[] = []
-
 /**
  * Initializes a page by setting up necessary subscriptions.
  */
 function initPage() {
+  let initPageSubscriptions: Subscription[] = []
+  const analytics$ = watchLocationChange$((url) => isOnSite(url)).pipe(
+    distinctUntilKeyChanged("pathname"),
+    tap(() => insertAnalytics()))
+  const event$ = of(windowEvents())
   logger.info("New page loaded")
-  pageSubscriptions.push(
+  initPageSubscriptions.push(
     preloadFonts().subscribe(),
     preloadStaticAssets().subscribe(),
     of(bundle).subscribe(),
@@ -201,43 +181,22 @@ function initPage() {
     cleanCache$.subscribe(),
     deleteCache$.subscribe()
   )
+  initPageSubscriptions.forEach(sub => manager.addSubscription(sub))
   logger.info("Subscribed to new page subscriptions")
 }
 
-const onNewPage$ = newPage$.pipe(
-  skipUntil(document$),
-  tap(() => logger.info("New page detected"))
-)
+/* ----------------------------- Subscriptions ---------------------------- */
 
-subscriptions.push(onNewPage$.subscribe({
-  next: () => {
-    unsubscribeFromAll(pageSubscriptions)
-    initPage()
-  }
-}))
+manager.addSubscription(preloadStaticAssets().subscribe())
+manager.addSubscription(preloadFonts().subscribe())
 
-subscriptions.push(atHome$.subscribe({
-  next: () => {
-    logger.info("Home page scripts executed");
-  },
-  error: (err: Error) => logger.error("Error in atHome$ subscription:", err)
-}));
+manager.addSubscription(atHome$.subscribe(), true)
+manager.addSubscription(atHelping$.subscribe(), true)
 
-subscriptions.push(onNewPage$.subscribe({
-  next: () => {
-    unsubscribeFromAll(pageSubscriptions);
-    initPage();
-  },
-  error: (err: Error) => logger.error("Error in onNewPage$ subscription:", err)
-}));
+manager.addSubscription(atLicense$.subscribe(() => {
+  manager.addSubscription(license$.subscribe())
+}), true)
 
-subscriptions.push(atLicense$.subscribe());
-subscriptions.push(atHelping$.subscribe());
-
-mergedUnsubscription$(url => !isOnSite(url)).subscribe({
-  next: () => {
-    unsubscribeFromAll(subscriptions);
-    logger.info("Unsubscribed from all subscriptions");
-  },
-  error: (err: Error) => logger.error("Error in cleanup:", err)
-});
+manager.addSubscription(newPage$.pipe(skipUntil(document$)).subscribe(() => {
+  initPage()
+}), true)

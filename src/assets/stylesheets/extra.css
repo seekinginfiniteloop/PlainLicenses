@@ -1,7 +1,6 @@
 :root {
   --nav-height: 3rem;
   --header-height: 3rem;
-  --head-element-height: calc(var(--nav-height) + var(--header-height) + 0.2rem);
   --parallax-height: calc(((100vh - var(--header-height)) * 1.4));
 
   /* base value -- we adjust dynamically in js */
@@ -15,8 +14,6 @@ html {
 @media screen and (orientation: portrait) {
   :root {
     --nav-height: 0;
-    --header-height: 3rem;
-    --head-element-height: calc(var(--nav-height) + var(--header-height) + 0.2rem);
   }
 
   nav.md-nav {
@@ -27,9 +24,9 @@ html {
 .md-typeset div.details,
 .md-typeset div.admonition,
 .md-typeset div.summary,
-.md-typeset div.admonition> label,
-.md-typeset div.details> label,
-.md-typeset div.summary> label {
+.md-typeset div.admonition>label,
+.md-typeset div.details>label,
+.md-typeset div.summary>label {
   font-size: 0.9rem;
 }
 
@@ -232,16 +229,14 @@ a.md-nav__link--active {
 
 .md-typeset .progress.candystripe .progress-bar {
   background-image:
-    linear-gradient(
-      135deg,
+    linear-gradient(135deg,
       var(--emerald) 27%,
       transparent 27%,
       transparent 52%,
       var(--emerald) 52%,
       var(--emerald) 77%,
       transparent 77%,
-      transparent
-    );
+      transparent);
   background-size: 2rem 2rem;
 }
 

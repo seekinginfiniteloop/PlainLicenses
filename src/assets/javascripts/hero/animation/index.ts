@@ -13,7 +13,6 @@ import { ScrollTrigger } from "gsap/ScrollTrigger"
 import {
   BehaviorSubject,
   Observable,
-  Subscription,
   concat,
   fromEvent,
   of
@@ -26,13 +25,13 @@ import {
   withLatestFrom
 } from "rxjs/operators"
 
-import { createInteractionObservable, isHome, isOnSite, mergedUnsubscription$, prefersReducedMotion, unsubscribeFromAll, watchLocationChange } from "~/utils"
+import { createInteractionObservable, getSubscriptionManager, prefersReducedMotion } from "~/utils"
 import { logger } from "~/log"
 
 gsap.registerPlugin(ScrollToPlugin)
 gsap.registerPlugin(ScrollTrigger)
 
-const subscriptions: Subscription[] = []
+const manager = getSubscriptionManager()
 
 /* ------------------------------------------------------------------------ */
 /*                           Easter Egg Animations                          */
@@ -211,7 +210,7 @@ const smoothScroll$ = (el: Element): Observable<boolean> => {
 /*                        All Animation Subscriptions                       */
 /* ------------------------------------------------------------------------ */
 
-export const allSubscriptions = (): void => {
+export const subscribeToAnimations = (): void => {
   document.body.style.scrollBehavior = "instant"
   document.body.style.overflowY = "scroll"
 
@@ -234,7 +233,7 @@ export const allSubscriptions = (): void => {
     eggFunction
   )
 
-  subscriptions.push(
+  manager.addSubscription(
     eggInteraction$.subscribe({
       next: () => logger.info("Egg interaction observed"),
       error: err => logger.error("Error in egg interaction:", err),
@@ -267,7 +266,7 @@ export const allSubscriptions = (): void => {
     eggBoxCloseFunc
   )
 
-  subscriptions.push(
+  manager.addSubscription(
     leaveInfoBoxInteraction$.subscribe({
       next: () => { },
       error: err => logger.error("Error in leaving info box:", err),
@@ -317,23 +316,11 @@ export const allSubscriptions = (): void => {
     heroButtonFunc
   )
 
-  subscriptions.push(
+  manager.addSubscription(
     heroInteraction$.subscribe({
       next: () => { },
       error: err => logger.error("Error in hero button interaction:", err),
       complete: () => logger.info("Hero button interaction observable completed")
-    })
-  )
-
-  const noLongerHome = (url: URL) => !isHome(url) && isOnSite(url)
-  const pathObservable$ = watchLocationChange((url) => noLongerHome(url)).pipe(
-    tap(() => hideOverlay()),
-    tap(() => logger.info("Path changed, overlay hidden"))
-  )
-
-  subscriptions.push(
-    pathObservable$.subscribe({
-      next: () => { unsubscribeFromAll(subscriptions) }
     })
   )
 
@@ -532,7 +519,7 @@ const makeScrollBatch = (selector: string, optionalParams?: gsap.TweenVars) => {
     })
 
     // Handle hash changes
-    subscriptions.push(
+    manager.addSubscription(
       fromEvent(window, "hashchange").subscribe({
         next: () => {
           window.location.hash = ""
@@ -541,15 +528,3 @@ const makeScrollBatch = (selector: string, optionalParams?: gsap.TweenVars) => {
     )
   }
 }
-
-const urlFilter = (url: URL) => (!isHome(url) && isOnSite(url)) || !isOnSite(url)
-
-if (!urlFilter(new URL(window.location.href)) && subscriptions.length === 0) {
-  allSubscriptions()
-}
-
-mergedUnsubscription$(urlFilter).subscribe({
-  next: () => {
-    unsubscribeFromAll(subscriptions)
-  }
-})

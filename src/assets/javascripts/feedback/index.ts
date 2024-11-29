@@ -1,4 +1,6 @@
 /**
+ * @module feedback
+ * Handles feedback form submission
  * @license Plain Unlicense(Public Domain)
  * @copyright No rights reserved. Created by and for Plain License www.plainlicense.org
  */

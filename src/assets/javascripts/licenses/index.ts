@@ -1,3 +1,10 @@
+/**
+ * @module licenses
+ * Handles interactions and dynamic features for license pages
+ * @license Plain Unlicense (Public Domain)
+ * @copyright No rights reserved. Created by and for Plain License www.plainlicense.org
+ */
+
 import {
   Observable,
   combineLatest,
@@ -12,7 +19,7 @@ import {
   startWith,
   tap
 } from 'rxjs/operators'
-import { isLicense, watchLocationChange } from '~/utils'
+import { isLicense, watchLocationChange$ } from '~/utils'
 
 // Helper functions
 const getTabElements = (): TabElement[] => {
@@ -31,7 +38,7 @@ const getTabElements = (): TabElement[] => {
 
 // intercept hash changes and update the selected tab
 const watchLicenseHashes = () => {
-  return watchLocationChange(isLicense).pipe(
+  return watchLocationChange$((url) => isLicense(url)).pipe(
     map((url) => url.hash),
     filter((hash) => hash !== null && hash !== '' && hash !== '#' &&
       ['reader', 'html', 'markdown', 'plaintext', 'changelog', 'official'].includes(hash.slice(1))),
@@ -136,13 +143,10 @@ const setupTabIconSync = () => {
     })
   )
 
-  // Subscribe to interactions and clicks
-  combined$.subscribe()
-  iconAnchorClicks$.forEach(click$ => click$.subscribe())
-
-  return combined$
+  return merge(combined$, ...iconAnchorClicks$)
 }
 
 export const watchLicense = () => {
-  return merge(setupTabIconSync(), watchLicenseHashes())
+  return merge(setupTabIconSync(),
+    watchLicenseHashes())
 }

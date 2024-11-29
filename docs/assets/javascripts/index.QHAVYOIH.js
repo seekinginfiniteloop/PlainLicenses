@@ -1358,13 +1358,13 @@ function arrRemove(arr, item) {
 
 // node_modules/rxjs/dist/esm5/internal/Subscription.js
 var Subscription = function() {
-  function Subscription5(initialTeardown) {
+  function Subscription4(initialTeardown) {
     this.initialTeardown = initialTeardown;
     this.closed = false;
     this._parentage = null;
     this._finalizers = null;
   }
-  Subscription5.prototype.unsubscribe = function() {
+  Subscription4.prototype.unsubscribe = function() {
     var e_1, _a2, e_2, _b;
     var errors;
     if (!this.closed) {
@@ -1431,13 +1431,13 @@ var Subscription = function() {
       }
     }
   };
-  Subscription5.prototype.add = function(teardown) {
+  Subscription4.prototype.add = function(teardown) {
     var _a2;
     if (teardown && teardown !== this) {
       if (this.closed) {
         execFinalizer(teardown);
       } else {
-        if (teardown instanceof Subscription5) {
+        if (teardown instanceof Subscription4) {
           if (teardown.closed || teardown._hasParent(this)) {
             return;
           }
@@ -1447,15 +1447,15 @@ var Subscription = function() {
       }
     }
   };
-  Subscription5.prototype._hasParent = function(parent) {
+  Subscription4.prototype._hasParent = function(parent) {
     var _parentage = this._parentage;
     return _parentage === parent || Array.isArray(_parentage) && _parentage.includes(parent);
   };
-  Subscription5.prototype._addParent = function(parent) {
+  Subscription4.prototype._addParent = function(parent) {
     var _parentage = this._parentage;
     this._parentage = Array.isArray(_parentage) ? (_parentage.push(parent), _parentage) : _parentage ? [_parentage, parent] : parent;
   };
-  Subscription5.prototype._removeParent = function(parent) {
+  Subscription4.prototype._removeParent = function(parent) {
     var _parentage = this._parentage;
     if (_parentage === parent) {
       this._parentage = null;
@@ -1463,19 +1463,19 @@ var Subscription = function() {
       arrRemove(_parentage, parent);
     }
   };
-  Subscription5.prototype.remove = function(teardown) {
+  Subscription4.prototype.remove = function(teardown) {
     var _finalizers = this._finalizers;
     _finalizers && arrRemove(_finalizers, teardown);
-    if (teardown instanceof Subscription5) {
+    if (teardown instanceof Subscription4) {
       teardown._removeParent(this);
     }
   };
-  Subscription5.EMPTY = function() {
-    var empty = new Subscription5();
+  Subscription4.EMPTY = function() {
+    var empty = new Subscription4();
     empty.closed = true;
     return empty;
   }();
-  return Subscription5;
+  return Subscription4;
 }();
 var EMPTY_SUBSCRIPTION = Subscription.EMPTY;
 function isSubscription(value) {
@@ -3218,49 +3218,6 @@ function defer(observableFactory) {
   });
 }
 
-// node_modules/rxjs/dist/esm5/internal/observable/forkJoin.js
-function forkJoin() {
-  var args = [];
-  for (var _i2 = 0; _i2 < arguments.length; _i2++) {
-    args[_i2] = arguments[_i2];
-  }
-  var resultSelector = popResultSelector(args);
-  var _a2 = argsArgArrayOrObject(args), sources = _a2.args, keys = _a2.keys;
-  var result = new Observable(function(subscriber) {
-    var length = sources.length;
-    if (!length) {
-      subscriber.complete();
-      return;
-    }
-    var values = new Array(length);
-    var remainingCompletions = length;
-    var remainingEmissions = length;
-    var _loop_1 = function(sourceIndex2) {
-      var hasValue = false;
-      innerFrom(sources[sourceIndex2]).subscribe(createOperatorSubscriber(subscriber, function(value) {
-        if (!hasValue) {
-          hasValue = true;
-          remainingEmissions--;
-        }
-        values[sourceIndex2] = value;
-      }, function() {
-        return remainingCompletions--;
-      }, void 0, function() {
-        if (!remainingCompletions || !hasValue) {
-          if (!remainingEmissions) {
-            subscriber.next(keys ? createObject(keys, values) : values);
-          }
-          subscriber.complete();
-        }
-      }));
-    };
-    for (var sourceIndex = 0; sourceIndex < length; sourceIndex++) {
-      _loop_1(sourceIndex);
-    }
-  });
-  return resultSelector ? result.pipe(mapOneOrManyArgs(resultSelector)) : result;
-}
-
 // node_modules/rxjs/dist/esm5/internal/observable/fromEvent.js
 var nodeEventEmitterMethods = ["addListener", "removeListener"];
 var eventTargetMethods = ["addEventListener", "removeEventListener"];
@@ -3789,23 +3746,6 @@ function delay(due, scheduler) {
   var duration = timer(due, scheduler);
   return delayWhen(function() {
     return duration;
-  });
-}
-
-// node_modules/rxjs/dist/esm5/internal/operators/distinct.js
-function distinct(keySelector, flushes) {
-  return operate(function(source, subscriber) {
-    var distinctKeys = /* @__PURE__ */ new Set();
-    source.subscribe(createOperatorSubscriber(subscriber, function(value) {
-      var key = keySelector ? keySelector(value) : value;
-      if (!distinctKeys.has(key)) {
-        distinctKeys.add(key);
-        subscriber.next(value);
-      }
-    }));
-    flushes && innerFrom(flushes).subscribe(createOperatorSubscriber(subscriber, function() {
-      return distinctKeys.clear();
-    }, noop));
   });
 }
 
@@ -7657,9 +7597,8 @@ var feedback$ = of(feedback).pipe(
 
 // src/assets/javascripts/utils/index.ts
 var import_tablesort = __toESM(require_tablesort());
-var prefersReducedMotion = () => {
-  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-};
+var NAV_EXIT_DELAY = 6e4;
+var prefersReducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 function isElementVisible(el) {
   if (!el) {
     return false;
@@ -7667,9 +7606,7 @@ function isElementVisible(el) {
   const rect = el.getBoundingClientRect();
   const vWidth = window.innerWidth || document.documentElement.clientWidth;
   const vHeight = window.innerHeight || document.documentElement.clientHeight;
-  const efp = function(x, y) {
-    return document.elementFromPoint(x, y);
-  };
+  const efp = (x, y) => document.elementFromPoint(x, y);
   if (rect.right < 0 || rect.bottom < 0 || rect.left > vWidth || rect.top > vHeight) {
     return false;
   }
@@ -7678,12 +7615,8 @@ function isElementVisible(el) {
 function createInteractionObservable(ev, handler) {
   const eventTargets = Array.isArray(ev) ? ev : [ev];
   const validEventTargets = eventTargets.filter((target) => target != null);
-  const click$ = merge(
-    ...validEventTargets.map((target) => fromEvent(target, "click"))
-  );
-  const touchend$ = merge(
-    ...validEventTargets.map((target) => fromEvent(target, "touchend"))
-  );
+  const click$ = merge(...validEventTargets.map((target) => fromEvent(target, "click")));
+  const touchend$ = merge(...validEventTargets.map((target) => fromEvent(target, "touchend")));
   const events$ = merge(click$, touchend$).pipe(filter((event) => event != null));
   return handler ? handler(events$) : events$;
 }
@@ -7699,6 +7632,9 @@ var isLicensePage = (url) => {
 var isLicense = (url) => {
   return url.pathname.includes("licenses") && isLicensePage(url);
 };
+var isHelpingIndex = (url) => {
+  return url.pathname.includes("helping") && (url.pathname.split("/").length === 3 && url.pathname.endsWith("index.html") || url.pathname.split("/").length === 2 && url.pathname.endsWith("/"));
+};
 var isProd = (url) => {
   return url.hostname === "plainlicense.org" && url.protocol === "https:";
 };
@@ -7712,35 +7648,58 @@ var locationBehavior$ = new BehaviorSubject(getLocation());
 var isValidEvent = (value) => {
   return value !== null && value instanceof Event;
 };
-var locationBeacon$ = merge(
-  locationBehavior$,
-  fromEvent(window, "popstate").pipe(filter((value) => isValidEvent(value))),
-  fromEvent(window, "hashchange").pipe(filter((value) => isValidEvent(value)))
-).pipe(
-  filter((value) => value !== null),
-  shareReplay(1),
-  map((value) => value instanceof URL ? value : getLocation()),
-  distinct()
+var getEventUrl = (ev) => {
+  if (ev.type === "popstate" || ev.type === "beforeunload") {
+    return getLocation();
+  } else if (ev.type === "hashchange") {
+    const hashChangeEvent = ev;
+    return hashChangeEvent.newURL ? new URL(hashChangeEvent.newURL) : getLocation();
+  } else if (ev.type === "pageshow") {
+    const pageTransitionEvent = ev;
+    return pageTransitionEvent.persisted ? getLocation() : new URL(window.location.href);
+  }
+  return getLocation();
+};
+var navigationEvents$ = "navigation" in window ? (
+  // If the browser supports the navigation event, we use it
+  fromEventPattern(
+    (handler) => window.navigation.addEventListener("navigate", handler),
+    (handler) => window.navigation.removeEventListener("navigate", handler)
+  ).pipe(
+    filter((event) => event !== null && event instanceof NavigateEvent),
+    map((event) => {
+      return new URL(event.destination.url);
+    })
+  )
+) : (
+  // otherwise we use the browser's built-in events
+  merge(
+    fromEvent(window, "popstate"),
+    fromEvent(window, "hashchange"),
+    fromEvent(window, "pageshow"),
+    fromEvent(window, "beforeunload")
+  ).pipe(
+    filter((event) => isValidEvent(event)),
+    map((event) => {
+      return getEventUrl(event);
+    })
+  )
 );
-var watchLocationChange = (urlFilter2) => {
+var locationBeacon$ = merge(locationBehavior$, navigationEvents$).pipe(
+  filter((value) => value !== null),
+  distinctUntilChanged(),
+  shareReplay(1)
+);
+var watchLocationChange$ = (urlFilter) => {
   return locationBeacon$.pipe(
-    urlFilter2 ? filter((url) => urlFilter2(url)) : map((url) => url)
+    filter((url) => url instanceof URL),
+    filter(urlFilter)
   );
 };
-var mergedUnsubscription$ = (urlFilter2) => {
-  const location2 = watchLocationChange(urlFilter2);
-  const beforeUnload = fromEvent(window, "beforeunload");
-  return forkJoin([location2, beforeUnload]).pipe(tap(() => logger.info("Unsubscribing from subscriptions")));
-};
-var watchTables = () => {
+var watchTable$ = () => {
   const tables = document.querySelectorAll("article table:not([class])");
-  const observables = () => {
-    return tables.length > 0 ? Array.from(tables).map((table) => of(table).pipe(map((table2) => table2), tap((table2) => new import_tablesort.default(table2)))) : [];
-  };
+  const observables = () => tables.length > 0 ? Array.from(tables).map((table) => of(table).pipe(map((table2) => table2), tap((table2) => new import_tablesort.default(table2)))) : [];
   return merge(...observables());
-};
-var unsubscribeFromAll = (subscriptions3) => {
-  subscriptions3.forEach((subscription) => subscription.unsubscribe());
 };
 async function windowEvents() {
   const { document$: document$3, location$: location$3, target$: target$2, keyboard$: keyboard$2, viewport$: viewport$3, tablet$: tablet$2, screen$: screen$2, print$: print$2, alert$: alert$2, progress$: progress$2, component$: component$2 } = window;
@@ -7755,6 +7714,78 @@ async function windowEvents() {
     bundle_exports;
   }
 }
+var SubscriptionManager = class {
+  constructor() {
+    this.subscriptions = [];
+    this.siteExit$ = new Subject();
+    this.pageExit$ = new Subject();
+    if (window.subscriptionManager) {
+      return window.subscriptionManager;
+    }
+    this.setupSiteExit();
+    this.setupPageExit();
+  }
+  /**
+   * Sets up an observable for site exit events based on location changes.
+   * Emits an event when the user navigates away from the site.
+   */
+  setupSiteExit() {
+    locationBeacon$.pipe(
+      filter((url) => url instanceof URL && !isOnSite(url)),
+      debounceTime(NAV_EXIT_DELAY)
+    ).subscribe(() => {
+      this.siteExit$.next();
+    });
+  }
+  /**
+   * Sets up an observable for page exit events based on location changes.
+   * Emits an event when the user navigates away from the current page.
+   */
+  setupPageExit() {
+    locationBeacon$.pipe(
+      debounceTime(10),
+      filter((url) => url instanceof URL && isOnSite(url))
+    ).subscribe(() => {
+      this.pageExit$.next();
+    });
+  }
+  /**
+   * Adds a subscription to the manager, specifying whether it is site-wide.
+   * @param subscription The subscription to add.
+   * @param isSiteWide Indicates if the subscription is site-wide.
+   */
+  addSubscription(subscription, isSiteWide = false) {
+    this.subscriptions.push(subscription);
+    const exit$ = isSiteWide ? this.siteExit$ : this.pageExit$;
+    exit$.subscribe(() => subscription.unsubscribe());
+  }
+  /**
+   * Clears all subscriptions related to page exit events.
+   * Emits a signal to the pageExit$ subject to trigger cleanup.
+   */
+  clearPageSubscriptions() {
+    this.pageExit$.next();
+    this.subscriptions = this.subscriptions.filter((sub) => !sub.closed);
+  }
+  /**
+   * Clears all subscriptions and emits signals to both siteExit$ and pageExit$ subjects.
+   * Unsubscribes from all active subscriptions and resets the subscription list.
+   */
+  clearAllSubscriptions() {
+    this.siteExit$.next();
+    this.pageExit$.next();
+    this.subscriptions.forEach((sub) => sub.unsubscribe());
+    this.subscriptions = [];
+  }
+};
+var getSubscriptionManager = () => {
+  if (window.subscriptionManager) {
+    return window.subscriptionManager;
+  } else {
+    window.subscriptionManager = new SubscriptionManager();
+  }
+  return window.subscriptionManager;
+};
 
 // src/assets/javascripts/licenses/index.ts
 var getTabElements = () => {
@@ -7771,7 +7802,7 @@ var getTabElements = () => {
   }).filter((elements) => elements.input && elements.label && elements.iconAnchor && elements.iconSVG);
 };
 var watchLicenseHashes = () => {
-  return watchLocationChange(isLicense).pipe(
+  return watchLocationChange$((url) => isLicense(url)).pipe(
     map((url) => url.hash),
     filter((hash) => hash !== null && hash !== "" && hash !== "#" && ["reader", "html", "markdown", "plaintext", "changelog", "official"].includes(hash.slice(1))),
     tap((hash) => {
@@ -7853,12 +7884,13 @@ var setupTabIconSync = () => {
       });
     })
   );
-  combined$.subscribe();
-  iconAnchorClicks$.forEach((click$) => click$.subscribe());
-  return combined$;
+  return merge(combined$, ...iconAnchorClicks$);
 };
 var watchLicense = () => {
-  return merge(setupTabIconSync(), watchLicenseHashes());
+  return merge(
+    setupTabIconSync(),
+    watchLicenseHashes()
+  );
 };
 
 // src/assets/javascripts/cache/index.ts
@@ -12758,7 +12790,7 @@ var createVisibilityAndLocationObservable = () => {
         });
       })
     ),
-    watchLocationChange((url) => isHome(url) && isOnSite(url)).pipe(
+    watchLocationChange$((url) => isHome(url) && isOnSite(url)).pipe(
       tap(() => {
         stateManager.updateState({
           isAtHome: isAtHome(),
@@ -12819,6 +12851,9 @@ var createImageCycler = (parallaxLayer2) => {
       const nextIndex = (state.activeImageIndex + 1) % shuffledHeroes.length;
       const nextImage = shuffledHeroes[nextIndex];
       const currentImage = parallaxLayer2 == null ? void 0 : parallaxLayer2.getElementsByTagName("img")[0];
+      if (!currentImage) {
+        const tl = gsapWithCSS.timeline();
+      }
       if (!loadedImages.has(nextImage.imageName)) {
         return fetchAndSetImage(nextImage).pipe(
           tap((newImage) => {
@@ -12826,16 +12861,11 @@ var createImageCycler = (parallaxLayer2) => {
             if (currentImage) {
               animateImageTransition(currentImage, newImage);
             } else {
-              const tl = gsapWithCSS.timeline();
-              tl.to(newImage, {
+              gsapWithCSS.to(newImage, {
                 opacity: 1,
                 duration: ANIMATION_CONFIG.ENTER.duration,
                 ease: ANIMATION_CONFIG.ENTER.ease
               });
-              const panAnimation = createPanAnimation(newImage);
-              if (panAnimation && !prefersReducedMotion) {
-                tl.add(panAnimation, ">");
-              }
             }
             updateState({ activeImageIndex: nextIndex });
             void setText(nextImage.imageName);
@@ -12902,9 +12932,6 @@ var initCycler = () => {
   };
 };
 var cleanup = initCycler();
-var stopCycler = () => {
-  cleanup == null ? void 0 : cleanup();
-};
 var getImage = () => {
   const images = parallaxLayer == null ? void 0 : parallaxLayer.getElementsByTagName("img");
   if (images && images.length > 0) {
@@ -12967,15 +12994,24 @@ var shuffle$ = () => {
   }
   const subscription = new Subscription();
   subscription.add(createHeightObservable(cycler.stateManager).subscribe());
-  return watchLocationChange((url) => !isHome(url)).pipe(
+  return watchLocationChange$((url) => !isHome(url)).pipe(
     switchMap((url) => {
       if (parallaxLayer && !parallaxLayer.children.length && isOnSite(url)) {
-        return fetchAndSetImage(shuffledHeroes[0]).pipe(map(() => void 0));
+        return fetchAndSetImage(shuffledHeroes[0]).pipe(
+          filter((img) => img !== null && img instanceof HTMLImageElement),
+          tap((img) => {
+            const tl = gsapWithCSS.timeline();
+            gsapWithCSS.set(img, { opacity: 1 });
+            const panAnimation = createPanAnimation(img);
+            if (panAnimation) {
+              tl.add(panAnimation, ">");
+            }
+          }),
+          map(() => void 0)
+        );
       }
-      cycler.stop();
-      return of(stopCycler());
+      return EMPTY;
     }),
-    takeUntil(cycler.stateManager.cleanup$),
     catchError((error) => {
       logger.error("Error in shuffle$:", error);
       return EMPTY;
@@ -15540,7 +15576,7 @@ _getGSAP5() && gsap4.registerPlugin(ScrollTrigger3);
 // src/assets/javascripts/hero/animation/index.ts
 gsapWithCSS.registerPlugin(ScrollToPlugin);
 gsapWithCSS.registerPlugin(ScrollTrigger3);
-var subscriptions = [];
+var manager = getSubscriptionManager();
 var easterEgg = document.getElementById("the-egg");
 var infoBox = document.getElementById("egg-box");
 var FIRST_SCROLL_RATIO = 0.4;
@@ -15658,11 +15694,11 @@ var smoothScroll$ = (el) => {
     return of(false);
   }
 };
-var allSubscriptions = () => {
+var subscribeToAnimations = () => {
   document.body.style.scrollBehavior = "instant";
   document.body.style.overflowY = "scroll";
-  const eggFunction = (event$2) => {
-    return event$2.pipe(
+  const eggFunction = (event$) => {
+    return event$.pipe(
       withLatestFrom(infoBoxVisible$),
       filter(([_, isVisible]) => !isVisible),
       tap(([ev]) => ev.preventDefault()),
@@ -15677,15 +15713,15 @@ var allSubscriptions = () => {
     easterEgg,
     eggFunction
   );
-  subscriptions.push(
+  manager.addSubscription(
     eggInteraction$.subscribe({
       next: () => logger.info("Egg interaction observed"),
       error: (err) => logger.error("Error in egg interaction:", err),
       complete: () => logger.info("Egg interaction observable completed")
     })
   );
-  const eggBoxCloseFunc = (event$2) => {
-    return event$2.pipe(
+  const eggBoxCloseFunc = (event$) => {
+    return event$.pipe(
       withLatestFrom(infoBoxVisible$),
       filter(([_, isVisible]) => isVisible),
       filter(([ev]) => {
@@ -15704,7 +15740,7 @@ var allSubscriptions = () => {
     document,
     eggBoxCloseFunc
   );
-  subscriptions.push(
+  manager.addSubscription(
     leaveInfoBoxInteraction$.subscribe({
       next: () => {
       },
@@ -15723,8 +15759,8 @@ var allSubscriptions = () => {
     );
     return selector3;
   });
-  const heroButtonFunc = (event$2) => {
-    return event$2.pipe(
+  const heroButtonFunc = (event$) => {
+    return event$.pipe(
       filter((ev) => {
         const target = ev.target;
         return nerfedSelectors.some((selector3) => selector3.contains(target));
@@ -15752,24 +15788,12 @@ var allSubscriptions = () => {
     nerfedSelectors,
     heroButtonFunc
   );
-  subscriptions.push(
+  manager.addSubscription(
     heroInteraction$.subscribe({
       next: () => {
       },
       error: (err) => logger.error("Error in hero button interaction:", err),
       complete: () => logger.info("Hero button interaction observable completed")
-    })
-  );
-  const noLongerHome = (url) => !isHome(url) && isOnSite(url);
-  const pathObservable$ = watchLocationChange((url) => noLongerHome(url)).pipe(
-    tap(() => hideOverlay()),
-    tap(() => logger.info("Path changed, overlay hidden"))
-  );
-  subscriptions.push(
-    pathObservable$.subscribe({
-      next: () => {
-        unsubscribeFromAll(subscriptions);
-      }
     })
   );
   if (!prefersReducedMotion()) {
@@ -15947,7 +15971,7 @@ var allSubscriptions = () => {
     window.addEventListener("resize", () => {
       ScrollTrigger3.refresh();
     });
-    subscriptions.push(
+    manager.addSubscription(
       fromEvent(window, "hashchange").subscribe({
         next: () => {
           window.location.hash = "";
@@ -15956,19 +15980,10 @@ var allSubscriptions = () => {
     );
   }
 };
-var urlFilter = (url) => !isHome(url) && isOnSite(url) || !isOnSite(url);
-if (!urlFilter(new URL(window.location.href)) && subscriptions.length === 0) {
-  allSubscriptions();
-}
-mergedUnsubscription$(urlFilter).subscribe({
-  next: () => {
-    unsubscribeFromAll(subscriptions);
-  }
-});
 
 // src/assets/javascripts/index.ts
 var { document$: document$2 } = window;
-var subscriptions2 = [];
+var manager2 = getSubscriptionManager();
 var styleAssets = document.querySelectorAll("link[rel=stylesheet][href*=stylesheets]");
 var scriptAssets = document.querySelectorAll("script[src*=javascripts]");
 var fontAssets = document.querySelectorAll("link[rel=stylesheet][href*=fonts]");
@@ -16000,76 +16015,74 @@ var preloadStaticAssets = () => {
   const imageUrls = Array.from(imageAssets).map((el) => el.getAttribute("src")).filter((url) => url !== null);
   return merge(...styleUrls.map((url) => getAsset(url)), ...scriptUrls.map((url) => getAsset(url)), ...imageUrls.map((url) => getAsset(url)));
 };
+var cleanCache$ = cleanupCache(8e3).pipe(tap(() => logger.info("Attempting to clean up cache")), mergeMap(() => merge(cacheAssets("stylesheets", styleAssets), cacheAssets("javascripts", scriptAssets), cacheAssets("fonts", fontAssets), cacheAssets("images", imageAssets))), tap(() => logger.info("Assets cached")));
+var deleteCache$ = deleteOldCache();
+var shuffler$ = shuffle$();
+var animate$ = document$2.pipe(tap(() => subscribeToAnimations()));
+var homeBeacon$ = locationBeacon$.pipe(filter((url) => url instanceof URL), distinctUntilKeyChanged("pathname"), tap(() => logger.info("New page loaded")), tap(() => logger.info("Navigated to home page")), filter((url) => isHome(url)), distinctUntilChanged());
+var atHome$ = homeBeacon$.pipe(tap(() => {
+  logger.info("At home page");
+  document.body.setAttribute("data-md-color-scheme", "slate");
+  manager2.addSubscription(shuffler$.subscribe());
+  manager2.addSubscription(animate$.subscribe());
+}));
+var license$ = watchLicense();
+var atLicense$ = locationBeacon$.pipe(distinctUntilKeyChanged("pathname"), filter((url) => url instanceof URL && isOnSite(url) && isLicense(url)), distinctUntilChanged(), tap(() => logger.info("At license page")));
+var atHelping$ = locationBeacon$.pipe(distinctUntilKeyChanged("pathname"), filter((url) => url instanceof URL && isOnSite(url) && isHelpingIndex(url)), tap(() => logger.info("At helping page")), distinctUntilChanged());
+var table$ = watchTable$();
 var insertAnalytics = () => {
   const script3 = document.createElement("script");
   script3.type = "text/javascript";
   script3.src = "https://app.tinyanalytics.io/pixel/ei74pg7dZSNOtFvI";
   document.head.appendChild(script3);
 };
-var shuffler$ = shuffle$();
-var animate$ = document$2.pipe(tap(() => allSubscriptions()));
-var getHeroLinks = () => {
-  return Array.from(document.getElementsByTagName("a")).map((a) => a).map((a) => {
-    return new URL(a.href || "");
-  }).filter((url) => url instanceof URL && ((url.pathname === "/" || url.pathname === "/index.html") && (url.host === "www.plainlicense.org" || url.host === "plainlicense.org" || url.host === "127.0.0.1:8000")));
-};
-var heroLinks = getHeroLinks();
-var linkWatcher$ = fromEvent(document, "click").pipe(filter((e) => {
-  var _a2;
-  const target = e.target;
-  const link = (_a2 = target.closest("a")) == null ? void 0 : _a2.href;
-  return !!heroLinks.find((url) => url.href === link) || false;
-}));
-var homeBeacon$ = locationBeacon$.pipe(distinctUntilKeyChanged("pathname"), takeWhile((url) => isHome(url)));
-var atHome$ = merge(homeBeacon$, linkWatcher$).pipe(tap(() => {
-  logger.info("At home page");
-  document.body.setAttribute("data-md-color-scheme", "slate");
-  shuffler$.subscribe();
-  animate$.subscribe();
-}));
-var license$ = watchLicense();
-var atLicense$ = locationBeacon$.pipe(distinctUntilKeyChanged("pathname"), takeWhile((url) => isLicense(url)), tap(() => {
-  logger.info("At license page");
-  license$.subscribe();
-}));
-var isHelpingIndex = (url) => url.pathname.includes("helping") && (url.pathname.split("/").length === 3 && url.pathname.endsWith("index.html") || url.pathname.split("/").length === 2 && url.pathname.endsWith("/"));
-var atHelping$ = locationBeacon$.pipe(distinctUntilKeyChanged("pathname"), takeWhile((url) => isHelpingIndex(url)), tap(() => logger.info("At helping page")));
-var table$ = watchTables();
-var cleanCache$ = cleanupCache(8e3).pipe(tap(() => logger.info("Attempting to clean up cache")), mergeMap(() => merge(cacheAssets("stylesheets", styleAssets), cacheAssets("javascripts", scriptAssets), cacheAssets("fonts", fontAssets), cacheAssets("images", imageAssets))), tap(() => logger.info("Assets cached")));
-var analytics$ = watchLocationChange((url) => isOnSite(url)).pipe(distinctUntilKeyChanged("pathname"), tap(() => insertAnalytics()));
 var newPage$ = locationBeacon$.pipe(distinctUntilKeyChanged("pathname"), tap(() => logger.info("New page loaded")));
-var event$ = of(windowEvents());
-var deleteCache$ = deleteOldCache();
-var pageSubscriptions = [];
 function initPage() {
+  let initPageSubscriptions = [];
+  const analytics$ = watchLocationChange$((url) => isOnSite(url)).pipe(distinctUntilKeyChanged("pathname"), tap(() => insertAnalytics()));
+  const event$ = of(windowEvents());
   logger.info("New page loaded");
-  pageSubscriptions.push(preloadFonts().subscribe(), preloadStaticAssets().subscribe(), of(bundle_exports).subscribe(), event$.subscribe(), analytics$.subscribe(), table$.subscribe(), feedback$.subscribe(), cleanCache$.subscribe(), deleteCache$.subscribe());
+  initPageSubscriptions.push(preloadFonts().subscribe(), preloadStaticAssets().subscribe(), of(bundle_exports).subscribe(), event$.subscribe(), analytics$.subscribe(), table$.subscribe(), feedback$.subscribe(), cleanCache$.subscribe(), deleteCache$.subscribe());
+  initPageSubscriptions.forEach((sub) => manager2.addSubscription(sub));
   logger.info("Subscribed to new page subscriptions");
 }
-var onNewPage$ = newPage$.pipe(skipUntil(document$2), tap(() => logger.info("New page detected")));
-subscriptions2.push(onNewPage$.subscribe({
-  next: () => {
-    unsubscribeFromAll(pageSubscriptions);
-    initPage();
-  }
-}));
-subscriptions2.push(atHome$.subscribe());
-subscriptions2.push(atLicense$.subscribe());
-subscriptions2.push(atHelping$.subscribe());
-mergedUnsubscription$((url) => !isOnSite(url)).subscribe({
-  next: () => {
-    unsubscribeFromAll(subscriptions2);
-    logger.info("Unsubscribed from all subscriptions");
-  },
-  error: (err) => logger.error("Error in cleanup:", err)
-});
+manager2.addSubscription(preloadStaticAssets().subscribe());
+manager2.addSubscription(preloadFonts().subscribe());
+manager2.addSubscription(atHome$.subscribe(), true);
+manager2.addSubscription(atHelping$.subscribe(), true);
+manager2.addSubscription(atLicense$.subscribe(() => {
+  manager2.addSubscription(license$.subscribe());
+}), true);
+manager2.addSubscription(newPage$.pipe(skipUntil(document$2)).subscribe(() => {
+  initPage();
+}), true);
 /**
+ * Handles logging to the console. Only logs in development.
  * @license Plain Unlicense (Public Domain)
  * @copyright No rights reserved. Created by and for Plain License www.plainlicense.org
- * @module A simple logger that only logs to the console in development mode.
+ * @module log
  */
 /**
+ * @module feedback
+ * Handles feedback form submission
  * @license Plain Unlicense(Public Domain)
+ * @copyright No rights reserved. Created by and for Plain License www.plainlicense.org
+ */
+/**
+ * Utility functions for the site; primarily provides observables and classes for managing subscriptions.
+ * @module utils
+ * @license Plain Unlicense (Public Domain)
+ */
+/**
+ * @module licenses
+ * Handles interactions and dynamic features for license pages
+ * @license Plain Unlicense (Public Domain)
+ * @copyright No rights reserved. Created by and for Plain License www.plainlicense.org
+ */
+/**
+ * @module cache
+ * Handles caching of assets and cache busting
+ * @license Plain Unlicense (Public Domain)
  * @copyright No rights reserved. Created by and for Plain License www.plainlicense.org
  */
 /**
@@ -16155,4 +16168,4 @@ gsap/ScrollTrigger.js:
    * @author: Jack Doyle, jack@greensock.com
   *)
 */
-//# sourceMappingURL=index.RRID5SIM.js.map
+//# sourceMappingURL=index.QHAVYOIH.js.map

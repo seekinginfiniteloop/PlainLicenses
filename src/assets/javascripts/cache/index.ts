@@ -1,3 +1,10 @@
+/**
+ * @module cache
+ * Handles caching of assets and cache busting
+ * @license Plain Unlicense (Public Domain)
+ * @copyright No rights reserved. Created by and for Plain License www.plainlicense.org
+ */
+
 import { Observable, from, fromEvent, of, throwError } from "rxjs"
 import { catchError, defaultIfEmpty, map, mergeMap, switchMap, tap } from "rxjs/operators"
 import { logger } from "~/log"
@@ -34,7 +41,7 @@ const openCache = (): Observable<Cache> => from(caches.open(CONFIG.CACHE_NAME))
 
 /**
  * Determines the asset type from the URL
- * @param url - the URL to check
+ * @param url the URL to check
  * @returns the asset type or undefined
  */
 const getAssetType = (url: string): string | undefined => {
@@ -55,8 +62,8 @@ const getAssetType = (url: string): string | undefined => {
 
 /**
  * Checks if an asset should be handled by the cache system
- * @param url - the asset URL
- * @param heroCaller - boolean indicating if the asset is being called by the hero component
+ * @param url the asset URL
+ * @param heroCaller boolean indicating if the asset is being called by the hero component
  * @returns boolean indicating if the asset should be cached
  */
 const shouldHandleAsset = (url: string, heroCaller: boolean): boolean => {
@@ -81,8 +88,8 @@ const shouldHandleAsset = (url: string, heroCaller: boolean): boolean => {
 
 /**
  * Creates a response with the correct content type
- * @param response - the original response
- * @param assetType - the type of asset
+ * @param response the original response
+ * @param assetType the type of asset
  * @returns a new response with the correct content type
  */
 const createTypedResponse = (response: Response, assetType: string): Response => {
@@ -103,7 +110,7 @@ const createTypedResponse = (response: Response, assetType: string): Response =>
 
 /**
  * Extracts the hash from the URL for cache busting
- * @param url - the URL to extract the hash from
+ * @param url the URL to extract the hash from
  * @returns the hash or undefined
  */
 const extractHashFromUrl = (url: string): string | undefined => {
@@ -113,8 +120,8 @@ const extractHashFromUrl = (url: string): string | undefined => {
 
 /**
  * Fetches and caches the asset
- * @param url - the URL of the asset
- * @param cache - the cache to store the asset in
+ * @param url the URL of the asset
+ * @param cache the cache to store the asset in
  * @returns an observable of the response
  */
 const fetchAndCacheAsset = (url: string, cache: Cache): Observable<Response> =>
@@ -136,9 +143,9 @@ const fetchAndCacheAsset = (url: string, cache: Cache): Observable<Response> =>
 
 /**
  * Gets an asset from the cache or fetches it
- * @param url - the URL of the asset
- * @param heroCaller - boolean indicating if the asset is being called by the hero component
- * @returns Observable<Response>
+ * @param url the URL of the asset
+ * @param heroCaller boolean indicating if the asset is being called by the hero component
+ * @returns Observable&lt;Response>
  */
 export const getAsset = (url: string, heroCaller: boolean = false): Observable<Response> => {
   // If we shouldn't handle this asset, fetch it directly
@@ -188,8 +195,8 @@ export const getAsset = (url: string, heroCaller: boolean = false): Observable<R
 
 /**
  * Extracts the URL from the element
- * @param type - the type of asset
- * @param el - the element to extract the URL from
+ * @param type the type of asset
+ * @param el the element to extract the URL from
  * @returns the URL of the asset
  */
 function extractUrlFromElement(type: string, el: Element): string {
@@ -198,8 +205,8 @@ function extractUrlFromElement(type: string, el: Element): string {
 
 /**
  * Caches the assets
- * @param type - the type of asset
- * @param elements - the elements to cache
+ * @param type the type of asset
+ * @param elements the elements to cache
  * @returns an observable of the cache operation
  */
 export function cacheAssets(type: string, elements: NodeListOf<Element>): Observable<boolean> {
@@ -289,7 +296,7 @@ const cleanCache = (): Observable<boolean> => {
 
 /**
  * Cleans the cache after a certain amount of time
- * @param timer - the time to wait before cleaning the cache
+ * @param timer the time to wait before cleaning the cache
  * @returns an observable of the cache cleaning operation
  */
 export const cleanupCache = (timer: number): Observable<Event> => {
