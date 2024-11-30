@@ -1,9 +1,9 @@
 /* Default settings */
 
 .hero-parallax__image {
-  --scale: 1;
+  --scale: 1.05;
   --object-fit: cover;
-  --perspective: 50rem;
+  --perspective: 100rem;
   --perspective-origin: center bottom;
   --object-position: center bottom;
   --translate-x: 0%;
@@ -14,7 +14,6 @@
   z-index: -5;
   box-sizing: content-box;
   display: block;
-  flex-grow: 2;
   grid-column-start: 1;
   place-self: start start;
   width: 100%;
@@ -27,6 +26,7 @@
   object-fit: var(--object-fit);
   object-position: center bottom;
   background: var(--gunmetal);
+  transition: 1500ms opacity ease-in-out;
   transform-origin: center center;
   scale: var(--scale);
   perspective: var(--perspective);
@@ -234,11 +234,13 @@ so it made sense for them to live here
   top: 0;
   z-index: -300;
   opacity: 0;
+  transition: 500ms opacity ease-in;
 }
 
 .hero-parallax__layer .hero-parallax__image:first-child {
   top: 0;
-  transform: translate(var(--translate-x), var(--translate-y)) scale(var(--scale));
+  opacity: 1;
+  transition: 2000ms opacity ease-out;
 }
 
 /* TODO: get the overlay to actually show without messing up everything */

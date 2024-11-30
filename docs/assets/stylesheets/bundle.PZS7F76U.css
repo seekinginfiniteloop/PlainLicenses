@@ -7657,9 +7657,9 @@ h1.hero-content-section.header-mid.line span {
 
 /* src/assets/stylesheets/heroimages.css */
 .hero-parallax__image {
-  --scale: 1;
+  --scale: 1.05;
   --object-fit: cover;
-  --perspective: 50rem;
+  --perspective: 100rem;
   --perspective-origin: center bottom;
   --object-position: center bottom;
   --translate-x: 0%;
@@ -7669,7 +7669,6 @@ h1.hero-content-section.header-mid.line span {
   z-index: -5;
   box-sizing: content-box;
   display: block;
-  flex-grow: 2;
   grid-column-start: 1;
   place-self: start start;
   width: 100%;
@@ -7682,6 +7681,7 @@ h1.hero-content-section.header-mid.line span {
   object-fit: var(--object-fit);
   object-position: center bottom;
   background: var(--gunmetal);
+  transition: 1500ms opacity ease-in-out;
   transform-origin: center center;
   scale: var(--scale);
   perspective: var(--perspective);
@@ -7866,10 +7866,12 @@ h1.hero-content-section.header-mid.line span {
   top: 0;
   z-index: -300;
   opacity: 0;
+  transition: 500ms opacity ease-in;
 }
 .hero-parallax__layer .hero-parallax__image:first-child {
   top: 0;
-  transform: translate(var(--translate-x), var(--translate-y)) scale(var(--scale));
+  opacity: 1;
+  transition: 2000ms opacity ease-out;
 }
 .fade-overlay {
   --fade-height: var(--parallax-height);
@@ -7899,4 +7901,4 @@ h1.hero-content-section.header-mid.line span {
 }
 
 /* src/assets/stylesheets/bundle.css */
-/*# sourceMappingURL=bundle.ONGN6BJ2.css.map */
+/*# sourceMappingURL=bundle.PZS7F76U.css.map */

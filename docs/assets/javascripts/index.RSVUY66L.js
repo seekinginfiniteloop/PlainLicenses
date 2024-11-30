@@ -2989,6 +2989,28 @@ var EmptyError = createErrorClass(function(_super) {
   };
 });
 
+// node_modules/rxjs/dist/esm5/internal/firstValueFrom.js
+function firstValueFrom(source, config7) {
+  var hasConfig = typeof config7 === "object";
+  return new Promise(function(resolve3, reject) {
+    var subscriber = new SafeSubscriber({
+      next: function(value) {
+        resolve3(value);
+        subscriber.unsubscribe();
+      },
+      error: reject,
+      complete: function() {
+        if (hasConfig) {
+          resolve3(config7.defaultValue);
+        } else {
+          reject(new EmptyError());
+        }
+      }
+    });
+    source.subscribe(subscriber);
+  });
+}
+
 // node_modules/rxjs/dist/esm5/internal/util/isDate.js
 function isValidDate(value) {
   return value instanceof Date && !isNaN(value);
@@ -4072,17 +4094,6 @@ function skipUntil(notifier) {
   });
 }
 
-// node_modules/rxjs/dist/esm5/internal/operators/skipWhile.js
-function skipWhile(predicate) {
-  return operate(function(source, subscriber) {
-    var taking = false;
-    var index = 0;
-    source.subscribe(createOperatorSubscriber(subscriber, function(value) {
-      return (taking || (taking = !predicate(value, index++))) && subscriber.next(value);
-    }));
-  });
-}
-
 // node_modules/rxjs/dist/esm5/internal/operators/startWith.js
 function startWith() {
   var values = [];
@@ -4657,10 +4668,10 @@ function setLocationHash(hash) {
   el.addEventListener("click", (ev) => ev.stopPropagation());
   el.click();
 }
-function watchLocationHash(location$3) {
+function watchLocationHash(location$2) {
   return merge(
     fromEvent(window, "hashchange"),
-    location$3
+    location$2
   ).pipe(
     map(getLocationHash),
     startWith(getLocationHash()),
@@ -4668,8 +4679,8 @@ function watchLocationHash(location$3) {
     shareReplay(1)
   );
 }
-function watchLocationTarget(location$3) {
-  return watchLocationHash(location$3).pipe(
+function watchLocationTarget(location$2) {
+  return watchLocationHash(location$2).pipe(
     map((id) => getOptionalElement(`[id="${id}"]`)),
     filter((el) => typeof el !== "undefined")
   );
@@ -6195,7 +6206,7 @@ function inject(next) {
     endWith(document)
   );
 }
-function setupInstantNavigation({ location$: location$3, viewport$: viewport$3, progress$: progress$2 }) {
+function setupInstantNavigation({ location$: location$2, viewport$: viewport$3, progress$: progress$2 }) {
   const config7 = configuration();
   if (location.protocol === "file:")
     return EMPTY;
@@ -6214,8 +6225,8 @@ function setupInstantNavigation({ location$: location$3, viewport$: viewport$3, 
     history.replaceState(offset, "");
     history.pushState(null, "", url);
   });
-  merge(instant$, history$).subscribe(location$3);
-  const document$3 = location$3.pipe(
+  merge(instant$, history$).subscribe(location$2);
+  const document$3 = location$2.pipe(
     distinctUntilKeyChanged("pathname"),
     switchMap(
       (url) => requestHTML(url, { progress$: progress$2 }).pipe(
@@ -6232,7 +6243,7 @@ function setupInstantNavigation({ location$: location$3, viewport$: viewport$3, 
     share()
   );
   merge(
-    document$3.pipe(withLatestFrom(location$3, (_, url) => url)),
+    document$3.pipe(withLatestFrom(location$2, (_, url) => url)),
     // Handle instant navigation events that are triggered by the user clicking
     // on an anchor link with a hash fragment different from the current one, as
     // well as from popstate events, which are emitted when the user navigates
@@ -6241,9 +6252,9 @@ function setupInstantNavigation({ location$: location$3, viewport$: viewport$3, 
     // the viewport offset when the user navigates to a different page, as this
     // is already handled by the previous observable.
     document$3.pipe(
-      switchMap(() => location$3),
+      switchMap(() => location$2),
       distinctUntilKeyChanged("pathname"),
-      switchMap(() => location$3),
+      switchMap(() => location$2),
       distinctUntilKeyChanged("hash")
     ),
     // Handle instant navigation events that are triggered by the user clicking
@@ -6252,7 +6263,7 @@ function setupInstantNavigation({ location$: location$3, viewport$: viewport$3, 
     // events and not from history change events, or we'll end up in and endless
     // loop. The top-level history entry must be removed, as it will be replaced
     // with a new one, which would otherwise lead to a duplicate entry.
-    location$3.pipe(
+    location$2.pipe(
       distinctUntilChanged((a, b) => a.pathname === b.pathname && a.hash === b.hash),
       switchMap(() => instant$),
       tap(() => history.back())
@@ -6267,7 +6278,7 @@ function setupInstantNavigation({ location$: location$3, viewport$: viewport$3, 
       history.scrollRestoration = "manual";
     }
   });
-  location$3.subscribe(() => {
+  location$2.subscribe(() => {
     history.scrollRestoration = "manual";
   });
   fromEvent(window, "beforeunload").subscribe(() => {
@@ -6785,10 +6796,10 @@ function mountSearch(el, { index$: index$2, keyboard$: keyboard$2 }) {
 }
 
 // external/mkdocs-material/src/templates/assets/javascripts/components/search/highlight/index.ts
-function mountSearchHiglight(el, { index$: index$2, location$: location$3 }) {
+function mountSearchHiglight(el, { index$: index$2, location$: location$2 }) {
   return combineLatest([
     index$2,
-    location$3.pipe(
+    location$2.pipe(
       startWith(getLocation()),
       filter((url) => !!url.searchParams.get("h"))
     )
@@ -7598,20 +7609,8 @@ var feedback$ = of(feedback).pipe(
 // src/assets/javascripts/utils/index.ts
 var import_tablesort = __toESM(require_tablesort());
 var NAV_EXIT_DELAY = 6e4;
+var PAGE_CLEANUP_DELAY = 2e4;
 var prefersReducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-function isElementVisible(el) {
-  if (!el) {
-    return false;
-  }
-  const rect = el.getBoundingClientRect();
-  const vWidth = window.innerWidth || document.documentElement.clientWidth;
-  const vHeight = window.innerHeight || document.documentElement.clientHeight;
-  const efp = (x, y) => document.elementFromPoint(x, y);
-  if (rect.right < 0 || rect.bottom < 0 || rect.left > vWidth || rect.top > vHeight) {
-    return false;
-  }
-  return el.contains(efp(rect.left, rect.top)) || el.contains(efp(rect.right, rect.top)) || el.contains(efp(rect.right, rect.bottom)) || el.contains(efp(rect.left, rect.bottom));
-}
 function createInteractionObservable(ev, handler) {
   const eventTargets = Array.isArray(ev) ? ev : [ev];
   const validEventTargets = eventTargets.filter((target) => target != null);
@@ -7702,8 +7701,8 @@ var watchTable$ = () => {
   return merge(...observables());
 };
 async function windowEvents() {
-  const { document$: document$3, location$: location$3, target$: target$2, keyboard$: keyboard$2, viewport$: viewport$3, tablet$: tablet$2, screen$: screen$2, print$: print$2, alert$: alert$2, progress$: progress$2, component$: component$2 } = window;
-  const observables = { document$: document$3, location$: location$3, target$: target$2, keyboard$: keyboard$2, viewport$: viewport$3, tablet$: tablet$2, screen$: screen$2, print$: print$2, alert$: alert$2, progress$: progress$2, component$: component$2 };
+  const { document$: document$3, location$: location$2, target$: target$2, keyboard$: keyboard$2, viewport$: viewport$3, tablet$: tablet$2, screen$: screen$2, print$: print$2, alert$: alert$2, progress$: progress$2, component$: component$2 } = window;
+  const observables = { document$: document$3, location$: location$2, target$: target$2, keyboard$: keyboard$2, viewport$: viewport$3, tablet$: tablet$2, screen$: screen$2, print$: print$2, alert$: alert$2, progress$: progress$2, component$: component$2 };
   let observablesMissing = false;
   for (const key in observables) {
     if (!globalThis[key]) {
@@ -7716,19 +7715,18 @@ async function windowEvents() {
 }
 var SubscriptionManager = class {
   constructor() {
-    this.subscriptions = [];
+    this.siteWideSubscriptions = /* @__PURE__ */ new Map();
+    this.pageSubscriptions = /* @__PURE__ */ new Map();
+    this.currentPageUrl = locationBehavior$.value.pathname;
     this.siteExit$ = new Subject();
     this.pageExit$ = new Subject();
+    this.cleanupTimeout = null;
     if (window.subscriptionManager) {
       return window.subscriptionManager;
     }
     this.setupSiteExit();
     this.setupPageExit();
   }
-  /**
-   * Sets up an observable for site exit events based on location changes.
-   * Emits an event when the user navigates away from the site.
-   */
   setupSiteExit() {
     locationBeacon$.pipe(
       filter((url) => url instanceof URL && !isOnSite(url)),
@@ -7737,54 +7735,91 @@ var SubscriptionManager = class {
       this.siteExit$.next();
     });
   }
-  /**
-   * Sets up an observable for page exit events based on location changes.
-   * Emits an event when the user navigates away from the current page.
-   */
   setupPageExit() {
     locationBeacon$.pipe(
-      debounceTime(10),
+      debounceTime(1e3),
       filter((url) => url instanceof URL && isOnSite(url))
-    ).subscribe(() => {
+    ).subscribe((url) => {
+      const newPath = url.pathname;
+      if (newPath !== this.currentPageUrl) {
+        this.cleanup();
+        this.schedulePageCleanup(this.currentPageUrl);
+        this.currentPageUrl = newPath;
+      }
       this.pageExit$.next();
     });
   }
-  /**
-   * Adds a subscription to the manager, specifying whether it is site-wide.
-   * @param subscription The subscription to add.
-   * @param isSiteWide Indicates if the subscription is site-wide.
-   */
   addSubscription(subscription, isSiteWide = false) {
-    this.subscriptions.push(subscription);
-    const exit$ = isSiteWide ? this.siteExit$ : this.pageExit$;
-    exit$.subscribe(() => subscription.unsubscribe());
+    if (isSiteWide) {
+      logger.info("Adding site-wide subscription");
+      this.siteWideSubscriptions.set(subscription, true);
+      this.siteExit$.subscribe(() => subscription.unsubscribe());
+    } else {
+      logger.info("Adding page-specific subscription");
+      const pageSubscriptions = this.pageSubscriptions.get(this.currentPageUrl) || [];
+      pageSubscriptions.push(subscription);
+      this.pageSubscriptions.set(this.currentPageUrl, pageSubscriptions);
+    }
   }
-  /**
-   * Clears all subscriptions related to page exit events.
-   * Emits a signal to the pageExit$ subject to trigger cleanup.
-   */
-  clearPageSubscriptions() {
-    this.pageExit$.next();
-    this.subscriptions = this.subscriptions.filter((sub) => !sub.closed);
+  removeSubscription(subscription) {
+    const subs = Array.isArray(subscription) ? subscription : [subscription];
+    subs.forEach((sub) => {
+      if (this.siteWideSubscriptions.has(sub)) {
+        logger.info("Removing site-wide subscription");
+        this.siteWideSubscriptions.delete(sub);
+        sub.unsubscribe();
+      }
+      for (const [page, pageSubs] of this.pageSubscriptions.entries()) {
+        const filtered = pageSubs.filter((s) => s !== sub);
+        if (filtered.length !== pageSubs.length) {
+          logger.info("Removing page-specific subscription");
+          this.pageSubscriptions.set(page, filtered);
+          sub.unsubscribe();
+        }
+      }
+    });
   }
-  /**
-   * Clears all subscriptions and emits signals to both siteExit$ and pageExit$ subjects.
-   * Unsubscribes from all active subscriptions and resets the subscription list.
-   */
+  schedulePageCleanup(pageUrl) {
+    this.cleanupTimeout = window.setTimeout(() => {
+      this.clearPageSubscriptions(pageUrl);
+      this.cleanupTimeout = null;
+    }, PAGE_CLEANUP_DELAY);
+  }
+  cleanup() {
+    if (this.cleanupTimeout) {
+      window.clearTimeout(this.cleanupTimeout);
+      this.cleanupTimeout = null;
+    }
+  }
+  clearPageSubscriptions(pageUrl) {
+    const pageSubscriptions = this.pageSubscriptions.get(pageUrl) || [];
+    pageSubscriptions.forEach((sub) => sub.unsubscribe());
+    this.pageSubscriptions.delete(pageUrl);
+    logger.info(`Cleared subscriptions for page: ${pageUrl}`);
+  }
   clearAllSubscriptions() {
+    for (const sub of this.siteWideSubscriptions.keys()) {
+      sub.unsubscribe();
+    }
+    this.siteWideSubscriptions.clear();
+    for (const [_, subs] of this.pageSubscriptions) {
+      subs.forEach((sub) => sub.unsubscribe());
+    }
+    this.pageSubscriptions.clear();
     this.siteExit$.next();
     this.pageExit$.next();
-    this.subscriptions.forEach((sub) => sub.unsubscribe());
-    this.subscriptions = [];
+    logger.info("Cleared all subscriptions");
   }
 };
 var getSubscriptionManager = () => {
-  if (window.subscriptionManager) {
-    return window.subscriptionManager;
-  } else {
+  try {
+    if (window.subscriptionManager) {
+      return window.subscriptionManager;
+    }
+  } catch (e) {
     window.subscriptionManager = new SubscriptionManager();
+    return window.subscriptionManager;
   }
-  return window.subscriptionManager;
 };
 
 // src/assets/javascripts/licenses/index.ts
@@ -12514,143 +12549,387 @@ var heroImages = rawHeroImages.map((image) => ({
 }));
 
 // src/assets/javascripts/hero/imageshuffle/index.ts
-var location$2 = new BehaviorSubject(new URL(window.location.href));
-function getCurrentLocation() {
-  return location$2.getValue();
-}
-var getOptimalWidth = () => {
-  const screenWidth = Math.max(window.innerWidth, window.innerHeight);
-  return screenWidth <= 1175 ? 1280 : screenWidth <= 1850 ? 1920 : screenWidth <= 2400 ? 2560 : 3840;
-};
-var CONFIG2 = { INTERVAL_TIME: 2e4, CLEANUP_DELAY: 6e4 };
-var ANIMATION_CONFIG = {
-  ENTER: {
-    opacity: 1,
-    duration: 1.2,
-    ease: "power2.inOut"
-  },
-  EXIT: {
-    opacity: 0,
-    duration: 0.5,
-    ease: "power2.out"
-  },
-  PAN: {
-    intervals: 4,
-    duration: 30,
-    ease: "none",
-    buffer: 48,
-    cleanup: /* @__PURE__ */ new Map(),
-    focalZone: {
-      horizontalWeight: 0.66,
-      // Center 2/3rds
-      verticalWeight: 0.66,
-      bias: 0.7
-      // How much to favor the focal zone
+var HERO_CONFIG = {
+  INTERVAL: 2e4,
+  ANIMATION: {
+    ENTER: { perspective: "1600px", ease: "power2.inOut" },
+    ENTER_DURATION: 2,
+    EXIT: { ease: "power2.out" },
+    EXIT_DURATION: 0.5,
+    PAN: {
+      intervals: 3,
+      duration: 20,
+      ease: "none",
+      buffer: 48,
+      focalZone: {
+        horizontalWeight: 0.66,
+        verticalWeight: 0.66,
+        bias: 0.7
+      }
     }
   }
 };
 var isPageVisible = () => !document.hidden;
 var isAtHome = () => {
-  const loc = getCurrentLocation();
+  const loc = locationBehavior$.value;
   return isHome(loc) && isOnSite(loc);
 };
+var leftPage = () => !isAtHome() && isOnSite(locationBehavior$.value);
 var portraitMediaQuery = window.matchMedia("(orientation: portrait)");
 var parallaxLayer = document.getElementById("parallax-hero-image-layer");
-var optimalWidth$ = new BehaviorSubject(getOptimalWidth());
-var createHeroStateManager = () => {
-  const initialState = {
-    status: "loading",
-    isVisible: isPageVisible(),
-    isAtHome: true,
-    activeImageIndex: 0,
-    orientation: portraitMediaQuery.matches ? "portrait" : "landscape",
-    optimalWidth: optimalWidth$.value,
-    lastActiveTime: Date.now()
-  };
-  const state$ = new BehaviorSubject(initialState);
-  const cleanup2 = new Subject();
-  let cleanupTimeout = null;
-  const canCycle$ = state$.pipe(
-    map(
-      (state) => state.isVisible && state.isAtHome && state.status === "cycling"
-    ),
-    distinctUntilChanged(),
-    shareReplay(1)
-  );
-  const scheduleCleanup = () => {
-    if (cleanupTimeout) {
-      window.clearTimeout(cleanupTimeout);
-    }
-    cleanupTimeout = window.setTimeout(() => {
-      if (!state$.value.isVisible && !state$.value.isAtHome) {
-        cleanup2.next();
-        cleanup2.complete();
-      }
-    }, CONFIG2.CLEANUP_DELAY);
-  };
-  return {
-    state$,
-    canCycle$,
-    cleanup$: cleanup2.asObservable(),
-    updateState: (updates) => {
-      if (state$.closed) {
+var HeroStateManager = class _HeroStateManager {
+  /**
+   * Creates an instance of HeroStateManager and initializes the shuffled heroes and subscriptions.
+   */
+  constructor() {
+    this.state$ = new BehaviorSubject(this.getInitialState());
+    this.subscriptionManager = window.subscriptionManager;
+    this.loadedImages = /* @__PURE__ */ new Map();
+    this.homePath = null;
+    this.cleanup = /* @__PURE__ */ new Map();
+    this.imageMetadata = /* @__PURE__ */ new WeakMap();
+    this.hasPageSubscriptions = false;
+    this.optimalWidth$ = new BehaviorSubject(this.getOptimalWidth());
+    /**
+     * An observable that emits a boolean indicating whether the hero can cycle through images.
+     */
+    this.canCycle$ = this.state$.pipe(
+      map(({ isVisible, isAtHome: isAtHome2, status }) => isVisible && isAtHome2 && status === "cycling"),
+      distinctUntilChanged(),
+      shareReplay(1)
+    );
+    /**
+     * Retrieves an array of hero images with their optimal widths.
+     * @returns An array of hero images.
+     */
+    this.getHeroes = () => {
+      const optimalWidth = this.optimalWidth$.value;
+      return heroImages.map((image) => ({ ...image, src: image.widths[optimalWidth] }));
+    };
+    /**
+     * Sets the home path and subscribes to location changes.
+     * @returns The subscription for the home path observer.
+     */
+    this.setHomePathAndObserver = () => locationBeacon$.pipe(
+      filter(() => isAtHome()),
+      map((loc) => loc),
+      shareReplay(1),
+      tap((loc) => {
+        this.homePath = loc.pathname;
+        this.updateState({ isAtHome: true });
+      }),
+      finalize(() => logger.info(`Home observer completed for ${this.homePath}`))
+    ).subscribe();
+    /**
+     * Creates a pan animation for the specified image.
+     * @param img The image to create a pan animation for.
+     * @returns The created GSAP timeline for the pan animation, or undefined if reduced motion is preferred.
+     */
+    this.createPanAnimation = (img) => {
+      var _a2;
+      if (prefersReducedMotion()) {
         return;
       }
-      const newState = { ...state$.value, ...updates };
-      if (updates.isVisible || updates.isAtHome) {
-        newState.lastActiveTime = Date.now();
+      logger.info("Creating pan animation");
+      const { focalZone, intervals, duration } = HERO_CONFIG.ANIMATION.PAN;
+      const viewportHeight = window.innerHeight - (((_a2 = document.getElementById("header-target")) == null ? void 0 : _a2.clientHeight) || 75);
+      const viewportWidth = window.innerWidth;
+      const imageWidth = img.naturalWidth;
+      const imageHeight = img.naturalHeight;
+      logger.info(`Image dimensions: ${imageWidth}x${imageHeight}`);
+      const xPan = this.calculatePanRange(imageWidth, viewportWidth, focalZone.horizontalWeight, focalZone.bias);
+      const yPan = this.calculatePanRange(imageHeight, viewportHeight, focalZone.verticalWeight, focalZone.bias);
+      logger.info(`Pan ranges: x=${xPan}, y=${yPan}; viewport: ${viewportWidth}x${viewportHeight}; image: ${imageWidth}x${imageHeight}; focal zone: ${focalZone.horizontalWeight}x${focalZone.verticalWeight}`);
+      if (!xPan && !yPan) {
+        return;
       }
-      if (updates.isVisible === false || updates.isAtHome === false) {
-        scheduleCleanup();
-      } else if (cleanupTimeout) {
-        window.clearTimeout(cleanupTimeout);
-        cleanupTimeout = null;
+      const xKeyframes = xPan ? this.generateKeyframes(xPan, intervals, focalZone.bias) : [0];
+      const yKeyframes = yPan ? this.generateKeyframes(yPan, intervals, focalZone.bias) : [0];
+      const tl = gsapWithCSS.timeline({ repeat: -1 });
+      const segmentDuration = duration / intervals;
+      gsapWithCSS.set(img, { x: xKeyframes[0], y: yKeyframes[0] });
+      for (let i = 1; i <= intervals; i++) {
+        tl.add(gsapWithCSS.to(img, {
+          x: xKeyframes[i % xKeyframes.length],
+          y: yKeyframes[i % yKeyframes.length],
+          duration: segmentDuration,
+          ease: HERO_CONFIG.ANIMATION.PAN.ease
+        }));
       }
-      state$.next(newState);
-    },
-    cleanup: () => {
-      if (cleanupTimeout) {
-        window.clearTimeout(cleanupTimeout);
-      }
-      cleanup2.next();
-      cleanup2.complete();
-      state$.complete();
+      return tl;
+    };
+    this.shuffledHeroes = [...this.getHeroes()].sort(() => Math.random() - 0.5);
+    this.setupSubscriptions();
+    window.addEventListener("unload", () => this.dispose());
+    this.setHomePathAndObserver();
+  }
+  /**
+   * Calculates the optimal width based on the current screen dimensions.
+   * @returns The optimal width for the hero images.
+   */
+  getOptimalWidth() {
+    const screenWidth = Math.max(window.innerWidth, window.innerHeight);
+    if (screenWidth <= 1175) {
+      return 1280;
     }
-  };
-};
-var stateManager = createHeroStateManager();
-var calculateWeightedPanRange = (total, viewport, weight, bias) => {
-  if (total <= viewport) {
-    return 0;
+    if (screenWidth <= 1850) {
+      return 1920;
+    }
+    if (screenWidth <= 2400) {
+      return 2560;
+    }
+    return 3840;
   }
-  const excess = total - viewport;
-  const focalZoneSize = total * weight;
-  const panRange = -(excess + ANIMATION_CONFIG.PAN.buffer);
-  const focalZoneRatio = focalZoneSize / total;
-  return panRange * bias * focalZoneRatio;
-};
-var createPanAnimation = (img) => {
-  var _a2;
-  const existing = ANIMATION_CONFIG.PAN.cleanup.get(img);
-  if (existing) {
-    existing.kill();
-    ANIMATION_CONFIG.PAN.cleanup.delete(img);
+  /**
+   * Initializes the hero state with default values.
+   * @returns The initial state of the hero component; setting its attributes.
+   */
+  getInitialState() {
+    return {
+      status: "loading",
+      isVisible: isPageVisible(),
+      isAtHome: isAtHome(),
+      activeImageIndex: 0,
+      orientation: portraitMediaQuery.matches ? "portrait" : "landscape",
+      optimalWidth: this.getOptimalWidth(),
+      lastActiveTime: Date.now()
+    };
   }
-  logger.info("Creating pan animation");
-  const { focalZone, intervals, duration } = ANIMATION_CONFIG.PAN;
-  const viewportHeight = window.innerHeight - (((_a2 = document.getElementById("header-target")) == null ? void 0 : _a2.clientHeight) || 95);
-  const viewportWidth = window.innerWidth;
-  const imageWidth = img.naturalWidth;
-  const imageHeight = img.naturalHeight;
-  const xPan = calculateWeightedPanRange(imageWidth, viewportWidth, focalZone.horizontalWeight, focalZone.bias);
-  const yPan = calculateWeightedPanRange(imageHeight, viewportHeight, focalZone.verticalWeight, focalZone.bias);
-  logger.info(`Pan ranges: x=${xPan}, y=${yPan}; viewport: ${viewportWidth}x${viewportHeight}; image: ${imageWidth}x${imageHeight}; focal zone: ${focalZone.horizontalWeight}x${focalZone.verticalWeight}`);
-  if (!xPan && !yPan) {
-    return;
+  /**
+   * Sets up subscriptions for various events related to the hero state.
+   */
+  setupSubscriptions() {
+    const pageExitSub = locationBeacon$.pipe(
+      filter((url) => url instanceof URL && leftPage()),
+      debounceTime(HERO_CONFIG.INTERVAL),
+      filter(() => leftPage()),
+      map(() => false)
+    ).subscribe((isAtHome2) => {
+      this.updateState({ isAtHome: isAtHome2 });
+      this.subscriptionManager.cleanup();
+      this.hasPageSubscriptions = false;
+    });
+    const visibilitySub = fromEvent(document, "visibilitychange").pipe(
+      map(() => isPageVisible()),
+      distinctUntilChanged(),
+      tap((isVisible) => this.updateState({ isVisible }))
+    ).subscribe();
+    const orientationSub = merge(
+      fromEvent(window, "resize"),
+      fromEvent(portraitMediaQuery, "change")
+    ).pipe(
+      debounceTime(100),
+      map(() => ({
+        orientation: portraitMediaQuery.matches ? "portrait" : "landscape",
+        optimalWidth: this.getOptimalWidth()
+      })),
+      tap(({ orientation, optimalWidth }) => {
+        this.updateState({ orientation, optimalWidth });
+        this.updateImageSources(
+          Array.from((parallaxLayer == null ? void 0 : parallaxLayer.getElementsByTagName("img")) || []),
+          optimalWidth
+        );
+      })
+    ).subscribe();
+    [pageExitSub, orientationSub, visibilitySub].forEach((sub) => this.subscriptionManager.addSubscription(sub, false));
   }
-  const generateKeyframes = (maxPan) => {
+  /**
+   * Updates the hero state with the provided partial updates.
+   * @param updates The updates to apply to the current state.
+   */
+  updateState(updates) {
+    if (this.state$.closed) {
+      return;
+    }
+    const currentState = this.state$.value;
+    const newState = { ...currentState, ...updates };
+    newState.status = newState.isVisible && newState.isAtHome ? "cycling" : "paused";
+    if (newState.status === "cycling" && currentState.status !== "cycling") {
+      newState.lastActiveTime = Date.now();
+    }
+    this.state$.next(newState);
+  }
+  /**
+   * Sets the height of the parallax effect based on the provided height.
+   * @param height The height to set for the parallax effect.
+   */
+  setParallaxHeight(height) {
+    var _a2;
+    const headerHeight = ((_a2 = document.getElementById("header-target")) == null ? void 0 : _a2.clientHeight) || 95;
+    setCssVariable("--header-height", `${headerHeight}px`);
+    const effectiveViewHeight = window.innerHeight - headerHeight;
+    const maxFade = effectiveViewHeight * 1.4;
+    if (!parallaxLayer || height <= 0) {
+      const currentValue = document.documentElement.style.getPropertyValue("--fade-height");
+      setCssVariable("--fade-height", Math.max(Number(currentValue), effectiveViewHeight).toString());
+    }
+    setCssVariable("--fade-height", `${Math.min(height * 1.2, maxFade, effectiveViewHeight)}px`);
+    setCssVariable("--parallax-height", `${height < effectiveViewHeight ? effectiveViewHeight : Math.min(height * 1.2, maxFade)}px`);
+  }
+  /**
+   * Retrieves a hero image by its name.
+   * @param imageName The name of the image to retrieve.
+   * @returns The hero image if found, otherwise undefined.
+   */
+  retrieveImage(imageName) {
+    return heroImages.find((image) => image.imageName === imageName);
+  }
+  /**
+   * Updates the sources of the provided images based on the optimal width.
+   * @param images The images to update.
+   * @param optimalWidth The optimal width to use for the image sources.
+   */
+  updateImageSources(images, optimalWidth) {
+    images.forEach((image) => {
+      const imageName = image.classList[1].split("--")[1];
+      const foundImage = this.retrieveImage(imageName);
+      if (foundImage) {
+        image.src = foundImage.widths[optimalWidth];
+      }
+    });
+  }
+  /**
+   * Loads an image from the specified URL and returns an observable of the image blob.
+   * @param imageUrl The URL of the image to load.
+   * @returns An observable that emits the image blob.
+   */
+  loadImage(imageUrl) {
+    return getAsset(imageUrl, true).pipe(
+      mergeMap((response) => from(response.blob())),
+      catchError((error) => {
+        logger.error("Error loading image:", error, { url: imageUrl });
+        return throwError(() => new Error(`Failed to load image: ${imageUrl}`));
+      })
+    );
+  }
+  /**
+   * Updates the text elements associated with the specified image name.
+   * @param imageName The name of the image to update text elements for.
+   */
+  updateTextElements(imageName) {
+    const headerEl = document.getElementById("CTA_header");
+    const textEl = document.getElementById("CTA_paragraph");
+    const className = `hero-parallax__image--${imageName}`;
+    headerEl == null ? void 0 : headerEl.setAttribute("class", className);
+    textEl == null ? void 0 : textEl.setAttribute("class", className);
+  }
+  /**
+   * Calculates the pan range for the given parameters.
+   * @param total The total size.
+   * @param viewport The viewport size.
+   * @param weight The weight for the calculation.
+   * @param bias The bias for the calculation.
+   * @returns The calculated pan range.
+   */
+  calculatePanRange(total, viewport, weight, bias) {
+    if (total <= viewport) {
+      logger.info("Image is smaller than viewport; no pan needed");
+      return 0;
+    }
+    const excess = total - viewport;
+    const focalZoneSize = total * weight;
+    const panRange = -(excess + HERO_CONFIG.ANIMATION.PAN.buffer);
+    const focalZoneRatio = focalZoneSize / total;
+    return panRange * bias * focalZoneRatio;
+  }
+  /**
+   * Tracks metadata for the specified image.
+   * @param img The image element to track metadata for.
+   */
+  trackImageMetadata(img) {
+    this.imageMetadata.set(img, {
+      loadTime: Date.now(),
+      displayCount: 0,
+      width: img.width,
+      actualWidth: this.getOptimalWidth()
+    });
+  }
+  /**
+   * Creates an image cycler for the specified parallax layer.
+   * @param parallaxLayer The parallax layer to associate with the cycler.
+   * @returns The created image cycler.
+   */
+  static createCycler() {
+    const state = new _HeroStateManager();
+    const loadImages$ = of(state.cycleImage()).pipe(
+      catchError((error) => {
+        logger.error("Failed to load initial image:", error);
+        state.updateState({ status: "error" });
+        return EMPTY;
+      })
+    );
+    const cycle$ = interval(HERO_CONFIG.INTERVAL).pipe(
+      withLatestFrom(state.canCycle$),
+      filter(([_, canCycle]) => canCycle),
+      switchMap(() => from(state.cycleImage()))
+    );
+    return {
+      loadImages$,
+      cycle$,
+      heroState: state,
+      start: () => {
+        const subscription = new Subscription();
+        subscription.add(loadImages$.subscribe());
+        subscription.add(cycle$.subscribe());
+        return subscription;
+      },
+      stop: () => state.dispose()
+    };
+  }
+  /**
+   * Retrieves metadata for the specified image.
+   * @param img The image element to retrieve metadata for.
+   * @returns The metadata for the image, or undefined if not found.
+   */
+  getImageMetadata(img) {
+    return this.imageMetadata.get(img);
+  }
+  /**
+   * Loads and prepares an image based on the provided settings.
+   * @param imgSettings The settings for the image to load.
+   * @returns A promise that resolves to the loaded image element.
+   */
+  async loadAndPrepareImage(imgSettings) {
+    const { imageName, srcset, src } = imgSettings;
+    if (!src) {
+      throw new Error("No image source provided");
+    }
+    const imageBlob = await firstValueFrom(this.loadImage(src));
+    const img = new Image();
+    this.setImageAttributes(img, imageBlob, imageName, srcset);
+    this.trackImageMetadata(img);
+    return img;
+  }
+  /**
+   * Sets the attributes for the specified image element.
+   * @param img The image element to set attributes for.
+   * @param imageBlob The image blob to create an object URL from.
+   * @param imageName The name of the image.
+   * @param srcset The source set for the image.
+   */
+  setImageAttributes(img, imageBlob, imageName, srcset) {
+    img.src = URL.createObjectURL(imageBlob);
+    img.srcset = srcset;
+    img.sizes = `
+      (max-width: 1175px) 1280px,
+      (max-width: 1850px) 1920px,
+      (max-width: 2400px) 2560px,
+      3840px
+    `;
+    img.alt = "";
+    img.classList.add("hero-parallax__image", `hero-parallax__image--${imageName}`);
+    img.draggable = false;
+    img.loading = (parallaxLayer == null ? void 0 : parallaxLayer.getElementsByTagName("img").length) !== 0 ? "lazy" : "eager";
+  }
+  /**
+   * Generates keyframes for the pan animation based on the maximum pan value.
+   * @param maxPan The maximum pan value.
+   * @param intervals The number of intervals for the animation.
+   * @param focalBias The bias for the focal zone.
+   * @returns An array of keyframe positions.
+   */
+  generateKeyframes(maxPan, intervals, focalBias) {
     const frames = [];
-    const focalBias = focalZone.bias;
     for (let i = 0; i <= intervals; i++) {
       const progress = i / intervals;
       const weight = Math.sin(progress * Math.PI);
@@ -12658,271 +12937,121 @@ var createPanAnimation = (img) => {
       frames.push(position);
     }
     return frames;
-  };
-  const xKeyframes = xPan ? generateKeyframes(xPan) : [0];
-  const yKeyframes = yPan ? generateKeyframes(yPan) : [0];
-  const tl = gsapWithCSS.timeline({ repeat: -1 });
-  const segmentDuration = duration / intervals;
-  gsapWithCSS.set(img, { x: xKeyframes[0], y: yKeyframes[0] });
-  for (let i = 1; i <= intervals; i++) {
-    tl.to(img, {
-      x: xKeyframes[i % xKeyframes.length],
-      y: yKeyframes[i % yKeyframes.length],
-      duration: segmentDuration,
-      ease: ANIMATION_CONFIG.PAN.ease
-    });
   }
-  ANIMATION_CONFIG.PAN.cleanup.set(img, tl);
-  return tl;
-};
-var updateImageSources = (images, optimalWidth) => {
-  images.forEach((image) => {
-    const imageName = image.classList[1].split("--")[1];
-    const foundImage = retrieveImage(imageName);
-    if (foundImage) {
-      image.src = foundImage.widths[optimalWidth];
+  /**
+   * Cleans up resources associated with the specified image.
+   * @param image The image element to clean up resources for.
+   */
+  cleanupImageResources(image) {
+    const currentSrc = image.src;
+    if (currentSrc.startsWith("blob:")) {
+      URL.revokeObjectURL(currentSrc);
     }
-  });
-};
-var retrieveImage = (imageName) => {
-  return heroImages.find((image) => image.imageName === imageName);
-};
-var getHeroes = () => {
-  const optimalWidth = getOptimalWidth();
-  return heroImages.map((image) => ({ ...image, src: image.widths[optimalWidth] }));
-};
-var allHeroes = getHeroes();
-var imageMetadata = /* @__PURE__ */ new WeakMap();
-var loadImage = (imageUrl) => {
-  return getAsset(imageUrl, true).pipe(
-    mergeMap((response) => from(response.blob())),
-    catchError((error) => {
-      logger.error("Error loading image:", error);
-      return throwError(() => new Error("Failed to load image"));
-    })
-  );
-};
-var setText = async (imgName) => {
-  const headerEl = document.getElementById("CTA_header");
-  const textEl = document.getElementById("CTA_paragraph");
-  headerEl == null ? void 0 : headerEl.setAttribute("class", `hero-parallax__image--${imgName}`);
-  textEl == null ? void 0 : textEl.setAttribute("class", `hero-parallax__image--${imgName}`);
-};
-var cleanupImageResources = (image) => {
-  const currentSrc = image.src;
-  if (currentSrc.startsWith("blob:")) {
-    URL.revokeObjectURL(currentSrc);
+    const animation = this.cleanup.get(image);
+    if (animation) {
+      animation.kill();
+      this.cleanup.delete(image);
+    }
   }
-};
-var fetchAndSetImage = (imgSettings) => {
-  const { imageName, srcset, src } = imgSettings;
-  if (!src) {
-    return EMPTY;
-  }
-  return loadImage(src).pipe(
-    switchMap((_imageBlob) => {
-      const img = new Image();
-      const loading = (parallaxLayer == null ? void 0 : parallaxLayer.getElementsByTagName("img").length) !== 0 ? "lazy" : "eager";
-      img.src = src;
-      img.srcset = srcset;
-      img.sizes = `
-        (max-width: 1175px) 1280px,
-        (max-width: 1850px) 1920px,
-        (max-width: 2400px) 2560px,
-        3840px
-      `;
-      img.alt = "";
-      img.classList.add("hero-parallax__image", `hero-parallax__image--${imageName}`);
-      img.draggable = false;
-      img.loading = loading;
-      void setText(imageName);
-      return of(img).pipe(
-        tap(() => {
-          gsapWithCSS.set(img, { opacity: ANIMATION_CONFIG.ENTER.opacity });
-          imageMetadata.set(img, {
-            loadTime: Date.now(),
-            displayCount: 0,
-            width: img.width,
-            actualWidth: getOptimalWidth()
-          });
-          parallaxLayer == null ? void 0 : parallaxLayer.prepend(img);
-        }),
-        map(() => img)
-      );
-    }),
-    catchError((error) => {
-      logger.error("Error in fetchAndSetImage:", error);
-      return EMPTY;
-    })
-  );
-};
-var animateImageTransition = (currentImage, newImage) => {
-  const tl = gsapWithCSS.timeline();
-  const panEffect = createPanAnimation(newImage);
-  tl.to(currentImage, {
-    opacity: ANIMATION_CONFIG.EXIT.opacity,
-    duration: ANIMATION_CONFIG.EXIT.duration,
-    ease: ANIMATION_CONFIG.EXIT.ease
-  }).to(newImage, {
-    opacity: ANIMATION_CONFIG.ENTER.opacity,
-    duration: ANIMATION_CONFIG.ENTER.duration,
-    ease: ANIMATION_CONFIG.ENTER.ease
-  }, "<");
-  if (panEffect && !prefersReducedMotion) {
-    tl.add(panEffect, ">");
-  }
-  return tl;
-};
-var createOrientationObservable = (mediaQuery) => {
-  return fromEventPattern(
-    (handler) => mediaQuery.addEventListener("change", handler),
-    (handler) => mediaQuery.removeEventListener("change", handler),
-    (event) => event.matches
-  );
-};
-var createVisibilityAndLocationObservable = () => {
-  return merge(
-    fromEvent(document, "visibilitychange").pipe(
-      tap(() => {
-        stateManager.updateState({
-          isVisible: isPageVisible(),
-          status: isPageVisible() ? "ready" : "paused"
-        });
-      })
-    ),
-    watchLocationChange$((url) => isHome(url) && isOnSite(url)).pipe(
-      tap(() => {
-        stateManager.updateState({
-          isAtHome: isAtHome(),
-          status: isAtHome() ? "ready" : "stopped"
-        });
-      })
-    )
-  ).pipe(takeUntil(stateManager.cleanup$));
-};
-var createOrientationHandler = () => {
-  const orientationChange$ = createOrientationObservable(portraitMediaQuery);
-  const resize$ = fromEvent(window, "resize");
-  return merge(orientationChange$, resize$).pipe(
-    debounceTime(100),
-    skipWhile(() => !isPageVisible() || !isElementVisible(parallaxLayer)),
-    map(getOptimalWidth),
-    distinctUntilChanged(),
-    tap((optimalWidth) => {
-      stateManager.updateState({
-        orientation: portraitMediaQuery.matches ? "portrait" : "landscape",
-        optimalWidth
-      });
-      const imageLayers = Array.from((parallaxLayer == null ? void 0 : parallaxLayer.getElementsByTagName("img")) || []);
-      updateImageSources(imageLayers, optimalWidth);
-    }),
-    takeUntil(stateManager.cleanup$),
-    catchError((error) => {
-      logger.error("Error in viewport change handler:", error);
-      return EMPTY;
-    })
-  );
-};
-var shuffledHeroes = [...allHeroes].sort(() => Math.random() - 0.5);
-var createImageCycler = (parallaxLayer2) => {
-  const { state$, canCycle$, cleanup$, updateState } = stateManager;
-  const loadedImages = /* @__PURE__ */ new Set();
-  const loadImages$ = from([shuffledHeroes[0]]).pipe(
-    mergeMap(fetchAndSetImage),
-    takeUntil(cleanup$),
-    tap((_image) => {
-      loadedImages.add(shuffledHeroes[0].imageName);
-      updateState({
-        activeImageIndex: 0,
-        status: "cycling"
-      });
-    }),
-    catchError((error) => {
-      logger.error("Failed to load initial image:", error);
-      updateState({ status: "error" });
-      return EMPTY;
-    })
-  );
-  const cycle$ = interval(CONFIG2.INTERVAL_TIME).pipe(
-    withLatestFrom(canCycle$, state$),
-    filter(([_, canCycle]) => canCycle),
-    mergeMap(([_, __, state]) => {
-      updateState({ status: "cycling" });
-      const nextIndex = (state.activeImageIndex + 1) % shuffledHeroes.length;
-      const nextImage = shuffledHeroes[nextIndex];
-      const currentImage = parallaxLayer2 == null ? void 0 : parallaxLayer2.getElementsByTagName("img")[0];
-      if (!currentImage) {
-        const tl = gsapWithCSS.timeline();
-      }
-      if (!loadedImages.has(nextImage.imageName)) {
-        return fetchAndSetImage(nextImage).pipe(
-          tap((newImage) => {
-            loadedImages.add(nextImage.imageName);
-            if (currentImage) {
-              animateImageTransition(currentImage, newImage);
-            } else {
-              gsapWithCSS.to(newImage, {
-                opacity: 1,
-                duration: ANIMATION_CONFIG.ENTER.duration,
-                ease: ANIMATION_CONFIG.ENTER.ease
-              });
-            }
-            updateState({ activeImageIndex: nextIndex });
-            void setText(nextImage.imageName);
-          }),
-          catchError((error) => {
-            logger.error(`Failed to load image ${nextImage.imageName}:`, error);
-            return EMPTY;
-          })
-        );
-      }
-      return of(void 0);
-    }),
-    takeUntil(cleanup$)
-  );
-  return {
-    loadImages$,
-    cycle$,
-    stateManager,
-    start: () => {
-      const subscription = new Subscription();
-      subscription.add(createVisibilityAndLocationObservable().subscribe());
-      subscription.add(createOrientationHandler().subscribe());
-      subscription.add(
-        loadImages$.pipe(
-          tap(() => {
-            stateManager.updateState({ status: "cycling" });
-            subscription.add(cycle$.subscribe());
-          })
-        ).subscribe()
-      );
-      subscription.add(() => {
-        const images = parallaxLayer2 == null ? void 0 : parallaxLayer2.getElementsByTagName("img");
-        if (images) {
-          Array.from(images).forEach(cleanupImageResources);
+  /**
+   * Sets the timeline for the specified image, managing its entry and exit animations.
+   * @param img The image to set the timeline for.
+   * @param imgName The name of the image.
+   * @param index The index of the image in the hero array.
+   * @returns The GSAP timeline for the image animations.
+   */
+  setTimelineForImage(img, imgName, index) {
+    var _a2;
+    if (!parallaxLayer) {
+      return gsapWithCSS.timeline();
+    }
+    const timeline2 = gsapWithCSS.timeline({ paused: true });
+    const currentImage = (_a2 = parallaxLayer.children) == null ? void 0 : _a2[0];
+    const currentAnimation = currentImage && this.cleanup.get(currentImage);
+    timeline2.add(() => {
+      if (parallaxLayer.firstElementChild !== img) {
+        if (parallaxLayer.contains(img)) {
+          parallaxLayer.removeChild(img);
         }
+        parallaxLayer.prepend(img);
+      }
+      gsapWithCSS.set(img, { perspective: "0px", perspectiveOrigin: "bottom left" });
+      this.setParallaxHeight(img.naturalHeight);
+      this.updateState({ activeImageIndex: index });
+      this.updateTextElements(imgName);
+      if (currentAnimation) {
+        currentAnimation.kill();
+      }
+      gsapWithCSS.to(img, {
+        perspective: "20000px",
+        perspectiveOrigin: "5000% 2000%",
+        transformOrigin: "center left",
+        duration: 10,
+        ease: "power2.inOut"
       });
-      return subscription;
-    },
-    stop: () => {
-      stateManager.cleanup();
-    },
-    debug: {
-      getState: () => stateManager.state$.value,
-      getMetadata: (img) => imageMetadata.get(img)
+      if (currentImage && currentImage !== img) {
+        gsapWithCSS.to(currentImage, { ...HERO_CONFIG.ANIMATION.EXIT });
+      }
+    });
+    this.cleanup.set(img, timeline2);
+    return timeline2;
+  }
+  /**
+   * Cycles to the next image in the hero image array.
+   * @returns A promise that resolves when the image has been cycled.
+   */
+  async cycleImage() {
+    if (!parallaxLayer || this.state$.closed) {
+      return;
     }
-  };
+    const { activeImageIndex } = this.state$.value || { activeImageIndex: 0 };
+    const nextIndex = parallaxLayer.childElementCount > 0 ? (activeImageIndex + 1) % this.shuffledHeroes.length : 0;
+    const nextImageName = this.shuffledHeroes[nextIndex].imageName;
+    const currentImage = parallaxLayer.children[0];
+    if (currentImage == null ? void 0 : currentImage.classList.contains(`hero-parallax__image--${nextImageName}`)) {
+      return;
+    }
+    const newImageElement = this.loadedImages.get(nextImageName) || await this.loadAndPrepareImage(this.shuffledHeroes[nextIndex]);
+    const timeline2 = this.cleanup.get(newImageElement) || this.setTimelineForImage(newImageElement, nextImageName, nextIndex);
+    timeline2.play();
+  }
+  /**
+   * Disposes of the hero state manager, cleaning up resources and subscriptions.
+   */
+  dispose() {
+    this.state$.complete();
+    this.loadedImages.forEach((img) => this.cleanupImageResources(img));
+    this.cleanup.forEach((timeline2) => timeline2.kill());
+    this.cleanup.clear();
+    this.loadedImages.clear();
+    this.imageMetadata = /* @__PURE__ */ new WeakMap();
+    this.subscriptionManager.schedulePageCleanup(this.homePath || "/");
+  }
+  /**
+   * Returns an observable of the current hero state.
+   * @returns The observable of the hero state object.
+   */
+  getState$() {
+    return this.state$.asObservable();
+  }
+  /**
+   * Retrieves the current state of the hero.
+   * @returns The current instance's state object.
+   */
+  getCurrentState() {
+    return this.state$.value;
+  }
 };
 var cyclerRef = { current: null };
 var initCycler = () => {
   var _a2;
   if (!parallaxLayer) {
+    logger.warn("No parallax layer found");
     return;
   }
-  if ((_a2 = cyclerRef.current) == null ? void 0 : _a2.stop) {
-    cyclerRef.current.stop();
-  }
-  cyclerRef.current = createImageCycler(parallaxLayer);
+  logger.info("Initializing cycler");
+  (_a2 = cyclerRef.current) == null ? void 0 : _a2.stop();
+  cyclerRef.current = HeroStateManager.createCycler();
   const subscription = cyclerRef.current.start();
   return () => {
     var _a3;
@@ -12931,92 +13060,31 @@ var initCycler = () => {
     cyclerRef.current = null;
   };
 };
-var cleanup = initCycler();
-var getImage = () => {
-  const images = parallaxLayer == null ? void 0 : parallaxLayer.getElementsByTagName("img");
-  if (images && images.length > 0) {
-    return images[0];
-  }
-  return void 0;
-};
-function setParallaxHeight(height) {
-  var _a2;
-  const headerHeight = ((_a2 = document.getElementById("header-target")) == null ? void 0 : _a2.clientHeight) || 95;
-  setCssVariable("--header-height", `${headerHeight}px`);
-  const effectiveViewHeight = window.innerHeight - headerHeight;
-  const maxFade = effectiveViewHeight * 1.4;
-  if (!parallaxLayer || height <= 0) {
-    const currentValue = document.documentElement.style.getPropertyValue("--fade-height");
-    setCssVariable("--fade-height", Math.max(Number(currentValue), effectiveViewHeight).toString());
-  }
-  setCssVariable("--fade-height", `${Math.min(height * 1.2, maxFade, effectiveViewHeight)}px`);
-  const parallaxHeight = height < effectiveViewHeight ? effectiveViewHeight : Math.min(height * 1.2, maxFade);
-  setCssVariable("--parallax-height", `${parallaxHeight}px`);
-}
-var createHeightObservable = (stateManager2) => {
-  const imageChanges$ = stateManager2.state$.pipe(
-    map(() => getImage()),
-    filter((img) => img !== null && img instanceof HTMLImageElement),
-    map((img) => img.height),
-    filter((height) => typeof height === "number" && height > 0 && !Number.isNaN(height)),
-    shareReplay(1)
-  );
-  const viewportChanges$ = merge(
-    fromEvent(window, "resize"),
-    createOrientationObservable(portraitMediaQuery)
-  ).pipe(
-    debounceTime(100),
-    map(() => {
-      const img = getImage();
-      return (img == null ? void 0 : img.height) || window.innerHeight;
-    }),
-    filter((height) => typeof height === "number" && height > 0 && !Number.isNaN(height)),
-    shareReplay(1)
-  );
-  return merge(imageChanges$, viewportChanges$).pipe(
-    distinctUntilChanged(),
-    filter(() => isPageVisible()),
-    tap((height) => setParallaxHeight(height)),
-    catchError((error) => {
-      logger.error("Error adjusting height:", error);
-      return EMPTY;
-    }),
-    takeUntil(stateManager2.cleanup$)
-  );
-};
 var shuffle$ = () => {
   if (!parallaxLayer) {
+    logger.warn("No parallax layer found");
     return EMPTY;
   }
-  const cycler = cyclerRef.current;
-  if (!cycler) {
-    return EMPTY;
+  if (!cyclerRef.current) {
+    initCycler();
   }
-  const subscription = new Subscription();
-  subscription.add(createHeightObservable(cycler.stateManager).subscribe());
-  return watchLocationChange$((url) => !isHome(url)).pipe(
-    switchMap((url) => {
-      if (parallaxLayer && !parallaxLayer.children.length && isOnSite(url)) {
-        return fetchAndSetImage(shuffledHeroes[0]).pipe(
-          filter((img) => img !== null && img instanceof HTMLImageElement),
-          tap((img) => {
-            const tl = gsapWithCSS.timeline();
-            gsapWithCSS.set(img, { opacity: 1 });
-            const panAnimation = createPanAnimation(img);
-            if (panAnimation) {
-              tl.add(panAnimation, ">");
-            }
-          }),
-          map(() => void 0)
-        );
+  return interval(HERO_CONFIG.INTERVAL).pipe(
+    switchMap(() => {
+      var _a2;
+      if (!((_a2 = cyclerRef.current) == null ? void 0 : _a2.heroState)) {
+        return EMPTY;
       }
-      return EMPTY;
+      const { canCycle$ } = cyclerRef.current.heroState;
+      return canCycle$.pipe(
+        filter((canCycle) => canCycle === true),
+        switchMap(() => from(cyclerRef.current.heroState.cycleImage())),
+        catchError((error) => {
+          logger.error("Error during image cycle:", error);
+          return EMPTY;
+        })
+      );
     }),
-    catchError((error) => {
-      logger.error("Error in shuffle$:", error);
-      return EMPTY;
-    }),
-    finalize(() => subscription.unsubscribe())
+    shareReplay(1)
   );
 };
 
@@ -15983,52 +16051,51 @@ var subscribeToAnimations = () => {
 
 // src/assets/javascripts/index.ts
 var { document$: document$2 } = window;
-var manager2 = getSubscriptionManager();
-var styleAssets = document.querySelectorAll("link[rel=stylesheet][href*=stylesheets]");
-var scriptAssets = document.querySelectorAll("script[src*=javascripts]");
-var fontAssets = document.querySelectorAll("link[rel=stylesheet][href*=fonts]");
-var imageAssets = document.querySelectorAll("img[src]");
+var manager2 = new SubscriptionManager();
+window.subscriptionManager = manager2;
 document.documentElement.classList.remove("no-js");
 document.documentElement.classList.add("js");
-var preloadFonts = () => {
-  const fontUrls = Array.from(fontAssets).map((el) => el.getAttribute("href")).filter((url) => url !== null);
-  return merge(...fontUrls.map((url) => getAsset(url).pipe(tap((response) => {
-    response.blob().then((blob) => {
-      const blobUrl = URL.createObjectURL(blob);
-      const fontFamily = url.includes("inter") ? "Inter" : url.includes("sourcecodepro") ? "Source Code Pro" : url.includes("raleway") ? "Raleway" : "Bangers";
-      const font = new FontFace(fontFamily, `url(${blobUrl})`);
-      font.load().then((_loadedFont) => {
-        document.fonts.load(`url(${blobUrl})`).then(() => {
-          logger.info(`Font loaded from cache: ${url}`);
-        });
-        URL.revokeObjectURL(blobUrl);
+var extractUrls = (elements, attribute) => Array.from(elements).map((el) => el.getAttribute(attribute)).filter((url) => url !== null);
+var preloadFonts = async () => {
+  const fontUrls = extractUrls(document.querySelectorAll("link[rel=stylesheet][href*=fonts]"), "href");
+  for (const url of fontUrls) {
+    try {
+      const response = getAsset(url);
+      const blob = response ? await (await firstValueFrom(response)).blob() : void 0;
+      if (blob) {
+        const blobUrl = URL.createObjectURL(blob);
+        const fontFamily = url.includes("inter") ? "Inter" : url.includes("sourcecodepro") ? "Source Code Pro" : url.includes("raleway") ? "Raleway" : "Bangers";
+        const font = new FontFace(fontFamily, `url(${blobUrl})`);
+        await font.load();
+        await document.fonts.load(font.family);
         logger.info(`Font loaded from cache: ${url}`);
-      }).catch((error) => {
-        logger.error(`Error loading font: ${fontFamily}`, error);
-      });
-    });
-  }))));
+        URL.revokeObjectURL(blobUrl);
+      }
+    } catch (error) {
+      logger.error(`Error loading font: ${url}`, error);
+    }
+  }
 };
 var preloadStaticAssets = () => {
-  const styleUrls = Array.from(styleAssets).map((el) => el.getAttribute("href")).filter((url) => url !== null);
-  const scriptUrls = Array.from(scriptAssets).map((el) => el.getAttribute("src")).filter((url) => url !== null);
-  const imageUrls = Array.from(imageAssets).map((el) => el.getAttribute("src")).filter((url) => url !== null);
+  const styleUrls = extractUrls(document.querySelectorAll("link[rel=stylesheet][href*=stylesheets]"), "href");
+  const scriptUrls = extractUrls(document.querySelectorAll("script[src*=javascripts]"), "src");
+  const imageUrls = extractUrls(document.querySelectorAll("img[src]"), "src");
   return merge(...styleUrls.map((url) => getAsset(url)), ...scriptUrls.map((url) => getAsset(url)), ...imageUrls.map((url) => getAsset(url)));
 };
-var cleanCache$ = cleanupCache(8e3).pipe(tap(() => logger.info("Attempting to clean up cache")), mergeMap(() => merge(cacheAssets("stylesheets", styleAssets), cacheAssets("javascripts", scriptAssets), cacheAssets("fonts", fontAssets), cacheAssets("images", imageAssets))), tap(() => logger.info("Assets cached")));
+var cleanCache$ = cleanupCache(8e3).pipe(tap(() => logger.info("Attempting to clean up cache")), mergeMap(() => merge(cacheAssets("stylesheets", document.querySelectorAll("link[rel=stylesheet][href*=stylesheets]")), cacheAssets("javascripts", document.querySelectorAll("script[src*=javascripts]")), cacheAssets("fonts", document.querySelectorAll("link[rel=stylesheet][href*=fonts]")), cacheAssets("images", document.querySelectorAll("img[src]")))), tap(() => logger.info("Assets cached")));
 var deleteCache$ = deleteOldCache();
 var shuffler$ = shuffle$();
-var animate$ = document$2.pipe(tap(() => subscribeToAnimations()));
-var homeBeacon$ = locationBeacon$.pipe(filter((url) => url instanceof URL), distinctUntilKeyChanged("pathname"), tap(() => logger.info("New page loaded")), tap(() => logger.info("Navigated to home page")), filter((url) => isHome(url)), distinctUntilChanged());
+var animate = document$2.subscribe(() => subscribeToAnimations());
+var homeBeacon$ = locationBeacon$.pipe(filter((url) => url instanceof URL), distinctUntilKeyChanged("pathname"), tap(() => logger.info("New page loaded")), tap(() => logger.info("Navigated to home page")), filter((url) => isHome(url)));
 var atHome$ = homeBeacon$.pipe(tap(() => {
   logger.info("At home page");
   document.body.setAttribute("data-md-color-scheme", "slate");
   manager2.addSubscription(shuffler$.subscribe());
-  manager2.addSubscription(animate$.subscribe());
+  manager2.addSubscription(animate);
 }));
 var license$ = watchLicense();
-var atLicense$ = locationBeacon$.pipe(distinctUntilKeyChanged("pathname"), filter((url) => url instanceof URL && isOnSite(url) && isLicense(url)), distinctUntilChanged(), tap(() => logger.info("At license page")));
-var atHelping$ = locationBeacon$.pipe(distinctUntilKeyChanged("pathname"), filter((url) => url instanceof URL && isOnSite(url) && isHelpingIndex(url)), tap(() => logger.info("At helping page")), distinctUntilChanged());
+var atLicense$ = locationBeacon$.pipe(distinctUntilKeyChanged("pathname"), filter((url) => url instanceof URL && isOnSite(url) && isLicense(url)), tap(() => logger.info("At license page")));
+var atHelping$ = locationBeacon$.pipe(distinctUntilKeyChanged("pathname"), filter((url) => url instanceof URL && isOnSite(url) && isHelpingIndex(url)), tap(() => logger.info("At helping page")));
 var table$ = watchTable$();
 var insertAnalytics = () => {
   const script3 = document.createElement("script");
@@ -16042,12 +16109,12 @@ function initPage() {
   const analytics$ = watchLocationChange$((url) => isOnSite(url)).pipe(distinctUntilKeyChanged("pathname"), tap(() => insertAnalytics()));
   const event$ = of(windowEvents());
   logger.info("New page loaded");
-  initPageSubscriptions.push(preloadFonts().subscribe(), preloadStaticAssets().subscribe(), of(bundle_exports).subscribe(), event$.subscribe(), analytics$.subscribe(), table$.subscribe(), feedback$.subscribe(), cleanCache$.subscribe(), deleteCache$.subscribe());
+  initPageSubscriptions.push(of(preloadFonts().then(() => {
+  }).catch(() => {
+  })).subscribe(), preloadStaticAssets().subscribe(), of(bundle_exports).subscribe(), event$.subscribe(), analytics$.subscribe(), table$.subscribe(), feedback$.subscribe(), cleanCache$.subscribe(), deleteCache$.subscribe());
   initPageSubscriptions.forEach((sub) => manager2.addSubscription(sub));
   logger.info("Subscribed to new page subscriptions");
 }
-manager2.addSubscription(preloadStaticAssets().subscribe());
-manager2.addSubscription(preloadFonts().subscribe());
 manager2.addSubscription(atHome$.subscribe(), true);
 manager2.addSubscription(atHelping$.subscribe(), true);
 manager2.addSubscription(atLicense$.subscribe(() => {
@@ -16084,6 +16151,11 @@ manager2.addSubscription(newPage$.pipe(skipUntil(document$2)).subscribe(() => {
  * Handles caching of assets and cache busting
  * @license Plain Unlicense (Public Domain)
  * @copyright No rights reserved. Created by and for Plain License www.plainlicense.org
+ */
+/**
+ * Handles the state and behavior of the hero image cycling feature on the landing page.
+ * @copyright No rights reserved. Created by and for Plain License: https//www.plainlicense.org and dedicated to the Public Domain.
+ * @license Plain Unlicense (Public Domain)
  */
 /**
  * @copyright No rights reserved. Created by and for Plain License www.plainlicense.org
@@ -16168,4 +16240,4 @@ gsap/ScrollTrigger.js:
    * @author: Jack Doyle, jack@greensock.com
   *)
 */
-//# sourceMappingURL=index.QHAVYOIH.js.map
+//# sourceMappingURL=index.RSVUY66L.js.map

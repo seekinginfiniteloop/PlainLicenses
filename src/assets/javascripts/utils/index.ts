@@ -9,8 +9,10 @@ import * as bundle from "~/bundle"
 import { BehaviorSubject, Observable, Subject, Subscription, fromEvent, fromEventPattern, merge, of } from "rxjs"
 import { debounceTime, distinctUntilChanged, filter, map, shareReplay, tap } from "rxjs/operators"
 import Tablesort from "tablesort"
+import { logger } from "~/log"
 
-const NAV_EXIT_DELAY = 60000
+export const NAV_EXIT_DELAY = 60000
+export const PAGE_CLEANUP_DELAY = 20000
 
 export const prefersReducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches
 
@@ -111,7 +113,7 @@ const isDev = (url: URL) => { return (url.hostname === "localhost" && url.port =
 export const isOnSite = (url: URL) => { return isProd(url) || isDev(url) }
 
 // A behavior subject that emits the current location of the window
-const locationBehavior$ = new BehaviorSubject<URL>(getLocation())
+export const locationBehavior$ = new BehaviorSubject<URL>(getLocation())
 
 // Tests if the event is a valid event (that is not null and is an instance of Event)
 const isValidEvent = (value: Event | null) => { return value !== null && value instanceof Event }
@@ -199,15 +201,21 @@ export async function windowEvents() {
  * Manages observable subscriptions for site and each visited page.
  * Serves as a central manager for subscriptions that need to be cleaned up when the user navigates away from the site or page.
  */
-class SubscriptionManager {
-  private subscriptions: Subscription[] = []
+export class SubscriptionManager {
+
+  private siteWideSubscriptions: Map<Subscription, boolean> = new Map()
+
+  private pageSubscriptions: Map<string, Subscription[]> = new Map()
+
+  private currentPageUrl: string = locationBehavior$.value.pathname
 
   private siteExit$ = new Subject<void>()
 
   private pageExit$ = new Subject<void>()
 
+  private cleanupTimeout: number | null = null
+
   constructor() {
-    // first we check if we already have an instance
     if (window.subscriptionManager) {
       return window.subscriptionManager
     }
@@ -215,10 +223,6 @@ class SubscriptionManager {
     this.setupPageExit()
   }
 
-  /**
-   * Sets up an observable for site exit events based on location changes.
-   * Emits an event when the user navigates away from the site.
-   */
   private setupSiteExit() {
     locationBeacon$.pipe(
       filter(url => url instanceof URL && !isOnSite(url)),
@@ -228,50 +232,98 @@ class SubscriptionManager {
     })
   }
 
-  /**
-   * Sets up an observable for page exit events based on location changes.
-   * Emits an event when the user navigates away from the current page.
-   */
   private setupPageExit() {
     locationBeacon$.pipe(
-      debounceTime(10),
+      debounceTime(1000),
       filter(url => url instanceof URL && isOnSite(url)),
-    ).subscribe(() => {
-      this.pageExit$.next()
+    ).subscribe((url: URL) => {
+    const newPath = url.pathname
+    if (newPath !== this.currentPageUrl) {
+      this.cleanup() // Cancel any pending cleanup
+      this.schedulePageCleanup(this.currentPageUrl)
+      this.currentPageUrl = newPath
+    }
+    this.pageExit$.next()
+  })
+  }
+
+  public addSubscription(subscription: Subscription, isSiteWide: boolean = false) {
+    if (isSiteWide) {
+      logger.info("Adding site-wide subscription")
+      this.siteWideSubscriptions.set(subscription, true)
+      this.siteExit$.subscribe(() => subscription.unsubscribe())
+    } else {
+      logger.info("Adding page-specific subscription")
+      const pageSubscriptions = this.pageSubscriptions.get(this.currentPageUrl) || []
+      pageSubscriptions.push(subscription)
+      this.pageSubscriptions.set(this.currentPageUrl, pageSubscriptions)
+    }
+  }
+
+  public removeSubscription(subscription: Subscription | Subscription[]) {
+    const subs = Array.isArray(subscription) ? subscription : [subscription]
+
+    subs.forEach(sub => {
+      // Remove from site-wide subscriptions
+      if (this.siteWideSubscriptions.has(sub)) {
+        logger.info("Removing site-wide subscription")
+        this.siteWideSubscriptions.delete(sub)
+        sub.unsubscribe()
+      }
+
+      // Remove from page-specific subscriptions
+      for (const [page, pageSubs] of this.pageSubscriptions.entries()) {
+        const filtered = pageSubs.filter(s => s !== sub)
+        if (filtered.length !== pageSubs.length) {
+          logger.info("Removing page-specific subscription")
+          this.pageSubscriptions.set(page, filtered)
+          sub.unsubscribe()
+        }
+      }
     })
   }
 
-  /**
-   * Adds a subscription to the manager, specifying whether it is site-wide.
-   * @param subscription The subscription to add.
-   * @param isSiteWide Indicates if the subscription is site-wide.
-   */
-  public addSubscription(subscription: Subscription, isSiteWide: boolean = false) {
-    this.subscriptions.push(subscription)
-    const exit$ = isSiteWide ? this.siteExit$ : this.pageExit$
-    exit$.subscribe(() => subscription.unsubscribe())
+  public schedulePageCleanup(pageUrl: string) {
+    this.cleanupTimeout = window.setTimeout(() => {
+    this.clearPageSubscriptions(pageUrl)
+    this.cleanupTimeout = null
+  }, PAGE_CLEANUP_DELAY)
   }
 
-  /**
-   * Clears all subscriptions related to page exit events.
-   * Emits a signal to the pageExit$ subject to trigger cleanup.
-   */
-  public clearPageSubscriptions() {
-    this.pageExit$.next()
-    this.subscriptions = this.subscriptions.filter(sub => !sub.closed)
+  public cleanup(): void {
+    if (this.cleanupTimeout) {
+      window.clearTimeout(this.cleanupTimeout)
+      this.cleanupTimeout = null
+    }
   }
 
-  /**
-   * Clears all subscriptions and emits signals to both siteExit$ and pageExit$ subjects.
-   * Unsubscribes from all active subscriptions and resets the subscription list.
-   */
+  private clearPageSubscriptions(pageUrl: string) {
+    const pageSubscriptions = this.pageSubscriptions.get(pageUrl) || []
+    pageSubscriptions.forEach(sub => sub.unsubscribe())
+    this.pageSubscriptions.delete(pageUrl)
+    logger.info(`Cleared subscriptions for page: ${pageUrl}`)
+  }
+
   public clearAllSubscriptions() {
+    // Clear site-wide subscriptions
+    for (const sub of this.siteWideSubscriptions.keys()) {
+      sub.unsubscribe()
+    }
+    this.siteWideSubscriptions.clear()
+
+    // Clear all page subscriptions
+    for (const [_, subs] of this.pageSubscriptions) {
+      subs.forEach(sub => sub.unsubscribe())
+    }
+    this.pageSubscriptions.clear()
+
     this.siteExit$.next()
     this.pageExit$.next()
-    this.subscriptions.forEach(sub => sub.unsubscribe())
-    this.subscriptions = []
+    logger.info("Cleared all subscriptions")
   }
 }
+
+export type SubscriptionManagerType = SubscriptionManager
 
 /**
  * Getter function for the SubscriptionManager singleton.
@@ -279,15 +331,15 @@ class SubscriptionManager {
  * @returns The SubscriptionManager singleton.
  */
 export const getSubscriptionManager = () => {
-  if (window.subscriptionManager) {
+  try {
+    if (window.subscriptionManager) {
+      return window.subscriptionManager
+    }
+  } catch {
+    window.subscriptionManager = new SubscriptionManager()
     return window.subscriptionManager
   }
-  else {
-    window.subscriptionManager = new SubscriptionManager()
-  }
-  return window.subscriptionManager
 }
-
 // Example usage:
 // const subscriber = getSubscriptionManager();
 // subscriber.addSubscription(yourSubscription, true);

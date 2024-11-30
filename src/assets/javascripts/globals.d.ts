@@ -13,16 +13,6 @@ declare global {
    * Types
    * ------------------------------------------------------------------------- */
 
-  // Image state management
-  type HeroState = {
-    status: 'loading' | 'ready' | 'cycling' | 'paused' | 'stopped' | 'error'
-    isVisible: boolean
-    isAtHome: boolean
-    activeImageIndex: number
-    orientation: 'portrait' | 'landscape'
-    optimalWidth: number
-    lastActiveTime: number
-  }
 
   type T = Type["T"]
   type R = Type["R"]
@@ -45,6 +35,16 @@ declare global {
    * Interfaces
    * ------------------------------------------------------------------------- */
 
+    // Image state management
+  interface HeroState {
+    readonly status: 'loading' | 'cycling' | 'paused' | 'error'
+    readonly isVisible: boolean
+    readonly isAtHome: boolean
+    readonly activeImageIndex: number
+    readonly orientation: 'portrait' | 'landscape'
+    readonly optimalWidth: number
+    readonly lastActiveTime: number
+  }
 
   interface ScrollTargets {
     target: Element
@@ -53,16 +53,19 @@ declare global {
     duration: number
   }
 
+  interface ImageMetadata {
+    readonly loadTime: number
+    displayCount: number
+    readonly width: number
+    readonly actualWidth: number
+  }
+
   interface ImageCycler {
-    loadImages$: Observable<HTMLImageElement>
-    cycle$: Observable<HTMLImageElement | undefined>
-    stateManager: typeof stateManager
+    loadImages$: Observable<Promise<void>>
+    cycle$: Observable<void>
+    heroState: HeroStateManager
     start: () => Subscription
     stop: () => void
-    debug: {
-      getState: () => HeroState
-      getMetadata: (img: HTMLImageElement) => any
-    }
   }
 
 
