@@ -12438,7 +12438,17 @@ var rawHeroImages = [
       "2560": "docs/assets/images/hero/anime/anime_2560.d93b987e.avif",
       "3840": "docs/assets/images/hero/anime/anime_3840.d38bd5ff.avif"
     },
-    "srcset": "docs/assets/images/hero/anime/anime_1280.3fcea899.avif 1280w, docs/assets/images/hero/anime/anime_1920.c254a9db.avif 1920w, docs/assets/images/hero/anime/anime_2560.d93b987e.avif 2560w, docs/assets/images/hero/anime/anime_3840.d38bd5ff.avif 3840w"
+    "srcset": "docs/assets/images/hero/anime/anime_1280.3fcea899.avif 1280w, docs/assets/images/hero/anime/anime_1920.c254a9db.avif 1920w, docs/assets/images/hero/anime/anime_2560.d93b987e.avif 2560w, docs/assets/images/hero/anime/anime_3840.d38bd5ff.avif 3840w",
+    "focalPoints": {
+      "main": [
+        0.49,
+        0.385
+      ],
+      "secondary": [
+        0.57,
+        0.65
+      ]
+    }
   },
   {
     "imageName": "artbrut",
@@ -12449,7 +12459,17 @@ var rawHeroImages = [
       "2560": "docs/assets/images/hero/artbrut/artbrut_2560.f941065b.avif",
       "3840": "docs/assets/images/hero/artbrut/artbrut_3840.06f2db57.avif"
     },
-    "srcset": "docs/assets/images/hero/artbrut/artbrut_1280.9d423493.avif 1280w, docs/assets/images/hero/artbrut/artbrut_1920.b33e189e.avif 1920w, docs/assets/images/hero/artbrut/artbrut_2560.f941065b.avif 2560w, docs/assets/images/hero/artbrut/artbrut_3840.06f2db57.avif 3840w"
+    "srcset": "docs/assets/images/hero/artbrut/artbrut_1280.9d423493.avif 1280w, docs/assets/images/hero/artbrut/artbrut_1920.b33e189e.avif 1920w, docs/assets/images/hero/artbrut/artbrut_2560.f941065b.avif 2560w, docs/assets/images/hero/artbrut/artbrut_3840.06f2db57.avif 3840w",
+    "focalPoints": {
+      "main": [
+        0.465,
+        0.38
+      ],
+      "secondary": [
+        0.23,
+        0.21
+      ]
+    }
   },
   {
     "imageName": "comic",
@@ -12460,7 +12480,17 @@ var rawHeroImages = [
       "2560": "docs/assets/images/hero/comic/comic_2560.2309f695.avif",
       "3840": "docs/assets/images/hero/comic/comic_3840.d5bf4b07.avif"
     },
-    "srcset": "docs/assets/images/hero/comic/comic_1280.80029dc5.avif 1280w, docs/assets/images/hero/comic/comic_1920.ccb36986.avif 1920w, docs/assets/images/hero/comic/comic_2560.2309f695.avif 2560w, docs/assets/images/hero/comic/comic_3840.d5bf4b07.avif 3840w"
+    "srcset": "docs/assets/images/hero/comic/comic_1280.80029dc5.avif 1280w, docs/assets/images/hero/comic/comic_1920.ccb36986.avif 1920w, docs/assets/images/hero/comic/comic_2560.2309f695.avif 2560w, docs/assets/images/hero/comic/comic_3840.d5bf4b07.avif 3840w",
+    "focalPoints": {
+      "main": [
+        0.41,
+        0.36
+      ],
+      "secondary": [
+        0.35,
+        0.72
+      ]
+    }
   },
   {
     "imageName": "fanciful",
@@ -12471,7 +12501,17 @@ var rawHeroImages = [
       "2560": "docs/assets/images/hero/fanciful/fanciful_2560.d846fdc9.avif",
       "3840": "docs/assets/images/hero/fanciful/fanciful_3840.2aa6eb29.avif"
     },
-    "srcset": "docs/assets/images/hero/fanciful/fanciful_1280.97c5119b.avif 1280w, docs/assets/images/hero/fanciful/fanciful_1920.8a8d1e24.avif 1920w, docs/assets/images/hero/fanciful/fanciful_2560.d846fdc9.avif 2560w, docs/assets/images/hero/fanciful/fanciful_3840.2aa6eb29.avif 3840w"
+    "srcset": "docs/assets/images/hero/fanciful/fanciful_1280.97c5119b.avif 1280w, docs/assets/images/hero/fanciful/fanciful_1920.8a8d1e24.avif 1920w, docs/assets/images/hero/fanciful/fanciful_2560.d846fdc9.avif 2560w, docs/assets/images/hero/fanciful/fanciful_3840.2aa6eb29.avif 3840w",
+    "focalPoints": {
+      "main": [
+        0.43,
+        0.6
+      ],
+      "secondary": [
+        0.61,
+        0.44
+      ]
+    }
   },
   {
     "imageName": "fantasy",
@@ -12482,7 +12522,17 @@ var rawHeroImages = [
       "2560": "docs/assets/images/hero/fantasy/fantasy_2560.87ecf4b7.avif",
       "3840": "docs/assets/images/hero/fantasy/fantasy_3840.76aef34a.avif"
     },
-    "srcset": "docs/assets/images/hero/fantasy/fantasy_1280.cc724b8d.avif 1280w, docs/assets/images/hero/fantasy/fantasy_1920.b0945961.avif 1920w, docs/assets/images/hero/fantasy/fantasy_2560.87ecf4b7.avif 2560w, docs/assets/images/hero/fantasy/fantasy_3840.76aef34a.avif 3840w"
+    "srcset": "docs/assets/images/hero/fantasy/fantasy_1280.cc724b8d.avif 1280w, docs/assets/images/hero/fantasy/fantasy_1920.b0945961.avif 1920w, docs/assets/images/hero/fantasy/fantasy_2560.87ecf4b7.avif 2560w, docs/assets/images/hero/fantasy/fantasy_3840.76aef34a.avif 3840w",
+    "focalPoints": {
+      "main": [
+        0.49,
+        0.59
+      ],
+      "secondary": [
+        0.33,
+        0.34
+      ]
+    }
   },
   {
     "imageName": "farcical",
@@ -12493,7 +12543,17 @@ var rawHeroImages = [
       "2560": "docs/assets/images/hero/farcical/farcical_2560.b70c1efb.avif",
       "3840": "docs/assets/images/hero/farcical/farcical_3840.512c28b7.avif"
     },
-    "srcset": "docs/assets/images/hero/farcical/farcical_1280.0bcf4abf.avif 1280w, docs/assets/images/hero/farcical/farcical_1920.eb4e92aa.avif 1920w, docs/assets/images/hero/farcical/farcical_2560.b70c1efb.avif 2560w, docs/assets/images/hero/farcical/farcical_3840.512c28b7.avif 3840w"
+    "srcset": "docs/assets/images/hero/farcical/farcical_1280.0bcf4abf.avif 1280w, docs/assets/images/hero/farcical/farcical_1920.eb4e92aa.avif 1920w, docs/assets/images/hero/farcical/farcical_2560.b70c1efb.avif 2560w, docs/assets/images/hero/farcical/farcical_3840.512c28b7.avif 3840w",
+    "focalPoints": {
+      "main": [
+        0.485,
+        0.6
+      ],
+      "secondary": [
+        0.35,
+        0.43
+      ]
+    }
   },
   {
     "imageName": "fauvist",
@@ -12504,7 +12564,17 @@ var rawHeroImages = [
       "2560": "docs/assets/images/hero/fauvist/fauvist_2560.e70f1931.avif",
       "3840": "docs/assets/images/hero/fauvist/fauvist_3840.500219d3.avif"
     },
-    "srcset": "docs/assets/images/hero/fauvist/fauvist_1280.9e323bee.avif 1280w, docs/assets/images/hero/fauvist/fauvist_1920.e5d68503.avif 1920w, docs/assets/images/hero/fauvist/fauvist_2560.e70f1931.avif 2560w, docs/assets/images/hero/fauvist/fauvist_3840.500219d3.avif 3840w"
+    "srcset": "docs/assets/images/hero/fauvist/fauvist_1280.9e323bee.avif 1280w, docs/assets/images/hero/fauvist/fauvist_1920.e5d68503.avif 1920w, docs/assets/images/hero/fauvist/fauvist_2560.e70f1931.avif 2560w, docs/assets/images/hero/fauvist/fauvist_3840.500219d3.avif 3840w",
+    "focalPoints": {
+      "main": [
+        0.33,
+        0.48
+      ],
+      "secondary": [
+        0.3,
+        0.55
+      ]
+    }
   },
   {
     "imageName": "minimal",
@@ -12515,7 +12585,17 @@ var rawHeroImages = [
       "2560": "docs/assets/images/hero/minimal/minimal_2560.c5549cbf.avif",
       "3840": "docs/assets/images/hero/minimal/minimal_3840.6c643286.avif"
     },
-    "srcset": "docs/assets/images/hero/minimal/minimal_1280.42dcf0b0.avif 1280w, docs/assets/images/hero/minimal/minimal_1920.71ca07e0.avif 1920w, docs/assets/images/hero/minimal/minimal_2560.c5549cbf.avif 2560w, docs/assets/images/hero/minimal/minimal_3840.6c643286.avif 3840w"
+    "srcset": "docs/assets/images/hero/minimal/minimal_1280.42dcf0b0.avif 1280w, docs/assets/images/hero/minimal/minimal_1920.71ca07e0.avif 1920w, docs/assets/images/hero/minimal/minimal_2560.c5549cbf.avif 2560w, docs/assets/images/hero/minimal/minimal_3840.6c643286.avif 3840w",
+    "focalPoints": {
+      "main": [
+        0.5,
+        0.5
+      ],
+      "secondary": [
+        0.5,
+        0.5
+      ]
+    }
   },
   {
     "imageName": "mystical",
@@ -12526,7 +12606,17 @@ var rawHeroImages = [
       "2560": "docs/assets/images/hero/mystical/mystical_2560.31500c69.avif",
       "3840": "docs/assets/images/hero/mystical/mystical_3840.67cbaa60.avif"
     },
-    "srcset": "docs/assets/images/hero/mystical/mystical_1280.f50a7c79.avif 1280w, docs/assets/images/hero/mystical/mystical_1920.14eadafd.avif 1920w, docs/assets/images/hero/mystical/mystical_2560.31500c69.avif 2560w, docs/assets/images/hero/mystical/mystical_3840.67cbaa60.avif 3840w"
+    "srcset": "docs/assets/images/hero/mystical/mystical_1280.f50a7c79.avif 1280w, docs/assets/images/hero/mystical/mystical_1920.14eadafd.avif 1920w, docs/assets/images/hero/mystical/mystical_2560.31500c69.avif 2560w, docs/assets/images/hero/mystical/mystical_3840.67cbaa60.avif 3840w",
+    "focalPoints": {
+      "main": [
+        0.36,
+        0.575
+      ],
+      "secondary": [
+        0.61,
+        0.3
+      ]
+    }
   },
   {
     "imageName": "surreal",
@@ -12537,7 +12627,17 @@ var rawHeroImages = [
       "2560": "docs/assets/images/hero/surreal/surreal_2560.484a1d5c.avif",
       "3840": "docs/assets/images/hero/surreal/surreal_3840.6fd8d29c.avif"
     },
-    "srcset": "docs/assets/images/hero/surreal/surreal_1280.aebe2db9.avif 1280w, docs/assets/images/hero/surreal/surreal_1920.e5c0cbd2.avif 1920w, docs/assets/images/hero/surreal/surreal_2560.484a1d5c.avif 2560w, docs/assets/images/hero/surreal/surreal_3840.6fd8d29c.avif 3840w"
+    "srcset": "docs/assets/images/hero/surreal/surreal_1280.aebe2db9.avif 1280w, docs/assets/images/hero/surreal/surreal_1920.e5c0cbd2.avif 1920w, docs/assets/images/hero/surreal/surreal_2560.484a1d5c.avif 2560w, docs/assets/images/hero/surreal/surreal_3840.6fd8d29c.avif 3840w",
+    "focalPoints": {
+      "main": [
+        0.6,
+        0.54
+      ],
+      "secondary": [
+        0.37,
+        0.3
+      ]
+    }
   }
 ];
 var heroImages = rawHeroImages.map((image) => ({
@@ -12545,26 +12645,26 @@ var heroImages = rawHeroImages.map((image) => ({
   src: image.src ? replaceDocs(image.src) : void 0,
   widths: Object.fromEntries(Object.entries(image.widths).map(([key, value]) => [key, replaceDocs(value)])),
   srcset: replaceDocs(image.srcset),
-  parent: replaceDocs(image.parent)
+  parent: replaceDocs(image.parent),
+  focalPoints: image.focalPoints
 }));
 
 // src/assets/javascripts/hero/imageshuffle/index.ts
 var HERO_CONFIG = {
   INTERVAL: 2e4,
   ANIMATION: {
-    ENTER: { perspective: "1600px", ease: "power2.inOut" },
-    ENTER_DURATION: 2,
-    EXIT: { ease: "power2.out" },
-    EXIT_DURATION: 0.5,
+    ENTER: { ease: "power2.inOut", duration: 1.5 },
+    EXIT: { ease: "power2.out", duration: 0.5 },
     PAN: {
-      intervals: 3,
-      duration: 20,
-      ease: "none",
-      buffer: 48,
-      focalZone: {
-        horizontalWeight: 0.66,
-        verticalWeight: 0.66,
-        bias: 0.7
+      delay: 1.5,
+      duration: 15,
+      ease: "sine.out",
+      focalPoint: {
+        horizontalBias: 0.8,
+        // Center bias
+        verticalBias: 0.6,
+        randomness: 0.2
+        // How much random variation from center
       }
     }
   }
@@ -12620,44 +12720,6 @@ var HeroStateManager = class _HeroStateManager {
       }),
       finalize(() => logger.info(`Home observer completed for ${this.homePath}`))
     ).subscribe();
-    /**
-     * Creates a pan animation for the specified image.
-     * @param img The image to create a pan animation for.
-     * @returns The created GSAP timeline for the pan animation, or undefined if reduced motion is preferred.
-     */
-    this.createPanAnimation = (img) => {
-      var _a2;
-      if (prefersReducedMotion()) {
-        return;
-      }
-      logger.info("Creating pan animation");
-      const { focalZone, intervals, duration } = HERO_CONFIG.ANIMATION.PAN;
-      const viewportHeight = window.innerHeight - (((_a2 = document.getElementById("header-target")) == null ? void 0 : _a2.clientHeight) || 75);
-      const viewportWidth = window.innerWidth;
-      const imageWidth = img.naturalWidth;
-      const imageHeight = img.naturalHeight;
-      logger.info(`Image dimensions: ${imageWidth}x${imageHeight}`);
-      const xPan = this.calculatePanRange(imageWidth, viewportWidth, focalZone.horizontalWeight, focalZone.bias);
-      const yPan = this.calculatePanRange(imageHeight, viewportHeight, focalZone.verticalWeight, focalZone.bias);
-      logger.info(`Pan ranges: x=${xPan}, y=${yPan}; viewport: ${viewportWidth}x${viewportHeight}; image: ${imageWidth}x${imageHeight}; focal zone: ${focalZone.horizontalWeight}x${focalZone.verticalWeight}`);
-      if (!xPan && !yPan) {
-        return;
-      }
-      const xKeyframes = xPan ? this.generateKeyframes(xPan, intervals, focalZone.bias) : [0];
-      const yKeyframes = yPan ? this.generateKeyframes(yPan, intervals, focalZone.bias) : [0];
-      const tl = gsapWithCSS.timeline({ repeat: -1 });
-      const segmentDuration = duration / intervals;
-      gsapWithCSS.set(img, { x: xKeyframes[0], y: yKeyframes[0] });
-      for (let i = 1; i <= intervals; i++) {
-        tl.add(gsapWithCSS.to(img, {
-          x: xKeyframes[i % xKeyframes.length],
-          y: yKeyframes[i % yKeyframes.length],
-          duration: segmentDuration,
-          ease: HERO_CONFIG.ANIMATION.PAN.ease
-        }));
-      }
-      return tl;
-    };
     this.shuffledHeroes = [...this.getHeroes()].sort(() => Math.random() - 0.5);
     this.setupSubscriptions();
     window.addEventListener("unload", () => this.dispose());
@@ -12669,13 +12731,13 @@ var HeroStateManager = class _HeroStateManager {
    */
   getOptimalWidth() {
     const screenWidth = Math.max(window.innerWidth, window.innerHeight);
-    if (screenWidth <= 1175) {
+    if (screenWidth <= 1024) {
       return 1280;
     }
-    if (screenWidth <= 1850) {
+    if (screenWidth <= 1600) {
       return 1920;
     }
-    if (screenWidth <= 2400) {
+    if (screenWidth <= 2048) {
       return 2560;
     }
     return 3840;
@@ -12686,13 +12748,15 @@ var HeroStateManager = class _HeroStateManager {
    */
   getInitialState() {
     return {
-      status: "loading",
-      isVisible: isPageVisible(),
-      isAtHome: isAtHome(),
       activeImageIndex: 0,
-      orientation: portraitMediaQuery.matches ? "portrait" : "landscape",
+      currentImage: null,
+      currentTimeline: gsapWithCSS.timeline(),
+      isAtHome: isAtHome(),
+      isVisible: isPageVisible(),
+      lastActiveTime: Date.now(),
       optimalWidth: this.getOptimalWidth(),
-      lastActiveTime: Date.now()
+      orientation: portraitMediaQuery.matches ? "portrait" : "landscape",
+      status: "loading"
     };
   }
   /**
@@ -12814,25 +12878,6 @@ var HeroStateManager = class _HeroStateManager {
     textEl == null ? void 0 : textEl.setAttribute("class", className);
   }
   /**
-   * Calculates the pan range for the given parameters.
-   * @param total The total size.
-   * @param viewport The viewport size.
-   * @param weight The weight for the calculation.
-   * @param bias The bias for the calculation.
-   * @returns The calculated pan range.
-   */
-  calculatePanRange(total, viewport, weight, bias) {
-    if (total <= viewport) {
-      logger.info("Image is smaller than viewport; no pan needed");
-      return 0;
-    }
-    const excess = total - viewport;
-    const focalZoneSize = total * weight;
-    const panRange = -(excess + HERO_CONFIG.ANIMATION.PAN.buffer);
-    const focalZoneRatio = focalZoneSize / total;
-    return panRange * bias * focalZoneRatio;
-  }
-  /**
    * Tracks metadata for the specified image.
    * @param img The image element to track metadata for.
    */
@@ -12890,13 +12935,18 @@ var HeroStateManager = class _HeroStateManager {
    * @returns A promise that resolves to the loaded image element.
    */
   async loadAndPrepareImage(imgSettings) {
-    const { imageName, srcset, src } = imgSettings;
+    const { imageName, srcset, src, focalPoints } = imgSettings;
     if (!src) {
       throw new Error("No image source provided");
     }
     const imageBlob = await firstValueFrom(this.loadImage(src));
     const img = new Image();
-    this.setImageAttributes(img, imageBlob, imageName, srcset);
+    await new Promise((resolve3, reject) => {
+      img.onload = resolve3;
+      img.onerror = reject;
+      this.setImageAttributes(img, imageBlob, imageName, srcset, focalPoints);
+    });
+    logger.info(`Image loaded: ${imageName} - dimensions: ${img.naturalWidth}x${img.naturalHeight}`);
     this.trackImageMetadata(img);
     return img;
   }
@@ -12906,52 +12956,88 @@ var HeroStateManager = class _HeroStateManager {
    * @param imageBlob The image blob to create an object URL from.
    * @param imageName The name of the image.
    * @param srcset The source set for the image.
+   * @param focalPoints The focal points for the image.
    */
-  setImageAttributes(img, imageBlob, imageName, srcset) {
+  setImageAttributes(img, imageBlob, imageName, srcset, focalPoints) {
     img.src = URL.createObjectURL(imageBlob);
     img.srcset = srcset;
     img.sizes = `
-      (max-width: 1175px) 1280px,
-      (max-width: 1850px) 1920px,
-      (max-width: 2400px) 2560px,
+      (max-width: 1024px) 1280px,
+      (max-width: 1600px) 1920px,
+      (max-width: 2048px) 2560px,
       3840px
     `;
     img.alt = "";
     img.classList.add("hero-parallax__image", `hero-parallax__image--${imageName}`);
     img.draggable = false;
     img.loading = (parallaxLayer == null ? void 0 : parallaxLayer.getElementsByTagName("img").length) !== 0 ? "lazy" : "eager";
+    if (focalPoints) {
+      img.setAttribute("data-focus-main-x", focalPoints.main[0].toString());
+      img.setAttribute("data-focus-main-y", focalPoints.main[1].toString());
+      img.setAttribute("data-focus-secondary-x", focalPoints.secondary[0].toString());
+      img.setAttribute("data-focus-secondary-y", focalPoints.secondary[1].toString());
+    }
+  }
+  calculateHeaderAdjustment() {
+    const tabElement = document.querySelector(".md-tabs");
+    const headerElement = document.getElementById("header-target");
+    let headerAdj = 0;
+    if ((tabElement && !tabElement.ariaHidden || headerElement && !headerElement.ariaHidden) && headerElement) {
+      headerAdj = tabElement ? tabElement.clientHeight + headerElement.clientHeight : headerElement.clientHeight;
+    }
+    return headerAdj;
   }
   /**
-   * Generates keyframes for the pan animation based on the maximum pan value.
-   * @param maxPan The maximum pan value.
-   * @param intervals The number of intervals for the animation.
-   * @param focalBias The bias for the focal zone.
-   * @returns An array of keyframe positions.
+   * Creates a pan animation for the specified image.
+   * @param img The image to create a pan animation for.
+   * @returns The created GSAP timeline for the pan animation, or undefined if reduced motion is preferred.
    */
-  generateKeyframes(maxPan, intervals, focalBias) {
-    const frames = [];
-    for (let i = 0; i <= intervals; i++) {
-      const progress = i / intervals;
-      const weight = Math.sin(progress * Math.PI);
-      const position = maxPan * weight * (progress < 0.5 ? focalBias : 1);
-      frames.push(position);
+  createPanAnimation(img) {
+    var _a2;
+    if (prefersReducedMotion()) {
+      return void 0;
     }
-    return frames;
-  }
-  /**
-   * Cleans up resources associated with the specified image.
-   * @param image The image element to clean up resources for.
-   */
-  cleanupImageResources(image) {
-    const currentSrc = image.src;
-    if (currentSrc.startsWith("blob:")) {
-      URL.revokeObjectURL(currentSrc);
-    }
-    const animation = this.cleanup.get(image);
-    if (animation) {
-      animation.kill();
-      this.cleanup.delete(image);
-    }
+    const tl = gsapWithCSS.timeline();
+    const imgRect = img.getBoundingClientRect();
+    const containerRect = ((_a2 = img.parentElement) == null ? void 0 : _a2.getBoundingClientRect()) || document.body.getBoundingClientRect();
+    const imgWidth = Math.max(img.naturalWidth, imgRect.width);
+    const imgHeight = Math.max(img.naturalHeight, imgRect.height);
+    const scale = parseFloat(getComputedStyle(img).getPropertyValue("--scale")) || 1;
+    const scaledImageWidth = imgWidth * scale;
+    const scaledImageHeight = imgHeight * scale;
+    const heightAdjustment = this.calculateHeaderAdjustment();
+    const containerWidth = Math.min(containerRect.width, window.innerWidth);
+    const containerHeight = Math.min(containerRect.height - heightAdjustment, window.innerHeight - heightAdjustment);
+    const maxX = Math.max(0, (scaledImageWidth - containerWidth) / 2);
+    const maxY = Math.max(0, (scaledImageHeight - containerHeight) / 2);
+    const focalX = gsapWithCSS.utils.clamp(0, 100, Number(img.dataset.focusMainX) || 50);
+    const focalY = gsapWithCSS.utils.clamp(0, 100, Number(img.dataset.focusMainY) || 50);
+    const startX = gsapWithCSS.utils.clamp(0, 100, Number(img.dataset.focusSecondaryX) || 50);
+    const startY = gsapWithCSS.utils.clamp(0, 100, Number(img.dataset.focusSecondaryY) || 50);
+    const mapPosition = (value, max) => gsapWithCSS.utils.clamp(-max, max, gsapWithCSS.utils.mapRange(0, 100, -max, max, value));
+    const startPosX = mapPosition(startX, maxX);
+    const startPosY = mapPosition(startY, maxY);
+    const endPosX = mapPosition(focalX, maxX);
+    const endPosY = mapPosition(focalY, maxY);
+    logger.info(
+      `Creating pan animation for ${img.nodeName}. Calculated values:
+start: ${startPosX}, ${startPosY}
+end: ${endPosX}, ${endPosY}
+max: ${maxX}, ${maxY}
+scale: ${scale}`
+    );
+    const panVars = HERO_CONFIG.ANIMATION.PAN;
+    tl.fromTo(
+      img,
+      { x: startPosX, y: startPosY },
+      {
+        x: endPosX,
+        y: endPosY,
+        duration: panVars.duration,
+        ease: panVars.ease
+      }
+    );
+    return tl;
   }
   /**
    * Sets the timeline for the specified image, managing its entry and exit animations.
@@ -12967,33 +13053,37 @@ var HeroStateManager = class _HeroStateManager {
     }
     const timeline2 = gsapWithCSS.timeline({ paused: true });
     const currentImage = (_a2 = parallaxLayer.children) == null ? void 0 : _a2[0];
-    const currentAnimation = currentImage && this.cleanup.get(currentImage);
-    timeline2.add(() => {
-      if (parallaxLayer.firstElementChild !== img) {
-        if (parallaxLayer.contains(img)) {
-          parallaxLayer.removeChild(img);
-        }
-        parallaxLayer.prepend(img);
+    const currentAnimation = this.state$.value.currentTimeline || null;
+    const startUpActions = () => {
+      if (parallaxLayer.contains(img)) {
+        parallaxLayer.removeChild(img);
       }
-      gsapWithCSS.set(img, { perspective: "0px", perspectiveOrigin: "bottom left" });
-      this.setParallaxHeight(img.naturalHeight);
+      parallaxLayer.prepend(img);
+      if (img.naturalHeight) {
+        this.setParallaxHeight(img.naturalHeight);
+      } else {
+        img.onload = () => this.setParallaxHeight(img.naturalHeight);
+      }
       this.updateState({ activeImageIndex: index });
       this.updateTextElements(imgName);
-      if (currentAnimation) {
-        currentAnimation.kill();
+      if (currentAnimation.isActive()) {
+        this.state$.value.currentTimeline.kill();
       }
-      gsapWithCSS.to(img, {
-        perspective: "20000px",
-        perspectiveOrigin: "5000% 2000%",
-        transformOrigin: "center left",
-        duration: 10,
-        ease: "power2.inOut"
-      });
-      if (currentImage && currentImage !== img) {
-        gsapWithCSS.to(currentImage, { ...HERO_CONFIG.ANIMATION.EXIT });
+    };
+    timeline2.add(["startupActions", startUpActions], 0).add(["imageEnter", gsapWithCSS.to(img, HERO_CONFIG.ANIMATION.ENTER)], "<");
+    if (currentImage) {
+      timeline2.add(["imageExit", gsapWithCSS.to(currentImage, HERO_CONFIG.ANIMATION.EXIT)], "<");
+    }
+    if (!prefersReducedMotion() && img.naturalWidth && img.naturalHeight) {
+      logger.info("Creating and adding pan animation for ", imgName);
+      const panAnimation = this.createPanAnimation(img);
+      if (panAnimation && panAnimation instanceof gsapWithCSS.core.Timeline) {
+        timeline2.add(["panEffect", panAnimation], ">");
       }
-    });
+    }
+    timeline2.smoothChildTiming = true;
     this.cleanup.set(img, timeline2);
+    this.updateState({ currentTimeline: timeline2, currentImage: img });
     return timeline2;
   }
   /**
@@ -13014,6 +13104,21 @@ var HeroStateManager = class _HeroStateManager {
     const newImageElement = this.loadedImages.get(nextImageName) || await this.loadAndPrepareImage(this.shuffledHeroes[nextIndex]);
     const timeline2 = this.cleanup.get(newImageElement) || this.setTimelineForImage(newImageElement, nextImageName, nextIndex);
     timeline2.play();
+  }
+  /**
+   * Cleans up resources associated with the specified image.
+   * @param image The image element to clean up resources for.
+   */
+  cleanupImageResources(image) {
+    const currentSrc = image.src;
+    if (currentSrc.startsWith("blob:")) {
+      URL.revokeObjectURL(currentSrc);
+    }
+    const animation = this.cleanup.get(image);
+    if (animation) {
+      animation.kill();
+      this.cleanup.delete(image);
+    }
   }
   /**
    * Disposes of the hero state manager, cleaning up resources and subscriptions.
@@ -16240,4 +16345,4 @@ gsap/ScrollTrigger.js:
    * @author: Jack Doyle, jack@greensock.com
   *)
 */
-//# sourceMappingURL=index.RSVUY66L.js.map
+//# sourceMappingURL=index.O4UB5BFZ.js.map

@@ -34,25 +34,23 @@ import {
 
 import { SubscriptionManagerType, isHome, isOnSite, locationBeacon$, locationBehavior$, prefersReducedMotion, setCssVariable } from "~/utils"
 import { getAsset } from "~/cache"
-import { HeroImage, heroImages } from "~/hero/imageshuffle/data"
+import { HeroImage, ImageFocalPoints, heroImages } from "~/hero/imageshuffle/data"
 import { logger } from "~/log"
+import { time } from "console"
 
 const HERO_CONFIG = {
   INTERVAL: 20000,
   ANIMATION: {
-    ENTER: { perspective: "1600px", ease: "power2.inOut" },
-    ENTER_DURATION: 2,
-    EXIT: { ease: "power2.out" },
-    EXIT_DURATION: 0.5,
+    ENTER: { ease: "power2.inOut", duration: 1.5 },
+    EXIT: { ease: "power2.out", duration: 0.5 },
     PAN: {
-      intervals: 3,
-      duration: 20,
-      ease: "none",
-      buffer: 48,
-      focalZone: {
-        horizontalWeight: 0.66,
-        verticalWeight: 0.66,
-        bias: 0.7
+      delay: 1.5,
+      duration: 15,
+      ease: "sine.out",
+      focalPoint: {
+        horizontalBias: 0.8, // Center bias
+        verticalBias: 0.6,
+        randomness: 0.2 // How much random variation from center
       }
     }
   }
@@ -118,13 +116,13 @@ class HeroStateManager {
    */
   private getOptimalWidth(): number {
     const screenWidth = Math.max(window.innerWidth, window.innerHeight)
-    if (screenWidth <= 1175) {
+    if (screenWidth <= 1024) {
       return 1280
     }
-    if (screenWidth <= 1850) {
+    if (screenWidth <= 1600) {
       return 1920
     }
-    if (screenWidth <= 2400) {
+    if (screenWidth <= 2048) {
       return 2560
     }
     return 3840
@@ -136,13 +134,15 @@ class HeroStateManager {
    */
   private getInitialState(): HeroState {
     return {
-      status: 'loading',
-      isVisible: isPageVisible(),
-      isAtHome: isAtHome(),
       activeImageIndex: 0,
-      orientation: portraitMediaQuery.matches ? 'portrait' : 'landscape',
-      optimalWidth: this.getOptimalWidth(),
+      currentImage: null,
+      currentTimeline: gsap.timeline(),
+      isAtHome: isAtHome(),
+      isVisible: isPageVisible(),
       lastActiveTime: Date.now(),
+      optimalWidth: this.getOptimalWidth(),
+      orientation: portraitMediaQuery.matches ? 'portrait' : 'landscape',
+      status: 'loading',
     }
   }
 
@@ -293,6 +293,39 @@ class HeroStateManager {
   }
 
   /**
+   * Quickly inserts an invisible impage into the DOM to test its position
+   * and dimensions, then removes it.
+   * @param img The image element to retrieve dimensions for.
+   * @returns The dimensions of the image.
+   */
+  private testImageDimensions(img: HTMLImageElement): ImageDimensions {
+
+    const timeline = gsap.timeline()
+    let computedStyle = null
+    let naturalWidth = 0
+    let naturalHeight = 0
+    let boundingRect = null
+    timeline.add(gsap.set(img, { visibility: "hidden", opacity: 0 }))
+    timeline.add(() => {
+      parallaxLayer?.append(img)
+      computedStyle = getComputedStyle(img)
+      logger.info(`Computed style for ${img.nodeName}:`, computedStyle)
+      naturalWidth = img.naturalWidth
+      naturalHeight = img.naturalHeight
+      boundingRect = img.getBoundingClientRect()
+      logger.info(`Natural dimensions for ${img.nodeName}:`, { naturalWidth, naturalHeight })
+      logger.info(`Bounding rect for ${img.nodeName}:`, boundingRect)
+      parallaxLayer?.removeChild(img)
+    }).eventCallback("onComplete", () => { timeline.kill() })
+    timeline.add(gsap.set(img, { visibility: "visible", opacity: 1 }))
+    timeline.play()
+    if (timeline.isActive()) {
+      timeline.kill()
+    }
+    return { computedStyle, naturalWidth, naturalHeight, boundingRect } as unknown as ImageDimensions
+  }
+
+  /**
    * Updates the text elements associated with the specified image name.
    * @param imageName The name of the image to update text elements for.
    */
@@ -303,33 +336,6 @@ class HeroStateManager {
 
     headerEl?.setAttribute("class", className)
     textEl?.setAttribute("class", className)
-  }
-
-  /**
-   * Calculates the pan range for the given parameters.
-   * @param total The total size.
-   * @param viewport The viewport size.
-   * @param weight The weight for the calculation.
-   * @param bias The bias for the calculation.
-   * @returns The calculated pan range.
-   */
-  private calculatePanRange(
-    total: number,
-    viewport: number,
-    weight: number,
-    bias: number
-  ): number {
-    if (total <= viewport) {
-      logger.info("Image is smaller than viewport; no pan needed")
-      return 0
-    }
-
-    const excess = total - viewport
-    const focalZoneSize = total * weight
-    const panRange = -(excess + HERO_CONFIG.ANIMATION.PAN.buffer)
-    const focalZoneRatio = focalZoneSize / total
-
-    return panRange * bias * focalZoneRatio
   }
 
   /**
@@ -396,7 +402,7 @@ class HeroStateManager {
    * @returns A promise that resolves to the loaded image element.
    */
   public async loadAndPrepareImage(imgSettings: HeroImage): Promise<HTMLImageElement> {
-    const { imageName, srcset, src } = imgSettings
+    const { imageName, srcset, src, focalPoints } = imgSettings
 
     if (!src) {
       throw new Error('No image source provided')
@@ -405,8 +411,14 @@ class HeroStateManager {
     const imageBlob = await firstValueFrom(this.loadImage(src))
     const img = new Image()
 
-    this.setImageAttributes(img, imageBlob, imageName, srcset)
+    // Wait for image to load before continuing
+    await new Promise((resolve, reject) => {
+        img.onload = resolve
+        img.onerror = reject
+        this.setImageAttributes(img, imageBlob, imageName, srcset, focalPoints)
+    })
 
+    logger.info(`Image loaded: ${imageName} - dimensions: ${img.naturalWidth}x${img.naturalHeight}`)
     this.trackImageMetadata(img)
     return img
   }
@@ -417,20 +429,93 @@ class HeroStateManager {
    * @param imageBlob The image blob to create an object URL from.
    * @param imageName The name of the image.
    * @param srcset The source set for the image.
+   * @param focalPoints The focal points for the image.
    */
-  private setImageAttributes(img: HTMLImageElement, imageBlob: Blob, imageName: string, srcset: string): void {
+  private setImageAttributes(img: HTMLImageElement, imageBlob: Blob, imageName: string, srcset: string, focalPoints?: ImageFocalPoints): void {
     img.src = URL.createObjectURL(imageBlob)
     img.srcset = srcset
     img.sizes = `
-      (max-width: 1175px) 1280px,
-      (max-width: 1850px) 1920px,
-      (max-width: 2400px) 2560px,
+      (max-width: 1024px) 1280px,
+      (max-width: 1600px) 1920px,
+      (max-width: 2048px) 2560px,
       3840px
     `
     img.alt = ""
     img.classList.add("hero-parallax__image", `hero-parallax__image--${imageName}`)
     img.draggable = false
     img.loading = parallaxLayer?.getElementsByTagName('img').length !== 0 ? "lazy" : "eager"
+    if (focalPoints) {
+      img.setAttribute("data-focus-main-x", focalPoints.main[0].toString())
+      img.setAttribute("data-focus-main-y", focalPoints.main[1].toString())
+      img.setAttribute("data-focus-secondary-x", focalPoints.secondary[0].toString())
+      img.setAttribute("data-focus-secondary-y", focalPoints.secondary[1].toString())
+    }
+  }
+
+  /**
+   * Computes the combined bounding rectangle for the specified rectangles.
+   * @param rect1 first bounding rectangle
+   * @param rect2 second bounding rectangle
+   * @returns The combined bounding rectangle.
+   */
+  private computeCombinedRects(rect1: DOMRect, rect2: DOMRect): DOMRect {
+    const x = Math.min(rect1.x, rect2.x)
+    const y = Math.min(rect1.y, rect2.y)
+    const right = Math.max(rect1.right, rect2.right)
+    const bottom = Math.max(rect1.bottom, rect2.bottom)
+    const width = right - x
+    const height = bottom - y
+    return new DOMRect(x, y, width, height)
+  }
+
+  /**
+   * Retrieves the bounding rectangle for the header element.
+   * @returns The bounding rectangle for the header element, accounting for
+   * the tab visibility if present.
+   */
+  private getHeaderRect(): DOMRect {
+    const defaultRect = new DOMRect(0, 0, 0, 0)
+    const tabElement = document.querySelector(".md-tabs")
+    const headerElement = document.getElementById("header-target")
+    const tabVisible = tabElement?.checkVisibility({ opacityProperty: true, visibilityProperty: true }) || false
+    const headerBox = headerElement?.getBoundingClientRect()
+    const tabBox = tabElement?.getBoundingClientRect()
+
+    if (!headerBox && !tabBox) {
+      return defaultRect
+    }
+    if (tabVisible && tabBox && headerBox) {
+      return this.computeCombinedRects(headerBox, tabBox)
+    }
+    if (tabVisible && tabBox) {
+      return tabBox
+    }
+    return headerBox || defaultRect
+  }
+
+
+
+  private computeTranslationDimensions(img: HTMLImageElement): TranslatableAreas {
+    const { computedStyle, naturalWidth, naturalHeight, boundingRect } = this.testImageDimensions(img)
+    const containerRect = img.parentElement?.getBoundingClientRect() || document.body.getBoundingClientRect()
+    const headerRect = this.getHeaderRect()
+    const isImageBottomVisible = boundingRect.bottom <= (window.innerHeight - boundingRect.top)
+
+    // Calculate scaled image dimensions
+    const scale = Number(computedStyle.getPropertyValue('scale')) || 1
+    const imgWidth = Math.max(naturalWidth * scale, boundingRect.width)
+    const imgHeight = Math.max(naturalHeight * scale, boundingRect.height)
+    const visibleRect = new DOMRect(0, headerRect.bottom, window.innerWidth, window.innerHeight - headerRect.bottom)
+    const excessTop = Math.abs(Math.min(0, headerRect.bottom - boundingRect.top))
+    const excessBottom = isImageBottomVisible ? 0 : boundingRect.bottom - window.innerHeight
+    const excessLeft = Math.abs(Math.min(0, boundingRect.left))
+    const excessRight = Math.max(0, boundingRect.right - window.innerWidth)
+    const yTopRect = new DOMRect(0, (excessTop > 0 ? Math.min(visibleRect.top - excessTop, boundingRect.top) : visibleRect.top), visibleRect.width, excessTop)
+    const yBottomRect = new DOMRect(0, excessBottom ? (visibleRect.bottom + excessBottom) : 0, window.innerWidth, excessBottom)
+    const xLeftRect = new DOMRect(-excessLeft, visibleRect.top, Math.abs(excessLeft), visibleRect.height)
+    const xRightRect = new DOMRect(visibleRect.right, visibleRect.top, excessRight, visibleRect.height)
+    setCssVariable("--header-height", `${visibleRect.top}px`)
+    return {yTopRect, yBottomRect, xLeftRect, xRightRect, overflow: { left: excessLeft, right: excessRight, top: excessTop, bottom: excessBottom }, visibleRect, containerRect, imageDimensions: { computedStyle, naturalWidth, naturalHeight, boundingRect }, imageWidth: imgWidth, imageHeight: imgHeight} as TranslatableAreas
   }
 
   /**
@@ -438,77 +523,80 @@ class HeroStateManager {
    * @param img The image to create a pan animation for.
    * @returns The created GSAP timeline for the pan animation, or undefined if reduced motion is preferred.
    */
-  public createPanAnimation = (img: HTMLImageElement) => {
-    if (prefersReducedMotion()) { return }
-    logger.info("Creating pan animation")
-    const { focalZone, intervals, duration } = HERO_CONFIG.ANIMATION.PAN
-    const viewportHeight = window.innerHeight - (document.getElementById("header-target")?.clientHeight || 75)
-    const viewportWidth = window.innerWidth
-
-    const imageWidth = img.naturalWidth
-    const imageHeight = img.naturalHeight
-    logger.info(`Image dimensions: ${imageWidth}x${imageHeight}`)
-
-    const xPan = this.calculatePanRange(imageWidth, viewportWidth, focalZone.horizontalWeight, focalZone.bias)
-    const yPan = this.calculatePanRange(imageHeight, viewportHeight, focalZone.verticalWeight, focalZone.bias)
-
-    logger.info(`Pan ranges: x=${xPan}, y=${yPan}; viewport: ${viewportWidth}x${viewportHeight}; image: ${imageWidth}x${imageHeight}; focal zone: ${focalZone.horizontalWeight}x${focalZone.verticalWeight}`)
-
-    if (!xPan && !yPan) {
-      return
+  public createPanAnimation(img: HTMLImageElement): GSAPTimeline | undefined {
+    if (prefersReducedMotion()) {
+      return undefined
     }
 
-    const xKeyframes = xPan ? this.generateKeyframes(xPan, intervals, focalZone.bias) : [0]
-    const yKeyframes = yPan ? this.generateKeyframes(yPan, intervals, focalZone.bias) : [0]
+    const tl = gsap.timeline()
+    const { xLeftRect, xRightRect, yTopRect, yBottomRect, overflow, visibleRect, containerRect, imageDimensions, imageWidth, imageHeight } = this.computeTranslationDimensions(img)
+    let translatable = { left: false, right: false, top: false, bottom: false }
 
-    const tl = gsap.timeline({ repeat: -1 })
-    const segmentDuration = duration / intervals
-
-    gsap.set(img, { x: xKeyframes[0], y: yKeyframes[0] })
-
-    for (let i = 1; i <= intervals; i++) {
-      tl.add(gsap.to(img, {
-        x: xKeyframes[i % xKeyframes.length],
-        y: yKeyframes[i % yKeyframes.length],
-        duration: segmentDuration,
-        ease: HERO_CONFIG.ANIMATION.PAN.ease
-      }))
+    if (overflow.top && !overflow.bottom) {
+      if (imageHeight > visibleRect.height) {
+        // we even out the image
+        const offset = (imageHeight - visibleRect.height) / 2
+        tl.add(["yReposition", gsap.set(img, { y: visibleRect.top - offset })], "<")
+        yTopRect.y = visibleRect.top - offset
+        yBottomRect.y = visibleRect.bottom + offset
+        overflow.bottom = offset
+        overflow.top = offset
+      } else {
+        // align the image to the top
+        tl.set(img, { y: yTopRect.top })
+        overflow.top = 0
+      }
     }
+    translatable.top = overflow.top > 0
+    translatable.bottom = overflow.bottom > 0
+    translatable.left = overflow.left > 0
+    translatable.right = overflow.right > 0
+
+    if (Object.values(translatable).every(value => value === false)) { return undefined }
+
+
+  // Maximum allowed translations
+    const maxX = Math.max(0, (imgWidth - visibleWidth) / 2)
+    const maxY = Math.max(0, (imgHeight - visibleHeight) / 2)
+
+  // Focal points (ensure they are between 0 and 100)
+    const focalX = gsap.utils.clamp(0, 100, Number(img.dataset.focusMainX) || 50)
+    const focalY = gsap.utils.clamp(0, 100, Number(img.dataset.focusMainY) || 50)
+    const startX = gsap.utils.clamp(0, 100, Number(img.dataset.focusSecondaryX) || 50)
+    const startY = gsap.utils.clamp(0, 100, Number(img.dataset.focusSecondaryY) || 50)
+
+  // Map focal points to positions
+    const mapPosition = (value: number, max: number) =>
+    gsap.utils.clamp(-max, max, gsap.utils.mapRange(0, 100, -max, max, value))
+
+    const startPosX = mapPosition(startX, maxX)
+    const startPosY = mapPosition(startY, maxY)
+    const endPosX = mapPosition(focalX, maxX)
+    const endPosY = mapPosition(focalY, maxY)
+
+    logger.info(
+      `Creating pan animation for ${img.nodeName}. Calculated values:\n` +
+    `start: ${startPosX}, ${startPosY}\n` +
+    `end: ${endPosX}, ${endPosY}\n` +
+    `max: ${maxX}, ${maxY}\n` +
+    `scale: ${scale}`
+    )
+
+  // Pan animation variables
+    const panVars = HERO_CONFIG.ANIMATION.PAN
+
+    tl.fromTo(
+      img,
+    { x: startPosX, y: startPosY },
+    {
+      x: endPosX,
+      y: endPosY,
+      duration: panVars.duration,
+      ease: panVars.ease,
+    }
+    )
+
     return tl
-  }
-
-  /**
-   * Generates keyframes for the pan animation based on the maximum pan value.
-   * @param maxPan The maximum pan value.
-   * @param intervals The number of intervals for the animation.
-   * @param focalBias The bias for the focal zone.
-   * @returns An array of keyframe positions.
-   */
-  private generateKeyframes(maxPan: number, intervals: number, focalBias: number): number[] {
-    const frames = []
-    for (let i = 0; i <= intervals; i++) {
-      const progress = i / intervals
-      const weight = Math.sin(progress * Math.PI)
-      const position = maxPan * weight * (progress < 0.5 ? focalBias : 1)
-      frames.push(position)
-    }
-    return frames
-  }
-
-  /**
-   * Cleans up resources associated with the specified image.
-   * @param image The image element to clean up resources for.
-   */
-  public cleanupImageResources(image: HTMLImageElement) {
-    const currentSrc = image.src
-    if (currentSrc.startsWith('blob:')) {
-      URL.revokeObjectURL(currentSrc)
-    }
-    const animation = this.cleanup.get(image)
-    if (animation) {
-      animation.kill()
-      this.cleanup.delete(image)
-    }
   }
 
   /**
@@ -525,41 +613,46 @@ class HeroStateManager {
 
     const timeline = gsap.timeline({ paused: true })
     const currentImage = parallaxLayer.children?.[0] as HTMLImageElement | null
-    const currentAnimation = currentImage && this.cleanup.get(currentImage)
-
-    // Add a check to prevent double prepending
-    timeline.add(() => {
-        // Only prepend if image isn't already first child
-        if (parallaxLayer.firstElementChild !== img) {
-          if (parallaxLayer.contains(img)) {
-            parallaxLayer.removeChild(img)
-          }
-          parallaxLayer.prepend(img)
+    const currentAnimation = this.state$.value.currentTimeline || null
+    const startUpActions = () => {
+      // remove the image if already in the DOM
+      if (parallaxLayer.contains(img)) {
+        parallaxLayer.removeChild(img)
+      }
+      // Add the image to the DOM; only first-child is visible in CSS, so no need to remove others
+        parallaxLayer.prepend(img)
+        // Ensure image is loaded before setting height
+        if (img.naturalHeight) {
+          this.setParallaxHeight(img.naturalHeight)
+        } else {
+          img.onload = () => this.setParallaxHeight(img.naturalHeight)
         }
-
-        gsap.set(img, { perspective: "0px", perspectiveOrigin: "bottom left" })
-        this.setParallaxHeight(img.naturalHeight)
         this.updateState({ activeImageIndex: index })
         this.updateTextElements(imgName)
-
-        if (currentAnimation) {
-          currentAnimation.kill()
-        }
-
-        gsap.to(img, {
-            perspective: "20000px",
-            perspectiveOrigin: "5000% 2000%",
-            transformOrigin: "center left",
-            duration: 10,
-            ease: "power2.inOut"
-        })
-
-        if (currentImage && currentImage !== img) {
-          gsap.to(currentImage, { ...HERO_CONFIG.ANIMATION.EXIT })
-        }
-    })
-
+      if (currentAnimation.isActive()) {
+        this.state$.value.currentTimeline.kill()
+      }
+    }
+    // Add startup settings to timeline first; triggers with animation
+    timeline.add(["startupActions", startUpActions], 0)
+    // Add enter animation for new image
+      .add(["imageEnter", gsap.to(img, HERO_CONFIG.ANIMATION.ENTER)], "<")
+    // Add exit animation for current image if it exists
+    if (currentImage) {
+      timeline.add(["imageExit", gsap.to(currentImage, HERO_CONFIG.ANIMATION.EXIT)], "<")
+    }
+    // Add pan animation if user isn't reducing motion and image is loaded
+    if (!prefersReducedMotion() && img.naturalWidth && img.naturalHeight) {
+      logger.info("Creating and adding pan animation for ", imgName)
+      const panAnimation = this.createPanAnimation(img)
+      if (panAnimation && panAnimation instanceof gsap.core.Timeline) {
+        timeline.add(["panEffect", panAnimation], ">")
+      }
+    }
+    // update state with new timeline and smooth out timeline
+    timeline.smoothChildTiming = true
     this.cleanup.set(img, timeline)
+    this.updateState({ currentTimeline: timeline, currentImage: img })
     return timeline
   }
 
@@ -592,6 +685,22 @@ class HeroStateManager {
         this.setTimelineForImage(newImageElement, nextImageName, nextIndex)
 
     timeline.play()
+  }
+
+   /**
+    * Cleans up resources associated with the specified image.
+    * @param image The image element to clean up resources for.
+    */
+  public cleanupImageResources(image: HTMLImageElement) {
+    const currentSrc = image.src
+    if (currentSrc.startsWith('blob:')) {
+      URL.revokeObjectURL(currentSrc)
+    }
+    const animation = this.cleanup.get(image)
+    if (animation) {
+      animation.kill()
+      this.cleanup.delete(image)
+    }
   }
 
   /**

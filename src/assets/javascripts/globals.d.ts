@@ -39,11 +39,38 @@ declare global {
   interface HeroState {
     readonly status: 'loading' | 'cycling' | 'paused' | 'error'
     readonly isVisible: boolean
+    readonly currentTimeline: gsap.core.Timeline
+    readonly currentImage: HTMLImageElement | null
     readonly isAtHome: boolean
     readonly activeImageIndex: number
     readonly orientation: 'portrait' | 'landscape'
     readonly optimalWidth: number
     readonly lastActiveTime: number
+  }
+
+  interface ImageDimensions {
+    computedStyle: CSSStyleDeclaration
+    naturalWidth: number
+    naturalHeight: number
+    boundingRect: DOMRect
+  }
+
+  interface Point {
+    x: number
+    y: number
+  }
+
+  interface TranslatableAreas {
+    yTopRect: DOMRect
+    yBottomRect: DOMRect
+    xLeftRect: DOMRect
+    xRightRect: DOMRect
+    overflow: { left: number, right: number, top: number, bottom: number }
+    visibleRect: DOMRect
+    containerRect: DOMRect
+    imageDimensions: ImageDimensions
+    imageWidth: number
+    imageHeight: number
   }
 
   interface ScrollTargets {

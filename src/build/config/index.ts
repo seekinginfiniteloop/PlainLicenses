@@ -6,7 +6,64 @@ import * as esbuild from "esbuild"
 import { copy } from 'esbuild-plugin-copy'
 import globby from "globby"
 
-import type { HeroImage, HeroImageBase, Project, WidthMap } from "../types.ts"
+import type { HeroImage, HeroImageBase, HeroImageFocalPoints, Project, WidthMap } from "../types.ts"
+
+const focalPoints: HeroImageFocalPoints[] = [
+  {
+    "anime": {
+      main: [0.49, 0.385],
+      secondary: [0.57, 0.65],
+    }
+  },
+  {
+    "artbrut": {
+      main: [0.465, 0.38],
+      secondary: [0.23, 0.21],
+    }
+  },
+  {
+    "comic": {
+      main: [0.41, 0.36],
+      secondary: [0.35, 0.72],
+    }
+  },
+  {
+    "fanciful": {
+      main: [0.43, 0.6],
+      secondary: [0.61, 0.44],
+    }
+  },
+  {
+    "fantasy": {
+      main: [0.49, 0.59],
+      secondary: [0.33, 0.34],
+    }
+  },
+  {
+    "farcical": {
+      main: [0.485, 0.6],
+      secondary: [0.35, 0.43],
+    }
+  },
+  {
+    "fauvist": {
+      main: [0.33, 0.48],
+      secondary: [0.30, 0.55],
+    }
+  },
+  {
+    "mystical": {
+      main: [0.36, 0.575],
+      secondary: [0.61, 0.30],
+    }
+  },
+  {
+    "surreal": {
+      main: [0.60, 0.54],
+      secondary: [0.37, 0.30],
+    }
+  },
+]
 
 /**
  * Resolves a glob parent directories of hero images.
@@ -54,7 +111,7 @@ export const webConfig: esbuild.BuildOptions = {
   outbase: "src",
   chunkNames: "[dir]/assets/javascripts/chunks/[name].[hash]",
   assetNames: "[dir]/[name].[hash]",
-  
+
   loader: {
     ".js": "js",
     ".ts": "ts",
@@ -140,10 +197,11 @@ export async function generateSrcset(image: HeroImageBase): Promise<string> {
 
 export const heroImages = async () => {
   const parents = await resolveGlob("src/assets/images/hero/*", { onlyDirectories: true })
+  const retrieveKey = (filePath: string) => filePath.split("/").pop()
   const getWidthMaps = async () => {
     const results = await Promise.allSettled(
       parents.map(async (parent: string) => {
-        const key = parent.split("/").pop()
+        const key = retrieveKey(parent)
         const heroFilePattern = `${key}_{1280,1920,2560,3840}.avif`
         const children = await globby(`${parent}/${heroFilePattern}`, { onlyFiles: true, unique: true })
         const flattenedWidths: WidthMap = children.reduce<WidthMap>((acc: WidthMap, child: string) => {
@@ -153,9 +211,10 @@ export const heroImages = async () => {
           }
           return acc
         }, {} as WidthMap) // Initialize acc as an empty WidthMap
-
+        const focalPoint = focalPoints.find((value: HeroImageFocalPoints) => Object.keys(value)[0] === key)
+        const imageFocii = focalPoint && key ? focalPoint[key] : { main: [0.5, 0.5], secondary: [0.5, 0.5] }
         const srcset = await generateSrcset({ parent, widths: flattenedWidths })
-        return [key, { parent, widths: flattenedWidths, srcset }] as [string, HeroImage]
+        return [key, { parent, widths: flattenedWidths, srcset, "focalPoints": imageFocii }] as [string, HeroImage]
       })
     )
 

@@ -9,6 +9,17 @@ export interface HeroImage {
     [key: number]: string
   }
   srcset: string
+  focalPoints: {
+    main: [number, number]
+    secondary: [number, number]
+  }
+}
+
+export type HeroImageFocalPoints = {
+  [key: string]: {
+    main: [number, number]
+    secondary: [number, number]
+  }
 }
 
 export interface HeroImageBase {
@@ -49,4 +60,10 @@ export interface Project {
   outdir?: string
   tsconfig: string
   platform?: "node" | "browser"
+}
+
+export interface tsconfigPathsPluginInterface {
+  cwd: string
+  tsconfig: string
+  filter: RegExp
 }

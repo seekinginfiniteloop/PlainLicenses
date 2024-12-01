@@ -19,6 +19,10 @@ let noScriptImage: HeroImage = {
   parent: '',
   widths: {},
   srcset: '',
+  focalPoints: {
+    main: [0,0],
+    secondary: [0,0]
+  }
 }
 
 /**
@@ -101,6 +105,14 @@ export interface HeroImage {
   }
   srcset: string
   src?: string
+  focalPoints?: {
+    main: [number, number]
+    secondary: [number, number]
+  }
+}
+  export type ImageFocalPoints = {
+  main: [number, number]
+  secondary: [number, number]
 }
 
 /**
@@ -121,8 +133,10 @@ export const heroImages = rawHeroImages.map(image => ({
   src: image.src ? replaceDocs(image.src) : undefined,
   widths: Object.fromEntries(Object.entries(image.widths).map(([key, value]) => [key, replaceDocs(value)])),
   srcset: replaceDocs(image.srcset),
-  parent: replaceDocs(image.parent)
-}))
+  parent: replaceDocs(image.parent),
+  focalPoints: image.focalPoints
+}
+))
 `;
 
   const outputPath = path.join('src', 'assets', 'javascripts', 'hero', 'imageshuffle', 'data', 'index.ts');
@@ -155,6 +169,7 @@ async function handleHeroImages() {
   for (const [parentName, image] of Object.entries<HeroImage>(heroes)) {
     // Update the parent path
     const imageName = parentName
+    const {focalPoints} = image;
     const parent = image.parent.replace('src', 'docs');
     if (!(await fs.access(parent).catch(() => false))) {
       await fs.mkdir(parent, { recursive: true });
@@ -169,7 +184,7 @@ async function handleHeroImages() {
       await fs.copyFile(src, newPath);
     }
     const srcset = newSrcSet.join(', ');
-    images.push({ imageName, parent, widths: newWidths, srcset });
+    images.push({ imageName, parent, widths: newWidths, srcset, focalPoints});
     }
     noScriptImage = images.find((image) => image.parent.includes('minimal')) || images.find((image) => image.widths[1280].includes('minimal')) || images[8];
     // Export the images array to a TypeScript file
@@ -345,7 +360,7 @@ const metaOutputMap = async (output: esbuildOutputs): Promise<buildJson> => {
   const cssSrcKey = keys.find((key) => key.endsWith('.css') && key.includes("bundle") && !key.includes("javascripts"));
   let noScriptImageContent =`
   <img srcset="${noScriptImage.srcset}" alt="hero image" class="hero-parallax__image hero-parallax__image--minimal" src="${noScriptImage.widths[1280]}" alt="hero image"
-  sizes="(max-width: 1280px) 1280px, (max-width: 1920px) 1920px, (max-width: 2560px) 2560px, 3840px" loading="eager" fetchpriority="high" draggable="false"
+  sizes="(max-width: 1024px) 1280px, (max-width: 1600px) 1920px, (max-width: 2048px) 2560px, 3840px" loading="eager" fetchpriority="high" draggable="false"
   style="align-content:flex-start;align-self:flex-start">
   `;
 

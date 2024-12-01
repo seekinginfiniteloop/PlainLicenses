@@ -7113,6 +7113,7 @@ header#header-target.md-header {
   width: 100vw;
   min-height: 130vh;
   max-height: 180vh;
+  padding-top: 1rem;
   padding-bottom: 2rem;
   margin-top: -2.4rem;
   margin-bottom: 0.1rem;
@@ -7121,7 +7122,7 @@ header#header-target.md-header {
   background-repeat: no-repeat;
   background-attachment: fixed;
   transform: translateZ(-3px);
-  perspective: 5rem;
+  perspective: 50rem;
 }
 .hero-parallax__layer {
   position: relative;
@@ -7135,6 +7136,7 @@ header#header-target.md-header {
   width: 100vw;
   min-height: 100vh;
   max-height: var(--parallax-height);
+  padding-top: 1rem;
   padding-bottom: 25vh;
   overflow: hidden;
   pointer-events: auto;
@@ -7901,4 +7903,4 @@ h1.hero-content-section.header-mid.line span {
 }
 
 /* src/assets/stylesheets/bundle.css */
-/*# sourceMappingURL=bundle.PZS7F76U.css.map */
+/*# sourceMappingURL=bundle.U66QGU4F.css.map */
