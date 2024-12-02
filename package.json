@@ -81,7 +81,7 @@
     "eslint": "^9.15.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-jsdoc": "^50.5.0",
-    "inquirer": "^9.3.7",
+    "inquirer": "^12.1.0",
     "issue-parser": "^7.0.1",
     "lerna": "^8.1.9",
     "lines-and-columns": "^2.0.4",
