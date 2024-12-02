@@ -6355,7 +6355,7 @@ html .md-typeset .footnote-ref {
   --nav-height: 3rem;
   --header-height: 3rem;
   --parallax-height: calc(((100vh - var(--header-height)) * 1.4));
-  --fade-height: calc(var(--parallax-height));
+  --fade-height: var(--parallax-height);
 }
 html {
   font-size: 16px;
@@ -7113,7 +7113,7 @@ header#header-target.md-header {
   width: 100vw;
   min-height: 130vh;
   max-height: 180vh;
-  padding-top: 1rem;
+  padding-top: 1px;
   padding-bottom: 2rem;
   margin-top: -2.4rem;
   margin-bottom: 0.1rem;
@@ -7132,10 +7132,11 @@ header#header-target.md-header {
   grid-template-rows: 1fr;
   grid-template-columns: 1fr;
   place-content: start center;
+  place-items: start center;
   order: -1;
   width: 100vw;
   min-height: 100vh;
-  max-height: var(--parallax-height);
+  max-height: max(max-content, var(--parallax-height));
   padding-top: 1rem;
   padding-bottom: 25vh;
   overflow: hidden;
@@ -7659,7 +7660,7 @@ h1.hero-content-section.header-mid.line span {
 
 /* src/assets/stylesheets/heroimages.css */
 .hero-parallax__image {
-  --scale: 1.05;
+  --scale: 1.1;
   --object-fit: cover;
   --perspective: 100rem;
   --perspective-origin: center bottom;
@@ -7677,7 +7678,7 @@ h1.hero-content-section.header-mid.line span {
   min-width: 100vw;
   max-width: 3840px;
   height: 100%;
-  padding: var(--header-height) 0 1rem 0;
+  padding: 1px 0 1rem;
   margin-bottom: 0.1rem;
   overflow: hidden visible;
   object-fit: var(--object-fit);
@@ -7699,7 +7700,7 @@ h1.hero-content-section.header-mid.line span {
   }
   to {
     text-shadow:
-      0.015rem 0.015rem 0 var(--oxford-blue),
+      0.025rem 0.025rem 0 var(--oxford-blue),
       0 0 0.5rem var(--emerald),
       0 0 0.5rem var(--emerald),
       0.08rem 0.08rem 0 var(--ecru);
@@ -7881,7 +7882,7 @@ h1.hero-content-section.header-mid.line span {
   left: 0;
   z-index: 5;
   width: 100vw;
-  height: var(--parallax-height);
+  height: var(--fade-height);
   overflow: hidden clip;
   pointer-events: none;
   background:
@@ -7903,4 +7904,4 @@ h1.hero-content-section.header-mid.line span {
 }
 
 /* src/assets/stylesheets/bundle.css */
-/*# sourceMappingURL=bundle.U66QGU4F.css.map */
+/*# sourceMappingURL=bundle.U76FRJ2K.css.map */

@@ -11,7 +11,7 @@
 
 import * as bundle from "@/bundle"
 import { Subscription, firstValueFrom, merge, of } from "rxjs"
-import { distinctUntilKeyChanged, filter, mergeMap, skipUntil, tap } from "rxjs/operators"
+import { distinctUntilKeyChanged, filter, mergeMap, skipUntil, switchMap, tap } from "rxjs/operators"
 import { feedback$ } from "~/feedback"
 import { watchLicense } from "~/licenses"
 import { logger } from "~/log"
@@ -20,9 +20,11 @@ import { cacheAssets, cleanupCache, deleteOldCache, getAsset } from "./cache"
 import { shuffle$ } from "./hero/imageshuffle"
 import { subscribeToAnimations } from "./hero/animation"
 
-const { document$ } = window
+let customWindow: CustomWindow = window as unknown as CustomWindow
+
+const { document$ } = customWindow
 const manager = new SubscriptionManager()
-window.subscriptionManager = manager
+customWindow.subscriptionManager = manager
 
 document.documentElement.classList.remove("no-js")
 document.documentElement.classList.add("js")
@@ -109,7 +111,7 @@ const deleteCache$ = deleteOldCache()
  * @returns {Observable<void>} The observable for shuffling images.
  */
 const shuffler$ = shuffle$()
-const animate = document$.subscribe(() => subscribeToAnimations())
+const animate$ = document$.pipe(switchMap(() => of(subscribeToAnimations())))
 
 /**
  * Observes changes to the home page URL.
@@ -132,7 +134,7 @@ const atHome$ = homeBeacon$.pipe(
     logger.info("At home page")
     document.body.setAttribute("data-md-color-scheme", "slate")
     manager.addSubscription(shuffler$.subscribe())
-    manager.addSubscription(animate)
+    manager.addSubscription(animate$.subscribe())
   })
 )
 

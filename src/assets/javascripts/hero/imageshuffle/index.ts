@@ -1,5 +1,8 @@
 /**
  * Handles the state and behavior of the hero image cycling feature on the landing page.
+ *
+ * The HeroStateManager class manages the visibility, home status, and image cycling logic for the hero component.
+ * Everything is probably overly verbose and could use a healthy refactor
  * @copyright No rights reserved. Created by and for Plain License: https//www.plainlicense.org and dedicated to the Public Domain.
  * @license Plain Unlicense (Public Domain)
  */
@@ -36,7 +39,7 @@ import { SubscriptionManagerType, isHome, isOnSite, locationBeacon$, locationBeh
 import { getAsset } from "~/cache"
 import { HeroImage, ImageFocalPoints, heroImages } from "~/hero/imageshuffle/data"
 import { logger } from "~/log"
-import { time } from "console"
+import { blob } from "stream/consumers"
 
 const HERO_CONFIG = {
   INTERVAL: 20000,
@@ -47,14 +50,11 @@ const HERO_CONFIG = {
       delay: 1.5,
       duration: 15,
       ease: "sine.out",
-      focalPoint: {
-        horizontalBias: 0.8, // Center bias
-        verticalBias: 0.6,
-        randomness: 0.2 // How much random variation from center
-      }
     }
   }
 } as const
+
+let customWindow = window as unknown as CustomWindow
 
 const isPageVisible = () => !document.hidden
 const isAtHome = () => {
@@ -63,8 +63,8 @@ const isAtHome = () => {
 }
 const leftPage = () => !isAtHome() && isOnSite(locationBehavior$.value)
 
-const portraitMediaQuery = window.matchMedia("(orientation: portrait)")
-const parallaxLayer = document.getElementById("parallax-hero-image-layer")
+const portraitMediaQuery = customWindow.matchMedia("(orientation: portrait)")
+const parallaxLayer = customWindow.document.getElementById("parallax-hero-image-layer")
 
 /**
  * Manages the state and behavior of a hero image cycling feature.
@@ -76,7 +76,7 @@ const parallaxLayer = document.getElementById("parallax-hero-image-layer")
 class HeroStateManager {
   private state$ = new BehaviorSubject<HeroState>(this.getInitialState())
 
-  private readonly subscriptionManager: SubscriptionManagerType = window.subscriptionManager
+  private readonly subscriptionManager: SubscriptionManagerType = customWindow.subscriptionManager
 
   private readonly shuffledHeroes: HeroImage[]
 
@@ -84,13 +84,13 @@ class HeroStateManager {
 
   private homePath: null | string = null
 
-  private cleanup = new Map<HTMLImageElement, GSAPTimeline>()
-
   private imageMetadata = new WeakMap<HTMLImageElement, ImageMetadata>()
 
   private hasPageSubscriptions = false
 
   private readonly optimalWidth$ = new BehaviorSubject<number>(this.getOptimalWidth())
+
+  private readonly subscriptionWatcher = new Subscription()
 
   /**
    * An observable that emits a boolean indicating whether the hero can cycle through images.
@@ -115,7 +115,7 @@ class HeroStateManager {
    * @returns The optimal width for the hero images.
    */
   private getOptimalWidth(): number {
-    const screenWidth = Math.max(window.innerWidth, window.innerHeight)
+    const screenWidth = Math.max(customWindow.innerWidth, customWindow.innerHeight)
     if (screenWidth <= 1024) {
       return 1280
     }
@@ -162,13 +162,30 @@ class HeroStateManager {
   ).subscribe()
 
   /**
+   * Sets up a subscription watcher to manage page subscriptions.
+   */
+  private setupSubscriptionWatcher = () => {
+    const subscriptionWatcher$ = merge(this.state$.pipe(map(state => state.isAtHome), filter(isAtHome => isAtHome)), locationBeacon$.pipe(filter(() => isAtHome()))).pipe(
+      distinctUntilChanged(),
+      filter(() => !this.hasPageSubscriptions),
+      tap(() => {
+        this.setupSubscriptions()
+        this.hasPageSubscriptions = true
+      })).subscribe()
+
+    this.subscriptionManager.addSubscription(subscriptionWatcher$, true)
+    this.subscriptionWatcher.add(subscriptionWatcher$)
+  }
+
+  /**
    * Creates an instance of HeroStateManager and initializes the shuffled heroes and subscriptions.
    */
   constructor() {
     this.shuffledHeroes = [...this.getHeroes()].sort(() => Math.random() - 0.5)
     this.setupSubscriptions()
-    window.addEventListener('unload', () => this.dispose())
+    customWindow.addEventListener('unload', () => this.dispose())
     this.setHomePathAndObserver()
+    this.setupSubscriptionWatcher()
   }
 
   /**
@@ -182,7 +199,7 @@ class HeroStateManager {
       map(() => false)
     ).subscribe(isAtHome => {
       this.updateState({ isAtHome })
-      this.subscriptionManager.cleanup()
+      this.subscriptionManager.schedulePageCleanup(this.homePath || "/index.html")
       this.hasPageSubscriptions = false
     })
 
@@ -193,7 +210,7 @@ class HeroStateManager {
     ).subscribe()
 
     const orientationSub = merge(
-      fromEvent(window, 'resize'),
+      fromEvent(customWindow, 'resize'),
       fromEvent(portraitMediaQuery, 'change')
     ).pipe(
       debounceTime(100),
@@ -239,9 +256,10 @@ class HeroStateManager {
    * @param height The height to set for the parallax effect.
    */
   private setParallaxHeight(height: number): void {
-    const headerHeight = document.getElementById("header-target")?.clientHeight || 95
+    const headerRect = this.getHeaderRect()
+    const headerHeight = headerRect.height
     setCssVariable("--header-height", `${headerHeight}px`)
-    const effectiveViewHeight = window.innerHeight - headerHeight
+    const effectiveViewHeight = customWindow.innerHeight - headerHeight
     const maxFade = effectiveViewHeight * 1.4
 
     if (!parallaxLayer || height <= 0) {
@@ -293,39 +311,6 @@ class HeroStateManager {
   }
 
   /**
-   * Quickly inserts an invisible impage into the DOM to test its position
-   * and dimensions, then removes it.
-   * @param img The image element to retrieve dimensions for.
-   * @returns The dimensions of the image.
-   */
-  private testImageDimensions(img: HTMLImageElement): ImageDimensions {
-
-    const timeline = gsap.timeline()
-    let computedStyle = null
-    let naturalWidth = 0
-    let naturalHeight = 0
-    let boundingRect = null
-    timeline.add(gsap.set(img, { visibility: "hidden", opacity: 0 }))
-    timeline.add(() => {
-      parallaxLayer?.append(img)
-      computedStyle = getComputedStyle(img)
-      logger.info(`Computed style for ${img.nodeName}:`, computedStyle)
-      naturalWidth = img.naturalWidth
-      naturalHeight = img.naturalHeight
-      boundingRect = img.getBoundingClientRect()
-      logger.info(`Natural dimensions for ${img.nodeName}:`, { naturalWidth, naturalHeight })
-      logger.info(`Bounding rect for ${img.nodeName}:`, boundingRect)
-      parallaxLayer?.removeChild(img)
-    }).eventCallback("onComplete", () => { timeline.kill() })
-    timeline.add(gsap.set(img, { visibility: "visible", opacity: 1 }))
-    timeline.play()
-    if (timeline.isActive()) {
-      timeline.kill()
-    }
-    return { computedStyle, naturalWidth, naturalHeight, boundingRect } as unknown as ImageDimensions
-  }
-
-  /**
    * Updates the text elements associated with the specified image name.
    * @param imageName The name of the image to update text elements for.
    */
@@ -356,36 +341,44 @@ class HeroStateManager {
    * @param parallaxLayer The parallax layer to associate with the cycler.
    * @returns The created image cycler.
    */
-  public static createCycler(): ImageCycler {
-    const state = new HeroStateManager()
+  static createCycler = (): ImageCycler => {
+  const state = new HeroStateManager()
 
-    const loadImages$ = of(state.cycleImage()).pipe(
-      catchError(error => {
-        logger.error("Failed to load initial image:", error)
-        state.updateState({ status: 'error' })
-        return EMPTY
-      })
-    )
+  // Create observable for initial image load
+  const loadImages$ = from(state.cycleImage()).pipe(
+    catchError(error => {
+      logger.error("Failed to load initial image:", error)
+      state.updateState({ status: 'error' })
+      return EMPTY
+    }),
+    map(() => void 0)
+  )
 
-    const cycle$ = interval(HERO_CONFIG.INTERVAL).pipe(
-      withLatestFrom(state.canCycle$),
-      filter(([_, canCycle]) => canCycle),
-      switchMap(() => from(state.cycleImage()))
-    )
+  // Create observable for subsequent cycles
+  const cycle$ = interval(HERO_CONFIG.INTERVAL).pipe(
+    withLatestFrom(state.canCycle$),
+    filter(([_, canCycle]) => canCycle),
+    tap(() => logger.info("=== Cycle interval triggered ===")),
+    mergeMap(() => from(state.cycleImage()), 1),
+    map(() => void 0),
+    catchError(error => {
+      logger.error("Failed to cycle image:", error)
+      state.updateState({ status: 'error' })
+      return EMPTY
+    }),
+    shareReplay(1)
+  )
 
-    return {
-      loadImages$,
-      cycle$,
-      heroState: state,
-      start: () => {
-        const subscription = new Subscription()
-        subscription.add(loadImages$.subscribe())
-        subscription.add(cycle$.subscribe())
-        return subscription
-      },
-      stop: () => state.dispose(),
-    }
+  // Combine both observables
+  const combinedCycle$ = merge(loadImages$, cycle$)
+
+  return {
+    cycle$: combinedCycle$,
+    heroState: state,
+    start: () => combinedCycle$.subscribe(),
+    stop: () => state.dispose()
   }
+}
 
   /**
    * Retrieves metadata for the specified image.
@@ -401,26 +394,26 @@ class HeroStateManager {
    * @param imgSettings The settings for the image to load.
    * @returns A promise that resolves to the loaded image element.
    */
-  public async loadAndPrepareImage(imgSettings: HeroImage): Promise<HTMLImageElement> {
-    const { imageName, srcset, src, focalPoints } = imgSettings
-
-    if (!src) {
-      throw new Error('No image source provided')
+  public loadAndPrepareImage(imgSettings: HeroImage): Observable<HTMLImageElement> {
+    if (!parallaxLayer || !imgSettings.src) {
+      throw new Error("Parallax layer or image source not found")
     }
-
-    const imageBlob = await firstValueFrom(this.loadImage(src))
-    const img = new Image()
-
-    // Wait for image to load before continuing
-    await new Promise((resolve, reject) => {
-        img.onload = resolve
-        img.onerror = reject
-        this.setImageAttributes(img, imageBlob, imageName, srcset, focalPoints)
+    return this.loadImage(imgSettings.src).pipe(
+      map(blob => {
+      const img = new Image()
+      img.src = URL.createObjectURL(blob)
+      this.setImageAttributes(img, blob, imgSettings.imageName, imgSettings.srcset, imgSettings.focalPoints)
+      return img
+    }),
+      tap(img => {
+      if (!img.complete) {
+        return new Promise((resolve) => {
+          img.onload = () => resolve(img)
+        })
+      }
+      return img
     })
-
-    logger.info(`Image loaded: ${imageName} - dimensions: ${img.naturalWidth}x${img.naturalHeight}`)
-    this.trackImageMetadata(img)
-    return img
+    )
   }
 
   /**
@@ -432,6 +425,7 @@ class HeroStateManager {
    * @param focalPoints The focal points for the image.
    */
   private setImageAttributes(img: HTMLImageElement, imageBlob: Blob, imageName: string, srcset: string, focalPoints?: ImageFocalPoints): void {
+    logger.info("Setting image attributes for", imageName)
     img.src = URL.createObjectURL(imageBlob)
     img.srcset = srcset
     img.sizes = `
@@ -439,7 +433,7 @@ class HeroStateManager {
       (max-width: 1600px) 1920px,
       (max-width: 2048px) 2560px,
       3840px
-    `
+    `.trim().replace(/\s+/g, " ").replace(/\n/g, "")
     img.alt = ""
     img.classList.add("hero-parallax__image", `hero-parallax__image--${imageName}`)
     img.draggable = false
@@ -450,6 +444,44 @@ class HeroStateManager {
       img.setAttribute("data-focus-secondary-x", focalPoints.secondary[0].toString())
       img.setAttribute("data-focus-secondary-y", focalPoints.secondary[1].toString())
     }
+    logger.info("Image attributes set for", imageName)
+  }
+
+  /**
+   * Quickly inserts an invisible impage into the DOM to test its position
+   * and dimensions, then removes it.
+   * @param img The image element to retrieve dimensions for.
+   * @returns The dimensions of the image.
+   */
+  private testImageDimensions(img: HTMLImageElement): ImageDimensions {
+    if (!parallaxLayer) {
+      throw new Error("Parallax layer not found")
+    }
+    const { naturalWidth, naturalHeight } = img
+    logger.info("Testing image dimensions for", img, "Natural dimensions:", { naturalWidth, naturalHeight })
+    img.style.opacity = "0"
+    parallaxLayer.append(img)
+    const emplacedElement = parallaxLayer.lastElementChild
+    if (!emplacedElement) {
+      throw new Error("Emplaced element not found")
+    }
+    // shell game to avoid garbage collector
+    const elementRect = emplacedElement.getBoundingClientRect()
+    const elementStyle = JSON.stringify(window.getComputedStyle(emplacedElement))
+    const rectJSON = JSON.stringify(elementRect)
+    logger.info("Bounding rect:", rectJSON, "Element style:", elementStyle)
+    parallaxLayer.removeChild(emplacedElement)
+    const boundingRect = JSON.parse(rectJSON)
+    const processedStyle = JSON.parse(elementStyle)
+    logger.info("Processed style:", processedStyle)
+    logger.info("processed Bounding rect:", boundingRect)
+    img.style.opacity = ""
+    return {
+      computedStyle: processedStyle,
+      naturalWidth,
+      naturalHeight,
+      boundingRect
+    } as unknown as ImageDimensions
   }
 
   /**
@@ -485,6 +517,7 @@ class HeroStateManager {
       return defaultRect
     }
     if (tabVisible && tabBox && headerBox) {
+      logger.info("Tab and header are visible")
       return this.computeCombinedRects(headerBox, tabBox)
     }
     if (tabVisible && tabBox) {
@@ -493,29 +526,95 @@ class HeroStateManager {
     return headerBox || defaultRect
   }
 
-
+  private computeExcessDimensions(value: number, boundingLine: number): number {
+    logger.info("Computing excess dimensions for value:", value, "Bounding line:", boundingLine)
+    if (boundingLine > 0) {
+      return value > boundingLine ? value - boundingLine : boundingLine - value
+    }
+    return Math.abs(value)
+  }
 
   private computeTranslationDimensions(img: HTMLImageElement): TranslatableAreas {
+    const getOverflowComputed = (overflowRects: OverflowRects, overflow: OverflowComputed): [OverflowRects, OverflowComputed] => {
+      overflow.topIsOffset = false
+      overflow.noYoverflow = false
+      if (overflow.top > 0 && overflow.bottom === 0) {
+        if (imgHeight > visibleRect.height) {
+          const offset = (imgHeight - visibleRect.height) / 2
+          overflow.bottom = offset
+          overflow.top = offset
+          overflow.topIsOffset = true
+        } else {
+          overflowRects.top.y = visibleRect.top - overflow.top
+          overflow.top = 0
+          overflow.bottom = 0
+          overflowRects.bottom.y = visibleRect.bottom + overflow.bottom
+          overflow.noYoverflow = true
+        }
+      }
+      logger.info("Overflow computed:", overflow)
+      return [overflowRects, overflow]
+    }
+    const getTranslatability = (overflow: OverflowComputed) => {
+    return {
+      top: overflow.top > 0,
+      bottom: overflow.bottom > 0,
+      left: overflow.left > 0,
+      right: overflow.right > 0
+    }
+  }
+
+    const getComputedImageDimensions = (imgWidth: number, imgHeight: number) => {
+      const aspectRatio = imgWidth / imgHeight
+      const orientation = (aspectRatio > 1 ? 'landscape' : aspectRatio < 1 ? 'portrait' : 'square') as 'portrait' | 'landscape' | 'square'
+      return { width: imgWidth, height: imgHeight, aspectRatio, orientation }
+    }
+
+    const getExcessDimensions = (headerRect: DOMRect, boundingRect: DOMRect) => {
+      return {
+        top: this.computeExcessDimensions(boundingRect.top, headerRect.bottom),
+        left: this.computeExcessDimensions(boundingRect.left, 0),
+        bottom: isImageBottomVisible ? 0 : this.computeExcessDimensions(boundingRect.bottom, customWindow.innerHeight),
+        right: this.computeExcessDimensions(boundingRect.right, customWindow.innerWidth)
+      }
+    }
+
+    const createDOMRect = (x: number, y: number, width: number, height: number) => { return new DOMRect(x, y, width, height) }
+
+    const getInitialOverflowRects = (visibleRect: DOMRect, excesses: OverflowComputed, imageTop: number) => {
+    return {
+      yTopRect: createDOMRect(0, excesses.top > 0 ? Math.min(visibleRect.top - excesses.top, imageTop) : visibleRect.top, visibleRect.width, excesses.top),
+      yBottomRect: createDOMRect(0, excesses.bottom ? visibleRect.bottom + excesses.bottom : 0, customWindow.innerWidth, excesses.bottom),
+      xLeftRect: createDOMRect(-excesses.left, visibleRect.top, Math.abs(excesses.left), visibleRect.height),
+      xRightRect: createDOMRect(visibleRect.right, visibleRect.top, excesses.right, visibleRect.height)
+    }
+  }
+
     const { computedStyle, naturalWidth, naturalHeight, boundingRect } = this.testImageDimensions(img)
+
     const containerRect = img.parentElement?.getBoundingClientRect() || document.body.getBoundingClientRect()
+
     const headerRect = this.getHeaderRect()
-    const isImageBottomVisible = boundingRect.bottom <= (window.innerHeight - boundingRect.top)
+
+    const isImageBottomVisible = boundingRect.bottom <= (customWindow.innerHeight - boundingRect.top)
 
     // Calculate scaled image dimensions
-    const scale = Number(computedStyle.getPropertyValue('scale')) || 1
+    const scale = Number(computedStyle.scale) || 1
     const imgWidth = Math.max(naturalWidth * scale, boundingRect.width)
     const imgHeight = Math.max(naturalHeight * scale, boundingRect.height)
-    const visibleRect = new DOMRect(0, headerRect.bottom, window.innerWidth, window.innerHeight - headerRect.bottom)
-    const excessTop = Math.abs(Math.min(0, headerRect.bottom - boundingRect.top))
-    const excessBottom = isImageBottomVisible ? 0 : boundingRect.bottom - window.innerHeight
-    const excessLeft = Math.abs(Math.min(0, boundingRect.left))
-    const excessRight = Math.max(0, boundingRect.right - window.innerWidth)
-    const yTopRect = new DOMRect(0, (excessTop > 0 ? Math.min(visibleRect.top - excessTop, boundingRect.top) : visibleRect.top), visibleRect.width, excessTop)
-    const yBottomRect = new DOMRect(0, excessBottom ? (visibleRect.bottom + excessBottom) : 0, window.innerWidth, excessBottom)
-    const xLeftRect = new DOMRect(-excessLeft, visibleRect.top, Math.abs(excessLeft), visibleRect.height)
-    const xRightRect = new DOMRect(visibleRect.right, visibleRect.top, excessRight, visibleRect.height)
+    const visibleRect = new DOMRect(0, headerRect.bottom, customWindow.innerWidth, customWindow.innerHeight - headerRect.bottom)
+
+    const { top: excessTop, bottom: excessBottom, left: excessLeft, right: excessRight } = getExcessDimensions(headerRect, boundingRect)
+
+    const { yTopRect, yBottomRect, xLeftRect, xRightRect } = getInitialOverflowRects(visibleRect, { top: excessTop, bottom: excessBottom, left: excessLeft, right: excessRight }, boundingRect.top)
+
+    const [overflowRects, overflow] = getOverflowComputed({ top: yTopRect, right: xRightRect, bottom: yBottomRect, left: xLeftRect }, { top: excessTop, right: excessRight, bottom: excessBottom, left: excessLeft })
+    const translatable = getTranslatability(overflow)
+
+    const computedImageDimensions = getComputedImageDimensions(imgWidth, imgHeight)
     setCssVariable("--header-height", `${visibleRect.top}px`)
-    return {yTopRect, yBottomRect, xLeftRect, xRightRect, overflow: { left: excessLeft, right: excessRight, top: excessTop, bottom: excessBottom }, visibleRect, containerRect, imageDimensions: { computedStyle, naturalWidth, naturalHeight, boundingRect }, imageWidth: imgWidth, imageHeight: imgHeight} as TranslatableAreas
+    setCssVariable("--fade-height", `${visibleRect.height}px`)
+    return { overflowRects, overflow, visibleRect, containerRect, imageDimensions: { computedStyle, naturalWidth, naturalHeight, boundingRect }, computedImageDimensions, translatable }
   }
 
   /**
@@ -527,74 +626,74 @@ class HeroStateManager {
     if (prefersReducedMotion()) {
       return undefined
     }
-
-    const tl = gsap.timeline()
-    const { xLeftRect, xRightRect, yTopRect, yBottomRect, overflow, visibleRect, containerRect, imageDimensions, imageWidth, imageHeight } = this.computeTranslationDimensions(img)
-    let translatable = { left: false, right: false, top: false, bottom: false }
-
-    if (overflow.top && !overflow.bottom) {
-      if (imageHeight > visibleRect.height) {
-        // we even out the image
-        const offset = (imageHeight - visibleRect.height) / 2
-        tl.add(["yReposition", gsap.set(img, { y: visibleRect.top - offset })], "<")
-        yTopRect.y = visibleRect.top - offset
-        yBottomRect.y = visibleRect.bottom + offset
-        overflow.bottom = offset
-        overflow.top = offset
-      } else {
-        // align the image to the top
-        tl.set(img, { y: yTopRect.top })
-        overflow.top = 0
-      }
-    }
-    translatable.top = overflow.top > 0
-    translatable.bottom = overflow.bottom > 0
-    translatable.left = overflow.left > 0
-    translatable.right = overflow.right > 0
-
+    const tl = gsap.timeline({ repeat: 0, paused: true })
+    const { overflowRects, overflow, visibleRect, containerRect, imageDimensions, computedImageDimensions, translatable} = this.computeTranslationDimensions(img)
+    logger.info("Computed translation dimensions:", { overflowRects, overflow, visibleRect, containerRect, imageDimensions, computedImageDimensions, translatable })
     if (Object.values(translatable).every(value => value === false)) { return undefined }
 
+    // Reposition to balance overflow or minimize bottom gap
+    if (overflow.topIsOffset) {
+      const offset = overflow.top
+      tl.add(["yReposition", gsap.set(img, { y: visibleRect.top - offset })], "<")
+    } else if (overflow.noYoverflow) {
+      tl.add(["xReposition", gsap.set(img, { y: visibleRect.top })], "<")
+    }
 
-  // Maximum allowed translations
-    const maxX = Math.max(0, (imgWidth - visibleWidth) / 2)
-    const maxY = Math.max(0, (imgHeight - visibleHeight) / 2)
+  // Calculate translation bounds based on overflow
+    const bounds: TranslationBounds = {
+      x: {
+        min: -Math.abs(overflowRects.left.width),
+        max: Math.abs(overflowRects.right.width)
+      },
+      y: {
+        min: overflow.topIsOffset ? -overflow.top : 0,
+        max: Math.abs(overflowRects.bottom.height)
+      }
+    }
 
-  // Focal points (ensure they are between 0 and 100)
-    const focalX = gsap.utils.clamp(0, 100, Number(img.dataset.focusMainX) || 50)
-    const focalY = gsap.utils.clamp(0, 100, Number(img.dataset.focusMainY) || 50)
-    const startX = gsap.utils.clamp(0, 100, Number(img.dataset.focusSecondaryX) || 50)
-    const startY = gsap.utils.clamp(0, 100, Number(img.dataset.focusSecondaryY) || 50)
+  // Generate weighted random position
+    const getWeightedPosition = (
+    target: number,
+    bounds: {min: number, max: number},
+    variance: number = 0.2
+    ): number => {
+    const range = bounds.max - bounds.min
+    const targetPos = gsap.utils.mapRange(0, 100, bounds.min, bounds.max, target)
+      const randomOffset = (Math.random() - 0.5) * 2 * variance * range
+    logger.info("Target position:", targetPos, "Random offset:", randomOffset)
+    return gsap.utils.clamp(bounds.min, bounds.max, targetPos + randomOffset)
+  }
 
-  // Map focal points to positions
-    const mapPosition = (value: number, max: number) =>
-    gsap.utils.clamp(-max, max, gsap.utils.mapRange(0, 100, -max, max, value))
+  // Get focal points
+    const focalX = Number(img.dataset.focusMainX) * 100 || 50
+    const focalY = Number(img.dataset.focusMainY) * 100 || 50
+    const startX = Number(img.dataset.focusSecondaryX) * 100 || 50
+    const startY = Number(img.dataset.focusSecondaryY) * 100 || 50
 
-    const startPosX = mapPosition(startX, maxX)
-    const startPosY = mapPosition(startY, maxY)
-    const endPosX = mapPosition(focalX, maxX)
-    const endPosY = mapPosition(focalY, maxY)
+  // Calculate positions with different variances
+    const startPos = {
+      x: getWeightedPosition(startX, bounds.x, 0.3),
+      y: overflow.noYoverflow? visibleRect.top : getWeightedPosition(startY, bounds.y, 0.3)
+    }
 
-    logger.info(
-      `Creating pan animation for ${img.nodeName}. Calculated values:\n` +
-    `start: ${startPosX}, ${startPosY}\n` +
-    `end: ${endPosX}, ${endPosY}\n` +
-    `max: ${maxX}, ${maxY}\n` +
-    `scale: ${scale}`
-    )
+    const endPos = {
+      x: getWeightedPosition(focalX, bounds.x, 0.1),
+      y: overflow.noYoverflow ? visibleRect.top : getWeightedPosition(focalY, bounds.y, 0.1)
+    }
+    logger.info("Start position:", startPos, "End position:", endPos)
 
-  // Pan animation variables
     const panVars = HERO_CONFIG.ANIMATION.PAN
 
-    tl.fromTo(
+  // Create pan animation
+    tl.add(["panEffect", gsap.fromTo(
       img,
-    { x: startPosX, y: startPosY },
+    { x: startPos.x, y: startPos.y },
     {
-      x: endPosX,
-      y: endPosY,
-      duration: panVars.duration,
-      ease: panVars.ease,
+      x: endPos.x,
+      y: endPos.y,
+      ...panVars,
     }
-    )
+    )], ">")
 
     return tl
   }
@@ -611,80 +710,121 @@ class HeroStateManager {
       return gsap.timeline()
     }
 
-    const timeline = gsap.timeline({ paused: true })
+    const timeline = gsap.timeline({
+      paused: true, repeat: 0, onComplete: () => {
+        logger.info("=== Timeline completed for", imgName)}, onStart: () => { logger.info("Timeline started for ", imgName) 
+        logger.info("Timeline duration:", timeline.duration())
+      }
+    })
     const currentImage = parallaxLayer.children?.[0] as HTMLImageElement | null
-    const currentAnimation = this.state$.value.currentTimeline || null
     const startUpActions = () => {
+      const currentAnimation = this.state$.value.currentTimeline || null
       // remove the image if already in the DOM
-      if (parallaxLayer.contains(img)) {
+      if (parallaxLayer.childNodes.length > 0 && Array.from(parallaxLayer.childNodes).find(node => node === img)) {
         parallaxLayer.removeChild(img)
       }
       // Add the image to the DOM; only first-child is visible in CSS, so no need to remove others
-        parallaxLayer.prepend(img)
-        // Ensure image is loaded before setting height
-        if (img.naturalHeight) {
-          this.setParallaxHeight(img.naturalHeight)
-        } else {
-          img.onload = () => this.setParallaxHeight(img.naturalHeight)
-        }
-        this.updateState({ activeImageIndex: index })
-        this.updateTextElements(imgName)
+      parallaxLayer.prepend(img)
+      // Ensure image is loaded before setting height
+      this.updateTextElements(imgName)
+      if (img.naturalHeight) {
+        this.setParallaxHeight(img.naturalHeight)
+      } else {
+        img.onload = () => this.setParallaxHeight(img.naturalHeight)
+      }
       if (currentAnimation.isActive()) {
-        this.state$.value.currentTimeline.kill()
+        currentAnimation.kill()
       }
     }
     // Add startup settings to timeline first; triggers with animation
     timeline.add(["startupActions", startUpActions], 0)
+    timeline.eventCallback("onStart", () => {
+      logger.info("Startup actions completed for ", imgName)
+      logger.info("Updating Hero state with new image:", imgName)
+      logger.info("Current image index:", index)
+    })
     // Add enter animation for new image
-      .add(["imageEnter", gsap.to(img, HERO_CONFIG.ANIMATION.ENTER)], "<")
+    timeline.add(["imageEnter", gsap.to(img, HERO_CONFIG.ANIMATION.ENTER)], "<")
     // Add exit animation for current image if it exists
     if (currentImage) {
       timeline.add(["imageExit", gsap.to(currentImage, HERO_CONFIG.ANIMATION.EXIT)], "<")
     }
     // Add pan animation if user isn't reducing motion and image is loaded
-    if (!prefersReducedMotion() && img.naturalWidth && img.naturalHeight) {
+    if (!prefersReducedMotion()) {
       logger.info("Creating and adding pan animation for ", imgName)
       const panAnimation = this.createPanAnimation(img)
       if (panAnimation && panAnimation instanceof gsap.core.Timeline) {
-        timeline.add(["panEffect", panAnimation], ">")
+        timeline.add(panAnimation)
+      } else {
+        logger.info("User prefers reduced motion; skipping pan animation for ", imgName)
       }
     }
-    // update state with new timeline and smooth out timeline
+      // update state with new timeline and smooth out timeline
     timeline.smoothChildTiming = true
-    this.cleanup.set(img, timeline)
-    this.updateState({ currentTimeline: timeline, currentImage: img })
     return timeline
   }
 
   /**
    * Cycles to the next image in the hero image array.
-   * @returns A promise that resolves when the image has been cycled.
+   * @returns An observable that emits when the image has been cycled.
    */
-  public async cycleImage(): Promise<void> {
+  public cycleImage() {
     if (!parallaxLayer || this.state$.closed) {
-      return
+      return EMPTY
     }
 
-    // Get current state
-    const { activeImageIndex } = this.state$.value || { activeImageIndex: 0 }
-    const nextIndex = parallaxLayer.childElementCount > 0 ?
-        (activeImageIndex + 1) % this.shuffledHeroes.length : 0
-    const nextImageName = this.shuffledHeroes[nextIndex].imageName
+    const currentState = this.state$.value
 
-    // Check if we're already showing this image
-    const currentImage = parallaxLayer.children[0] as HTMLImageElement
-    if (currentImage?.classList.contains(`hero-parallax__image--${nextImageName}`)) {
-      return
+    return new Observable<void>(subscriber => {
+    try {
+      const { activeImageIndex } = currentState
+      const nextIndex = parallaxLayer!.childElementCount > 0 ?
+          (activeImageIndex + 1) % this.shuffledHeroes.length : 0
+      const nextImage = this.shuffledHeroes[nextIndex]
+      const nextImageName = nextImage.imageName
+
+      // Check if cycling to same image
+      const currentImage = parallaxLayer!.children[0] as HTMLImageElement
+      if (currentImage?.classList.contains(`hero-parallax__image--${nextImageName}`)) {
+        subscriber.complete()
+        return
+      }
+
+      // Load or retrieve image
+      const loadImage$ = this.loadedImages.has(nextImageName) ?
+        of(this.loadedImages.get(nextImageName)!) :
+        this.loadAndPrepareImage(nextImage).pipe(
+          tap(img => this.loadedImages.set(nextImageName, img))
+        )
+
+      loadImage$.subscribe({
+        next: (newImageElement) => {
+          const timeline = this.setTimelineForImage(newImageElement, nextImageName, nextIndex)
+
+          if (currentState.currentTimeline?.isActive()) {
+            currentState.currentTimeline.progress(1)
+          }
+
+          this.updateState({
+            activeImageIndex: nextIndex,
+            currentImage: newImageElement,
+            currentTimeline: timeline
+          })
+
+          timeline.play()
+          subscriber.next()
+          subscriber.complete()
+        },
+        error: (error) => {
+          logger.error("Error cycling image:", error)
+          subscriber.error(error)
+        }
+      })
+    } catch (error) {
+      logger.error("Error in cycleImage:", error)
+      subscriber.error(error)
     }
-
-    const newImageElement = this.loadedImages.get(nextImageName) ||
-        await this.loadAndPrepareImage(this.shuffledHeroes[nextIndex])
-
-    // Get or create timeline
-    const timeline = this.cleanup.get(newImageElement) ||
-        this.setTimelineForImage(newImageElement, nextImageName, nextIndex)
-
-    timeline.play()
+  })
   }
 
    /**
@@ -696,11 +836,6 @@ class HeroStateManager {
     if (currentSrc.startsWith('blob:')) {
       URL.revokeObjectURL(currentSrc)
     }
-    const animation = this.cleanup.get(image)
-    if (animation) {
-      animation.kill()
-      this.cleanup.delete(image)
-    }
   }
 
   /**
@@ -709,9 +844,8 @@ class HeroStateManager {
   public dispose(): void {
     this.state$.complete()
     this.loadedImages.forEach(img => this.cleanupImageResources(img))
-    this.cleanup.forEach(timeline => timeline.kill())
-    this.cleanup.clear()
     this.loadedImages.clear()
+    this.state$?.value.currentTimeline?.kill()
     this.imageMetadata = new WeakMap()
     this.subscriptionManager.schedulePageCleanup(this.homePath || '/')
   }
@@ -769,35 +903,29 @@ const initCycler = () => {
  * @returns Observable for image cycling
  */
 const shuffle$ = (): Observable<void> => {
-    if (!parallaxLayer) {
-      logger.warn("No parallax layer found")
-      return EMPTY
-    }
+  if (!parallaxLayer) {
+    logger.warn("No parallax layer found")
+    return EMPTY
+  }
 
-    // Ensure single cycler instance
-    if (!cyclerRef.current) {
-      initCycler()
-    }
+  initCycler()
 
-    // Use shareReplay to prevent multiple subscriptions
-    return interval(HERO_CONFIG.INTERVAL).pipe(
-      switchMap(() => {
-            if (!cyclerRef.current?.heroState) {
-              return EMPTY
-            }
-            const { canCycle$ } = cyclerRef.current.heroState
-
-            return canCycle$.pipe(
-              filter((canCycle) => canCycle === true),
-              switchMap(() => from(cyclerRef.current!.heroState.cycleImage())),
-              catchError(error => {
-                    logger.error("Error during image cycle:", error)
-                    return EMPTY
-                })
-            )
-        }),
-      shareReplay(1)
-    )
+  return interval(HERO_CONFIG.INTERVAL).pipe(
+    withLatestFrom(cyclerRef.current?.heroState.canCycle$ || of(false)),
+    filter(([_, canCycle]) => canCycle as boolean),
+    switchMap(() => {
+      if (!cyclerRef.current?.heroState) {
+        return EMPTY
+      }
+      return from(cyclerRef.current.heroState.cycleImage()).pipe(
+        catchError(error => {
+          logger.error("Error during image cycle:", error)
+          return EMPTY
+        })
+      )
+    }),
+    shareReplay(1)
+  )
 }
 
 // Export cleaned up interface

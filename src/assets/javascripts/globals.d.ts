@@ -35,17 +35,24 @@ declare global {
    * Interfaces
    * ------------------------------------------------------------------------- */
 
-    // Image state management
+  // Image state management
   interface HeroState {
-    readonly status: 'loading' | 'cycling' | 'paused' | 'error'
-    readonly isVisible: boolean
-    readonly currentTimeline: gsap.core.Timeline
-    readonly currentImage: HTMLImageElement | null
-    readonly isAtHome: boolean
-    readonly activeImageIndex: number
-    readonly orientation: 'portrait' | 'landscape'
+    status: 'loading' | 'cycling' | 'paused' | 'error'
+    isVisible: boolean
+    currentTimeline: gsap.core.Timeline
+    currentImage: HTMLImageElement | null
+    isAtHome: boolean
+    activeImageIndex: number
+    orientation: 'portrait' | 'landscape'
     readonly optimalWidth: number
-    readonly lastActiveTime: number
+    lastActiveTime: number
+  }
+
+  interface ComputedImageDimensions {
+    width: number
+    height: number
+    aspectRatio: number
+    orientation: 'portrait' | 'landscape' | 'square'
   }
 
   interface ImageDimensions {
@@ -60,17 +67,42 @@ declare global {
     y: number
   }
 
+  interface OverflowComputed {
+    top: number
+    right: number
+    bottom: number
+    left: number
+    topIsOffset?: boolean
+    noYoverflow?: boolean
+  }
+
+  interface OverflowRects {
+    top: DOMRect
+    right: DOMRect
+    bottom: DOMRect
+    left: DOMRect
+  }
+
+  interface TranslationPotential {
+    top: boolean
+    right: boolean
+    bottom: boolean
+    left: boolean
+  }
+
+  interface TranslationBounds {
+    x: { min: number, max: number }
+    y: { min: number, max: number }
+  }
+
   interface TranslatableAreas {
-    yTopRect: DOMRect
-    yBottomRect: DOMRect
-    xLeftRect: DOMRect
-    xRightRect: DOMRect
-    overflow: { left: number, right: number, top: number, bottom: number }
+    overflowRects: OverflowRects
+    overflow: OverflowComputed
     visibleRect: DOMRect
     containerRect: DOMRect
     imageDimensions: ImageDimensions
-    imageWidth: number
-    imageHeight: number
+    computedImageDimensions: ComputedImageDimensions
+    translatable: TranslationPotential
   }
 
   interface ScrollTargets {
@@ -88,7 +120,7 @@ declare global {
   }
 
   interface ImageCycler {
-    loadImages$: Observable<Promise<void>>
+    loadImages$?: Observable<void>
     cycle$: Observable<void>
     heroState: HeroStateManager
     start: () => Subscription
@@ -143,7 +175,7 @@ declare global {
    * bundle.ts gives plenty of examples on how to use component$ to mount and observe components
    */
 
-  interface Window {
+  interface CustomWindow extends Window {
     document$: Observable<Document>
     location$: Subject<URL>
     target$: Observable<HTMLElement>
@@ -195,5 +227,4 @@ declare global {
     transformOrigin?: string // The origin point for the transformation.
     transformStyle?: string // The style of the transformation (e.g., flat, preserve-3d).
   }
-
 }

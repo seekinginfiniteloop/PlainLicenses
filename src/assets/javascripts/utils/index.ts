@@ -14,7 +14,9 @@ import { logger } from "~/log"
 export const NAV_EXIT_DELAY = 60000
 export const PAGE_CLEANUP_DELAY = 20000
 
-export const prefersReducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches
+let customWindow: CustomWindow = window as unknown as CustomWindow
+
+export const prefersReducedMotion = () => customWindow.matchMedia("(prefers-reduced-motion: reduce)").matches
 
 /**
  * Returns true if the element is visible in the viewport
@@ -27,8 +29,8 @@ export function isElementVisible(el: Element | null): boolean {
   }
 
   const rect = el.getBoundingClientRect()
-  const vWidth = window.innerWidth || document.documentElement.clientWidth
-  const vHeight = window.innerHeight || document.documentElement.clientHeight
+  const vWidth = customWindow.innerWidth || document.documentElement.clientWidth
+  const vHeight = customWindow.innerHeight || document.documentElement.clientHeight
   const efp = (x: number, y: number) => document.elementFromPoint(x, y)
 
   if (rect.right < 0 || rect.bottom < 0 || rect.left > vWidth || rect.top > vHeight) {
@@ -127,7 +129,7 @@ const getEventUrl = (ev: Event) => {
     return hashChangeEvent.newURL ? new URL(hashChangeEvent.newURL) : getLocation()
   } else if (ev.type === "pageshow") {
     const pageTransitionEvent = ev as PageTransitionEvent
-    return pageTransitionEvent.persisted ? getLocation() : new URL(window.location.href)
+    return pageTransitionEvent.persisted ? getLocation() : new URL(customWindow.location.href)
   }
   return getLocation()
 }
@@ -135,17 +137,17 @@ const getEventUrl = (ev: Event) => {
 const navigationEvents$ = 'navigation' in window ?
   // If the browser supports the navigation event, we use it
   fromEventPattern<NavigateEvent>(
-    handler => window.navigation.addEventListener('navigate', handler),
-    handler => window.navigation.removeEventListener('navigate', handler)
+    handler => customWindow.navigation.addEventListener('navigate', handler),
+    handler => customWindow.navigation.removeEventListener('navigate', handler)
   ).pipe(
     filter((event) => event !== null && event instanceof NavigateEvent),
     map((event) => { return new URL((event as NavigateEvent).destination.url) }))
   : // otherwise we use the browser's built-in events
   merge(
-    fromEvent(window, 'popstate'),
-    fromEvent(window, 'hashchange'),
-    fromEvent(window, 'pageshow'),
-    fromEvent(window, 'beforeunload'),
+    fromEvent(customWindow, 'popstate'),
+    fromEvent(customWindow, 'hashchange'),
+    fromEvent(customWindow, 'pageshow'),
+    fromEvent(customWindow, 'beforeunload'),
   ).pipe(
     filter(event => isValidEvent(event as Event)),
     map((event) => { return getEventUrl(event as Event) })
@@ -167,7 +169,7 @@ export const watchLocationChange$ = (urlFilter: (_url: URL) => boolean) => {
  */
 export function pushUrl(url: string) {
   history.pushState(null, '', url)
-  locationBehavior$.next(new URL(window.location.href))
+  locationBehavior$.next(new URL(customWindow.location.href))
 }
 
 /**
@@ -181,10 +183,10 @@ export const watchTable$ = () => {
 }
 
 /**
- * A function that checks for presence of missing observables on the global window object. If any are missing, it reloads the material mkdocs entrypoint.
+ * A function that checks for presence of missing observables on the global customWindow object. If any are missing, it reloads the material mkdocs entrypoint.
  */
 export async function windowEvents() {
-  const { document$, location$, target$, keyboard$, viewport$, tablet$, screen$, print$, alert$, progress$, component$ } = window
+  const { document$, location$, target$, keyboard$, viewport$, tablet$, screen$, print$, alert$, progress$, component$ } = customWindow
   const observables = { document$, location$, target$, keyboard$, viewport$, tablet$, screen$, print$, alert$, progress$, component$ }
   let observablesMissing = false
   for (const key in observables) {
@@ -216,8 +218,8 @@ export class SubscriptionManager {
   private cleanupTimeout: number | null = null
 
   constructor() {
-    if (window.subscriptionManager) {
-      return window.subscriptionManager
+    if (customWindow.subscriptionManager) {
+      return customWindow.subscriptionManager
     }
     this.setupSiteExit()
     this.setupPageExit()
@@ -284,7 +286,7 @@ export class SubscriptionManager {
   }
 
   public schedulePageCleanup(pageUrl: string) {
-    this.cleanupTimeout = window.setTimeout(() => {
+    this.cleanupTimeout = customWindow.setTimeout(() => {
     this.clearPageSubscriptions(pageUrl)
     this.cleanupTimeout = null
   }, PAGE_CLEANUP_DELAY)
@@ -292,7 +294,7 @@ export class SubscriptionManager {
 
   public cleanup(): void {
     if (this.cleanupTimeout) {
-      window.clearTimeout(this.cleanupTimeout)
+      customWindow.clearTimeout(this.cleanupTimeout)
       this.cleanupTimeout = null
     }
   }
@@ -332,12 +334,12 @@ export type SubscriptionManagerType = SubscriptionManager
  */
 export const getSubscriptionManager = () => {
   try {
-    if (window.subscriptionManager) {
-      return window.subscriptionManager
+    if (customWindow.subscriptionManager) {
+      return customWindow.subscriptionManager
     }
   } catch {
-    window.subscriptionManager = new SubscriptionManager()
-    return window.subscriptionManager
+    customWindow.subscriptionManager = new SubscriptionManager()
+    return customWindow.subscriptionManager
   }
 }
 // Example usage:

@@ -1,7 +1,7 @@
 /* Default settings */
 
 .hero-parallax__image {
-  --scale: 1.05;
+  --scale: 1.1;
   --object-fit: cover;
   --perspective: 100rem;
   --perspective-origin: center bottom;
@@ -20,7 +20,7 @@
   min-width: 100vw;
   max-width: 3840px;
   height: 100%;
-  padding: var(--header-height) 0 1rem 0;
+  padding: 1px 0 1rem;
   margin-bottom: 0.1rem;
   overflow: hidden visible;
   object-fit: var(--object-fit);
@@ -44,7 +44,7 @@
 
   to {
     text-shadow:
-      0.015rem 0.015rem 0 var(--oxford-blue),
+      0.025rem 0.025rem 0 var(--oxford-blue),
       0 0 0.5rem var(--emerald),
       0 0 0.5rem var(--emerald),
       0.08rem 0.08rem 0 var(--ecru);
@@ -245,13 +245,16 @@ so it made sense for them to live here
 
 /* TODO: get the overlay to actually show without messing up everything */
 .fade-overlay {
+
+  /* initial value */
+
   --fade-height: var(--parallax-height);
 
   top: 0;
   left: 0;
   z-index: 5;
   width: 100vw;
-  height: var(--parallax-height);
+  height: var(--fade-height);
   overflow: hidden clip;
   pointer-events: none;
   background:

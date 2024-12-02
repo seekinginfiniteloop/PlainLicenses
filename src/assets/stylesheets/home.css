@@ -59,7 +59,7 @@ header#header-target.md-header {
   width: 100vw;
   min-height: 130vh;
   max-height: 180vh;
-  padding-top: 1rem;
+  padding-top: 1px;
   padding-bottom: 2rem;
   margin-top: -2.4rem;
   margin-bottom: 0.1rem;
@@ -79,10 +79,11 @@ header#header-target.md-header {
   grid-template-rows: 1fr;
   grid-template-columns: 1fr;
   place-content: start center;
+  place-items: start center;
   order: -1;
   width: 100vw;
   min-height: 100vh;
-  max-height: var(--parallax-height);
+  max-height: max(max-content, var(--parallax-height));
   padding-top: 1rem;
   padding-bottom: 25vh;
   overflow: hidden;

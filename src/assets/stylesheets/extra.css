@@ -4,7 +4,7 @@
   --parallax-height: calc(((100vh - var(--header-height)) * 1.4));
 
   /* base value -- we adjust dynamically in js */
-  --fade-height: calc(var(--parallax-height));
+  --fade-height: var(--parallax-height);
 }
 
 html {
