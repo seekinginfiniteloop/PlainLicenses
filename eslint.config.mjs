@@ -35,7 +35,8 @@ export default [{
       "jsdoc/match-description": "off",
       "jsdoc/require-description": "warn",
       "jsdoc/check-indentation": "warn",
-      "jsdoc/sort-tags": "warn"
+      "jsdoc/sort-tags": "warn",
+      "jsdoc/no-multi-asterisks": "off",
     }
   },
   {

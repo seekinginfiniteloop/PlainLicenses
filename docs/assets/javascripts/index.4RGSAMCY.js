@@ -1778,18 +1778,18 @@ function pipeFromArray(fns) {
 
 // node_modules/rxjs/dist/esm5/internal/Observable.js
 var Observable = function() {
-  function Observable59(subscribe) {
+  function Observable60(subscribe) {
     if (subscribe) {
       this._subscribe = subscribe;
     }
   }
-  Observable59.prototype.lift = function(operator) {
-    var observable2 = new Observable59();
+  Observable60.prototype.lift = function(operator) {
+    var observable2 = new Observable60();
     observable2.source = this;
     observable2.operator = operator;
     return observable2;
   };
-  Observable59.prototype.subscribe = function(observerOrNext, error, complete) {
+  Observable60.prototype.subscribe = function(observerOrNext, error, complete) {
     var _this = this;
     var subscriber = isSubscriber(observerOrNext) ? observerOrNext : new SafeSubscriber(observerOrNext, error, complete);
     errorContext(function() {
@@ -1798,14 +1798,14 @@ var Observable = function() {
     });
     return subscriber;
   };
-  Observable59.prototype._trySubscribe = function(sink) {
+  Observable60.prototype._trySubscribe = function(sink) {
     try {
       return this._subscribe(sink);
     } catch (err) {
       sink.error(err);
     }
   };
-  Observable59.prototype.forEach = function(next, promiseCtor) {
+  Observable60.prototype.forEach = function(next, promiseCtor) {
     var _this = this;
     promiseCtor = getPromiseCtor(promiseCtor);
     return new promiseCtor(function(resolve3, reject) {
@@ -1824,21 +1824,21 @@ var Observable = function() {
       _this.subscribe(subscriber);
     });
   };
-  Observable59.prototype._subscribe = function(subscriber) {
+  Observable60.prototype._subscribe = function(subscriber) {
     var _a2;
     return (_a2 = this.source) === null || _a2 === void 0 ? void 0 : _a2.subscribe(subscriber);
   };
-  Observable59.prototype[observable] = function() {
+  Observable60.prototype[observable] = function() {
     return this;
   };
-  Observable59.prototype.pipe = function() {
+  Observable60.prototype.pipe = function() {
     var operations = [];
     for (var _i2 = 0; _i2 < arguments.length; _i2++) {
       operations[_i2] = arguments[_i2];
     }
     return pipeFromArray(operations)(this);
   };
-  Observable59.prototype.toPromise = function(promiseCtor) {
+  Observable60.prototype.toPromise = function(promiseCtor) {
     var _this = this;
     promiseCtor = getPromiseCtor(promiseCtor);
     return new promiseCtor(function(resolve3, reject) {
@@ -1852,10 +1852,10 @@ var Observable = function() {
       });
     });
   };
-  Observable59.create = function(subscribe) {
-    return new Observable59(subscribe);
+  Observable60.create = function(subscribe) {
+    return new Observable60(subscribe);
   };
-  return Observable59;
+  return Observable60;
 }();
 function getPromiseCtor(promiseCtor) {
   var _a2;
@@ -4811,14 +4811,14 @@ function watchViewport() {
 }
 
 // external/mkdocs-material/src/templates/assets/javascripts/browser/viewport/at/index.ts
-function watchViewportAt(el, { viewport$: viewport$3, header$: header$2 }) {
-  const size$ = viewport$3.pipe(
+function watchViewportAt(el, { viewport$: viewport$4, header$: header$2 }) {
+  const size$ = viewport$4.pipe(
     distinctUntilKeyChanged("size")
   );
   const offset$ = combineLatest([size$, header$2]).pipe(
     map(() => getElementOffset(el))
   );
-  return combineLatest([header$2, viewport$3, offset$]).pipe(
+  return combineLatest([header$2, viewport$4, offset$]).pipe(
     map(([{ height }, { offset, size }, { x, y }]) => ({
       offset: {
         x: offset.x - x,
@@ -5081,7 +5081,7 @@ function watchTooltip2(el) {
   );
 }
 function mountTooltip2(el, dependencies) {
-  const { content$: content$2, viewport$: viewport$3 } = dependencies;
+  const { content$: content$2, viewport$: viewport$4 } = dependencies;
   const id = `__tooltip2_${sequence++}`;
   return defer(() => {
     const push$ = new Subject();
@@ -5103,7 +5103,7 @@ function mountTooltip2(el, dependencies) {
     ]).pipe(map((states) => states.some((active) => active))).subscribe(show$);
     const origin$ = show$.pipe(
       filter((active) => active),
-      withLatestFrom(node$, viewport$3),
+      withLatestFrom(node$, viewport$4),
       map(([_, node, { size }]) => {
         const host = el.getBoundingClientRect();
         const x = host.width / 2;
@@ -5164,7 +5164,7 @@ function mountTooltip2(el, dependencies) {
     );
   });
 }
-function mountInlineTooltip2(el, { viewport$: viewport$3 }, container = document.body) {
+function mountInlineTooltip2(el, { viewport$: viewport$4 }, container = document.body) {
   return mountTooltip2(el, {
     content$: new Observable((observer) => {
       const title = el.title;
@@ -5177,7 +5177,7 @@ function mountInlineTooltip2(el, { viewport$: viewport$3 }, container = document
         el.setAttribute("title", title);
       };
     }),
-    viewport$: viewport$3
+    viewport$: viewport$4
   });
 }
 
@@ -5571,7 +5571,7 @@ function watchContentTabs(inputs) {
     map((active) => ({ active }))
   );
 }
-function mountContentTabs(el, { viewport$: viewport$3, target$: target$2 }) {
+function mountContentTabs(el, { viewport$: viewport$4, target$: target$2 }) {
   const container = getElement(".tabbed-labels", el);
   const inputs = getElements(":scope > input", el);
   const prev = renderTabbedControl("prev");
@@ -5652,7 +5652,7 @@ function mountContentTabs(el, { viewport$: viewport$3, target$: target$2 }) {
     if (feature("content.tabs.link"))
       push$.pipe(
         skip(1),
-        withLatestFrom(viewport$3)
+        withLatestFrom(viewport$4)
       ).subscribe(([{ active }, { offset }]) => {
         const tab = active.innerText.trim();
         if (active.hasAttribute("data-md-switching")) {
@@ -5693,15 +5693,15 @@ function mountContentTabs(el, { viewport$: viewport$3, target$: target$2 }) {
 }
 
 // external/mkdocs-material/src/templates/assets/javascripts/components/content/_/index.ts
-function mountContent(el, { viewport$: viewport$3, target$: target$2, print$: print$2 }) {
+function mountContent(el, { viewport$: viewport$4, target$: target$2, print$: print$2 }) {
   return merge(
     ...getElements(".annotate:not(.highlight)", el).map((child) => mountAnnotationBlock(child, { target$: target$2, print$: print$2 })),
     ...getElements("pre:not(.mermaid) > code", el).map((child) => mountCodeBlock(child, { target$: target$2, print$: print$2 })),
     ...getElements("pre.mermaid", el).map((child) => mountMermaid(child)),
     ...getElements("table:not([class])", el).map((child) => mountDataTable(child)),
     ...getElements("details", el).map((child) => mountDetails(child, { target$: target$2, print$: print$2 })),
-    ...getElements("[data-tabs]", el).map((child) => mountContentTabs(child, { viewport$: viewport$3, target$: target$2 })),
-    ...getElements("[title]", el).filter(() => feature("content.tooltips")).map((child) => mountInlineTooltip2(child, { viewport$: viewport$3 }))
+    ...getElements("[data-tabs]", el).map((child) => mountContentTabs(child, { viewport$: viewport$4, target$: target$2 })),
+    ...getElements("[title]", el).filter(() => feature("content.tooltips")).map((child) => mountInlineTooltip2(child, { viewport$: viewport$4 }))
   );
 }
 
@@ -5847,22 +5847,22 @@ function mountTooltip(el) {
 }
 
 // external/mkdocs-material/src/templates/assets/javascripts/components/header/_/index.ts
-function isHidden({ viewport$: viewport$3 }) {
+function isHidden({ viewport$: viewport$4 }) {
   if (!feature("header.autohide"))
     return of(false);
-  const direction$ = viewport$3.pipe(
+  const direction$ = viewport$4.pipe(
     map(({ offset: { y } }) => y),
     bufferCount(2, 1),
     map(([a, b]) => [a < b, b]),
     distinctUntilKeyChanged(0)
   );
-  const hidden$ = combineLatest([viewport$3, direction$]).pipe(
+  const hidden$ = combineLatest([viewport$4, direction$]).pipe(
     filter(([{ offset }, [, y]]) => Math.abs(y - offset.y) > 100),
     map(([, [direction]]) => direction),
     distinctUntilChanged()
   );
   const search$ = watchToggle("search");
-  return combineLatest([viewport$3, search$]).pipe(
+  return combineLatest([viewport$4, search$]).pipe(
     map(([{ offset }, search]) => offset.y > 400 && !search),
     distinctUntilChanged(),
     switchMap((active) => active ? hidden$ : of(false)),
@@ -5907,8 +5907,8 @@ function mountHeader(el, { header$: header$2, main$: main$2 }) {
 }
 
 // external/mkdocs-material/src/templates/assets/javascripts/components/header/title/index.ts
-function watchHeaderTitle(el, { viewport$: viewport$3, header$: header$2 }) {
-  return watchViewportAt(el, { viewport$: viewport$3, header$: header$2 }).pipe(
+function watchHeaderTitle(el, { viewport$: viewport$4, header$: header$2 }) {
+  return watchViewportAt(el, { viewport$: viewport$4, header$: header$2 }).pipe(
     map(({ offset: { y } }) => {
       const { height } = getElementSize(el);
       return {
@@ -5943,7 +5943,7 @@ function mountHeaderTitle(el, options) {
 }
 
 // external/mkdocs-material/src/templates/assets/javascripts/components/main/index.ts
-function watchMain(el, { viewport$: viewport$3, header$: header$2 }) {
+function watchMain(el, { viewport$: viewport$4, header$: header$2 }) {
   const adjust$ = header$2.pipe(
     map(({ height }) => height),
     distinctUntilChanged()
@@ -5959,7 +5959,7 @@ function watchMain(el, { viewport$: viewport$3, header$: header$2 }) {
       )
     )
   );
-  return combineLatest([adjust$, border$, viewport$3]).pipe(
+  return combineLatest([adjust$, border$, viewport$4]).pipe(
     map(([header, { top, bottom }, { offset: { y }, size: { height } }]) => {
       height = Math.max(
         0,
@@ -6206,7 +6206,7 @@ function inject(next) {
     endWith(document)
   );
 }
-function setupInstantNavigation({ location$: location$2, viewport$: viewport$3, progress$: progress$2 }) {
+function setupInstantNavigation({ location$: location$2, viewport$: viewport$4, progress$: progress$2 }) {
   const config7 = configuration();
   if (location.protocol === "file:")
     return EMPTY;
@@ -6221,7 +6221,7 @@ function setupInstantNavigation({ location$: location$2, viewport$: viewport$3, 
     map(getLocation),
     share()
   );
-  instant$.pipe(withLatestFrom(viewport$3)).subscribe(([url, { offset }]) => {
+  instant$.pipe(withLatestFrom(viewport$4)).subscribe(([url, { offset }]) => {
     history.replaceState(offset, "");
     history.pushState(null, "", url);
   });
@@ -6284,7 +6284,7 @@ function setupInstantNavigation({ location$: location$2, viewport$: viewport$3, 
   fromEvent(window, "beforeunload").subscribe(() => {
     history.scrollRestoration = "auto";
   });
-  viewport$3.pipe(
+  viewport$4.pipe(
     distinctUntilKeyChanged("offset"),
     debounceTime(100)
   ).subscribe(({ offset }) => {
@@ -6829,10 +6829,10 @@ function mountSearchHiglight(el, { index$: index$2, location$: location$2 }) {
 }
 
 // external/mkdocs-material/src/templates/assets/javascripts/components/sidebar/index.ts
-function watchSidebar(el, { viewport$: viewport$3, main$: main$2 }) {
+function watchSidebar(el, { viewport$: viewport$4, main$: main$2 }) {
   const parent = el.closest(".md-grid");
   const adjust = parent.offsetTop - parent.parentElement.offsetTop;
-  return combineLatest([main$2, viewport$3]).pipe(
+  return combineLatest([main$2, viewport$4]).pipe(
     map(([{ offset, height }, { offset: { y } }]) => {
       height = height + Math.min(adjust, Math.max(0, y - offset)) - adjust;
       return {
@@ -7022,9 +7022,9 @@ function mountSource(el) {
 }
 
 // external/mkdocs-material/src/templates/assets/javascripts/components/tabs/index.ts
-function watchTabs(el, { viewport$: viewport$3, header$: header$2 }) {
+function watchTabs(el, { viewport$: viewport$4, header$: header$2 }) {
   return watchElementSize(document.body).pipe(
-    switchMap(() => watchViewportAt(el, { header$: header$2, viewport$: viewport$3 })),
+    switchMap(() => watchViewportAt(el, { header$: header$2, viewport$: viewport$4 })),
     map(({ offset: { y } }) => {
       return {
         hidden: y >= 10
@@ -7055,7 +7055,7 @@ function mountTabs(el, options) {
 }
 
 // external/mkdocs-material/src/templates/assets/javascripts/components/toc/index.ts
-function watchTableOfContents(el, { viewport$: viewport$3, header$: header$2 }) {
+function watchTableOfContents(el, { viewport$: viewport$4, header$: header$2 }) {
   const table = /* @__PURE__ */ new Map();
   const anchors = getElements(".md-nav__link", el);
   for (const anchor of anchors) {
@@ -7107,7 +7107,7 @@ function watchTableOfContents(el, { viewport$: viewport$3, header$: header$2 }) 
         combineLatestWith(adjust$),
         /* Re-compute partition when viewport offset changes */
         switchMap(
-          ([index, adjust]) => viewport$3.pipe(
+          ([index, adjust]) => viewport$4.pipe(
             scan(([prev, next], { offset: { y }, size }) => {
               const last2 = y + size.height >= Math.floor(body.height);
               while (next.length) {
@@ -7157,7 +7157,7 @@ function watchTableOfContents(el, { viewport$: viewport$3, header$: header$2 }) 
     })
   );
 }
-function mountTableOfContents(el, { viewport$: viewport$3, header$: header$2, main$: main$2, target$: target$2 }) {
+function mountTableOfContents(el, { viewport$: viewport$4, header$: header$2, main$: main$2, target$: target$2 }) {
   return defer(() => {
     const push$ = new Subject();
     const done$ = push$.pipe(ignoreElements(), endWith(true));
@@ -7176,8 +7176,8 @@ function mountTableOfContents(el, { viewport$: viewport$3, header$: header$2, ma
     });
     if (feature("toc.follow")) {
       const smooth$ = merge(
-        viewport$3.pipe(debounceTime(1), map(() => void 0)),
-        viewport$3.pipe(debounceTime(250), map(() => "smooth"))
+        viewport$4.pipe(debounceTime(1), map(() => void 0)),
+        viewport$4.pipe(debounceTime(250), map(() => "smooth"))
       );
       push$.pipe(
         filter(({ prev }) => prev.length > 0),
@@ -7199,7 +7199,7 @@ function mountTableOfContents(el, { viewport$: viewport$3, header$: header$2, ma
       });
     }
     if (feature("navigation.tracking"))
-      viewport$3.pipe(
+      viewport$4.pipe(
         takeUntil(done$),
         distinctUntilKeyChanged("offset"),
         debounceTime(250),
@@ -7222,7 +7222,7 @@ function mountTableOfContents(el, { viewport$: viewport$3, header$: header$2, ma
           history.replaceState({}, "", `${url}`);
         }
       });
-    return watchTableOfContents(el, { viewport$: viewport$3, header$: header$2 }).pipe(
+    return watchTableOfContents(el, { viewport$: viewport$4, header$: header$2 }).pipe(
       tap((state) => push$.next(state)),
       finalize(() => push$.complete()),
       map((state) => ({ ref: el, ...state }))
@@ -7231,8 +7231,8 @@ function mountTableOfContents(el, { viewport$: viewport$3, header$: header$2, ma
 }
 
 // external/mkdocs-material/src/templates/assets/javascripts/components/top/index.ts
-function watchBackToTop(_el, { viewport$: viewport$3, main$: main$2, target$: target$2 }) {
-  const direction$ = viewport$3.pipe(
+function watchBackToTop(_el, { viewport$: viewport$4, main$: main$2, target$: target$2 }) {
+  const direction$ = viewport$4.pipe(
     map(({ offset: { y } }) => y),
     bufferCount(2, 1),
     map(([a, b]) => a > b && b > 0),
@@ -7250,7 +7250,7 @@ function watchBackToTop(_el, { viewport$: viewport$3, main$: main$2, target$: ta
     map((hidden) => ({ hidden }))
   );
 }
-function mountBackToTop(el, { viewport$: viewport$3, header$: header$2, main$: main$2, target$: target$2 }) {
+function mountBackToTop(el, { viewport$: viewport$4, header$: header$2, main$: main$2, target$: target$2 }) {
   const push$ = new Subject();
   const done$ = push$.pipe(ignoreElements(), endWith(true));
   push$.subscribe({
@@ -7281,7 +7281,7 @@ function mountBackToTop(el, { viewport$: viewport$3, header$: header$2, main$: m
     ev.preventDefault();
     window.scrollTo({ top: 0 });
   });
-  return watchBackToTop(el, { viewport$: viewport$3, main$: main$2, target$: target$2 }).pipe(
+  return watchBackToTop(el, { viewport$: viewport$4, main$: main$2, target$: target$2 }).pipe(
     tap((state) => push$.next(state)),
     finalize(() => push$.complete()),
     map((state) => ({ ref: el, ...state }))
@@ -7289,7 +7289,7 @@ function mountBackToTop(el, { viewport$: viewport$3, header$: header$2, main$: m
 }
 
 // external/mkdocs-material/src/templates/assets/javascripts/patches/ellipsis/index.ts
-function patchEllipsis({ document$: document$3, viewport$: viewport$3 }) {
+function patchEllipsis({ document$: document$3, viewport$: viewport$4 }) {
   document$3.pipe(
     switchMap(() => getElements(".md-ellipsis")),
     mergeMap(
@@ -7307,7 +7307,7 @@ function patchEllipsis({ document$: document$3, viewport$: viewport$3 }) {
       host.title = text;
       if (!feature("content.tooltips"))
         return EMPTY;
-      return mountInlineTooltip2(host, { viewport$: viewport$3 }).pipe(
+      return mountInlineTooltip2(host, { viewport$: viewport$4 }).pipe(
         takeUntil(document$3.pipe(skip(1))),
         finalize(() => host.removeAttribute("title"))
       );
@@ -7316,7 +7316,7 @@ function patchEllipsis({ document$: document$3, viewport$: viewport$3 }) {
   if (feature("content.tooltips"))
     document$3.pipe(
       switchMap(() => getElements(".md-status")),
-      mergeMap((el) => mountInlineTooltip2(el, { viewport$: viewport$3 }))
+      mergeMap((el) => mountInlineTooltip2(el, { viewport$: viewport$4 }))
     ).subscribe();
 }
 
@@ -7369,7 +7369,7 @@ function patchScrollfix({ document$: document$3 }) {
 }
 
 // external/mkdocs-material/src/templates/assets/javascripts/patches/scrolllock/index.ts
-function patchScrolllock({ viewport$: viewport$3, tablet$: tablet$2 }) {
+function patchScrolllock({ viewport$: viewport$4, tablet$: tablet$2 }) {
   combineLatest([watchToggle("search"), tablet$2]).pipe(
     map(([active, tablet]) => active && !tablet),
     switchMap(
@@ -7377,7 +7377,7 @@ function patchScrolllock({ viewport$: viewport$3, tablet$: tablet$2 }) {
         delay(active ? 400 : 100)
       )
     ),
-    withLatestFrom(viewport$3)
+    withLatestFrom(viewport$4)
   ).subscribe(([active, { offset: { y } }]) => {
     if (active) {
       document.body.setAttribute("data-md-scrolllock", "");
@@ -7702,8 +7702,8 @@ var watchTable$ = () => {
   return merge(...observables());
 };
 async function windowEvents() {
-  const { document$: document$3, location$: location$2, target$: target$2, keyboard$: keyboard$2, viewport$: viewport$3, tablet$: tablet$2, screen$: screen$2, print$: print$2, alert$: alert$2, progress$: progress$2, component$: component$2 } = customWindow;
-  const observables = { document$: document$3, location$: location$2, target$: target$2, keyboard$: keyboard$2, viewport$: viewport$3, tablet$: tablet$2, screen$: screen$2, print$: print$2, alert$: alert$2, progress$: progress$2, component$: component$2 };
+  const { document$: document$3, location$: location$2, target$: target$2, keyboard$: keyboard$2, viewport$: viewport$4, tablet$: tablet$2, screen$: screen$2, print$: print$2, alert$: alert$2, progress$: progress$2, component$: component$2 } = customWindow;
+  const observables = { document$: document$3, location$: location$2, target$: target$2, keyboard$: keyboard$2, viewport$: viewport$4, tablet$: tablet$2, screen$: screen$2, print$: print$2, alert$: alert$2, progress$: progress$2, component$: component$2 };
   let observablesMissing = false;
   for (const key in observables) {
     if (!globalThis[key]) {
@@ -7816,10 +7816,12 @@ var getSubscriptionManager = () => {
   try {
     if (customWindow.subscriptionManager) {
       return customWindow.subscriptionManager;
+    } else {
+      customWindow.subscriptionManager = new SubscriptionManager();
+      return customWindow.subscriptionManager;
     }
   } catch (e) {
-    customWindow.subscriptionManager = new SubscriptionManager();
-    return customWindow.subscriptionManager;
+    throw new Error("SubscriptionManager could not be initialized.");
   }
 };
 
@@ -12657,13 +12659,14 @@ var HERO_CONFIG = {
     ENTER: { ease: "power2.inOut", duration: 1.5 },
     EXIT: { ease: "power2.out", duration: 0.5 },
     PAN: {
-      delay: 1.5,
-      duration: 15,
-      ease: "sine.out"
+      duration: 17e3,
+      ease: "none",
+      repeat: 0
     }
   }
 };
 var customWindow2 = window;
+var { viewport$: viewport$3 } = customWindow2;
 var isPageVisible = () => !document.hidden;
 var isAtHome = () => {
   const loc = locationBehavior$.value;
@@ -12685,6 +12688,12 @@ var _HeroStateManager = class _HeroStateManager {
     this.hasPageSubscriptions = false;
     this.optimalWidth$ = new BehaviorSubject(this.getOptimalWidth());
     this.subscriptionWatcher = new Subscription();
+    this.config = {
+      headerSelector: "#header-target",
+      minTranslation: 100,
+      maxScale: 1.4,
+      layerSelector: "#parallax-hero-image-layer"
+    };
     /**
      * An observable that emits a boolean indicating whether the hero can cycle through images.
      */
@@ -12730,6 +12739,30 @@ var _HeroStateManager = class _HeroStateManager {
       this.subscriptionManager.addSubscription(subscriptionWatcher$, true);
       this.subscriptionWatcher.add(subscriptionWatcher$);
     };
+    this.layerImages = () => {
+      return Array.from((parallaxLayer == null ? void 0 : parallaxLayer.getElementsByTagName("img")) || []);
+    };
+    this.layerEmpty = () => {
+      return this.layerImages().length === 0;
+    };
+    this.layerNotEmpty = () => {
+      return !this.layerEmpty();
+    };
+    this.currentImage = () => {
+      return this.layerImages()[0];
+    };
+    this.getImageName = (image) => {
+      return image == null ? void 0 : image.classList[1].split("--")[1];
+    };
+    this.lastImage = () => {
+      return this.layerImages().slice(-1)[0];
+    };
+    this.hasImage = (imageName) => {
+      return this.layerImages().some((image) => image.classList.contains(`hero-parallax__image--${imageName}`));
+    };
+    this.getImage = (imageName) => {
+      return this.layerImages().find((image) => image.classList.contains(`hero-parallax__image--${imageName}`));
+    };
     this.shuffledHeroes = [...this.getHeroes()].sort(() => Math.random() - 0.5);
     this.setupSubscriptions();
     customWindow2.addEventListener("unload", () => this.dispose());
@@ -12765,6 +12798,8 @@ var _HeroStateManager = class _HeroStateManager {
       isAtHome: isAtHome(),
       isVisible: isPageVisible(),
       lastActiveTime: Date.now(),
+      headerHeight: 0,
+      viewportDimensions: { width: 0, height: 0 },
       optimalWidth: this.getOptimalWidth(),
       orientation: portraitMediaQuery.matches ? "portrait" : "landscape",
       status: "loading"
@@ -12794,16 +12829,24 @@ var _HeroStateManager = class _HeroStateManager {
       fromEvent(portraitMediaQuery, "change")
     ).pipe(
       debounceTime(100),
+      tap(() => {
+        this.setParallaxHeight();
+      }),
       map(() => ({
         orientation: portraitMediaQuery.matches ? "portrait" : "landscape",
         optimalWidth: this.getOptimalWidth()
       })),
+      filter((_, optimalWidth) => optimalWidth !== this.state$.value.optimalWidth),
       tap(({ orientation, optimalWidth }) => {
         this.updateState({ orientation, optimalWidth });
         this.updateImageSources(
           Array.from((parallaxLayer == null ? void 0 : parallaxLayer.getElementsByTagName("img")) || []),
           optimalWidth
         );
+      }),
+      filter(() => this.state$.value.currentTimeline.isActive()),
+      tap(() => {
+        this.cycleImage(true);
       })
     ).subscribe();
     [pageExitSub, orientationSub, visibilitySub].forEach((sub) => this.subscriptionManager.addSubscription(sub, false));
@@ -12826,20 +12869,20 @@ var _HeroStateManager = class _HeroStateManager {
   }
   /**
    * Sets the height of the parallax effect based on the provided height.
-   * @param height The height to set for the parallax effect.
    */
-  setParallaxHeight(height) {
+  setParallaxHeight() {
     const headerRect = this.getHeaderRect();
     const headerHeight = headerRect.height;
+    this.updateState({ headerHeight });
     setCssVariable("--header-height", `${headerHeight}px`);
     const effectiveViewHeight = customWindow2.innerHeight - headerHeight;
     const maxFade = effectiveViewHeight * 1.4;
-    if (!parallaxLayer || height <= 0) {
+    if (!parallaxLayer || headerHeight <= 0) {
       const currentValue = document.documentElement.style.getPropertyValue("--fade-height");
       setCssVariable("--fade-height", Math.max(Number(currentValue), effectiveViewHeight).toString());
     }
-    setCssVariable("--fade-height", `${Math.min(height * 1.2, maxFade, effectiveViewHeight)}px`);
-    setCssVariable("--parallax-height", `${height < effectiveViewHeight ? effectiveViewHeight : Math.min(height * 1.2, maxFade)}px`);
+    setCssVariable("--fade-height", `${Math.min(headerHeight * 1.2, maxFade, effectiveViewHeight)}px`);
+    setCssVariable("--parallax-height", `${headerHeight < effectiveViewHeight ? effectiveViewHeight : Math.min(headerHeight * 1.2, maxFade)}px`);
   }
   /**
    * Retrieves a hero image by its name.
@@ -12882,11 +12925,20 @@ var _HeroStateManager = class _HeroStateManager {
    * @param imageName The name of the image to update text elements for.
    */
   updateTextElements(imageName) {
-    const headerEl = document.getElementById("CTA_header");
-    const textEl = document.getElementById("CTA_paragraph");
+    const containsImageClass = (el) => {
+      return Array.from(el.classList).some((className2) => className2.includes("hero-parallax__image--"));
+    };
+    const elements = [document.getElementById("CTA_header"), document.getElementById("CTA_paragraph")];
     const className = `hero-parallax__image--${imageName}`;
-    headerEl == null ? void 0 : headerEl.setAttribute("class", className);
-    textEl == null ? void 0 : textEl.setAttribute("class", className);
+    elements.forEach((el) => {
+      if (el && containsImageClass(el)) {
+        const toRemove = Array.from(el.classList).filter((className2) => className2.includes("hero-parallax__image--"));
+        el.classList.remove(...toRemove);
+        el.classList.add(className);
+      } else if (el) {
+        el.classList.add(className);
+      }
+    });
   }
   /**
    * Tracks metadata for the specified image.
@@ -12955,7 +13007,7 @@ var _HeroStateManager = class _HeroStateManager {
     img.alt = "";
     img.classList.add("hero-parallax__image", `hero-parallax__image--${imageName}`);
     img.draggable = false;
-    img.loading = (parallaxLayer == null ? void 0 : parallaxLayer.getElementsByTagName("img").length) !== 0 ? "lazy" : "eager";
+    img.loading = this.layerNotEmpty() ? "lazy" : "eager";
     if (focalPoints) {
       img.setAttribute("data-focus-main-x", focalPoints.main[0].toString());
       img.setAttribute("data-focus-main-y", focalPoints.main[1].toString());
@@ -12977,8 +13029,9 @@ var _HeroStateManager = class _HeroStateManager {
     const { naturalWidth, naturalHeight } = img;
     logger.info("Testing image dimensions for", img, "Natural dimensions:", { naturalWidth, naturalHeight });
     img.style.opacity = "0";
+    img.style.visibility = "hidden";
     parallaxLayer.append(img);
-    const emplacedElement = parallaxLayer.lastElementChild;
+    const emplacedElement = this.lastImage();
     if (!emplacedElement) {
       throw new Error("Emplaced element not found");
     }
@@ -12986,12 +13039,13 @@ var _HeroStateManager = class _HeroStateManager {
     const elementStyle = JSON.stringify(window.getComputedStyle(emplacedElement));
     const rectJSON = JSON.stringify(elementRect);
     logger.info("Bounding rect:", rectJSON, "Element style:", elementStyle);
-    parallaxLayer.removeChild(emplacedElement);
+    emplacedElement.remove();
     const boundingRect = JSON.parse(rectJSON);
     const processedStyle = JSON.parse(elementStyle);
     logger.info("Processed style:", processedStyle);
     logger.info("processed Bounding rect:", boundingRect);
     img.style.opacity = "";
+    img.style.visibility = "";
     return {
       computedStyle: processedStyle,
       naturalWidth,
@@ -13038,257 +13092,158 @@ var _HeroStateManager = class _HeroStateManager {
     }
     return headerBox || defaultRect;
   }
-  computeExcessDimensions(value, boundingLine) {
-    logger.info("Computing excess dimensions for value:", value, "Bounding line:", boundingLine);
-    if (boundingLine > 0) {
-      return value > boundingLine ? value - boundingLine : boundingLine - value;
-    }
-    return Math.abs(value);
-  }
-  computeTranslationDimensions(img) {
-    var _a2;
-    const getOverflowComputed = (overflowRects2, overflow2) => {
-      overflow2.topIsOffset = false;
-      overflow2.noYoverflow = false;
-      if (overflow2.top > 0 && overflow2.bottom === 0) {
-        if (imgHeight > visibleRect.height) {
-          const offset = (imgHeight - visibleRect.height) / 2;
-          overflow2.bottom = offset;
-          overflow2.top = offset;
-          overflow2.topIsOffset = true;
-        } else {
-          overflowRects2.top.y = visibleRect.top - overflow2.top;
-          overflow2.top = 0;
-          overflow2.bottom = 0;
-          overflowRects2.bottom.y = visibleRect.bottom + overflow2.bottom;
-          overflow2.noYoverflow = true;
-        }
-      }
-      logger.info("Overflow computed:", overflow2);
-      return [overflowRects2, overflow2];
-    };
-    const getTranslatability = (overflow2) => {
-      return {
-        top: overflow2.top > 0,
-        bottom: overflow2.bottom > 0,
-        left: overflow2.left > 0,
-        right: overflow2.right > 0
-      };
-    };
-    const getComputedImageDimensions = (imgWidth2, imgHeight2) => {
-      const aspectRatio = imgWidth2 / imgHeight2;
-      const orientation = aspectRatio > 1 ? "landscape" : aspectRatio < 1 ? "portrait" : "square";
-      return { width: imgWidth2, height: imgHeight2, aspectRatio, orientation };
-    };
-    const getExcessDimensions = (headerRect2, boundingRect2) => {
-      return {
-        top: this.computeExcessDimensions(boundingRect2.top, headerRect2.bottom),
-        left: this.computeExcessDimensions(boundingRect2.left, 0),
-        bottom: isImageBottomVisible ? 0 : this.computeExcessDimensions(boundingRect2.bottom, customWindow2.innerHeight),
-        right: this.computeExcessDimensions(boundingRect2.right, customWindow2.innerWidth)
-      };
-    };
-    const createDOMRect = (x, y, width, height) => {
-      return new DOMRect(x, y, width, height);
-    };
-    const getInitialOverflowRects = (visibleRect2, excesses, imageTop) => {
-      return {
-        yTopRect: createDOMRect(0, excesses.top > 0 ? Math.min(visibleRect2.top - excesses.top, imageTop) : visibleRect2.top, visibleRect2.width, excesses.top),
-        yBottomRect: createDOMRect(0, excesses.bottom ? visibleRect2.bottom + excesses.bottom : 0, customWindow2.innerWidth, excesses.bottom),
-        xLeftRect: createDOMRect(-excesses.left, visibleRect2.top, Math.abs(excesses.left), visibleRect2.height),
-        xRightRect: createDOMRect(visibleRect2.right, visibleRect2.top, excesses.right, visibleRect2.height)
-      };
-    };
-    const { computedStyle, naturalWidth, naturalHeight, boundingRect } = this.testImageDimensions(img);
-    const containerRect = ((_a2 = img.parentElement) == null ? void 0 : _a2.getBoundingClientRect()) || document.body.getBoundingClientRect();
-    const headerRect = this.getHeaderRect();
-    const isImageBottomVisible = boundingRect.bottom <= customWindow2.innerHeight - boundingRect.top;
-    const scale = Number(computedStyle.scale) || 1;
-    const imgWidth = Math.max(naturalWidth * scale, boundingRect.width);
-    const imgHeight = Math.max(naturalHeight * scale, boundingRect.height);
-    const visibleRect = new DOMRect(0, headerRect.bottom, customWindow2.innerWidth, customWindow2.innerHeight - headerRect.bottom);
-    const { top: excessTop, bottom: excessBottom, left: excessLeft, right: excessRight } = getExcessDimensions(headerRect, boundingRect);
-    const { yTopRect, yBottomRect, xLeftRect, xRightRect } = getInitialOverflowRects(visibleRect, { top: excessTop, bottom: excessBottom, left: excessLeft, right: excessRight }, boundingRect.top);
-    const [overflowRects, overflow] = getOverflowComputed({ top: yTopRect, right: xRightRect, bottom: yBottomRect, left: xLeftRect }, { top: excessTop, right: excessRight, bottom: excessBottom, left: excessLeft });
-    const translatable = getTranslatability(overflow);
-    const computedImageDimensions = getComputedImageDimensions(imgWidth, imgHeight);
-    setCssVariable("--header-height", `${visibleRect.top}px`);
-    setCssVariable("--fade-height", `${visibleRect.height}px`);
-    return { overflowRects, overflow, visibleRect, containerRect, imageDimensions: { computedStyle, naturalWidth, naturalHeight, boundingRect }, computedImageDimensions, translatable };
-  }
-  /**
-   * Creates a pan animation for the specified image.
-   * @param img The image to create a pan animation for.
-   * @returns The created GSAP timeline for the pan animation, or undefined if reduced motion is preferred.
-   */
-  createPanAnimation(img) {
-    if (prefersReducedMotion()) {
-      return void 0;
-    }
-    const tl = gsapWithCSS.timeline({ repeat: 0, paused: true });
-    const { overflowRects, overflow, visibleRect, containerRect, imageDimensions, computedImageDimensions, translatable } = this.computeTranslationDimensions(img);
-    logger.info("Computed translation dimensions:", { overflowRects, overflow, visibleRect, containerRect, imageDimensions, computedImageDimensions, translatable });
-    if (Object.values(translatable).every((value) => value === false)) {
-      return void 0;
-    }
-    if (overflow.topIsOffset) {
-      const offset = overflow.top;
-      tl.add(["yReposition", gsapWithCSS.set(img, { y: visibleRect.top - offset })], "<");
-    } else if (overflow.noYoverflow) {
-      tl.add(["xReposition", gsapWithCSS.set(img, { y: visibleRect.top })], "<");
-    }
-    const bounds = {
+  calculateSafeZone(imageRect, scale = 1.1) {
+    const scaledWidth = imageRect.width * scale;
+    const scaledHeight = imageRect.height * scale;
+    const { headerHeight, viewportDimensions } = this.state$.value;
+    const xOverflow = scaledWidth - viewportDimensions.width;
+    const yOverflow = scaledHeight - viewportDimensions.height - headerHeight;
+    return {
       x: {
-        min: -Math.abs(overflowRects.left.width),
-        max: Math.abs(overflowRects.right.width)
+        min: -Math.max(xOverflow / 2, this.config.minTranslation),
+        max: Math.max(xOverflow / 2, this.config.minTranslation)
       },
       y: {
-        min: overflow.topIsOffset ? -overflow.top : 0,
-        max: Math.abs(overflowRects.bottom.height)
+        min: -Math.max(yOverflow / 2, this.config.minTranslation),
+        max: Math.max(yOverflow / 2, this.config.minTranslation)
       }
     };
-    const getWeightedPosition = (target, bounds2, variance = 0.2) => {
-      const range = bounds2.max - bounds2.min;
-      const targetPos = gsapWithCSS.utils.mapRange(0, 100, bounds2.min, bounds2.max, target);
-      const randomOffset = (Math.random() - 0.5) * 2 * variance * range;
-      logger.info("Target position:", targetPos, "Random offset:", randomOffset);
-      return gsapWithCSS.utils.clamp(bounds2.min, bounds2.max, targetPos + randomOffset);
-    };
-    const focalX = Number(img.dataset.focusMainX) * 100 || 50;
-    const focalY = Number(img.dataset.focusMainY) * 100 || 50;
-    const startX = Number(img.dataset.focusSecondaryX) * 100 || 50;
-    const startY = Number(img.dataset.focusSecondaryY) * 100 || 50;
-    const startPos = {
-      x: getWeightedPosition(startX, bounds.x, 0.3),
-      y: overflow.noYoverflow ? visibleRect.top : getWeightedPosition(startY, bounds.y, 0.3)
-    };
-    const endPos = {
-      x: getWeightedPosition(focalX, bounds.x, 0.1),
-      y: overflow.noYoverflow ? visibleRect.top : getWeightedPosition(focalY, bounds.y, 0.1)
-    };
-    logger.info("Start position:", startPos, "End position:", endPos);
-    const panVars = HERO_CONFIG.ANIMATION.PAN;
-    tl.add(["panEffect", gsapWithCSS.fromTo(
-      img,
-      { x: startPos.x, y: startPos.y },
-      {
-        x: endPos.x,
-        y: endPos.y,
-        ...panVars
-      }
-    )], ">");
-    return tl;
   }
   /**
-   * Sets the timeline for the specified image, managing its entry and exit animations.
-   * @param img The image to set the timeline for.
-   * @param imgName The name of the image.
-   * @param index The index of the image in the hero array.
-   * @returns The GSAP timeline for the image animations.
+   * Generates a random position within the safe zone based on the focal point.
+   * @param safeZone The safe zone to generate the position within.
+   * @param focalPoint The focal point to generate the position around.
+   * @param focalPoint.x The focal point's x-coordinate.
+   * @param variance The variance to apply to the position.
+   * @param focalPoint.y The focal point's y-coordinate.
+   * @returns The generated position.
    */
-  setTimelineForImage(img, imgName, index) {
-    var _a2;
-    if (!parallaxLayer) {
-      return gsapWithCSS.timeline();
-    }
-    const timeline2 = gsapWithCSS.timeline({
-      paused: true,
-      repeat: 0,
-      onComplete: () => {
-        logger.info("=== Timeline completed for", imgName);
-      },
-      onStart: () => {
-        logger.info("Timeline started for ", imgName);
-        logger.info("Timeline duration:", timeline2.duration());
-      }
-    });
-    const currentImage = (_a2 = parallaxLayer.children) == null ? void 0 : _a2[0];
-    const startUpActions = () => {
-      const currentAnimation = this.state$.value.currentTimeline || null;
-      if (parallaxLayer.childNodes.length > 0 && Array.from(parallaxLayer.childNodes).find((node) => node === img)) {
-        parallaxLayer.removeChild(img);
-      }
-      parallaxLayer.prepend(img);
-      this.updateTextElements(imgName);
-      if (img.naturalHeight) {
-        this.setParallaxHeight(img.naturalHeight);
-      } else {
-        img.onload = () => this.setParallaxHeight(img.naturalHeight);
-      }
-      if (currentAnimation.isActive()) {
-        currentAnimation.kill();
-      }
+  generatePosition(safeZone, focalPoint, variance = 0.2) {
+    const randomizeWithBias = (min, max, target, variance2) => {
+      const range = max - min;
+      const basePosition = min + range * target;
+      const varianceAmount = range * variance2;
+      const randomOffset = (Math.random() - 0.5) * 2 * varianceAmount;
+      return gsapWithCSS.utils.clamp(
+        min,
+        max,
+        basePosition + randomOffset
+      );
     };
-    timeline2.add(["startupActions", startUpActions], 0);
-    timeline2.eventCallback("onStart", () => {
-      logger.info("Startup actions completed for ", imgName);
-      logger.info("Updating Hero state with new image:", imgName);
-      logger.info("Current image index:", index);
+    return {
+      x: randomizeWithBias(safeZone.x.min, safeZone.x.max, focalPoint.x, variance),
+      y: randomizeWithBias(safeZone.y.min, safeZone.y.max, focalPoint.y, variance)
+    };
+  }
+  createImageAnimation(img, duration = HERO_CONFIG.ANIMATION.PAN.duration, imageName) {
+    if (!img || !parallaxLayer) {
+      return null;
+    }
+    const tl = gsapWithCSS.timeline({
+      paused: true,
+      smoothChildTiming: true,
+      repeat: 0,
+      defaults: { ease: HERO_CONFIG.ANIMATION.PAN.ease }
     });
-    timeline2.add(["imageEnter", gsapWithCSS.to(img, HERO_CONFIG.ANIMATION.ENTER)], "<");
-    if (currentImage) {
-      timeline2.add(["imageExit", gsapWithCSS.to(currentImage, HERO_CONFIG.ANIMATION.EXIT)], "<");
+    const currentImage = this.layerNotEmpty() ? this.currentImage() : null;
+    if (currentImage !== null) {
+      tl.add(["currentImgFadeOut", gsapWithCSS.to(currentImage, { ...HERO_CONFIG.ANIMATION.EXIT })], "<");
     }
-    if (!prefersReducedMotion()) {
-      logger.info("Creating and adding pan animation for ", imgName);
-      const panAnimation = this.createPanAnimation(img);
-      if (panAnimation && panAnimation instanceof gsapWithCSS.core.Timeline) {
-        timeline2.add(panAnimation);
-      } else {
-        logger.info("User prefers reduced motion; skipping pan animation for ", imgName);
-      }
+    tl.add(["updateText", () => this.updateTextElements(imageName)]).add(["addImage", () => parallaxLayer.append(img)]).add(["imageFadeIn", gsapWithCSS.to(img, { ...HERO_CONFIG.ANIMATION.ENTER }), "<"]);
+    if (prefersReducedMotion()) {
+      this.state$.value.currentTimeline.kill();
+      this.updateState({ currentTimeline: tl });
+      return void 0;
     }
-    timeline2.smoothChildTiming = true;
-    return timeline2;
+    const dimensions = this.testImageDimensions(img);
+    const rect = dimensions.boundingRect;
+    logger.info("Bounding rect:", JSON.stringify(rect));
+    const baseScale = parseFloat(getComputedStyle(img).getPropertyValue("--scale")) || parseFloat(dimensions.computedStyle["--scale"]) || 1.1;
+    const safeZone = this.calculateSafeZone(rect, baseScale);
+    const focalPoints = {
+      main: [
+        parseFloat(img.dataset.focusMainX || "0.5"),
+        parseFloat(img.dataset.focusMainY || "0.5")
+      ],
+      secondary: [
+        parseFloat(img.dataset.focusSecondaryX || "0.5"),
+        parseFloat(img.dataset.focusSecondaryY || "0.5")
+      ]
+    };
+    const startPos = this.generatePosition(safeZone, {
+      x: focalPoints.secondary[0],
+      y: focalPoints.secondary[1]
+    }, 0.5);
+    const endPos = this.generatePosition(safeZone, {
+      x: focalPoints.main[0],
+      y: focalPoints.main[1]
+    }, 0.2);
+    tl.set(img, {
+      x: startPos.x,
+      y: startPos.y,
+      scale: baseScale
+    }).add("initialImageSetup");
+    tl.to(img, {
+      duration,
+      x: endPos.x,
+      y: endPos.y,
+      scale: Math.min(baseScale * 1.1, this.config.maxScale),
+      ease: HERO_CONFIG.ANIMATION.PAN.ease
+    }, ">").add("panImage");
+    this.state$.value.currentTimeline.kill();
+    this.updateState({ currentTimeline: tl });
+    return void 0;
   }
   /**
    * Cycles to the next image in the hero image array.
+   * @param recalcCurrent Whether to recalculate the current image.
    * @returns An observable that emits when the image has been cycled.
    */
-  cycleImage() {
+  cycleImage(recalcCurrent = false) {
     if (!parallaxLayer || this.state$.closed) {
       return EMPTY;
     }
     const currentState = this.state$.value;
-    return new Observable((subscriber) => {
-      try {
-        const { activeImageIndex } = currentState;
-        const nextIndex = parallaxLayer.childElementCount > 0 ? (activeImageIndex + 1) % this.shuffledHeroes.length : 0;
-        const nextImage = this.shuffledHeroes[nextIndex];
-        const nextImageName = nextImage.imageName;
+    const { activeImageIndex } = currentState;
+    const notEmpty = this.layerNotEmpty();
+    return defer(() => {
+      const nextIndex = recalcCurrent ? activeImageIndex : notEmpty ? (activeImageIndex + 1) % this.shuffledHeroes.length : 0;
+      const nextImage = this.shuffledHeroes[nextIndex];
+      const nextImageName = nextImage.imageName;
+      const imageInDOM = notEmpty ? Array.from(parallaxLayer.childNodes).find((node) => node.srcset === nextImage.srcset) : null;
+      if (!recalcCurrent && notEmpty) {
         const currentImage = parallaxLayer.children[0];
         if (currentImage == null ? void 0 : currentImage.classList.contains(`hero-parallax__image--${nextImageName}`)) {
-          subscriber.complete();
-          return;
+          return EMPTY;
         }
-        const loadImage$ = this.loadedImages.has(nextImageName) ? of(this.loadedImages.get(nextImageName)) : this.loadAndPrepareImage(nextImage).pipe(
-          tap((img) => this.loadedImages.set(nextImageName, img))
-        );
-        loadImage$.subscribe({
-          next: (newImageElement) => {
-            var _a2;
-            const timeline2 = this.setTimelineForImage(newImageElement, nextImageName, nextIndex);
-            if ((_a2 = currentState.currentTimeline) == null ? void 0 : _a2.isActive()) {
-              currentState.currentTimeline.progress(1);
-            }
-            this.updateState({
-              activeImageIndex: nextIndex,
-              currentImage: newImageElement,
-              currentTimeline: timeline2
-            });
-            timeline2.play();
-            subscriber.next();
-            subscriber.complete();
-          },
-          error: (error) => {
-            logger.error("Error cycling image:", error);
-            subscriber.error(error);
-          }
-        });
-      } catch (error) {
-        logger.error("Error in cycleImage:", error);
-        subscriber.error(error);
       }
+      const loadImage$ = this.loadedImages.has(nextImageName) ? of(this.loadedImages.get(nextImageName)) : this.loadAndPrepareImage(nextImage).pipe(
+        tap((img) => this.loadedImages.set(nextImageName, img))
+      );
+      return loadImage$.pipe(
+        switchMap((newImageElement) => {
+          this.createImageAnimation(newImageElement, HERO_CONFIG.ANIMATION.PAN.duration, nextImageName);
+          const timeline2 = this.state$.value.currentTimeline;
+          this.updateState({
+            activeImageIndex: nextIndex,
+            currentImage: newImageElement,
+            currentTimeline: timeline2 || gsapWithCSS.timeline()
+          });
+          if (imageInDOM && imageInDOM instanceof HTMLImageElement) {
+            try {
+              imageInDOM.remove();
+            } catch (error) {
+              logger.error("Error removing image:", error);
+            }
+          }
+          timeline2 == null ? void 0 : timeline2.play();
+          return of(void 0);
+        }),
+        catchError((error) => {
+          logger.error("Error cycling image:", error);
+          return EMPTY;
+        })
+      );
     });
   }
   /**
@@ -16565,4 +16520,4 @@ gsap/ScrollTrigger.js:
    * @author: Jack Doyle, jack@greensock.com
   *)
 */
-//# sourceMappingURL=index.56E5W6X6.js.map
+//# sourceMappingURL=index.4RGSAMCY.js.map

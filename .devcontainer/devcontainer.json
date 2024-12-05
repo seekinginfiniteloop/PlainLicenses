@@ -85,7 +85,11 @@
 		"wmontalvo.vsc-jsonsnippets",
 		"yzhang.markdown-all-in-one",
 		"rvest.vs-code-prettier-eslint",
-		"github.vscode-github-actions"
+		"github.vscode-github-actions",
+		"akmarnafi.comment-headers",
+		"aaron-bond.better-comments",
+		"oven.bun-vscode",
+		"Orta.vscode-jest"
 	]
     }
   }

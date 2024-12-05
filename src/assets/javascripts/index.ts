@@ -1,17 +1,29 @@
 /**
- * Manages the initialization and subscription of various observables for
- * PlainLicense.
+ * ================================================================================================
+ * *                                           Plain License entrypoint
  *
- * This module sets up observables that listen for changes in the DOM,
- * handles asset preloading, and manages subscriptions for different pages
- *  such as the home page, license pages, and helping pages. It ensures that resources
- * are cleaned up
- * appropriately when navigating between pages to prevent memory leaks and improve performance.
+ * Frontend entrypoint for the Plain License website. This module initializes
+ * both material for mkdocs and Plain License scripts to handle front end
+ * interactions.
+ *
+ * Following Material for MkDocs (MMK), we use the MMK-generated custom window
+ * RxJs observables and subscriptions to manage the lifecycle of the Plain License.
+ *
+ * ? Besides MMK, this module orchestrates the rest of the site modules:
+ * ? - cache: Handles asset caching and cleanup
+ * ? - hero: Manages the hero landing page of the site, including animations and image shuffling
+ * ? - licenses: Manages the license pages
+ * ? - utils: Provides utility functions for managing the site
+ * ?     - vectorcalc: Provides vector calculation functions for transformations on the home page... because what is a home page without linear algebra?
+ * ? - feedback: Manages feedback forms (not yet implemented)
+ * @copyright No rights reserved. Created by and for Plain License www.plainlicense.org
+ *================================================================================================
+ * @license Plain Unlicense (Public Domain)
  */
 
 import * as bundle from "@/bundle"
 import { Subscription, firstValueFrom, merge, of } from "rxjs"
-import { distinctUntilKeyChanged, filter, mergeMap, skipUntil, switchMap, tap } from "rxjs/operators"
+import { debounce, distinctUntilKeyChanged, filter, mergeMap, skipUntil, switchMap, tap } from "rxjs/operators"
 import { feedback$ } from "~/feedback"
 import { watchLicense } from "~/licenses"
 import { logger } from "~/log"
@@ -19,6 +31,7 @@ import { SubscriptionManager, isHelpingIndex, isHome, isLicense, isOnSite, locat
 import { cacheAssets, cleanupCache, deleteOldCache, getAsset } from "./cache"
 import { shuffle$ } from "./hero/imageshuffle"
 import { subscribeToAnimations } from "./hero/animation"
+import { initHeroAnimation } from "./hero/impactText"
 
 let customWindow: CustomWindow = window as unknown as CustomWindow
 
@@ -125,6 +138,8 @@ const homeBeacon$ = locationBeacon$.pipe(
   filter((url: URL) => isHome(url)),
 )
 
+const textImpact$ = document$.pipe(debounce(() => of(1000)))
+
 /**
  * Observes when the user is at the home page.
  * @returns {Observable<void>} An observable that triggers actions when at the home page.
@@ -133,6 +148,9 @@ const atHome$ = homeBeacon$.pipe(
   tap(() => {
     logger.info("At home page")
     document.body.setAttribute("data-md-color-scheme", "slate")
+    manager.addSubscription(textImpact$.subscribe(() => {
+      initHeroAnimation()
+    }))
     manager.addSubscription(shuffler$.subscribe())
     manager.addSubscription(animate$.subscribe())
   })
@@ -227,3 +245,5 @@ manager.addSubscription(atLicense$.subscribe(() => {
 manager.addSubscription(newPage$.pipe(skipUntil(document$)).subscribe(() => {
   initPage()
 }), true)
+
+export { preloadFonts }

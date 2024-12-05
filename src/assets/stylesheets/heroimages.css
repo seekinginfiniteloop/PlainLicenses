@@ -94,7 +94,7 @@ so it made sense for them to live here
   transition: 300ms color ease;
 }
 
-@media screen and (width <= 416px) {
+@media screen and (width <=416px) {
   #CTA_header {
     font-size: clamp(15px, calc(100vw / 16), 10rem);
   }
@@ -229,18 +229,18 @@ so it made sense for them to live here
   }
 }
 
-.hero-parallax__layer .hero-parallax__image:not(:first-child) {
+#parallax-hero-image-layer.hero-parallax__image:not(:first-of-type(img)) {
   position: absolute;
   top: 0;
   z-index: -300;
+  visibility: hidden;
   opacity: 0;
-  transition: 500ms opacity ease-in;
 }
 
-.hero-parallax__layer .hero-parallax__image:first-child {
+#parallax-hero-image-layer.hero-parallax__image:first-of-type(img) {
   top: 0;
+  visibility: visible;
   opacity: 1;
-  transition: 2000ms opacity ease-out;
 }
 
 /* TODO: get the overlay to actually show without messing up everything */
@@ -258,11 +258,9 @@ so it made sense for them to live here
   overflow: hidden clip;
   pointer-events: none;
   background:
-    linear-gradient(
-      to bottom,
-      rgba(var(--gunmetal-adj), 0) 70%,
-      rgba(var(--gunmetal-adj), 0.3) 85%,
-      rgba(var(--gunmetal-adj), 0.6) 90%,
-      rgba(var(--gunmetal-adj), 1) 100%
-    );
+    linear-gradient(to bottom,
+    rgba(var(--gunmetal-adj), 0) 70%,
+    rgba(var(--gunmetal-adj), 0.3) 85%,
+    rgba(var(--gunmetal-adj), 0.6) 90%,
+    rgba(var(--gunmetal-adj), 1) 100%);
 }

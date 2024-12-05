@@ -7754,7 +7754,7 @@ h1.hero-content-section.header-mid.line span {
   -moz-osx-font-smoothing: grayscale;
   transition: 300ms color ease;
 }
-@media screen and (width <= 416px) {
+@media screen and (width <=416px) {
   #CTA_header {
     font-size: clamp(15px, calc(100vw / 16), 10rem);
   }
@@ -7864,17 +7864,17 @@ h1.hero-content-section.header-mid.line span {
     --p-color: var(--atomic-tangerine);
   }
 }
-.hero-parallax__layer .hero-parallax__image:not(:first-child) {
+#parallax-hero-image-layer.hero-parallax__image:not(:first-of-type(img)) {
   position: absolute;
   top: 0;
   z-index: -300;
+  visibility: hidden;
   opacity: 0;
-  transition: 500ms opacity ease-in;
 }
-.hero-parallax__layer .hero-parallax__image:first-child {
+#parallax-hero-image-layer.hero-parallax__image:first-of-type(img) {
   top: 0;
+  visibility: visible;
   opacity: 1;
-  transition: 2000ms opacity ease-out;
 }
 .fade-overlay {
   --fade-height: var(--parallax-height);
@@ -7904,4 +7904,4 @@ h1.hero-content-section.header-mid.line span {
 }
 
 /* src/assets/stylesheets/bundle.css */
-/*# sourceMappingURL=bundle.U76FRJ2K.css.map */
+/*# sourceMappingURL=bundle.RDBHRS5X.css.map */

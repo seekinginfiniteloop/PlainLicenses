@@ -336,10 +336,12 @@ export const getSubscriptionManager = () => {
   try {
     if (customWindow.subscriptionManager) {
       return customWindow.subscriptionManager
+    } else {
+      customWindow.subscriptionManager = new SubscriptionManager()
+      return customWindow.subscriptionManager
     }
   } catch {
-    customWindow.subscriptionManager = new SubscriptionManager()
-    return customWindow.subscriptionManager
+    throw new Error("SubscriptionManager could not be initialized.")
   }
 }
 // Example usage:

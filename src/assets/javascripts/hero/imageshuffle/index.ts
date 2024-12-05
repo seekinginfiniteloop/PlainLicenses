@@ -13,7 +13,7 @@ import {
   EMPTY,
   Observable,
   Subscription,
-  firstValueFrom,
+  defer,
   from,
   fromEvent,
   interval,
@@ -39,7 +39,14 @@ import { SubscriptionManagerType, isHome, isOnSite, locationBeacon$, locationBeh
 import { getAsset } from "~/cache"
 import { HeroImage, ImageFocalPoints, heroImages } from "~/hero/imageshuffle/data"
 import { logger } from "~/log"
-import { blob } from "stream/consumers"
+import { ImageTransformCalculator, ScaleCalculator } from "~/utils/vectorcalc"
+
+
+/**
+ * ----------------------
+ **   Config and utilities
+ *------------------------*
+ */
 
 const HERO_CONFIG = {
   INTERVAL: 20000,
@@ -47,9 +54,9 @@ const HERO_CONFIG = {
     ENTER: { ease: "power2.inOut", duration: 1.5 },
     EXIT: { ease: "power2.out", duration: 0.5 },
     PAN: {
-      delay: 1.5,
-      duration: 15,
-      ease: "sine.out",
+      duration: 17000,
+      ease: "sine.inOut",
+      repeat: 0,
     }
   }
 } as const
@@ -67,10 +74,17 @@ const portraitMediaQuery = customWindow.matchMedia("(orientation: portrait)")
 const parallaxLayer = customWindow.document.getElementById("parallax-hero-image-layer")
 
 /**
+ * ========================================================================
+ **                       HERO STATE MANAGER
+ *      It's a beast; needs a refactor, but it handles all the image
+ *     cycling, loading, and state management for the hero component.
+ *========================================================================*
+ */
+
+/**
  * Manages the state and behavior of a hero image cycling feature.
  *
- * The HeroStateManager class handles the visibility, home status, and image cycling logic for a hero component.
- * It utilizes RxJS for state management and subscriptions, and GSAP for animations. The class also manages
+ * It uses RxJS for state management and subscriptions, and GSAP for animations. The class also manages
  * image loading and updates based on the current viewport size and orientation.
  */
 class HeroStateManager {
@@ -91,6 +105,17 @@ class HeroStateManager {
   private readonly optimalWidth$ = new BehaviorSubject<number>(this.getOptimalWidth())
 
   private readonly subscriptionWatcher = new Subscription()
+
+  private readonly transformCalc = new ImageTransformCalculator()
+
+  private readonly scaleCalc = new ScaleCalculator()
+
+  readonly config = {
+    headerSelector: "#header-target",
+    minTranslation: 100,
+    maxScale: 1.4,
+    layerSelector: "#parallax-hero-image-layer"
+  }
 
   /**
    * An observable that emits a boolean indicating whether the hero can cycle through images.
@@ -140,6 +165,8 @@ class HeroStateManager {
       isAtHome: isAtHome(),
       isVisible: isPageVisible(),
       lastActiveTime: Date.now(),
+      headerHeight: 0,
+      viewportDimensions: { width: 0, height: 0 },
       optimalWidth: this.getOptimalWidth(),
       orientation: portraitMediaQuery.matches ? 'portrait' : 'landscape',
       status: 'loading',
@@ -214,16 +241,24 @@ class HeroStateManager {
       fromEvent(portraitMediaQuery, 'change')
     ).pipe(
       debounceTime(100),
+      tap(() => {
+        this.setParallaxHeight()
+
+      }),
       map(() => ({
         orientation: portraitMediaQuery.matches ? 'portrait' : 'landscape',
         optimalWidth: this.getOptimalWidth(),
-      })),
+      })), filter((_, optimalWidth) => optimalWidth !== this.state$.value.optimalWidth),
       tap(({ orientation, optimalWidth }) => {
         this.updateState({ orientation: orientation as 'portrait' | 'landscape', optimalWidth })
         this.updateImageSources(
           Array.from(parallaxLayer?.getElementsByTagName('img') || []),
           optimalWidth
         )
+      }),
+      filter(() => this.state$.value.currentTimeline.isActive()),
+      tap(() => {
+        this.cycleImage(true)
       })
     ).subscribe();
 
@@ -251,24 +286,56 @@ class HeroStateManager {
     this.state$.next(newState)
   }
 
+  private layerImages = () => {
+    return Array.from(parallaxLayer?.getElementsByTagName('img') || [])
+  }
+
+  private layerEmpty = () => {
+    return this.layerImages().length === 0
+  }
+
+  private layerNotEmpty = () => {
+    return !this.layerEmpty()
+  }
+
+  private currentImage = () => {
+    return this.layerImages()[0]
+  }
+
+  private getImageName = (image: HTMLImageElement) => {
+    return image?.classList[1].split('--')[1]
+  }
+
+  private lastImage = () => {
+    return this.layerImages().slice(-1)[0]
+  }
+
+  private hasImage = (imageName: string) => {
+    return this.layerImages().some(image => image.classList.contains(`hero-parallax__image--${imageName}`))
+  }
+
+  private getImage = (imageName: string) => {
+    return this.layerImages().find(image => image.classList.contains(`hero-parallax__image--${imageName}`))
+  }
+
   /**
    * Sets the height of the parallax effect based on the provided height.
-   * @param height The height to set for the parallax effect.
    */
-  private setParallaxHeight(height: number): void {
+  private setParallaxHeight(): void {
     const headerRect = this.getHeaderRect()
     const headerHeight = headerRect.height
+    this.updateState({ headerHeight })
     setCssVariable("--header-height", `${headerHeight}px`)
     const effectiveViewHeight = customWindow.innerHeight - headerHeight
     const maxFade = effectiveViewHeight * 1.4
 
-    if (!parallaxLayer || height <= 0) {
+    if (!parallaxLayer || headerHeight <= 0) {
       const currentValue = document.documentElement.style.getPropertyValue("--fade-height")
       setCssVariable("--fade-height", Math.max(Number(currentValue), effectiveViewHeight).toString())
     }
 
-    setCssVariable("--fade-height", `${Math.min(height * 1.2, maxFade, effectiveViewHeight)}px`)
-    setCssVariable("--parallax-height", `${height < effectiveViewHeight ? effectiveViewHeight : Math.min(height * 1.2, maxFade)}px`)
+    setCssVariable("--fade-height", `${Math.min(headerHeight * 1.2, maxFade, effectiveViewHeight)}px`)
+    setCssVariable("--parallax-height", `${headerHeight < effectiveViewHeight ? effectiveViewHeight : Math.min(headerHeight * 1.2, maxFade)}px`)
   }
 
   /**
@@ -315,12 +382,19 @@ class HeroStateManager {
    * @param imageName The name of the image to update text elements for.
    */
   private updateTextElements(imageName: string): void {
-    const headerEl = document.getElementById("CTA_header")
-    const textEl = document.getElementById("CTA_paragraph")
-    const className = `hero-parallax__image--${imageName}`
+    const containsImageClass = (el: HTMLElement) => { return Array.from(el.classList).some(className => className.includes("hero-parallax__image--")) }
 
-    headerEl?.setAttribute("class", className)
-    textEl?.setAttribute("class", className)
+    const elements = [document.getElementById("CTA_header"), document.getElementById("CTA_paragraph")]
+    const className = `hero-parallax__image--${imageName}`
+    elements.forEach(el => {
+      if (el && containsImageClass(el)) {
+        const toRemove = Array.from(el.classList).filter(className => className.includes("hero-parallax__image--"))
+        el.classList.remove(...toRemove)
+        el.classList.add(className)
+      } else if (el) {
+        el.classList.add(className)
+      }
+    })
   }
 
   /**
@@ -437,7 +511,7 @@ class HeroStateManager {
     img.alt = ""
     img.classList.add("hero-parallax__image", `hero-parallax__image--${imageName}`)
     img.draggable = false
-    img.loading = parallaxLayer?.getElementsByTagName('img').length !== 0 ? "lazy" : "eager"
+    img.loading = this.layerNotEmpty() ? "lazy" : "eager"
     if (focalPoints) {
       img.setAttribute("data-focus-main-x", focalPoints.main[0].toString())
       img.setAttribute("data-focus-main-y", focalPoints.main[1].toString())
@@ -460,8 +534,10 @@ class HeroStateManager {
     const { naturalWidth, naturalHeight } = img
     logger.info("Testing image dimensions for", img, "Natural dimensions:", { naturalWidth, naturalHeight })
     img.style.opacity = "0"
+    img.style.visibility = "hidden"
+    img.style.scale = "1"
     parallaxLayer.append(img)
-    const emplacedElement = parallaxLayer.lastElementChild
+    const emplacedElement = this.lastImage()
     if (!emplacedElement) {
       throw new Error("Emplaced element not found")
     }
@@ -470,12 +546,14 @@ class HeroStateManager {
     const elementStyle = JSON.stringify(window.getComputedStyle(emplacedElement))
     const rectJSON = JSON.stringify(elementRect)
     logger.info("Bounding rect:", rectJSON, "Element style:", elementStyle)
-    parallaxLayer.removeChild(emplacedElement)
+    emplacedElement.remove()
     const boundingRect = JSON.parse(rectJSON)
     const processedStyle = JSON.parse(elementStyle)
     logger.info("Processed style:", processedStyle)
     logger.info("processed Bounding rect:", boundingRect)
+    img.style.scale = ""
     img.style.opacity = ""
+    img.style.visibility = ""
     return {
       computedStyle: processedStyle,
       naturalWidth,
@@ -526,304 +604,151 @@ class HeroStateManager {
     return headerBox || defaultRect
   }
 
-  private computeExcessDimensions(value: number, boundingLine: number): number {
-    logger.info("Computing excess dimensions for value:", value, "Bounding line:", boundingLine)
-    if (boundingLine > 0) {
-      return value > boundingLine ? value - boundingLine : boundingLine - value
-    }
-    return Math.abs(value)
-  }
-
-  private computeTranslationDimensions(img: HTMLImageElement): TranslatableAreas {
-    const getOverflowComputed = (overflowRects: OverflowRects, overflow: OverflowComputed): [OverflowRects, OverflowComputed] => {
-      overflow.topIsOffset = false
-      overflow.noYoverflow = false
-      if (overflow.top > 0 && overflow.bottom === 0) {
-        if (imgHeight > visibleRect.height) {
-          const offset = (imgHeight - visibleRect.height) / 2
-          overflow.bottom = offset
-          overflow.top = offset
-          overflow.topIsOffset = true
-        } else {
-          overflowRects.top.y = visibleRect.top - overflow.top
-          overflow.top = 0
-          overflow.bottom = 0
-          overflowRects.bottom.y = visibleRect.bottom + overflow.bottom
-          overflow.noYoverflow = true
-        }
-      }
-      logger.info("Overflow computed:", overflow)
-      return [overflowRects, overflow]
-    }
-    const getTranslatability = (overflow: OverflowComputed) => {
+  private getFocalPoints(img: HTMLImageElement): FocalPoints {
+    // Get focal points (defaulting to center if not specified)
     return {
-      top: overflow.top > 0,
-      bottom: overflow.bottom > 0,
-      left: overflow.left > 0,
-      right: overflow.right > 0
-    }
-  }
-
-    const getComputedImageDimensions = (imgWidth: number, imgHeight: number) => {
-      const aspectRatio = imgWidth / imgHeight
-      const orientation = (aspectRatio > 1 ? 'landscape' : aspectRatio < 1 ? 'portrait' : 'square') as 'portrait' | 'landscape' | 'square'
-      return { width: imgWidth, height: imgHeight, aspectRatio, orientation }
-    }
-
-    const getExcessDimensions = (headerRect: DOMRect, boundingRect: DOMRect) => {
-      return {
-        top: this.computeExcessDimensions(boundingRect.top, headerRect.bottom),
-        left: this.computeExcessDimensions(boundingRect.left, 0),
-        bottom: isImageBottomVisible ? 0 : this.computeExcessDimensions(boundingRect.bottom, customWindow.innerHeight),
-        right: this.computeExcessDimensions(boundingRect.right, customWindow.innerWidth)
-      }
-    }
-
-    const createDOMRect = (x: number, y: number, width: number, height: number) => { return new DOMRect(x, y, width, height) }
-
-    const getInitialOverflowRects = (visibleRect: DOMRect, excesses: OverflowComputed, imageTop: number) => {
-    return {
-      yTopRect: createDOMRect(0, excesses.top > 0 ? Math.min(visibleRect.top - excesses.top, imageTop) : visibleRect.top, visibleRect.width, excesses.top),
-      yBottomRect: createDOMRect(0, excesses.bottom ? visibleRect.bottom + excesses.bottom : 0, customWindow.innerWidth, excesses.bottom),
-      xLeftRect: createDOMRect(-excesses.left, visibleRect.top, Math.abs(excesses.left), visibleRect.height),
-      xRightRect: createDOMRect(visibleRect.right, visibleRect.top, excesses.right, visibleRect.height)
-    }
-  }
-
-    const { computedStyle, naturalWidth, naturalHeight, boundingRect } = this.testImageDimensions(img)
-
-    const containerRect = img.parentElement?.getBoundingClientRect() || document.body.getBoundingClientRect()
-
-    const headerRect = this.getHeaderRect()
-
-    const isImageBottomVisible = boundingRect.bottom <= (customWindow.innerHeight - boundingRect.top)
-
-    // Calculate scaled image dimensions
-    const scale = Number(computedStyle.scale) || 1
-    const imgWidth = Math.max(naturalWidth * scale, boundingRect.width)
-    const imgHeight = Math.max(naturalHeight * scale, boundingRect.height)
-    const visibleRect = new DOMRect(0, headerRect.bottom, customWindow.innerWidth, customWindow.innerHeight - headerRect.bottom)
-
-    const { top: excessTop, bottom: excessBottom, left: excessLeft, right: excessRight } = getExcessDimensions(headerRect, boundingRect)
-
-    const { yTopRect, yBottomRect, xLeftRect, xRightRect } = getInitialOverflowRects(visibleRect, { top: excessTop, bottom: excessBottom, left: excessLeft, right: excessRight }, boundingRect.top)
-
-    const [overflowRects, overflow] = getOverflowComputed({ top: yTopRect, right: xRightRect, bottom: yBottomRect, left: xLeftRect }, { top: excessTop, right: excessRight, bottom: excessBottom, left: excessLeft })
-    const translatable = getTranslatability(overflow)
-
-    const computedImageDimensions = getComputedImageDimensions(imgWidth, imgHeight)
-    setCssVariable("--header-height", `${visibleRect.top}px`)
-    setCssVariable("--fade-height", `${visibleRect.height}px`)
-    return { overflowRects, overflow, visibleRect, containerRect, imageDimensions: { computedStyle, naturalWidth, naturalHeight, boundingRect }, computedImageDimensions, translatable }
-  }
-
-  /**
-   * Creates a pan animation for the specified image.
-   * @param img The image to create a pan animation for.
-   * @returns The created GSAP timeline for the pan animation, or undefined if reduced motion is preferred.
-   */
-  public createPanAnimation(img: HTMLImageElement): GSAPTimeline | undefined {
-    if (prefersReducedMotion()) {
-      return undefined
-    }
-    const tl = gsap.timeline({ repeat: 0, paused: true })
-    const { overflowRects, overflow, visibleRect, containerRect, imageDimensions, computedImageDimensions, translatable} = this.computeTranslationDimensions(img)
-    logger.info("Computed translation dimensions:", { overflowRects, overflow, visibleRect, containerRect, imageDimensions, computedImageDimensions, translatable })
-    if (Object.values(translatable).every(value => value === false)) { return undefined }
-
-    // Reposition to balance overflow or minimize bottom gap
-    if (overflow.topIsOffset) {
-      const offset = overflow.top
-      tl.add(["yReposition", gsap.set(img, { y: visibleRect.top - offset })], "<")
-    } else if (overflow.noYoverflow) {
-      tl.add(["xReposition", gsap.set(img, { y: visibleRect.top })], "<")
-    }
-
-  // Calculate translation bounds based on overflow
-    const bounds: TranslationBounds = {
-      x: {
-        min: -Math.abs(overflowRects.left.width),
-        max: Math.abs(overflowRects.right.width)
+      main: {
+        x: parseFloat(img.dataset.focusMainX || "0.5"),
+        y: parseFloat(img.dataset.focusMainY || "0.5")
       },
-      y: {
-        min: overflow.topIsOffset ? -overflow.top : 0,
-        max: Math.abs(overflowRects.bottom.height)
+      secondary: {
+        x: parseFloat(img.dataset.focusSecondaryX || "0.5"),
+        y: parseFloat(img.dataset.focusSecondaryY || "0.5")
       }
     }
-
-  // Generate weighted random position
-    const getWeightedPosition = (
-    target: number,
-    bounds: {min: number, max: number},
-    variance: number = 0.2
-    ): number => {
-    const range = bounds.max - bounds.min
-    const targetPos = gsap.utils.mapRange(0, 100, bounds.min, bounds.max, target)
-      const randomOffset = (Math.random() - 0.5) * 2 * variance * range
-    logger.info("Target position:", targetPos, "Random offset:", randomOffset)
-    return gsap.utils.clamp(bounds.min, bounds.max, targetPos + randomOffset)
   }
 
-  // Get focal points
-    const focalX = Number(img.dataset.focusMainX) * 100 || 50
-    const focalY = Number(img.dataset.focusMainY) * 100 || 50
-    const startX = Number(img.dataset.focusSecondaryX) * 100 || 50
-    const startY = Number(img.dataset.focusSecondaryY) * 100 || 50
-
-  // Calculate positions with different variances
-    const startPos = {
-      x: getWeightedPosition(startX, bounds.x, 0.3),
-      y: overflow.noYoverflow? visibleRect.top : getWeightedPosition(startY, bounds.y, 0.3)
-    }
-
-    const endPos = {
-      x: getWeightedPosition(focalX, bounds.x, 0.1),
-      y: overflow.noYoverflow ? visibleRect.top : getWeightedPosition(focalY, bounds.y, 0.1)
-    }
-    logger.info("Start position:", startPos, "End position:", endPos)
-
-    const panVars = HERO_CONFIG.ANIMATION.PAN
-
-  // Create pan animation
-    tl.add(["panEffect", gsap.fromTo(
-      img,
-    { x: startPos.x, y: startPos.y },
+  private setOptimalImageScale(img: HTMLImageElement) {
+    const imageDimensions = this.testImageDimensions(img)
+    const { viewportDimensions, headerHeight } = this.state$.value
+    const focalPoints = this.getFocalPoints(img)
+    const { width, height } = viewportDimensions
+    const calculations = ScaleCalculator.calculateOptimalTransformation(
     {
+      width: imageDimensions.boundingRect.width,
+      height: imageDimensions.boundingRect.height
+    },
+      {
+        width, height
+    },
+      focalPoints,
+      this.config.minTranslation,
+      headerHeight
+    )
+
+    // Apply calculated CSS properties
+    const cssProperties = ScaleCalculator.generateCSSProperties(calculations)
+    Object.entries(cssProperties).forEach(([prop, value]) => {
+      img.style.setProperty(prop, value.toString())
+    })
+
+    return calculations
+  }
+
+  public createImageAnimation(img: HTMLImageElement, duration = HERO_CONFIG.ANIMATION.PAN.duration, imageName: string) {
+    if (!img || !parallaxLayer) {
+      return null
+    }
+
+    // Create the animation timeline
+    const tl = gsap.timeline({
+      paused: true, repeat: 0,
+      defaults: { ease: HERO_CONFIG.ANIMATION.PAN.ease }
+    })
+
+    const currentImage = this.layerNotEmpty() ? this.currentImage() : null
+
+    if (currentImage !== null) {
+      tl.add(["currentImgFadeOut", gsap.to(currentImage, {...HERO_CONFIG.ANIMATION.EXIT})], "<")
+    }
+    tl.add(["updateText", () => this.updateTextElements(imageName)])
+      .add(["addImage", () => parallaxLayer.append(img)])
+      .add(["imageFadeIn", gsap.to(img, { ...HERO_CONFIG.ANIMATION.ENTER }), "<"])
+
+    if (prefersReducedMotion()) {
+      this.state$.value.currentTimeline.kill()
+      this.updateState({ currentTimeline: tl })
+      return void 0
+    }
+
+    // Get image dimensions and calculate safe movement zone
+    const dimensions = this.testImageDimensions(img)
+    const transforms = this.transformCalc.calculateAnimationTransforms({width: dimensions.boundingRect.width, height: dimensions.boundingRect.height}, this.state$.value.viewportDimensions, this.state$.value.headerHeight, this.getFocalPoints(img))
+    const baseScale = parseFloat(Object.keys(dimensions.computedStyle).filter((key) => key === "--scale")[0])
+    const safeBounds = this.transformCalc.calculateSafeBounds({ width: dimensions.naturalWidth, height: dimensions.naturalHeight}, this.state$.value.viewportDimensions, this.state$.value.headerHeight, 1.1)
+
+
+    // Main animation
+    tl.to(img, {
+      duration,
       x: endPos.x,
       y: endPos.y,
-      ...panVars,
-    }
-    )], ">")
+      scale: Math.min(baseScale * 1.1, this.config.maxScale),
+      ease: HERO_CONFIG.ANIMATION.PAN.ease
+    }, ">").add("panImage")
 
-    return tl
-  }
 
-  /**
-   * Sets the timeline for the specified image, managing its entry and exit animations.
-   * @param img The image to set the timeline for.
-   * @param imgName The name of the image.
-   * @param index The index of the image in the hero array.
-   * @returns The GSAP timeline for the image animations.
-   */
-  private setTimelineForImage(img: HTMLImageElement, imgName: string, index: number): GSAPTimeline {
-    if (!parallaxLayer) {
-      return gsap.timeline()
-    }
-
-    const timeline = gsap.timeline({
-      paused: true, repeat: 0, onComplete: () => {
-        logger.info("=== Timeline completed for", imgName)}, onStart: () => { logger.info("Timeline started for ", imgName) 
-        logger.info("Timeline duration:", timeline.duration())
-      }
-    })
-    const currentImage = parallaxLayer.children?.[0] as HTMLImageElement | null
-    const startUpActions = () => {
-      const currentAnimation = this.state$.value.currentTimeline || null
-      // remove the image if already in the DOM
-      if (parallaxLayer.childNodes.length > 0 && Array.from(parallaxLayer.childNodes).find(node => node === img)) {
-        parallaxLayer.removeChild(img)
-      }
-      // Add the image to the DOM; only first-child is visible in CSS, so no need to remove others
-      parallaxLayer.prepend(img)
-      // Ensure image is loaded before setting height
-      this.updateTextElements(imgName)
-      if (img.naturalHeight) {
-        this.setParallaxHeight(img.naturalHeight)
-      } else {
-        img.onload = () => this.setParallaxHeight(img.naturalHeight)
-      }
-      if (currentAnimation.isActive()) {
-        currentAnimation.kill()
-      }
-    }
-    // Add startup settings to timeline first; triggers with animation
-    timeline.add(["startupActions", startUpActions], 0)
-    timeline.eventCallback("onStart", () => {
-      logger.info("Startup actions completed for ", imgName)
-      logger.info("Updating Hero state with new image:", imgName)
-      logger.info("Current image index:", index)
-    })
-    // Add enter animation for new image
-    timeline.add(["imageEnter", gsap.to(img, HERO_CONFIG.ANIMATION.ENTER)], "<")
-    // Add exit animation for current image if it exists
-    if (currentImage) {
-      timeline.add(["imageExit", gsap.to(currentImage, HERO_CONFIG.ANIMATION.EXIT)], "<")
-    }
-    // Add pan animation if user isn't reducing motion and image is loaded
-    if (!prefersReducedMotion()) {
-      logger.info("Creating and adding pan animation for ", imgName)
-      const panAnimation = this.createPanAnimation(img)
-      if (panAnimation && panAnimation instanceof gsap.core.Timeline) {
-        timeline.add(panAnimation)
-      } else {
-        logger.info("User prefers reduced motion; skipping pan animation for ", imgName)
-      }
-    }
-      // update state with new timeline and smooth out timeline
-    timeline.smoothChildTiming = true
-    return timeline
+    this.state$.value.currentTimeline.kill()
+    this.updateState({ currentTimeline: tl })
+    return void 0
   }
 
   /**
    * Cycles to the next image in the hero image array.
+   * @param recalcCurrent Whether to recalculate the current image.
    * @returns An observable that emits when the image has been cycled.
    */
-  public cycleImage() {
+  public cycleImage(recalcCurrent: boolean = false): Observable<void> {
     if (!parallaxLayer || this.state$.closed) {
       return EMPTY
     }
 
     const currentState = this.state$.value
+    const { activeImageIndex } = currentState
+    const notEmpty = this.layerNotEmpty()
 
-    return new Observable<void>(subscriber => {
-    try {
-      const { activeImageIndex } = currentState
-      const nextIndex = parallaxLayer!.childElementCount > 0 ?
-          (activeImageIndex + 1) % this.shuffledHeroes.length : 0
-      const nextImage = this.shuffledHeroes[nextIndex]
+    return defer(() => {
+    const nextIndex = recalcCurrent ? activeImageIndex :
+        (notEmpty ? (activeImageIndex + 1) % this.shuffledHeroes.length : 0)
+    const nextImage = this.shuffledHeroes[nextIndex]
       const nextImageName = nextImage.imageName
 
-      // Check if cycling to same image
+
+      const imageInDOM = notEmpty ? Array.from(parallaxLayer.childNodes).find((node) => (node as HTMLImageElement).srcset === nextImage.srcset) : null
+
+    if (!recalcCurrent && notEmpty) {
       const currentImage = parallaxLayer!.children[0] as HTMLImageElement
       if (currentImage?.classList.contains(`hero-parallax__image--${nextImageName}`)) {
-        subscriber.complete()
-        return
+        return EMPTY
       }
-
-      // Load or retrieve image
-      const loadImage$ = this.loadedImages.has(nextImageName) ?
-        of(this.loadedImages.get(nextImageName)!) :
-        this.loadAndPrepareImage(nextImage).pipe(
-          tap(img => this.loadedImages.set(nextImageName, img))
-        )
-
-      loadImage$.subscribe({
-        next: (newImageElement) => {
-          const timeline = this.setTimelineForImage(newImageElement, nextImageName, nextIndex)
-
-          if (currentState.currentTimeline?.isActive()) {
-            currentState.currentTimeline.progress(1)
-          }
-
-          this.updateState({
-            activeImageIndex: nextIndex,
-            currentImage: newImageElement,
-            currentTimeline: timeline
-          })
-
-          timeline.play()
-          subscriber.next()
-          subscriber.complete()
-        },
-        error: (error) => {
-          logger.error("Error cycling image:", error)
-          subscriber.error(error)
-        }
-      })
-    } catch (error) {
-      logger.error("Error in cycleImage:", error)
-      subscriber.error(error)
     }
+
+    const loadImage$ = this.loadedImages.has(nextImageName) ?
+      of(this.loadedImages.get(nextImageName)!) :
+      this.loadAndPrepareImage(nextImage).pipe(
+        tap(img => this.loadedImages.set(nextImageName, img))
+      )
+
+    return loadImage$.pipe(
+      switchMap(newImageElement => {
+        this.createImageAnimation(newImageElement, HERO_CONFIG.ANIMATION.PAN.duration, nextImageName)
+        const timeline = this.state$.value.currentTimeline
+
+        this.updateState({
+          activeImageIndex: nextIndex,
+          currentImage: newImageElement,
+          currentTimeline: timeline || gsap.timeline(),
+        })
+        if (imageInDOM && imageInDOM instanceof HTMLImageElement) {
+          try { imageInDOM.remove() } catch (error) { logger.error("Error removing image:", error) }
+        }
+        timeline?.play()
+        return of(void 0)
+      }),
+      catchError(error => {
+        logger.error("Error cycling image:", error)
+        return EMPTY})
+    )
   })
   }
 

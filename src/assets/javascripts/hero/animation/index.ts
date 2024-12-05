@@ -32,7 +32,6 @@ gsap.registerPlugin(ScrollToPlugin)
 gsap.registerPlugin(ScrollTrigger)
 
 const manager = getSubscriptionManager()
-
 /* ------------------------------------------------------------------------ */
 /*                           Easter Egg Animations                          */
 /* ------------------------------------------------------------------------ */

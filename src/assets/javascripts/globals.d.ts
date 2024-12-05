@@ -6,6 +6,7 @@
  */
 
 import type { Observable, Subject } from "rxjs"
+import { ImageTransformCalculator, ScaleCalculator } from "./utils/vectorcalc"
 
 declare global {
 
@@ -42,67 +43,12 @@ declare global {
     currentTimeline: gsap.core.Timeline
     currentImage: HTMLImageElement | null
     isAtHome: boolean
+    headerHeight: number
+    viewportDimensions: { width: number, height: number }
     activeImageIndex: number
     orientation: 'portrait' | 'landscape'
     readonly optimalWidth: number
     lastActiveTime: number
-  }
-
-  interface ComputedImageDimensions {
-    width: number
-    height: number
-    aspectRatio: number
-    orientation: 'portrait' | 'landscape' | 'square'
-  }
-
-  interface ImageDimensions {
-    computedStyle: CSSStyleDeclaration
-    naturalWidth: number
-    naturalHeight: number
-    boundingRect: DOMRect
-  }
-
-  interface Point {
-    x: number
-    y: number
-  }
-
-  interface OverflowComputed {
-    top: number
-    right: number
-    bottom: number
-    left: number
-    topIsOffset?: boolean
-    noYoverflow?: boolean
-  }
-
-  interface OverflowRects {
-    top: DOMRect
-    right: DOMRect
-    bottom: DOMRect
-    left: DOMRect
-  }
-
-  interface TranslationPotential {
-    top: boolean
-    right: boolean
-    bottom: boolean
-    left: boolean
-  }
-
-  interface TranslationBounds {
-    x: { min: number, max: number }
-    y: { min: number, max: number }
-  }
-
-  interface TranslatableAreas {
-    overflowRects: OverflowRects
-    overflow: OverflowComputed
-    visibleRect: DOMRect
-    containerRect: DOMRect
-    imageDimensions: ImageDimensions
-    computedImageDimensions: ComputedImageDimensions
-    translatable: TranslationPotential
   }
 
   interface ScrollTargets {
@@ -127,7 +73,6 @@ declare global {
     stop: () => void
   }
 
-
   interface AssetTypeConfig {
     cacheable: boolean
     skipOnHome?: boolean
@@ -147,18 +92,6 @@ declare global {
     iconSVG: SVGElement
   }
 
-  interface ViewportOffset {
-    x: number
-    y: number
-  }
-  interface ViewportSize {
-    width: number
-    height: number
-  }
-  interface Viewport {
-    offset: ViewportOffset
-    size: ViewportSize
-  }
   interface Keyboard {
     mode: KeyboardMode
     type: string
@@ -166,7 +99,136 @@ declare global {
   }
 
   /**
-   * NOTE ON COMPONENTS (Window.component$)
+   * ======================
+   ** FUN WITH POINT
+   ** ...or, how to make a
+   ** ...or, how to make a
+   **       `point`
+   *========================*
+   */
+
+  interface Point {
+    x: number
+    y: number
+  }
+
+  interface ImageSize {
+    width: number
+    height: number
+  }
+
+  interface ViewportOffset {
+    x: number
+    y: number
+  }
+
+  interface ViewportSize {
+    width: number
+    height: number
+  }
+
+  interface TranslationBounds {
+    x: { min: number, max: number }
+    y: { min: number, max: number }
+  }
+
+  interface FocalPoint {
+    x: number
+    y: number
+  }
+
+  interface FocalPoints {
+    main: {
+      x: number
+      y: number
+    }
+    secondary: {
+      x: number
+      y: number
+    }
+  }
+
+  interface FocalPointBounds {
+    minX: number
+    maxX: number
+    minY: number
+    maxY: number
+  }
+
+  interface OverflowRects {
+    top: DOMRect
+    right: DOMRect
+    bottom: DOMRect
+    left: DOMRect
+  }
+
+  interface TranslationPotential {
+    top: boolean
+    right: boolean
+    bottom: boolean
+    left: boolean
+  }
+
+  interface SafeZone {
+    x: { min: number, max: number }
+    y: { min: number, max: number }
+    scale?: number
+  }
+
+  interface Viewport {
+    offset: ViewportOffset
+    size: ViewportSize
+  }
+
+  interface CssCalculations {
+    scale: number
+    scaledDimensions: {
+      width: number // min-width
+      height: number // min-height
+    }
+    actualOverflow: {
+      horizontal: number
+      vertical: number
+    }
+  }
+
+  interface ComputedImageDimensions {
+    width: number
+    height: number
+    aspectRatio: number
+    orientation: 'portrait' | 'landscape' | 'square'
+  }
+
+  interface ImageDimensions {
+    // computedStyle is a key-value pair of CSS properties and their values
+    // it is NOT a CSSStyleDeclaration object because it is not live
+    computedStyle: { [key: string]: string }
+    naturalWidth: number
+    naturalHeight: number
+    boundingRect: DOMRect
+  }
+
+  interface OverflowComputed {
+    top: number
+    right: number
+    bottom: number
+    left: number
+    topIsOffset?: boolean
+    noYoverflow?: boolean
+  }
+
+  interface TranslatableAreas {
+    overflowRects: OverflowRects
+    overflow: OverflowComputed
+    visibleRect: DOMRect
+    containerRect: DOMRect
+    imageDimensions: ImageDimensions
+    computedImageDimensions: ComputedImageDimensions
+    translatable: TranslationPotential
+  }
+
+  /**
+   *! NOTE ON COMPONENTS (Window.component$)
    * see ComponentTypeMap for available components
    * can be used to mount and observe components
    * By default, they're all mounted in Material bundle.ts and available in component$
@@ -217,14 +279,5 @@ declare global {
     tabs: HTMLElement /* Navigation tabs */
     toc: HTMLElement /* Table of contents */
     top: HTMLAnchorElement /* Back-to-top button */
-  }
-
-  // Transformation settings for images (not yet implemented)
-  interface TransformationSettings {
-    transition?: string // The CSS transition property for smooth changes.
-    transitionBehavior?: string // The behavior of the transition (e.g., ease, linear).
-    transform?: string // The CSS transform property to apply transformations.
-    transformOrigin?: string // The origin point for the transformation.
-    transformStyle?: string // The style of the transformation (e.g., flat, preserve-3d).
   }
 }
