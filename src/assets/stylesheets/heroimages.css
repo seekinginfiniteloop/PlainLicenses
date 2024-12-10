@@ -229,7 +229,7 @@ so it made sense for them to live here
   }
 }
 
-#parallax-hero-image-layer.hero-parallax__image:not(:first-of-type(img)) {
+#parallax-hero-image-layer img:not(:first-of-type) {
   position: absolute;
   top: 0;
   z-index: -300;
@@ -237,7 +237,7 @@ so it made sense for them to live here
   opacity: 0;
 }
 
-#parallax-hero-image-layer.hero-parallax__image:first-of-type(img) {
+#parallax-hero-image-layer img:first-of-type {
   top: 0;
   visibility: visible;
   opacity: 1;
