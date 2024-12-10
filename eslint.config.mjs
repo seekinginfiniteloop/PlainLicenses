@@ -1,75 +1,19 @@
 import eslint from "@eslint/js"
 import stylisticTs from "@stylistic/eslint-plugin-ts"
 import jsdoc from "eslint-plugin-jsdoc"
-import { parser, configs } from "typescript-eslint"
+import { parser } from "typescript-eslint"
 import esLintConfigPrettier from "eslint-config-prettier"
 
-export default [{
-  languageOptions: {
-    parser,
-    ecmaVersion: "latest",
-    sourceType: "module",
-
-    parserOptions: {
-      project: [
-        "tsconfig.json", "tsconfig.build.json"
-      ],
-      projectService: true,
-      tsconfigRootDir: import.meta.dirname,
+// General rules
+const defaultConfig = {
+    name: "defaultConfig",
+    languageOptions: {
+      parser,
+      ecmaVersion: "latest",
+      sourceType: "module",
     },
-  }
-},
-  jsdoc.configs["flat/recommended-typescript"],
-  jsdoc.configs["flat/logical-typescript"],
-  jsdoc.configs["flat/requirements-typescript"],
-  jsdoc.configs["flat/stylistic-typescript"],
-  jsdoc.configs["flat/contents-typescript"],
-  eslint.configs.recommended,
-  {
-    files: ["**/*.ts", "*.ts", "eslint.config.mjs, commitlint.config.ts"],
-    plugins: {
-      jsdoc
-    },
-    rules: {
-      "jsdoc/require-example": "off",
-      "jsdoc/match-description": "off",
-      "jsdoc/require-description": "warn",
-      "jsdoc/check-indentation": "warn",
-      "jsdoc/sort-tags": "warn",
-      "jsdoc/no-multi-asterisks": "off",
-    }
-  },
-  {
-    ignores: [
-      "*.d.ts",
-      "external/**",
-      "mkdocs-material/**",
-      "**/node_modules",
-      "**/__pycache__",
-      "**/venv",
-      "**/.venv",
-      "**/.vscode",
-      "**/docs",
-      "**/build",
-      "**/MANIFEST",
-      "**/manifest.json",
-      "**/site",
-      "**/typings",
-      "**/webpack.config.ts",
-      "**/dist",
-      "**/mkdocs_material.egg-info",
-      "**/*.cpuprofile",
-      "**/*.log",
-      "**/*.tsbuildinfo",
-      "**/.eslintcache",
-      "**/tmp",
-      "**/.testbuild",
-      "**/.workbench",
-      "**/.cache"
-    ],
-    plugins: {
-      "@stylistic/ts": stylisticTs
-    },
+    ...eslint.configs.recommended,
+    files: ["**/*.ts", "eslint.config.mjs", "commitlint.config.ts"],
     rules: {
       "array-bracket-spacing": "warn",
       "arrow-parens": ["warn", "as-needed"],
@@ -174,8 +118,77 @@ export default [{
       "spaced-comment": "warn",
       "switch-colon-spacing": "warn",
       "template-tag-spacing": "warn",
+    },
+    ignores:
+      [
+        "*.d.ts",
+        "external/**",
+        "mkdocs-material/**",
+        "**/node_modules",
+        "**/__pycache__",
+        "**/venv",
+        "**/.venv",
+        "**/.vscode",
+        "**/docs",
+        "**/build",
+        "**/MANIFEST",
+        "**/manifest.json",
+        "**/site",
+        "**/typings",
+        "**/webpack.config.ts",
+        "**/dist",
+        "**/mkdocs_material.egg-info",
+        "**/*.cpuprofile",
+        "**/*.log",
+        "**/*.tsbuildinfo",
+        "**/.eslintcache",
+        "**/tmp",
+        "**/.testbuild",
+        "**/.workbench",
+        "**/.cache"
+      ]
+  }
 
-      "@stylistic/ts/indent": ["warn", 2, {
+// Typescript rules
+const tsConfig = {
+  name: "tsConfig",
+  languageOptions: {
+    parser,
+    ecmaVersion: "latest",
+    sourceType: "module",
+
+    parserOptions: {
+      project: [
+        "tsconfig.json", "tsconfig.build.json"
+      ],
+      projectService: true,
+      tsconfigRootDir: import.meta.dirname,
+    },
+  },
+  files: ['commitlint.config.ts', 'src/**/*.ts'],
+  ...jsdoc.configs["flat/recommended-typescript"],
+  ...jsdoc.configs["flat/logical-typescript"],
+  ...jsdoc.configs["flat/requirements-typescript"],
+  ...jsdoc.configs["flat/stylistic-typescript"],
+  ...jsdoc.configs["flat/contents-typescript"],
+  plugins: {
+    "@stylistic/ts": stylisticTs,
+    jsdoc
+  },
+  rules: {
+    "@stylistic/ts/member-delimiter-style": ["error", {
+      multiline: {
+        delimiter: "none"
+      },
+
+      singleline: {
+        delimiter: "comma",
+        requireLast: false
+      }
+    }],
+    "@stylistic/ts/semi": ["error", "never"],
+    "@stylistic/ts/type-annotation-spacing": "error",
+    "@stylistic/ts/indent": ["warn", 2, {
         FunctionDeclaration: {
           parameters: 1,
           body: 1
@@ -199,40 +212,14 @@ export default [{
         ],
 
         offsetTernaryExpressions: true
-      }],
+      }]
+  }
+}
 
-      "@stylistic/ts/member-delimiter-style": ["error", {
-        multiline: {
-          delimiter: "none"
-        },
 
-        singleline: {
-          delimiter: "comma",
-          requireLast: false
-        }
-      }],
-      "@stylistic/ts/semi": ["error", "never"],
-      "@stylistic/ts/type-annotation-spacing": "error"
-    }
-  },
-  {
-  ...configs.stylisticTypeChecked,
-    languageOptions: {
-    parser,
-    ecmaVersion: "latest",
-    sourceType: "module",
-
-    parserOptions: {
-      project: [
-        "tsconfig.json", "tsconfig.build.json"
-      ],
-      projectService: true,
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-
-  files: ['*.js', '*.mjs'],
-  ...configs.disableTypeChecked,
-  },
-  esLintConfigPrettier
+// And we actually export it.
+export default [
+  defaultConfig,
+  esLintConfigPrettier,
+  tsConfig,
 ]

@@ -7,7 +7,7 @@ import { logger } from "~/log"
  **                            VectorCalc
  *========================================================================*
  *
- *? BECAUSE LINEAR ALGEBRA IS FUN... RIGHT?
+ *? BECAUSE LINEAR ALGEBRA IS FUN... RIGHT? RIGHT?!
  * Matrix and vector operations for 2D transformations
  * using homogeneous coordinates. I'm not sure what that means,
  * but it sounds cool.
@@ -42,7 +42,7 @@ class Vec3 {
  * Matrix and vector operations for 2D transformations using homogeneous
  * coordinates
  */
-class Mat3 {
+export class Mat3 {
 
   values: number[]
 
@@ -127,7 +127,7 @@ class Mat3 {
   }
 }
 
-class ImageTransformCalculator {
+export class ImageTransformCalculator {
   config: {
     minTranslation: number
     maxScale: number
@@ -136,8 +136,29 @@ class ImageTransformCalculator {
   constructor(config = {}) {
     this.config = {
       minTranslation: 100,
-      maxScale: 1.2,
+      maxScale: 1.5,
       ...config,
+    }
+  }
+
+  private generateEdgeFocalPoint(): FocalPoint {
+    // Push focal point outside normal 0-1 bounds to force edge positioning
+    return {
+      x: Math.random() < 0.5 ? -0.2 : 1.2,
+      y: Math.random() < 0.5 ? -0.2 : 1.2
+    }
+  }
+
+  private calculateExtendedBounds(bounds: FocalPointBounds): FocalPointBounds {
+    const width = bounds.maxX - bounds.minX
+    const height = bounds.maxY - bounds.minY
+    const borderWidth = Math.min(width, height) * 0.1
+
+    return {
+      minX: bounds.minX - borderWidth,
+      maxX: bounds.maxX + borderWidth,
+      minY: bounds.minY - borderWidth,
+      maxY: bounds.maxY + borderWidth
     }
   }
 
@@ -191,6 +212,8 @@ class ImageTransformCalculator {
   }
 
   generateTargetPosition(bounds: FocalPointBounds, focalPoint: FocalPoint, variance = 0.2) {
+
+
     const lerp = (start: number, end: number, t: number) => start + (end - start) * t
     const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value))
 
@@ -220,8 +243,57 @@ class ImageTransformCalculator {
       end: Mat3.translation(endPos.x, endPos.y).multiply(Mat3.scale(endScale)),
     }
   }
+
+  calculateAnimationWaypoints(
+    imageSize: ImageSize,
+    viewportSize: ViewportSize,
+    headerHeight: number,
+    focalPoints: FocalPoint[],  // Array of focal points in sequence
+    variance = 0.2
+  ) {
+    const bounds = this.calculateSafeBounds(imageSize, viewportSize, headerHeight)
+    const extendedBounds = this.calculateExtendedBounds(bounds)
+
+
+    const startPos = this.generateTargetPosition(
+      extendedBounds,
+      this.generateEdgeFocalPoint(),
+      0.8 // High variance for more randomness
+    )
+
+      // Generate all positions including start and focal points
+    const positions = [
+      startPos,
+      ...focalPoints.map(fp => this.generateTargetPosition(bounds, fp, variance))
+    ]
+
+      // Calculate distances between consecutive points
+    const distances = positions.slice(1).map((pos, i) => {
+        const prev = positions[i]
+        return Math.hypot(pos.x - prev.x, pos.y - prev.y)
+      })
+
+      // Calculate total distance
+    const totalDistance = distances.reduce((sum, d) => sum + d, 0)
+
+      // Generate transforms and proportional durations
+    const waypoints: AnimationWaypoint[] = positions.map((pos, i) => {
+        const scale = i === positions.length - 1
+          ? ScaleCalculator.calculateMinimumScale(imageSize, viewportSize, 100, headerHeight).scale // End scale
+          : 1.1  // Base scale
+
+        return {
+          position: pos,
+          transform: Mat3.translation(pos.x, pos.y).multiply(Mat3.scale(scale)),
+          duration: i === 0 ? 0 : distances[i - 1] / totalDistance
+        }
+      })
+
+    return waypoints
+  }
 }
-class ScaleCalculator {
+
+export class ScaleCalculator {
   static calculateMinimumScale(
     imageSize: ImageSize,
     viewportSize: ViewportSize,
@@ -329,5 +401,3 @@ class ScaleCalculator {
     }
   }
 }
-
-export { Mat3, ImageTransformCalculator, ScaleCalculator }

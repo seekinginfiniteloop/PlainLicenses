@@ -31,16 +31,25 @@ import {
   map,
   mergeMap,
   switchMap,
+  takeLast,
   tap,
   withLatestFrom
 } from "rxjs/operators"
 
-import { SubscriptionManagerType, isHome, isOnSite, locationBeacon$, locationBehavior$, prefersReducedMotion, setCssVariable } from "~/utils"
-import { getAsset } from "~/cache"
+import { getLocation } from "~/browser"
+
+import { isHome, isOnSite, navigationEvents$, prefersReducedMotion$, setCssVariable, watchMediaQuery } from "~/utils"
+import { getAsset$ } from "~/cache"
 import { HeroImage, ImageFocalPoints, heroImages } from "~/hero/imageshuffle/data"
 import { logger } from "~/log"
-import { ImageTransformCalculator, ScaleCalculator } from "~/utils/vectorcalc"
+import { ImageTransformCalculator } from "~/utils/vectorcalc"
+import { initHeroTextAnimation$ } from "../impactText"
 
+import { ScrollTrigger } from "gsap/ScrollTrigger"
+import { ScrollToPlugin } from "gsap/ScrollToPlugin"
+import { text } from "stream/consumers"
+
+gsap.registerPlugin(ScrollTrigger,ScrollToPlugin)
 
 /**
  * ----------------------
@@ -63,14 +72,18 @@ const HERO_CONFIG = {
 
 let customWindow = window as unknown as CustomWindow
 
+const { location$, viewport$ } = customWindow
+
+const isPortrait$ = watchMediaQuery("(orientation: portrait)")
+
 const isPageVisible = () => !document.hidden
 const isAtHome = () => {
-  const loc = locationBehavior$.value
+  const loc = getLocation()
+  location$.next(loc)
   return isHome(loc) && isOnSite(loc)
 }
-const leftPage = () => !isAtHome() && isOnSite(locationBehavior$.value)
+const leftPage = () => !isAtHome() && isOnSite(getLocation())
 
-const portraitMediaQuery = customWindow.matchMedia("(orientation: portrait)")
 const parallaxLayer = customWindow.document.getElementById("parallax-hero-image-layer")
 
 /**
@@ -88,9 +101,9 @@ const parallaxLayer = customWindow.document.getElementById("parallax-hero-image-
  * image loading and updates based on the current viewport size and orientation.
  */
 class HeroStateManager {
-  private state$ = new BehaviorSubject<HeroState>(this.getInitialState())
+  private static instance: HeroStateManager | null = null
 
-  private readonly subscriptionManager: SubscriptionManagerType = customWindow.subscriptionManager
+  private state$ = new BehaviorSubject<HeroState>(this.getInitialState())
 
   private readonly shuffledHeroes: HeroImage[]
 
@@ -102,13 +115,13 @@ class HeroStateManager {
 
   private hasPageSubscriptions = false
 
+  private pageSubscriptions: Subscription = new Subscription()
+
+  private homeWatcherSubscription: Subscription = new Subscription()
+
   private readonly optimalWidth$ = new BehaviorSubject<number>(this.getOptimalWidth())
 
-  private readonly subscriptionWatcher = new Subscription()
-
   private readonly transformCalc = new ImageTransformCalculator()
-
-  private readonly scaleCalc = new ScaleCalculator()
 
   readonly config = {
     headerSelector: "#header-target",
@@ -168,66 +181,71 @@ class HeroStateManager {
       headerHeight: 0,
       viewportDimensions: { width: 0, height: 0 },
       optimalWidth: this.getOptimalWidth(),
-      orientation: portraitMediaQuery.matches ? 'portrait' : 'landscape',
+      orientation: isPortrait$.subscribe((result => result)) ? 'portrait' : 'landscape',
       status: 'loading',
+      preloadedImage: false,
     }
   }
 
   /**
-   * Sets the home path and subscribes to location changes.
-   * @returns The subscription for the home path observer.
+   * Sets the home path and manages subscriptions for navigation events.
    */
-  private setHomePathAndObserver = () => locationBeacon$.pipe(
-    filter(() => isAtHome()),
-    map(loc => loc as URL),
-    shareReplay(1),
-    tap(loc => {
-      this.homePath = loc.pathname
-      this.updateState({ isAtHome: true })
-    }),
-    finalize(() => logger.info(`Home observer completed for ${this.homePath}`))
-  ).subscribe()
+  private setupHomeWatcher = () => {
 
-  /**
-   * Sets up a subscription watcher to manage page subscriptions.
-   */
-  private setupSubscriptionWatcher = () => {
-    const subscriptionWatcher$ = merge(this.state$.pipe(map(state => state.isAtHome), filter(isAtHome => isAtHome)), locationBeacon$.pipe(filter(() => isAtHome()))).pipe(
+    const leftHome$ = navigationEvents$.pipe(
+      filter((url) => !isAtHome() && !isOnSite(url)),
+      debounceTime(HERO_CONFIG.INTERVAL * 3),
+      filter((url) => !isOnSite(url)), takeLast(1), // necessary? no. but it's here.
+      finalize(() => this.dispose()) // cleanup
+    ).subscribe()
+    const homePathWatcher$ = merge(
+      this.state$.pipe(
+        map(state => state.isAtHome),
+        filter(isAtHome => isAtHome)
+      ),
+      navigationEvents$.pipe(filter(() => isAtHome()))
+    ).pipe(
+      tap(loc => {
+        if (loc instanceof URL) {
+          this.homePath = loc.pathname
+          this.updateState({ isAtHome: true })
+          logger.info(`Home observer completed for ${this.homePath}`)
+        }
+      }),
       distinctUntilChanged(),
       filter(() => !this.hasPageSubscriptions),
       tap(() => {
-        this.setupSubscriptions()
+        this.setupPageSubscriptions()
         this.hasPageSubscriptions = true
-      })).subscribe()
+      })
+    ).subscribe()
 
-    this.subscriptionManager.addSubscription(subscriptionWatcher$, true)
-    this.subscriptionWatcher.add(subscriptionWatcher$)
+    this.homeWatcherSubscription.add(homePathWatcher$)
+    this.homeWatcherSubscription.add(leftHome$)
   }
 
   /**
    * Creates an instance of HeroStateManager and initializes the shuffled heroes and subscriptions.
    */
-  constructor() {
+  private constructor() {
     this.shuffledHeroes = [...this.getHeroes()].sort(() => Math.random() - 0.5)
-    this.setupSubscriptions()
+    this.setupHomeWatcher()
+    this.setupPageSubscriptions()
     customWindow.addEventListener('unload', () => this.dispose())
-    this.setHomePathAndObserver()
-    this.setupSubscriptionWatcher()
   }
 
   /**
    * Sets up subscriptions for various events related to the hero state.
    */
-  private setupSubscriptions(): void {
-    const pageExitSub = locationBeacon$.pipe(
+  private setupPageSubscriptions(): void {
+    const pageExitSub = navigationEvents$.pipe(
       filter(url => url instanceof URL && leftPage()),
       debounceTime(HERO_CONFIG.INTERVAL),
-      filter(() => leftPage()),
       map(() => false)
-    ).subscribe(isAtHome => {
-      this.updateState({ isAtHome })
-      this.subscriptionManager.schedulePageCleanup(this.homePath || "/index.html")
+    ).subscribe(() => {
+      this.updateState({ isAtHome: false })
       this.hasPageSubscriptions = false
+      this.pageSubscriptions.unsubscribe()
     })
 
     const visibilitySub = fromEvent(document, 'visibilitychange').pipe(
@@ -237,18 +255,20 @@ class HeroStateManager {
     ).subscribe()
 
     const orientationSub = merge(
-      fromEvent(customWindow, 'resize'),
-      fromEvent(portraitMediaQuery, 'change')
+      fromEvent(customWindow, 'resize').pipe(
+        switchMap(() => viewport$),
+        map(({ size }: Viewport) => size.width < size.height ? 'portrait' : 'landscape')
+      ),
+      fromEvent(customWindow, 'orientationchange'),
+      isPortrait$.pipe(map(result => result ? 'portrait' : 'landscape'))
     ).pipe(
-      debounceTime(100),
-      tap(() => {
-        this.setParallaxHeight()
-
-      }),
-      map(() => ({
-        orientation: portraitMediaQuery.matches ? 'portrait' : 'landscape',
+      debounceTime(150),
+      tap(() => this.setParallaxHeight()),
+      map((orientation) => ({
+        orientation,
         optimalWidth: this.getOptimalWidth(),
-      })), filter((_, optimalWidth) => optimalWidth !== this.state$.value.optimalWidth),
+      })),
+      filter(({ optimalWidth }) => optimalWidth !== this.state$.value.optimalWidth),
       tap(({ orientation, optimalWidth }) => {
         this.updateState({ orientation: orientation as 'portrait' | 'landscape', optimalWidth })
         this.updateImageSources(
@@ -260,9 +280,18 @@ class HeroStateManager {
       tap(() => {
         this.cycleImage(true)
       })
-    ).subscribe();
+    ).subscribe()
 
-    [pageExitSub, orientationSub, visibilitySub].forEach(sub => this.subscriptionManager.addSubscription(sub, false))
+    this.pageSubscriptions.add(pageExitSub)
+    this.pageSubscriptions.add(visibilitySub)
+    this.pageSubscriptions.add(orientationSub)
+  }
+
+  public static getInstance(): HeroStateManager {
+    if (!HeroStateManager.instance) {
+      HeroStateManager.instance = new HeroStateManager()
+    }
+    return HeroStateManager.instance
   }
 
   /**
@@ -302,20 +331,8 @@ class HeroStateManager {
     return this.layerImages()[0]
   }
 
-  private getImageName = (image: HTMLImageElement) => {
-    return image?.classList[1].split('--')[1]
-  }
-
   private lastImage = () => {
     return this.layerImages().slice(-1)[0]
-  }
-
-  private hasImage = (imageName: string) => {
-    return this.layerImages().some(image => image.classList.contains(`hero-parallax__image--${imageName}`))
-  }
-
-  private getImage = (imageName: string) => {
-    return this.layerImages().find(image => image.classList.contains(`hero-parallax__image--${imageName}`))
   }
 
   /**
@@ -368,7 +385,7 @@ class HeroStateManager {
    * @returns An observable that emits the image blob.
    */
   private loadImage(imageUrl: string): Observable<Blob> {
-    return getAsset(imageUrl, true).pipe(
+    return getAsset$(imageUrl, true).pipe(
       mergeMap(response => from(response.blob())),
       catchError(error => {
         logger.error("Error loading image:", error, { url: imageUrl })
@@ -412,47 +429,69 @@ class HeroStateManager {
 
   /**
    * Creates an image cycler for the specified parallax layer.
-   * @param parallaxLayer The parallax layer to associate with the cycler.
    * @returns The created image cycler.
    */
   static createCycler = (): ImageCycler => {
-  const state = new HeroStateManager()
+    const state = HeroStateManager.instance || new HeroStateManager()
 
-  // Create observable for initial image load
-  const loadImages$ = from(state.cycleImage()).pipe(
-    catchError(error => {
-      logger.error("Failed to load initial image:", error)
-      state.updateState({ status: 'error' })
-      return EMPTY
-    }),
-    map(() => void 0)
-  )
+    if (!parallaxLayer || !isAtHome()) {
+      state.updateState({ status: 'paused' })
+      // we cache an image to be ready if user navigates home
+      state.loadAndPrepareImage(heroImages[0]).pipe(filter((image) => image instanceof HTMLImageElement)).subscribe({
+        next: (img) => {
+          state.loadedImages.set(heroImages[0].imageName, img)
+          state.trackImageMetadata(img)
+          state.updateState({ currentImage: img, preloadedImage: true, status: 'paused' })
+        },
+        error: (error) => {
+          logger.error("Failed to preload image:", error)
+          state.updateState({ status: 'error', preloadedImage: false, currentImage: null })
+        }
+      })
 
-  // Create observable for subsequent cycles
-  const cycle$ = interval(HERO_CONFIG.INTERVAL).pipe(
-    withLatestFrom(state.canCycle$),
-    filter(([_, canCycle]) => canCycle),
-    tap(() => logger.info("=== Cycle interval triggered ===")),
-    mergeMap(() => from(state.cycleImage()), 1),
-    map(() => void 0),
-    catchError(error => {
-      logger.error("Failed to cycle image:", error)
-      state.updateState({ status: 'error' })
-      return EMPTY
-    }),
-    shareReplay(1)
-  )
+      return {
+        cycle$: EMPTY,
+        heroState: state,
+        start: () => void 0,
+        stop: () => state.dispose()
+      }
+    }
 
-  // Combine both observables
-  const combinedCycle$ = merge(loadImages$, cycle$)
+    // Create observable for initial image load
+    const loadImages$ = from(state.cycleImage()).pipe(
+      catchError(error => {
+        logger.error("Failed to load initial image:", error)
+        state.updateState({ status: 'error' })
+        return EMPTY
+      }),
+      map(() => void 0)
+    )
 
-  return {
-    cycle$: combinedCycle$,
-    heroState: state,
-    start: () => combinedCycle$.subscribe(),
-    stop: () => state.dispose()
+    // Create observable for subsequent cycles
+    const cycle$ = interval(HERO_CONFIG.INTERVAL).pipe(
+      withLatestFrom(state.canCycle$),
+      filter(([_, canCycle]) => canCycle),
+      tap(() => logger.info("=== Cycle interval triggered ===")),
+      mergeMap(() => from(state.cycleImage()), 1),
+      map(() => void 0),
+      catchError(error => {
+        logger.error("Failed to cycle image:", error)
+        state.updateState({ status: 'error' })
+        return EMPTY
+      }),
+      shareReplay(1)
+    )
+
+    // Combine both observables and ensure void type
+    const combinedCycle$ = merge(loadImages$, cycle$).pipe(map(() => void 0))
+
+    return {
+      cycle$: combinedCycle$,
+      heroState: state,
+      start: () => combinedCycle$.subscribe(),
+      stop: () => state.dispose()
+    }
   }
-}
 
   /**
    * Retrieves metadata for the specified image.
@@ -474,19 +513,19 @@ class HeroStateManager {
     }
     return this.loadImage(imgSettings.src).pipe(
       map(blob => {
-      const img = new Image()
-      img.src = URL.createObjectURL(blob)
-      this.setImageAttributes(img, blob, imgSettings.imageName, imgSettings.srcset, imgSettings.focalPoints)
-      return img
-    }),
+        const img = new Image()
+        img.src = URL.createObjectURL(blob)
+        this.setImageAttributes(img, blob, imgSettings.imageName, imgSettings.srcset, imgSettings.focalPoints)
+        return img
+      }),
       tap(img => {
-      if (!img.complete) {
-        return new Promise((resolve) => {
-          img.onload = () => resolve(img)
-        })
-      }
-      return img
-    })
+        if (!img.complete) {
+          return new Promise((resolve) => {
+            img.onload = () => resolve(img)
+          })
+        }
+        return img
+      })
     )
   }
 
@@ -531,21 +570,20 @@ class HeroStateManager {
     if (!parallaxLayer) {
       throw new Error("Parallax layer not found")
     }
-    const { naturalWidth, naturalHeight } = img
-    logger.info("Testing image dimensions for", img, "Natural dimensions:", { naturalWidth, naturalHeight })
     img.style.opacity = "0"
-    img.style.visibility = "hidden"
     img.style.scale = "1"
     parallaxLayer.append(img)
     const emplacedElement = this.lastImage()
     if (!emplacedElement) {
       throw new Error("Emplaced element not found")
     }
+    const {naturalHeight, naturalWidth} = emplacedElement
     // shell game to avoid garbage collector
     const elementRect = emplacedElement.getBoundingClientRect()
     const elementStyle = JSON.stringify(window.getComputedStyle(emplacedElement))
     const rectJSON = JSON.stringify(elementRect)
-    logger.info("Bounding rect:", rectJSON, "Element style:", elementStyle)
+    logger.info("Testing image in DOM:", img, "Emplaced element:", emplacedElement)
+    logger.info("Bounding rect:", rectJSON, "Element style:", elementStyle, "Natural dimensions:", naturalWidth, naturalHeight)
     emplacedElement.remove()
     const boundingRect = JSON.parse(rectJSON)
     const processedStyle = JSON.parse(elementStyle)
@@ -618,79 +656,92 @@ class HeroStateManager {
     }
   }
 
-  private setOptimalImageScale(img: HTMLImageElement) {
-    const imageDimensions = this.testImageDimensions(img)
-    const { viewportDimensions, headerHeight } = this.state$.value
-    const focalPoints = this.getFocalPoints(img)
-    const { width, height } = viewportDimensions
-    const calculations = ScaleCalculator.calculateOptimalTransformation(
-    {
-      width: imageDimensions.boundingRect.width,
-      height: imageDimensions.boundingRect.height
-    },
-      {
-        width, height
-    },
-      focalPoints,
-      this.config.minTranslation,
-      headerHeight
-    )
-
-    // Apply calculated CSS properties
-    const cssProperties = ScaleCalculator.generateCSSProperties(calculations)
-    Object.entries(cssProperties).forEach(([prop, value]) => {
-      img.style.setProperty(prop, value.toString())
-    })
-
-    return calculations
-  }
-
-  public createImageAnimation(img: HTMLImageElement, duration = HERO_CONFIG.ANIMATION.PAN.duration, imageName: string) {
+  private createImageAnimation(img: HTMLImageElement, imageName: string) {
     if (!img || !parallaxLayer) {
-      return null
-    }
-
-    // Create the animation timeline
-    const tl = gsap.timeline({
-      paused: true, repeat: 0,
-      defaults: { ease: HERO_CONFIG.ANIMATION.PAN.ease }
-    })
-
-    const currentImage = this.layerNotEmpty() ? this.currentImage() : null
-
-    if (currentImage !== null) {
-      tl.add(["currentImgFadeOut", gsap.to(currentImage, {...HERO_CONFIG.ANIMATION.EXIT})], "<")
-    }
-    tl.add(["updateText", () => this.updateTextElements(imageName)])
-      .add(["addImage", () => parallaxLayer.append(img)])
-      .add(["imageFadeIn", gsap.to(img, { ...HERO_CONFIG.ANIMATION.ENTER }), "<"])
-
-    if (prefersReducedMotion()) {
-      this.state$.value.currentTimeline.kill()
-      this.updateState({ currentTimeline: tl })
       return void 0
     }
 
-    // Get image dimensions and calculate safe movement zone
-    const dimensions = this.testImageDimensions(img)
-    const transforms = this.transformCalc.calculateAnimationTransforms({width: dimensions.boundingRect.width, height: dimensions.boundingRect.height}, this.state$.value.viewportDimensions, this.state$.value.headerHeight, this.getFocalPoints(img))
-    const baseScale = parseFloat(Object.keys(dimensions.computedStyle).filter((key) => key === "--scale")[0])
-    const safeBounds = this.transformCalc.calculateSafeBounds({ width: dimensions.naturalWidth, height: dimensions.naturalHeight}, this.state$.value.viewportDimensions, this.state$.value.headerHeight, 1.1)
+    const tl = gsap.timeline({
+      paused: true,
+      repeat: 0,
+      defaults: { ease: HERO_CONFIG.ANIMATION.PAN.ease },
+      smoothChildTiming: true
+    })
 
+    // Add new image and text updates
+    if (this.layerEmpty()) {
+      Promise.allSettled([initHeroTextAnimation$()]).then(([textAnimation]) => {
+        if (textAnimation.status === "fulfilled" && textAnimation.value instanceof gsap.core.Timeline) {
+          tl.add(["introTextAnimation", textAnimation.value], "<")
+        } else {
+          logger.error("Failed to load text animation:", textAnimation.status)
+        }
+      })
 
-    // Main animation
-    tl.to(img, {
-      duration,
-      x: endPos.x,
-      y: endPos.y,
-      scale: Math.min(baseScale * 1.1, this.config.maxScale),
-      ease: HERO_CONFIG.ANIMATION.PAN.ease
-    }, ">").add("panImage")
+      from(initHeroTextAnimation$()).pipe(switchMap((timeline) => {
+        if (timeline && timeline instanceof gsap.core.Timeline) {
+          tl.add(["introTextAnimation", timeline], "<")
+          return of(timeline)
+        } return of(null)
+      })).subscribe((timeline) => { if (timeline) { tl.add(timeline, "<") } })
+    }
+    const startTime = tl.totalDuration() < 1 ? 0 : tl.totalDuration()
+    const currentImage = this.layerNotEmpty() ? this.currentImage() : null
 
+  // Handle existing image fade out
+    if (currentImage) {
+      tl.add(["currentImgFadeOut", gsap.to(currentImage, {...HERO_CONFIG.ANIMATION.EXIT})], "<")
+    }
+    tl.add(["updateText", () => this.updateTextElements(imageName)], startTime)
+    .add(["addImage", () => parallaxLayer.append(img)], "<")
+    .add(["imageFadeIn", gsap.to(img, { ...HERO_CONFIG.ANIMATION.ENTER })], startTime)
 
-    this.state$.value.currentTimeline.kill()
-    this.updateState({ currentTimeline: tl })
-    return void 0
+    prefersReducedMotion$.subscribe({
+      next: (prefersReducedMotion) => {
+        if (prefersReducedMotion) {
+          this.state$.value.currentTimeline.kill()
+          this.updateState({ currentTimeline: tl })
+          return
+        } // Skip animations if user prefers reduced motion
+        else {
+          const sizingData = this.testImageDimensions(img)
+          const dimensions = {
+            width: sizingData.boundingRect.width,
+            height: sizingData.boundingRect.height
+          }
+
+          const viewportSize = {
+            width: this.state$.value.viewportDimensions.width,
+            height: this.state$.value.viewportDimensions.height
+          }
+
+          const focalPoints = this.getFocalPoints(img)
+
+/**
+ * const transforms = this.transformCalc.calculateAnimationTransforms(
+ * dimensions,
+ * viewportSize,
+ * this.state$.value.headerHeight,
+ * focalPoints
+ * )
+ */
+          const waypoints = this.transformCalc.calculateAnimationWaypoints(
+            dimensions,
+            viewportSize,
+            this.state$.value.headerHeight,
+            [focalPoints.secondary, focalPoints.main]
+          )
+
+      // Apply transforms
+          if (waypoints.length > 0) {
+            waypoints.forEach((waypoint, index) => { tl.add([`waypoint${index.toString()}`, gsap.to(img, { x: waypoint.position.x, y: waypoint.position.y, duration: (waypoint.duration * HERO_CONFIG.ANIMATION.PAN.duration)})], ">") })
+          }
+
+          this.state$.value.currentTimeline.kill()
+          this.updateState({ currentTimeline: tl })
+        }
+      }
+    })
   }
 
   /**
@@ -708,35 +759,57 @@ class HeroStateManager {
     const notEmpty = this.layerNotEmpty()
 
     return defer(() => {
-    const nextIndex = recalcCurrent ? activeImageIndex :
-        (notEmpty ? (activeImageIndex + 1) % this.shuffledHeroes.length : 0)
-    const nextImage = this.shuffledHeroes[nextIndex]
-      const nextImageName = nextImage.imageName
+      const nextIndex = recalcCurrent ? activeImageIndex :
+          (notEmpty ? (activeImageIndex + 1) % this.shuffledHeroes.length : 0)
+      let nextImage = this.shuffledHeroes[nextIndex]
+      let nextImageName = nextImage.imageName
 
+      if (this.state$.value.preloadedImage) {
+        this.updateState({ preloadedImage: false })
+        nextImage = this.shuffledHeroes[0] || nextImage
+        nextImageName = nextImage.imageName
+      }
 
       const imageInDOM = notEmpty ? Array.from(parallaxLayer.childNodes).find((node) => (node as HTMLImageElement).srcset === nextImage.srcset) : null
 
-    if (!recalcCurrent && notEmpty) {
-      const currentImage = parallaxLayer!.children[0] as HTMLImageElement
-      if (currentImage?.classList.contains(`hero-parallax__image--${nextImageName}`)) {
-        return EMPTY
+      if (!recalcCurrent && notEmpty) {
+        const currentImage = parallaxLayer!.children[0] as HTMLImageElement
+        if (currentImage?.classList.contains(`hero-parallax__image--${nextImageName}`)) {
+          return EMPTY
+        }
       }
-    }
 
     const loadImage$ = this.loadedImages.has(nextImageName) ?
       of(this.loadedImages.get(nextImageName)!) :
       this.loadAndPrepareImage(nextImage).pipe(
-        tap(img => this.loadedImages.set(nextImageName, img))
-      )
+        switchMap(img => {
+          if (img instanceof HTMLImageElement) {
+            if (!img.complete) {
+              return new Promise((resolve) => {
+                img.onload = () => resolve(img)
+              })
+            }
+            this.loadedImages.set(nextImageName, img)
+            this.trackImageMetadata(img)
+            return of(img)
+          } else { return throwError(() => new Error("Failed to load image")) }
+        }),
+        tap((img) => {
+          this.updateState({ activeImageIndex: nextIndex })
+          logger.info("Image loaded and prepared for", nextImageName)
+          logger.info("Current image index:", nextIndex)
+          logger.info(`type: ${typeof img}; Image name: ${nextImageName}; image URL: ${nextImage.src}; height: ${(img as HTMLImageElement).naturalHeight}; width: ${(img as HTMLImageElement).naturalWidth}`)
+          }
+        ))
 
     return loadImage$.pipe(
       switchMap(newImageElement => {
-        this.createImageAnimation(newImageElement, HERO_CONFIG.ANIMATION.PAN.duration, nextImageName)
+        this.createImageAnimation(newImageElement as HTMLImageElement, nextImageName)
         const timeline = this.state$.value.currentTimeline
 
         this.updateState({
           activeImageIndex: nextIndex,
-          currentImage: newImageElement,
+          currentImage: newImageElement as HTMLImageElement,
           currentTimeline: timeline || gsap.timeline(),
         })
         if (imageInDOM && imageInDOM instanceof HTMLImageElement) {
@@ -767,12 +840,15 @@ class HeroStateManager {
    * Disposes of the hero state manager, cleaning up resources and subscriptions.
    */
   public dispose(): void {
-    this.state$.complete()
     this.loadedImages.forEach(img => this.cleanupImageResources(img))
     this.loadedImages.clear()
-    this.state$?.value.currentTimeline?.kill()
+    this.state$.value.currentTimeline.kill()
     this.imageMetadata = new WeakMap()
-    this.subscriptionManager.schedulePageCleanup(this.homePath || '/')
+    this.updateState({ status: 'paused'})
+    this.state$.complete()
+    this.pageSubscriptions.unsubscribe()
+    this.homeWatcherSubscription.unsubscribe()
+    HeroStateManager.instance = null
   }
 
   /**
@@ -827,7 +903,7 @@ const initCycler = () => {
  * Creates an observable that handles continuous image cycling
  * @returns Observable for image cycling
  */
-const shuffle$ = (): Observable<void> => {
+export const shuffle$ = (): Observable<void> => {
   if (!parallaxLayer) {
     logger.warn("No parallax layer found")
     return EMPTY
@@ -860,6 +936,3 @@ export const stopCycler = () => {
     cyclerRef.current = null
   }
 }
-
-export const debugState = () => cyclerRef.current?.heroState.getCurrentState()
-export { shuffle$ }

@@ -115,7 +115,6 @@ config.base = `${new URL(config.base, getLocation())}`
 
 /**
  * Retrieve global configuration
- *
  * @returns Global configuration
  */
 export function configuration(): Config {
@@ -124,9 +123,7 @@ export function configuration(): Config {
 
 /**
  * Check whether a feature flag is enabled
- *
- * @param flag - Feature flag
- *
+ * @param flag Feature flag
  * @returns Test result
  */
 export function feature(flag: Flag): boolean {
@@ -135,10 +132,8 @@ export function feature(flag: Flag): boolean {
 
 /**
  * Retrieve the translation for the given key
- *
- * @param key - Key to be translated
- * @param value - Positional value, if any
- *
+ * @param key Key to be translated
+ * @param value Positional value, if any
  * @returns Translation
  */
 export function translation(

@@ -20,7 +20,7 @@ export type ImageFocalPoints = {
 
 /**
  * Replaces the 'docs' part of the path with the current location's protocol and host
- * @param src the source path
+ * @param src - the source path
  * @returns the updated path
  */
 function replaceDocs(src: string): string {

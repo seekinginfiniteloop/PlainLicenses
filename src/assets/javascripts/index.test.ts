@@ -9,7 +9,7 @@ describe('preloadFonts', () => {
     let mockDocumentFontsLoad: jest.Mock
     let mockCreateObjectURL: jest.Mock
     let mockRevokeObjectURL: jest.Mock
-    let mockGetAsset: jest.Mock
+    let mockgetAsset$: jest.Mock
     let mockLoggerInfo: jest.Mock
     let mockLoggerError: jest.Mock
 
@@ -19,7 +19,7 @@ describe('preloadFonts', () => {
         mockDocumentFontsLoad = jest.fn().mockResolvedValue(void 0)
         mockCreateObjectURL = jest.fn().mockReturnValue('blob:http://localhost/font')
         mockRevokeObjectURL = jest.fn()
-        mockGetAsset = jest.fn() as jest.Mock
+        mockgetAsset$ = jest.fn() as jest.Mock
 
         // Mock FontFace
         (global as any).FontFace = jest.fn().mockImplementation(() => ({
@@ -39,9 +39,9 @@ describe('preloadFonts', () => {
             writable: true,
         })
 
-        // Mock getAsset
+        // Mock getAsset$
         jest.mock('./cache', () => ({
-            getAsset: mockGetAsset,
+            getAsset$: mockgetAsset$,
         }))
 
         // Mock logger
@@ -66,7 +66,7 @@ describe('preloadFonts', () => {
         mockDocumentFontsLoad.mockClear()
         mockCreateObjectURL.mockClear()
         mockRevokeObjectURL.mockClear()
-        mockGetAsset.mockClear()
+        mockgetAsset$.mockClear()
         mockLoggerInfo.mockClear()
         mockLoggerError.mockClear()
     })
@@ -76,7 +76,7 @@ describe('preloadFonts', () => {
         const mockResponse = {
           blob: jest.fn<() => Promise<Blob>>().mockResolvedValue(mockBlob),
         }
-        mockGetAsset.mockReturnValue(of(mockResponse))
+        mockgetAsset$.mockReturnValue(of(mockResponse))
 
         // Mock document.querySelectorAll to return font link elements
         const mockLinkElements = [
@@ -98,11 +98,11 @@ describe('preloadFonts', () => {
 
         await preloadFonts()
 
-        expect(mockGetAsset).toHaveBeenCalledTimes(4)
-        expect(mockGetAsset).toHaveBeenNthCalledWith(1, 'https://example.com/fonts/inter.woff2')
-        expect(mockGetAsset).toHaveBeenNthCalledWith(2, 'https://example.com/fonts/sourcecodepro.woff2')
-        expect(mockGetAsset).toHaveBeenNthCalledWith(3, 'https://example.com/fonts/raleway.woff2')
-        expect(mockGetAsset).toHaveBeenNthCalledWith(4, 'https://example.com/fonts/bangers.woff2')
+        expect(mockgetAsset$).toHaveBeenCalledTimes(4)
+        expect(mockgetAsset$).toHaveBeenNthCalledWith(1, 'https://example.com/fonts/inter.woff2')
+        expect(mockgetAsset$).toHaveBeenNthCalledWith(2, 'https://example.com/fonts/sourcecodepro.woff2')
+        expect(mockgetAsset$).toHaveBeenNthCalledWith(3, 'https://example.com/fonts/raleway.woff2')
+        expect(mockgetAsset$).toHaveBeenNthCalledWith(4, 'https://example.com/fonts/bangers.woff2')
 
         expect(mockCreateObjectURL).toHaveBeenCalledTimes(4)
         expect(mockCreateObjectURL).toHaveBeenNthCalledWith(1, mockBlob)
@@ -133,7 +133,7 @@ describe('preloadFonts', () => {
     })
 
     it('should handle assets that return null or undefined', async () => {
-        mockGetAsset.mockReturnValue(of(null))
+        mockgetAsset$.mockReturnValue(of(null))
 
         // Mock document.querySelectorAll to return font link elements
         const mockLinkElements = [
@@ -146,8 +146,8 @@ describe('preloadFonts', () => {
 
         await preloadFonts()
 
-        expect(mockGetAsset).toHaveBeenCalledTimes(1)
-        expect(mockGetAsset).toHaveBeenCalledWith('https://example.com/fonts/inter.woff2')
+        expect(mockgetAsset$).toHaveBeenCalledTimes(1)
+        expect(mockgetAsset$).toHaveBeenCalledWith('https://example.com/fonts/inter.woff2')
 
         expect(mockCreateObjectURL).not.toHaveBeenCalled()
         expect(FontFace).not.toHaveBeenCalled()
@@ -157,8 +157,8 @@ describe('preloadFonts', () => {
         expect(mockRevokeObjectURL).not.toHaveBeenCalled()
     })
 
-    it('should log errors when getAsset throws an error', async () => {
-        mockGetAsset.mockReturnValue(throwError(() => new Error('Network error')))
+    it('should log errors when getAsset$ throws an error', async () => {
+        mockgetAsset$.mockReturnValue(throwError(() => new Error('Network error')))
 
         // Mock document.querySelectorAll to return font link elements
         const mockLinkElements = [
@@ -171,12 +171,12 @@ describe('preloadFonts', () => {
 
         await preloadFonts()
 
-        expect(mockGetAsset).toHaveBeenCalledTimes(1)
+        expect(mockgetAsset$).toHaveBeenCalledTimes(1)
         expect(mockLoggerError).toHaveBeenCalledWith('Error loading font: https://example.com/fonts/inter.woff2', new Error('Network error'))
     })
 
     it('should log errors when font.load fails', async () => {
-        mockGetAsset.mockReturnValue(of({
+        mockgetAsset$.mockReturnValue(of({
             blob: jest.fn<() => Promise<Blob>>().mockResolvedValue(new Blob(['font data'], { type: 'font/woff2' })),
         }))
 
@@ -193,7 +193,7 @@ describe('preloadFonts', () => {
 
         await preloadFonts()
 
-        expect(mockGetAsset).toHaveBeenCalledTimes(1)
+        expect(mockgetAsset$).toHaveBeenCalledTimes(1)
         expect(mockLoggerError).toHaveBeenCalledWith('Error loading font: https://example.com/fonts/inter.woff2', new Error('Font load failed'))
     })
 
@@ -202,7 +202,7 @@ describe('preloadFonts', () => {
         const mockResponse = {
           blob: jest.fn().mockImplementation((): Promise<Blob> => Promise.resolve(mockBlob)),
         }
-        mockGetAsset.mockReturnValue(of(mockResponse))
+        mockgetAsset$.mockReturnValue(of(mockResponse))
 
         // Mock document.querySelectorAll to return different font link elements
         const mockLinkElements = [

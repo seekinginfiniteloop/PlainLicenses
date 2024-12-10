@@ -5,8 +5,8 @@
  * @copyright No rights reserved. Created by and for Plain License www.plainlicense.org
  */
 
-import { Observable, from, fromEvent, of, throwError } from "rxjs"
-import { catchError, defaultIfEmpty, map, mergeMap, switchMap, tap } from "rxjs/operators"
+import { Observable, firstValueFrom, from, fromEvent, of, throwError } from "rxjs"
+import { catchError, defaultIfEmpty, delay, map, mergeMap, switchMap, tap, toArray } from "rxjs/operators"
 import { logger } from "~/log"
 
 export const CONFIG: CacheConfig = {
@@ -15,29 +15,25 @@ export const CONFIG: CacheConfig = {
   ASSET_TYPES: {
     image: {
       cacheable: true,
-      skipOnHome: false,
       contentType: 'image'
     },
     font: {
       cacheable: true,
-      skipOnHome: false,
       contentType: 'font'
     },
     style: {
       cacheable: true,
-      skipOnHome: false,
       contentType: 'text/css'
     },
     script: {
       cacheable: true,
-      skipOnHome: false,
       contentType: 'application/javascript'
     }
   }
 }
 
 // opens the cache as an observable
-const openCache = (): Observable<Cache> => from(caches.open(CONFIG.CACHE_NAME))
+const openCache$ = (): Observable<Cache> => from(caches.open(CONFIG.CACHE_NAME))
 
 /**
  * Determines the asset type from the URL
@@ -58,32 +54,6 @@ const getAssetType = (url: string): string | undefined => {
     return 'script'
   }
   return undefined
-}
-
-/**
- * Checks if an asset should be handled by the cache system
- * @param url the asset URL
- * @param heroCaller boolean indicating if the asset is being called by the hero component
- * @returns boolean indicating if the asset should be cached
- */
-const shouldHandleAsset = (url: string, heroCaller: boolean): boolean => {
-  const assetType = getAssetType(url)
-  if (!assetType) {
-    return false
-  }
-  if (assetType === "image" && heroCaller) {
-    return true
-  }
-  const asset = CONFIG.ASSET_TYPES[assetType]
-  if (!asset?.cacheable) {
-    return false
-  }
-
-  if (asset.skipOnHome && assetType === 'image' && url.includes('hero')) {
-    return false
-  }
-
-  return true
 }
 
 /**
@@ -124,7 +94,7 @@ const extractHashFromUrl = (url: string): string | undefined => {
  * @param cache the cache to store the asset in
  * @returns an observable of the response
  */
-const fetchAndCacheAsset = (url: string, cache: Cache): Observable<Response> =>
+const fetchAndCacheAsset$ = (url: string, cache: Cache): Observable<Response> =>
   from(fetch(url)).pipe(
     switchMap(response => {
       if (!response.ok) {
@@ -145,22 +115,19 @@ const fetchAndCacheAsset = (url: string, cache: Cache): Observable<Response> =>
  * Gets an asset from the cache or fetches it
  * @param url the URL of the asset
  * @param heroCaller boolean indicating if the asset is being called by the hero component
- * @returns Observable&lt;Response>
+ * @returns Observable<Response>
  */
-export const getAsset = (url: string, heroCaller: boolean = false): Observable<Response> => {
-  // If we shouldn't handle this asset, fetch it directly
-  if (!shouldHandleAsset(url, heroCaller)) {
-    return from(fetch(url)).pipe(
-      catchError(error => {
-        logger.error(`Error fetching asset directly: ${url}`, error)
-        return throwError(() => new Error(`Failed to fetch asset: ${url}`))
-      })
-    )
+export const getAsset$ = (url: string, heroCaller: boolean = false): Observable<Response> => {
+  const skipThisAsset = url.includes('hero') && !heroCaller
+
+  // If we shouldn't handle this asset, return an empty response
+  if (skipThisAsset) {
+    return of(new Response())
   }
 
   const assetType = getAssetType(url)!
 
-  return openCache().pipe(
+  return openCache$().pipe(
     switchMap(cache =>
       from(cache.match(url)).pipe(
         switchMap(response => {
@@ -173,13 +140,13 @@ export const getAsset = (url: string, heroCaller: boolean = false): Observable<R
               return of(createTypedResponse(response, assetType))
             } else {
               return from(cache.delete(url)).pipe(
-                switchMap(() => fetchAndCacheAsset(url, cache)),
+                switchMap(() => fetchAndCacheAsset$(url, cache)),
                 map(response => createTypedResponse(response, assetType)),
                 tap(() => logger.info(`Asset updated: ${url}`))
               )
             }
           } else {
-            return fetchAndCacheAsset(url, cache).pipe(
+            return fetchAndCacheAsset$(url, cache).pipe(
               map(response => createTypedResponse(response, assetType))
             )
           }
@@ -187,7 +154,7 @@ export const getAsset = (url: string, heroCaller: boolean = false): Observable<R
       )
     ),
     catchError(error => {
-      logger.error(`Error in getAsset: ${url}`, error)
+      logger.error(`Error in getAsset$: ${url}`, error)
       return throwError(() => new Error(`Failed to get asset: ${url}`))
     })
   )
@@ -209,7 +176,7 @@ function extractUrlFromElement(type: string, el: Element): string {
  * @param elements the elements to cache
  * @returns an observable of the cache operation
  */
-export function cacheAssets(type: string, elements: NodeListOf<Element>): Observable<boolean> {
+export function cacheAsset$(type: string, elements: NodeListOf<Element>): Observable<boolean> {
   const requests = Array.from(elements).map(el => new Request(extractUrlFromElement(type, el)))
 
   return from(requests).pipe(
@@ -233,7 +200,7 @@ export function cacheAssets(type: string, elements: NodeListOf<Element>): Observ
  * Gets the current asset hashes from the cache
  * @returns an observable of the asset hashes
  */
-const getCurrentAssetHashes = (): Observable<Set<string>> => {
+const getCurrentAssetHashe$ = () => {
   return of(document).pipe(
     map(doc => {
       const assetElements = Array.from(
@@ -248,7 +215,9 @@ const getCurrentAssetHashes = (): Observable<Set<string>> => {
         }
       })
       return hashes
-    })
+    }),
+    mergeMap(hashes => from(hashes)),
+    toArray()
   )
 }
 
@@ -257,66 +226,61 @@ const getCurrentAssetHashes = (): Observable<Set<string>> => {
  * @returns an observable of the cache cleaning operation
  */
 const cleanCache = (): Observable<boolean> => {
-  return getCurrentAssetHashes().pipe(
-    switchMap(currentHashes =>
-      openCache().pipe(
-        switchMap(cache =>
-          from(cache.keys()).pipe(
-            mergeMap(request =>
-              from(request).pipe(
-                mergeMap(req => {
-                  const { url } = req
-                  const hash = extractHashFromUrl(url)
-                  if (hash && currentHashes.has(hash)) {
-                    logger.info(`Asset is in use: ${hash}`)
-                    return of(true)
-                  } else {
-                    return from(cache.delete(req)).pipe(
-                      tap(deleted => {
-                        if (deleted) {
-                          logger.info(`Deleted cached asset with hash: ${hash}`)
-                        }
-                      }),
-                      map(() => true)
-                    )
-                  }
-                })
-              )
-            ),
-            catchError(error => {
-              logger.error(`Error cleaning cache: ${error}`)
-              return of(false)
-            })
-          )
-        )
-      )
-    )
-  )
+  const bustCache$ = async (cache: Cache, hashe$: Observable<string[]>, keys: Promise<ReadonlyArray<Request>>) => {
+  const hashes = await firstValueFrom(hashe$)
+  return from(keys).pipe(
+    map((requests) => { return { requests, hashes } }),
+    switchMap(({ requests, hashes }) => {
+      const filteredRequests = requests.filter(request => {
+        if (request instanceof Request) {
+          const { url } = request
+          const cachedHash = extractHashFromUrl(url)
+          return cachedHash && !hashes.includes(cachedHash)
+        }
+        return false
+      })
+      return from(filteredRequests)
+    }),
+    mergeMap(request => { return from(cache.delete(request)) }),
+    tap(deleted => { if (deleted) { logger.info(`Deleted cached asset with hash: ${hash}`) } else { logger.info(`Failed to delete cached asset with hash: ${hash}`) } }),
+    catchError(error => {
+      logger.error(`Error deleting cached asset: ${error}`)
+      return of(false)
+    }))
 }
+
+  return openCache$().pipe(
+    switchMap(cache => bustCache$(cache, getCurrentAssetHashe$(), cache.keys())),
+    switchMap((responses) => from(responses))
+  )}
 
 /**
  * Cleans the cache after a certain amount of time
  * @param timer the time to wait before cleaning the cache
  * @returns an observable of the cache cleaning operation
  */
-export const cleanupCache = (timer: number): Observable<Event> => {
+export const cleanupCache$ = (timer: number): Observable<Event> => {
   return fromEvent(window, "load").pipe(
-    tap(() => {
-      setTimeout(() => {
-        cleanCache().subscribe({
-          next: result => logger.info(result ? "Cache cleaned successfully." : "Cache cleaning failed."),
-          error: () => logger.error("Error cleaning cache.")
-        })
-      }, timer)
-    })
-  )
+    delay(timer),
+    switchMap(() => cleanCache()),
+    tap(result => {
+      if (result) {
+        logger.info("Cache cleaned successfully.")
+      } else {
+        logger.error("Cache cleaning failed.")
+      }
+    }),
+    map(() => new Event("cache-cleanup")))
 }
+
+
+
 
 /**
  * Deletes old caches
  * @returns an observable of the cache deletion operation
  */
-export const deleteOldCache = (): Observable<boolean> => {
+export const deleteOldCache$ = (): Observable<boolean> => {
   const cacheRegex = /^static-assets-cache-v\d+$/
   return from(caches.keys()).pipe(
     mergeMap(keys => from(keys.filter(key => key.match(cacheRegex) && key !== CONFIG.CACHE_NAME))),

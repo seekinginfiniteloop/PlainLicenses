@@ -4,69 +4,50 @@
  * @license Plain Unlicense (Public Domain)
  */
 
-import { getLocation } from "~/browser"
+import { getLocation, watchElementBoundary } from "~/browser"
 import * as bundle from "~/bundle"
-import { BehaviorSubject, Observable, Subject, Subscription, fromEvent, fromEventPattern, merge, of } from "rxjs"
-import { debounceTime, distinctUntilChanged, filter, map, shareReplay, tap } from "rxjs/operators"
+import { Observable, debounceTime, distinctUntilKeyChanged, filter, fromEvent, fromEventPattern, map, merge, mergeMap, of, shareReplay, startWith, tap } from "rxjs"
 import Tablesort from "tablesort"
-import { logger } from "~/log"
 
 export const NAV_EXIT_DELAY = 60000
 export const PAGE_CLEANUP_DELAY = 20000
 
 let customWindow: CustomWindow = window as unknown as CustomWindow
 
-export const prefersReducedMotion = () => customWindow.matchMedia("(prefers-reduced-motion: reduce)").matches
+const { document$, location$ } = customWindow
 
 /**
- * Returns true if the element is visible in the viewport
- * @param el the element to test
- * @returns boolean true if the element is visible
+ * Constructs an observable that watches a media query for changes.
+ * @param query The media query to watch.
+ * @returns An observable that emits a boolean value indicating whether the media query matches.
  */
-export function isElementVisible(el: Element | null): boolean {
-  if (!el) {
-    return false
-  }
+export function watchMediaQuery(query: string): Observable<boolean> {
+  const media = customWindow.matchMedia(query)
+  const listener = customWindow.matchMedia(query).addEventListener || customWindow.matchMedia(query).addListener  // @ts-ignore: "addListener" is deprecated -- kept for compatibility
 
-  const rect = el.getBoundingClientRect()
-  const vWidth = customWindow.innerWidth || document.documentElement.clientWidth
-  const vHeight = customWindow.innerHeight || document.documentElement.clientHeight
-  const efp = (x: number, y: number) => document.elementFromPoint(x, y)
-
-  if (rect.right < 0 || rect.bottom < 0 || rect.left > vWidth || rect.top > vHeight) {
-    return false
-  }
-
-  return (
-    el.contains(efp(rect.left, rect.top)) ||
-    el.contains(efp(rect.right, rect.top)) ||
-    el.contains(efp(rect.right, rect.bottom)) ||
-    el.contains(efp(rect.left, rect.bottom))
+  return fromEventPattern<boolean>(
+    handler => listener("change", () => handler(media.matches)),
+    handler => listener("change", () => handler(media.matches))
+  ).pipe(
+    map(() => media.matches),
+    startWith(media.matches)
   )
 }
 
-type InteractionHandler<E, R> = (_events$: Observable<E>) => Observable<R>
+export const prefersReducedMotion = () => customWindow.matchMedia("(prefers-reduced-motion: reduce)").matches
+
+export const prefersReducedMotion$ =
+  watchMediaQuery("(prefers-reduced-motion: reduce)").pipe(startWith(prefersReducedMotion()), shareReplay(1))
+
 
 /**
- * Creates an observable that emits events from the specified event targets
- * This is a generic constructor for creating interaction observables
- * @param ev the event target or array of event targets
- * @param handler an optional handler function for the observable
- * @returns an observable that emits events, or if a handler is provided, what the handler returns
+ * Returns observable that emits when the
+ * @param el the element to test
+ * @returns boolean true if the element is visible
  */
-export function createInteractionObservable<R>(
-  ev: EventTarget | EventTarget[],
-  handler?: InteractionHandler<Event, R>
-): Observable<R | Event> {
-  const eventTargets = Array.isArray(ev) ? ev : [ev]
-  const validEventTargets = eventTargets.filter(target => target != null)
-
-  const click$ = merge(...validEventTargets.map(target => fromEvent<Event>(target, "click")))
-  const touchend$ = merge(...validEventTargets.map(target => fromEvent<Event>(target, "touchend")))
-
-  const events$ = merge(click$, touchend$).pipe(filter(event => event != null))
-
-  return handler ? handler(events$) : events$
+export function ElementNotVisible$(el: Element | null): Observable<boolean> {
+  const elHeight = el?.clientHeight || 0
+  return watchElementBoundary(el as HTMLElement, 0 - elHeight).pipe(debounceTime(100), shareReplay(1))
 }
 
 /**
@@ -114,62 +95,58 @@ const isDev = (url: URL) => { return (url.hostname === "localhost" && url.port =
 // tests if the URL is on the site
 export const isOnSite = (url: URL) => { return isProd(url) || isDev(url) }
 
-// A behavior subject that emits the current location of the window
-export const locationBehavior$ = new BehaviorSubject<URL>(getLocation())
-
 // Tests if the event is a valid event (that is not null and is an instance of Event)
 const isValidEvent = (value: Event | null) => { return value !== null && value instanceof Event }
 
-// Gets the URL of the event from a legacy navigation event
-const getEventUrl = (ev: Event) => {
-  if (ev.type === "popstate" || ev.type === "beforeunload") {
-    return getLocation()
-  } else if (ev.type === "hashchange") {
-    const hashChangeEvent = ev as HashChangeEvent
-    return hashChangeEvent.newURL ? new URL(hashChangeEvent.newURL) : getLocation()
-  } else if (ev.type === "pageshow") {
-    const pageTransitionEvent = ev as PageTransitionEvent
-    return pageTransitionEvent.persisted ? getLocation() : new URL(customWindow.location.href)
+// maps the URL from a legacy event
+const mapLocation = (ev: Event) => {
+  const eventMap = {
+    beforeunload: (ev.target && (ev.target instanceof HTMLAnchorElement)) ? new URL((ev.target as HTMLAnchorElement).href) : getLocation(),
+    popstate: (ev as PopStateEvent).state ? new URL((ev as PopStateEvent).state.url) : getLocation(),
+    hashchange: (ev as HashChangeEvent).newURL ? new URL((ev as HashChangeEvent).newURL) : getLocation(),
+    pageshow: (ev as PageTransitionEvent).persisted ? getLocation() : new URL(customWindow.location.href)
   }
-  return getLocation()
+  return eventMap[ev.type as keyof typeof eventMap] || getLocation()
 }
 
-const navigationEvents$ = 'navigation' in window ?
+export const navigationEvents$ = 'navigation' in window ?
   // If the browser supports the navigation event, we use it
   fromEventPattern<NavigateEvent>(
     handler => customWindow.navigation.addEventListener('navigate', handler),
     handler => customWindow.navigation.removeEventListener('navigate', handler)
   ).pipe(
     filter((event) => event !== null && event instanceof NavigateEvent),
-    map((event) => { return new URL((event as NavigateEvent).destination.url) }))
+    map((event) => { return new URL((event as NavigateEvent).destination.url) }),
+    startWith(getLocation()),
+    shareReplay(1)
+  )
   : // otherwise we use the browser's built-in events
-  merge(
+  merge(merge(
     fromEvent(customWindow, 'popstate'),
     fromEvent(customWindow, 'hashchange'),
     fromEvent(customWindow, 'pageshow'),
     fromEvent(customWindow, 'beforeunload'),
   ).pipe(
     filter(event => isValidEvent(event as Event)),
-    map((event) => { return getEventUrl(event as Event) })
+    map((event) => { return mapLocation(event as Event) }),
+    startWith(getLocation()),
+    shareReplay(1)
+  ),
+  location$.pipe(distinctUntilKeyChanged("pathname"), startWith(getLocation()), shareReplay(1))
   )
-export const locationBeacon$ = merge(locationBehavior$, navigationEvents$).pipe(
-  filter((value) => value !== null),
-  distinctUntilChanged(),
-  shareReplay(1)
-)
-
-export const watchLocationChange$ = (urlFilter: (_url: URL) => boolean) => {
-  return locationBeacon$.pipe(
-    filter(url => url instanceof URL), filter(urlFilter))
-}
 
 /**
- * Pushes a new URL to the browser history and updates the location behavior subject.
- * @param url The URL to push.
+ * Observes changes to the location pathname.
+ * @param predicate A function that determines whether the URL should be emitted.
+ * @returns An observable that emits the new URL when the location pathname changes.
  */
-export function pushUrl(url: string) {
-  history.pushState(null, '', url)
-  locationBehavior$.next(new URL(customWindow.location.href))
+export function watchPathnameChange$(predicate: (_url: URL) => boolean) {
+  return navigationEvents$.pipe(
+    distinctUntilKeyChanged("pathname"),
+    filter((url) => predicate(url)),
+    startWith(getLocation()),
+    shareReplay(1)
+  )
 }
 
 /**
@@ -199,151 +176,61 @@ export async function windowEvents() {
   }
 }
 
-/**
- * Manages observable subscriptions for site and each visited page.
- * Serves as a central manager for subscriptions that need to be cleaned up when the user navigates away from the site or page.
- */
-export class SubscriptionManager {
+export const watchLicenseHashChange$ = () => {
+  const hashes = ["#reader", "#html", "#markdown", "#plaintext", "#changelog", "#official"]
+  const allLinks = Array.from(document.getElementsByTagName("a"))
 
-  private siteWideSubscriptions: Map<Subscription, boolean> = new Map()
-
-  private pageSubscriptions: Map<string, Subscription[]> = new Map()
-
-  private currentPageUrl: string = locationBehavior$.value.pathname
-
-  private siteExit$ = new Subject<void>()
-
-  private pageExit$ = new Subject<void>()
-
-  private cleanupTimeout: number | null = null
-
-  constructor() {
-    if (customWindow.subscriptionManager) {
-      return customWindow.subscriptionManager
-    }
-    this.setupSiteExit()
-    this.setupPageExit()
-  }
-
-  private setupSiteExit() {
-    locationBeacon$.pipe(
-      filter(url => url instanceof URL && !isOnSite(url)),
-      debounceTime(NAV_EXIT_DELAY)
-    ).subscribe(() => {
-      this.siteExit$.next()
-    })
-  }
-
-  private setupPageExit() {
-    locationBeacon$.pipe(
-      debounceTime(1000),
-      filter(url => url instanceof URL && isOnSite(url)),
-    ).subscribe((url: URL) => {
-    const newPath = url.pathname
-    if (newPath !== this.currentPageUrl) {
-      this.cleanup() // Cancel any pending cleanup
-      this.schedulePageCleanup(this.currentPageUrl)
-      this.currentPageUrl = newPath
-    }
-    this.pageExit$.next()
-  })
-  }
-
-  public addSubscription(subscription: Subscription, isSiteWide: boolean = false) {
-    if (isSiteWide) {
-      logger.info("Adding site-wide subscription")
-      this.siteWideSubscriptions.set(subscription, true)
-      this.siteExit$.subscribe(() => subscription.unsubscribe())
-    } else {
-      logger.info("Adding page-specific subscription")
-      const pageSubscriptions = this.pageSubscriptions.get(this.currentPageUrl) || []
-      pageSubscriptions.push(subscription)
-      this.pageSubscriptions.set(this.currentPageUrl, pageSubscriptions)
-    }
-  }
-
-  public removeSubscription(subscription: Subscription | Subscription[]) {
-    const subs = Array.isArray(subscription) ? subscription : [subscription]
-
-    subs.forEach(sub => {
-      // Remove from site-wide subscriptions
-      if (this.siteWideSubscriptions.has(sub)) {
-        logger.info("Removing site-wide subscription")
-        this.siteWideSubscriptions.delete(sub)
-        sub.unsubscribe()
-      }
-
-      // Remove from page-specific subscriptions
-      for (const [page, pageSubs] of this.pageSubscriptions.entries()) {
-        const filtered = pageSubs.filter(s => s !== sub)
-        if (filtered.length !== pageSubs.length) {
-          logger.info("Removing page-specific subscription")
-          this.pageSubscriptions.set(page, filtered)
-          sub.unsubscribe()
+  const unhashedLicenseLinks = allLinks.filter(link =>
+    link.href.includes("licenses") &&
+    isLicensePage(new URL(link.href)) &&
+    !new URL(link.href).hash
+  )
+  unhashedLicenseLinks.forEach(link =>
+    link.addEventListener("click", () => {
+      document$.subscribe(() => {
+        const readerElement = document.getElementById("reader") as HTMLInputElement
+        if (readerElement) {
+          readerElement.checked = true
         }
-      }
-    })
-  }
+      })
+    }))
 
-  public schedulePageCleanup(pageUrl: string) {
-    this.cleanupTimeout = customWindow.setTimeout(() => {
-    this.clearPageSubscriptions(pageUrl)
-    this.cleanupTimeout = null
-  }, PAGE_CLEANUP_DELAY)
-  }
+  const hashedLinks = allLinks.filter(link =>
+    hashes.some(hash => link.href.includes(hash))
+  )
+  hashedLinks.forEach(link =>
+    link.addEventListener("click", e => e.preventDefault())
+  )
 
-  public cleanup(): void {
-    if (this.cleanupTimeout) {
-      customWindow.clearTimeout(this.cleanupTimeout)
-      this.cleanupTimeout = null
+  const filterHash = (url: URL) => hashes.includes(url.hash)
+
+  const navigationWatcher$ = navigationEvents$.pipe(
+    filter(filterHash),
+    shareReplay(1)
+  )
+
+  const linkWatcher$ = fromEventPattern<Event>(
+    handler => hashedLinks.forEach(link => link.addEventListener("click", handler)),
+    handler => hashedLinks.forEach(link => link.removeEventListener("click", handler))
+  ).pipe(
+    map(ev => new URL((ev.target as HTMLAnchorElement).href)),
+    filter(filterHash),
+    shareReplay(1)
+  )
+
+  const handleHashChange = (url: URL) => {
+    if (getLocation().pathname !== url.pathname) {
+      customWindow.location.href = url.href.replace(url.hash, "")
+    }
+    const inputElement = document.getElementById(url.hash.slice(1))
+    if (inputElement instanceof HTMLInputElement) {
+      inputElement.checked = true
+      inputElement.dispatchEvent(new Event("change"))
+      inputElement.parentElement?.querySelector(".tabbed-content")?.scrollIntoView({ behavior: "smooth" })
     }
   }
 
-  private clearPageSubscriptions(pageUrl: string) {
-    const pageSubscriptions = this.pageSubscriptions.get(pageUrl) || []
-    pageSubscriptions.forEach(sub => sub.unsubscribe())
-    this.pageSubscriptions.delete(pageUrl)
-    logger.info(`Cleared subscriptions for page: ${pageUrl}`)
-  }
-
-  public clearAllSubscriptions() {
-    // Clear site-wide subscriptions
-    for (const sub of this.siteWideSubscriptions.keys()) {
-      sub.unsubscribe()
-    }
-    this.siteWideSubscriptions.clear()
-
-    // Clear all page subscriptions
-    for (const [_, subs] of this.pageSubscriptions) {
-      subs.forEach(sub => sub.unsubscribe())
-    }
-    this.pageSubscriptions.clear()
-
-    this.siteExit$.next()
-    this.pageExit$.next()
-    logger.info("Cleared all subscriptions")
-  }
+  return merge(navigationWatcher$, linkWatcher$).pipe(
+    mergeMap(url => of(handleHashChange(url)))
+  )
 }
-
-export type SubscriptionManagerType = SubscriptionManager
-
-/**
- * Getter function for the SubscriptionManager singleton.
- * We don't need to call the class directly. This function manages the instance.
- * @returns The SubscriptionManager singleton.
- */
-export const getSubscriptionManager = () => {
-  try {
-    if (customWindow.subscriptionManager) {
-      return customWindow.subscriptionManager
-    } else {
-      customWindow.subscriptionManager = new SubscriptionManager()
-      return customWindow.subscriptionManager
-    }
-  } catch {
-    throw new Error("SubscriptionManager could not be initialized.")
-  }
-}
-// Example usage:
-// const subscriber = getSubscriptionManager();
-// subscriber.addSubscription(yourSubscription, true);

@@ -7,6 +7,7 @@
 
 import type { Observable, Subject } from "rxjs"
 import { ImageTransformCalculator, ScaleCalculator } from "./utils/vectorcalc"
+import { extend } from "tablesort"
 
 declare global {
 
@@ -14,15 +15,16 @@ declare global {
    * Types
    * ------------------------------------------------------------------------- */
 
+  type PageConfig = {
+    matcher: (url: URL) => boolean
+    location: PageLocation
+    observables: Observable<any>[]
+  }
 
   type T = Type["T"]
   type R = Type["R"]
 
-  /** Type representing user interaction events. */
-  type InteractionEvent = MouseEvent | TouchEvent
-
-  /** Type representing an interaction handler function. */
-  type InteractionHandler<T, R> = (event: Observable<T>) => Observable<R>
+  type PageLocation = "all" | "home" | "licenses" | "helpingIndex"
 
   type Component<
     T extends {} = {},
@@ -49,6 +51,7 @@ declare global {
     orientation: 'portrait' | 'landscape'
     readonly optimalWidth: number
     lastActiveTime: number
+    preloadedImage: boolean
   }
 
   interface ScrollTargets {
@@ -75,7 +78,6 @@ declare global {
 
   interface AssetTypeConfig {
     cacheable: boolean
-    skipOnHome?: boolean
     contentType?: string
   }
 
@@ -208,24 +210,24 @@ declare global {
     boundingRect: DOMRect
   }
 
-  interface OverflowComputed {
-    top: number
-    right: number
-    bottom: number
-    left: number
-    topIsOffset?: boolean
-    noYoverflow?: boolean
+  interface AnimationWaypoint {
+    position: Point
+    transform: Mat3
+    duration: number  // portion of total duration
   }
 
-  interface TranslatableAreas {
-    overflowRects: OverflowRects
-    overflow: OverflowComputed
-    visibleRect: DOMRect
-    containerRect: DOMRect
-    imageDimensions: ImageDimensions
-    computedImageDimensions: ComputedImageDimensions
-    translatable: TranslationPotential
+  interface ScaleResults {
+    scale: number
+    scaledDimensions: ImageSize
+    actualOverflow: ImageSize
+    bounds: TranslationBounds
+    transforms:
+    {
+      start: Mat3
+      end: Mat3
+    }
   }
+
 
   /**
    *! NOTE ON COMPONENTS (Window.component$)
@@ -234,6 +236,7 @@ declare global {
    * By default, they're all mounted in Material bundle.ts and available in component$
    * You can add components by using the data-md-component attribute on
    * the HTML element and then use  getComponentElements("componentName") from ~/external/components with your ObservationFunctions to create a custom observable.
+   *
    * bundle.ts gives plenty of examples on how to use component$ to mount and observe components
    */
 
@@ -249,7 +252,6 @@ declare global {
     alert$: Subject<string> // clipboard.js integration
     progress$: Subject<number> // progress indicator
     component$: Observable<CustomEvent>
-    subscriptionManager: SubscriptionManager
   }
 
   /**

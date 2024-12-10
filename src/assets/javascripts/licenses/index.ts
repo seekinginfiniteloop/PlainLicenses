@@ -1,25 +1,21 @@
 /**
  * @module licenses
  * Handles interactions and dynamic features for license pages
- * @license Plain Unlicense (Public Domain)
  * @copyright No rights reserved. Created by and for Plain License www.plainlicense.org
+ * @license Plain Unlicense (Public Domain)
  */
 
 import {
-  Observable,
   combineLatest,
-  fromEvent,
-  merge
-} from 'rxjs'
-import {
   distinctUntilChanged,
   filter,
+  fromEvent,
   map,
+  merge,
   share,
   startWith,
   tap
-} from 'rxjs/operators'
-import { isLicense, watchLocationChange$ } from '~/utils'
+} from 'rxjs'
 
 // Helper functions
 const getTabElements = (): TabElement[] => {
@@ -36,23 +32,6 @@ const getTabElements = (): TabElement[] => {
   }).filter(elements => elements.input && elements.label && elements.iconAnchor && elements.iconSVG)
 }
 
-// intercept hash changes and update the selected tab
-const watchLicenseHashes = () => {
-  return watchLocationChange$((url) => isLicense(url)).pipe(
-    map((url) => url.hash),
-    filter((hash) => hash !== null && hash !== '' && hash !== '#' &&
-      ['reader', 'html', 'markdown', 'plaintext', 'changelog', 'official'].includes(hash.slice(1))),
-    tap((hash) => {
-      window.location.hash = ''
-      const input = document.querySelector(hash) ? document.querySelector(hash) as HTMLInputElement : null
-      if (input) {
-        input.checked = true
-        input.dispatchEvent(new Event('change'))
-      }
-    })
-  )
-}
-
 // Updated styleTab function remains the same
 const styleTab = (tab: TabElement, state: "hover" | "focus" | "focus-visible" | "normal" = "normal") => {
   const { input, label, iconAnchor, iconSVG } = tab
@@ -65,32 +44,26 @@ const styleTab = (tab: TabElement, state: "hover" | "focus" | "focus-visible" | 
   iconSVG.style.fill = isSelected ? selectedColor : fillColor
   label.style.color = isSelected ? selectedColor : fillColor
 }
-
-const setupTabIconSync = () => {
+export const setupTabIconSync$ = () => {
   const tabElements = getTabElements()
 
   // Set initial styles
   tabElements.forEach(tab => styleTab(tab))
 
-  // Create observables for each interaction type
-  const createInteractionStream = (
-    elements: TabElement[],
-    eventName: string
-  ): Observable<[string, string]> => {
-    const streams = elements.flatMap(({ label, iconAnchor }) => [
-      fromEvent(label, eventName).pipe(map(() => [label.getAttribute('for')!, eventName])),
-      fromEvent(iconAnchor, eventName).pipe(map(() => [iconAnchor.id.replace('icon-', ''), eventName]))
-    ])
-
-    return merge(...streams) as Observable<[string, string]>
+  // Create streams for different events
+  const createInteractionStreams = (elements: TabElement[], events: string[]) => {
+    return events.map(eventName =>
+      elements.flatMap(({ label, iconAnchor }) => [
+        fromEvent(label, eventName).pipe(map(() => [label.getAttribute('for')!, eventName])),
+        fromEvent(iconAnchor, eventName).pipe(map(() => [iconAnchor.id.replace('icon-', ''), eventName]))
+      ])
+    ).map(streams => merge(...streams).pipe(share()))
   }
 
   // Create streams for different events
-  const hover$ = createInteractionStream(tabElements, 'mouseenter').pipe(share())
-  const unhover$ = createInteractionStream(tabElements, 'mouseleave').pipe(share())
-  const focus$ = createInteractionStream(tabElements, 'focus').pipe(share())
-  const focusVisible$ = createInteractionStream(tabElements, 'focus-visible').pipe(share())
-  const blur$ = createInteractionStream(tabElements, 'blur').pipe(share())
+  const [hover$, unhover$, focus$, focusVisible$, blur$] = createInteractionStreams(tabElements, [
+    'mouseenter', 'mouseleave', 'focus', 'focus-visible', 'blur'
+  ])
 
   // Handle clicks on iconAnchors
   const iconAnchorClicks$ = tabElements.map(({ iconAnchor, input }) =>
@@ -109,44 +82,40 @@ const setupTabIconSync = () => {
   const selection$ = tabElements.map(({ input }) =>
     fromEvent(input, 'change').pipe(
       map(() => input.id),
-      startWith(input.checked ? input.id : null), // Emit initial value if input is checked
+      startWith(input.checked ? input.id : null),
       filter(id => !!id)
     )
   )
 
   // Combine all selection$ observables
-  const selectionMerged$ = merge(...selection$).pipe(
-    distinctUntilChanged()
-  )
+  const selectionMerged$ = merge(...selection$).pipe(distinctUntilChanged())
+
+  // Map event names to states
+  const eventStateMap: Record<string, string> = {
+    'mouseenter': 'hover',
+    'mouseleave': 'normal',
+    'focus': 'focus',
+    'focus-visible': 'focus-visible',
+    'blur': 'normal'
+  }
 
   // Combine selection and interaction streams
   const combined$ = combineLatest([
     selectionMerged$,
     merge(
-      hover$.pipe(map(([id]) => ({ id, state: 'hover' as "hover" }))),
-      unhover$.pipe(map(([id]) => ({ id, state: 'normal' as "normal" }))),
-      focus$.pipe(map(([id]) => ({ id, state: 'focus' as "focus" }))),
-      focusVisible$.pipe(map(([id]) => ({ id, state: 'focus-visible' as "focus-visible" }))),
-      blur$.pipe(map(([id]) => ({ id, state: 'normal' as "normal" }))),
-    ).pipe(startWith(null)) // Ensure initial emission
+      hover$, unhover$, focus$, focusVisible$, blur$
+    ).pipe(
+      map(([id, eventName]) => ({ id, state: eventStateMap[eventName] as "hover" | "normal" | "focus" | "focus-visible" })),
+      startWith(null)
+    )
   ]).pipe(
     tap(([selectedId, interaction]) => {
       tabElements.forEach(tab => {
-        if (interaction && tab.input.id === interaction.id) {
-          // Apply interaction state
-          styleTab(tab, interaction.state)
-        } else {
-          // Apply normal or selected state
-          styleTab(tab, tab.input.id === selectedId ? "normal" : "normal")
-        }
+        const state = interaction && tab.input.id === interaction.id ? interaction.state : "normal"
+        styleTab(tab, tab.input.id === selectedId ? state : "normal")
       })
     })
   )
 
   return merge(combined$, ...iconAnchorClicks$)
-}
-
-export const watchLicense = () => {
-  return merge(setupTabIconSync(),
-    watchLicenseHashes())
 }

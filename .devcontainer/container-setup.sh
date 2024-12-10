@@ -53,6 +53,7 @@ function initial_installs() {
     export BUN_INSTALL="/home/vscode/.bun"
     export UV_PYTHON_DOWNLOADS="automatic"
     # sync and install tools
+    curl -LsSf https://astral.sh/uv/install.sh | sh &&
     curl -fsSL https://bun.sh/install | bash &&
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y &&
     source "$HOME/.cargo/env" &&
@@ -105,7 +106,6 @@ EOF
 
 
 function setup_rust_helpers() {
-    cargo install --git https://github.com/astral-sh/uv uv &&
     cargo install --all-features ripgrep &&
     cargo install typos-cli &&
     cargo install --git https://github.com/ngirard/lolcate-rs
@@ -113,7 +113,7 @@ function setup_rust_helpers() {
 
 function uv_install() {
     export UV_PYTHON_DOWNLOADS="automatic"
-    local uvloc=/home/vscode/.cargo/bin/uv
+    local uvloc=/home/vscode/.local/bin/uv
     $uvloc python install 3.13 &&
     $uvloc venv --allow-existing .venv &&
     $uvloc tool install ipython -q &&

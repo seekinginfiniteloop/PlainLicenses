@@ -1,12 +1,12 @@
 {
   "metaOutput": {
-    "docs/assets/javascripts/index.4RGSAMCY.js.map": {
-      "bytes": 1721899,
+    "docs/assets/javascripts/index.6INGU5MO.js.map": {
+      "bytes": 1751321,
       "inputs": [],
       "exports": []
     },
-    "docs/assets/javascripts/index.4RGSAMCY.js": {
-      "bytes": 612764,
+    "docs/assets/javascripts/index.6INGU5MO.js": {
+      "bytes": 626015,
       "inputs": [
         "node_modules/focus-visible/dist/focus-visible.js",
         "node_modules/escape-html/index.js",
@@ -104,6 +104,8 @@
         "node_modules/rxjs/dist/esm5/internal/operators/bufferCount.js",
         "node_modules/rxjs/dist/esm5/internal/operators/catchError.js",
         "node_modules/rxjs/dist/esm5/internal/operators/scanInternals.js",
+        "node_modules/rxjs/dist/esm5/internal/operators/reduce.js",
+        "node_modules/rxjs/dist/esm5/internal/operators/toArray.js",
         "node_modules/rxjs/dist/esm5/internal/operators/combineLatest.js",
         "node_modules/rxjs/dist/esm5/internal/operators/combineLatestWith.js",
         "node_modules/rxjs/dist/esm5/internal/operators/debounce.js",
@@ -242,20 +244,22 @@
         "external/mkdocs-material/src/templates/assets/javascripts/patches/scrollfix/index.ts",
         "external/mkdocs-material/src/templates/assets/javascripts/patches/scrolllock/index.ts",
         "external/mkdocs-material/src/templates/assets/javascripts/polyfills/index.ts",
-        "node_modules/rxjs/dist/esm5/operators/index.js",
-        "src/assets/javascripts/log/index.ts",
-        "src/assets/javascripts/feedback/index.ts",
-        "src/assets/javascripts/utils/index.ts",
-        "src/assets/javascripts/licenses/index.ts",
-        "src/assets/javascripts/cache/index.ts",
         "node_modules/gsap/gsap-core.js",
         "node_modules/gsap/CSSPlugin.js",
         "node_modules/gsap/index.js",
-        "src/assets/javascripts/hero/imageshuffle/data/index.ts",
-        "src/assets/javascripts/hero/imageshuffle/index.ts",
-        "node_modules/gsap/ScrollToPlugin.js",
         "node_modules/gsap/Observer.js",
         "node_modules/gsap/ScrollTrigger.js",
+        "node_modules/gsap/ScrollToPlugin.js",
+        "src/assets/javascripts/log/index.ts",
+        "src/assets/javascripts/feedback/index.ts",
+        "src/assets/javascripts/licenses/index.ts",
+        "src/assets/javascripts/utils/index.ts",
+        "node_modules/rxjs/dist/esm5/operators/index.js",
+        "src/assets/javascripts/cache/index.ts",
+        "src/assets/javascripts/hero/imageshuffle/data/index.ts",
+        "src/assets/javascripts/utils/vectorcalc/index.ts",
+        "src/assets/javascripts/hero/impactText/index.ts",
+        "src/assets/javascripts/hero/imageshuffle/index.ts",
         "src/assets/javascripts/hero/animation/index.ts",
         "src/assets/javascripts/index.ts"
       ],
@@ -329,13 +333,13 @@
       ],
       "exports": []
     },
-    "docs/assets/stylesheets/bundle.RDBHRS5X.css.map": {
-      "bytes": 339974,
+    "docs/assets/stylesheets/bundle.HDSB5ACS.css.map": {
+      "bytes": 339995,
       "inputs": [],
       "exports": []
     },
-    "docs/assets/stylesheets/bundle.RDBHRS5X.css": {
-      "bytes": 218429,
+    "docs/assets/stylesheets/bundle.HDSB5ACS.css": {
+      "bytes": 218430,
       "inputs": [
         "external/mkdocs-material/material/templates/assets/stylesheets/palette.06af60db.min.css",
         "external/mkdocs-material/material/templates/assets/stylesheets/main.0253249f.min.css",
