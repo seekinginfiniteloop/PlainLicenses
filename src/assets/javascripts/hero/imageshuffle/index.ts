@@ -881,15 +881,22 @@ const initCycler = () => {
   }
 
   logger.info("Initializing cycler")
+  let subscription = new Subscription()
 
+  const state = cyclerRef.current?.heroState ? cyclerRef.current?.heroState.getCurrentState() : null
   // Clean up any existing cycler
-  cyclerRef.current?.stop()
+  if (state && state.status !== 'cycling' && state.isAtHome) {
+   subscription = cyclerRef.current.start()
+   return {subscription.unsubscribe(),
+    cyclerRef.current?.stop(),
+    cyclerRef.current = null }
+}
 
   // Create new cycler
   cyclerRef.current = HeroStateManager.createCycler()
 
   // Start cycling and store subscription
-  const subscription = cyclerRef.current.start()
+  subscription = cyclerRef.current.start()
 
   // Return cleanup function
   return () => {
