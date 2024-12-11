@@ -234,3 +234,83 @@ export const watchLicenseHashChange$ = () => {
     mergeMap(url => of(handleHashChange(url)))
   )
 }
+export class ImageValidationHandler {
+  static validateNaturalDimensions(img: HTMLImageElement): ValidationResult {
+    const result: ValidationResult = {
+      isValid: false,
+      errors: []
+    };
+
+    if (!img || !(img instanceof HTMLImageElement)) {
+      result.errors.push('Not a valid HTMLImageElement');
+      return result;
+    }
+
+    // Check if image is properly loaded with natural dimensions
+    if (!Number.isFinite(img.naturalWidth) || !Number.isFinite(img.naturalHeight)) {
+      result.errors.push('Natural dimensions are not available - image may not be loaded');
+      return result;
+    }
+
+    if (img.naturalWidth <= 0 || img.naturalHeight <= 0) {
+      result.errors.push('Natural dimensions must be positive numbers');
+      return result;
+    }
+
+    result.isValid = true;
+    return result;
+  }
+
+  static validateDOMTestResult(
+    dimensions: {
+      naturalWidth: number;
+      naturalHeight: number;
+      boundingRect: DOMRect;
+    }
+  ): ValidationResult {
+    const result: ValidationResult = {
+      isValid: false,
+      errors: []
+    };
+
+    // Validate natural dimensions match what we expect
+    if (!Number.isFinite(dimensions.naturalWidth) || dimensions.naturalWidth <= 0) {
+      result.errors.push('Invalid natural width from DOM test');
+    }
+    if (!Number.isFinite(dimensions.naturalHeight) || dimensions.naturalHeight <= 0) {
+      result.errors.push('Invalid natural height from DOM test');
+    }
+
+    // Validate bounding rect dimensions
+    if (!dimensions.boundingRect) {
+      result.errors.push('Missing bounding rect');
+    } else {
+      const { width, height } = dimensions.boundingRect;
+      if (!Number.isFinite(width) || width <= 0) {
+        result.errors.push('Invalid bounding rect width');
+      }
+      if (!Number.isFinite(height) || height <= 0) {
+        result.errors.push('Invalid bounding rect height');
+      }
+    }
+
+    result.isValid = result.errors.length === 0;
+    return result;
+  }
+
+  static safelyRemoveFromDOM(element: HTMLElement | null) {
+    try {
+      if (element && element.parentNode) {
+        element.parentNode.removeChild(element);
+      }
+    } catch (error) {
+      logger.error('Error removing element from DOM:', error);
+    }
+  }
+}
+
+interface ValidationResult {
+  isValid: boolean;
+  errors: string[];
+}
+
