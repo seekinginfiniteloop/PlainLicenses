@@ -28,13 +28,15 @@ import { cacheAsset$, cleanupCache$, deleteOldCache$, getAsset$ } from "./cache"
 import { shuffle$ } from "./hero/imageshuffle"
 import { subscribeToAnimation$ } from "./hero/animation"
 
-gsap.registerPlugin(ScrollTrigger,ScrollToPlugin)
+gsap.registerPlugin(ScrollTrigger, ScrollToPlugin)
+
+
+// we have js, so let's get some things out of the way here
+document.documentElement.classList.remove("no-js")
+document.documentElement.classList.add("js")
 
 let customWindow: CustomWindow = window as unknown as CustomWindow
 const { document$ } = customWindow
-
-document.documentElement.classList.remove("no-js")
-document.documentElement.classList.add("js")
 
 // Extracts the URLs from a list of elements
 const extractUrls = (elements: NodeListOf<Element>, attribute: string): string[] =>

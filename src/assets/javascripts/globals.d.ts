@@ -42,7 +42,7 @@ declare global {
   interface HeroState {
     status: 'loading' | 'cycling' | 'paused' | 'error'
     isVisible: boolean
-    currentTimeline: gsap.core.Timeline
+    currentTimeline: Observable<gsap.core.Timeline>
     currentImage: HTMLImageElement | null
     isAtHome: boolean
     headerHeight: number

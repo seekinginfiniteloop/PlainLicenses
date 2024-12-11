@@ -3794,11 +3794,11 @@ function distinctUntilChanged(comparator, keySelector) {
   comparator = comparator !== null && comparator !== void 0 ? comparator : defaultCompare;
   return operate(function(source, subscriber) {
     var previousKey;
-    var first3 = true;
+    var first2 = true;
     source.subscribe(createOperatorSubscriber(subscriber, function(value) {
       var currentKey = keySelector(value);
-      if (first3 || !comparator(previousKey, currentKey)) {
-        first3 = false;
+      if (first2 || !comparator(previousKey, currentKey)) {
+        first2 = false;
         previousKey = currentKey;
         subscriber.next(value);
       }
@@ -3844,6 +3844,36 @@ function endWith() {
   return function(source) {
     return concat(source, of.apply(void 0, __spreadArray([], __read(values))));
   };
+}
+
+// node_modules/rxjs/dist/esm5/internal/operators/exhaustMap.js
+function exhaustMap(project, resultSelector) {
+  if (resultSelector) {
+    return function(source) {
+      return source.pipe(exhaustMap(function(a, i) {
+        return innerFrom(project(a, i)).pipe(map(function(b, ii) {
+          return resultSelector(a, b, i, ii);
+        }));
+      }));
+    };
+  }
+  return operate(function(source, subscriber) {
+    var index = 0;
+    var innerSub = null;
+    var isComplete = false;
+    source.subscribe(createOperatorSubscriber(subscriber, function(outerValue) {
+      if (!innerSub) {
+        innerSub = createOperatorSubscriber(subscriber, void 0, function() {
+          innerSub = null;
+          isComplete && subscriber.complete();
+        });
+        innerFrom(project(outerValue, index++)).subscribe(innerSub);
+      }
+    }, function() {
+      isComplete = true;
+      !innerSub && subscriber.complete();
+    }));
+  });
 }
 
 // node_modules/rxjs/dist/esm5/internal/operators/finalize.js
@@ -10194,17 +10224,17 @@ var _setterWithModifier = function _setterWithModifier2(target, property, value,
   data.mSet(target, property, data.m.call(data.tween, value, data.mt), data);
 };
 var _sortPropTweensByPriority = function _sortPropTweensByPriority2(parent) {
-  var pt = parent._pt, next, pt2, first3, last2;
+  var pt = parent._pt, next, pt2, first2, last2;
   while (pt) {
     next = pt._next;
-    pt2 = first3;
+    pt2 = first2;
     while (pt2 && pt2.pr > pt.pr) {
       pt2 = pt2._next;
     }
     if (pt._prev = pt2 ? pt2._prev : last2) {
       pt._prev._next = pt;
     } else {
-      first3 = pt;
+      first2 = pt;
     }
     if (pt._next = pt2) {
       pt2._prev = pt;
@@ -10213,7 +10243,7 @@ var _sortPropTweensByPriority = function _sortPropTweensByPriority2(parent) {
     }
     pt = next;
   }
-  parent._pt = first3;
+  parent._pt = first2;
 };
 var PropTween = /* @__PURE__ */ function() {
   function PropTween2(next, target, prop, start, change, renderer, data, setter, priority) {
@@ -14395,8 +14425,8 @@ var isDevelopment = false;
 if (typeof window === "undefined") {
   isDevelopment = true;
 } else {
-  let customWindow4 = window;
-  isDevelopment = customWindow4.location.hostname === "localhost" || customWindow4.location.hostname === "127.0.0.1" || customWindow4.location.port === "8000";
+  let customWindow5 = window;
+  isDevelopment = customWindow5.location.hostname === "localhost" || customWindow5.location.hostname === "127.0.0.1" || customWindow5.location.port === "8000";
 }
 var logger = {
   error: (message, ...args) => {
@@ -15431,7 +15461,7 @@ var ScaleCalculator = class {
 };
 
 // src/assets/javascripts/hero/impactText/index.ts
-function createDebris(target, count = 8) {
+function createDebris(target, count = 16) {
   const debris = [];
   const container = document.createElement("div");
   container.style.position = "absolute";
@@ -15452,165 +15482,186 @@ function createDebris(target, count = 8) {
     container.appendChild(particle);
     debris.push(particle);
   }
+  logger.info(`debris: ${debris}, length: ${debris.length}`);
   return debris;
 }
-function wordsToSpans(el) {
+var customWindow2 = window;
+var windowWidth = customWindow2.innerWidth;
+var windowHeight = customWindow2.innerHeight;
+function wordsToSpans(el, button = false) {
   const text = el.innerHTML;
   const words = text.split(" ").filter((word) => word.trim() !== "");
-  const spans = words.map((word) => {
-    const span = document.createElement("span");
-    span.innerHTML = `${word} `;
-    logger.info(`span: ${span}`);
-    return span;
-  });
+  logger.info(`text: ${text}, words: ${words}`);
   el.innerHTML = "";
-  spans.forEach((span) => el.appendChild(span));
-  return spans;
+  const characters = text.split("");
+  characters.forEach((char) => {
+    logger.info(`char: ${char}`);
+    const span = document.createElement("span");
+    span.innerHTML = char;
+    logger.info(`span: ${span}`);
+    if (button) {
+      span.style.color = "var(--turkey-red)";
+      span.style.opacity = "0";
+      span.style.transition = "color 0.3s ease, opacity 0.3s ease";
+      span.style.visibility = "hidden";
+    }
+    el.appendChild(span);
+  });
 }
-async function initHeroTextAnimation$() {
-  return firstValueFrom(prefersReducedMotion$).then((prefersReducedMotion2) => {
-    if (prefersReducedMotion2 && typeof prefersReducedMotion2 === "boolean") {
-      logger.info(`User prefers reduced motion: ${prefersReducedMotion2}`);
-      return gsapWithCSS.timeline().add(gsapWithCSS.from(["#CTA_header", "#CTA_paragraph", "#hero-primary-button"], {
-        paused: true,
-        opacity: 0,
-        duration: 1,
-        stagger: 0.2,
-        delay: 0.5
-      }));
-    } else {
-      logger.info("User does not prefer reduced motion");
-      const tl = gsapWithCSS.timeline({
-        paused: true,
-        smoothChildTiming: true
-      }).add([
-        "start",
-        gsapWithCSS.set(".mdx-hero__teaser", {
-          perspective: 1e3
-        })
-      ], "<");
-      tl.call(() => {
-        logger.info("Hero text animation started");
-      });
-      const ctaContainer = document.querySelector("#CTA_header");
-      const ctaParagraph = document.querySelector("#CTA_paragraph");
-      const firstSpanGroup = wordsToSpans(ctaContainer);
-      const secondSpanGroup = wordsToSpans(ctaParagraph);
-      logger.info(`ctaContainer: ${ctaContainer}, ctaParagraph: ${ctaParagraph}, firstSpanGroup: ${firstSpanGroup}, secondSpanGroup: ${secondSpanGroup}`);
-      const headerSpans = ctaContainer.querySelectorAll("span");
-      const paragraphSpans = ctaParagraph.querySelectorAll("span");
-      const button = document.querySelector("#hero-primary-button");
-      const buttonText = button.textContent;
-      button.innerHTML = "";
-      const buttonTextSpans = buttonText == null ? void 0 : buttonText.split("").map((char) => {
-        let newSpan = document.createElement("span");
-        newSpan.textContent = char;
-        return newSpan;
-      });
-      tl.add(["initialState", gsapWithCSS.set([...headerSpans, ...paragraphSpans, button], {
-        opacity: 0,
-        scale: 3,
-        y: 200,
-        // Start from below
-        rotationX: 45,
-        // Tilt forward
-        z: -500,
-        // Start further back in Z space
-        transformOrigin: "center center"
-      })], "<");
-      tl.add(["headingIntro", gsapWithCSS.to([...headerSpans], {
-        opacity: 1,
-        scale: 1,
-        delay: 1,
-        y: 0,
-        rotationX: 0,
-        z: 0,
-        duration: 0.8,
-        perspective: 0,
-        ease: "power3.in",
-        onStart: () => {
-          if (ctaContainer && ctaContainer instanceof HTMLElement) {
-            const debris = createDebris(ctaContainer);
-            gsapWithCSS.to(debris, {
-              x: "random(-100, 100)",
-              y: "random(-100, 100)",
+function initHeroTextAnimation$() {
+  const tl = gsapWithCSS.timeline();
+  return from(prefersReducedMotion$).pipe(
+    first(),
+    switchMap(
+      (prefersReducedMotion2) => {
+        if (prefersReducedMotion2 && typeof prefersReducedMotion2 === "boolean") {
+          logger.info(`User prefers reduced motion: ${prefersReducedMotion2}`);
+          return of(
+            tl.add(gsapWithCSS.from(["#CTA_header", "#CTA_paragraph", "#hero-primary-button"], {
+              paused: true,
               opacity: 0,
-              duration: 0.5,
+              duration: 1,
+              stagger: 0.2,
+              delay: 0.5,
+              visibility: "hidden"
+            }))
+          );
+        } else {
+          tl.call(() => {
+            logger.info("Hero text animation started");
+          });
+          const ctaContainer = document.querySelector("#CTA_header");
+          const containerRect = ctaContainer.getBoundingClientRect();
+          const ctaParagraph = document.querySelector("#CTA_paragraph");
+          const paragraphRect = ctaParagraph.getBoundingClientRect();
+          wordsToSpans(ctaContainer);
+          wordsToSpans(ctaParagraph);
+          logger.info(`ctaContainer: ${ctaContainer}, ctaParagraph: ${ctaParagraph}`);
+          const headerSpans = ctaContainer.querySelectorAll("span");
+          const paragraphSpans = ctaParagraph.querySelectorAll("span");
+          const button = document.querySelector("#hero-primary-button");
+          wordsToSpans(button, true);
+          const buttonTextSpans = button.querySelectorAll("span");
+          const firstDebris = createDebris(ctaContainer);
+          const secondDebris = createDebris(ctaParagraph);
+          tl.add(["initialState", gsapWithCSS.set([...headerSpans, ...paragraphSpans, button], {
+            opacity: 0,
+            scale: 3,
+            y: 200,
+            // Start from below
+            x: 50,
+            rotationX: 45,
+            // Tilt forward
+            z: -800,
+            // Start further back in Z space
+            visibility: "visible",
+            transformOrigin: "center center"
+          })], "<");
+          tl.add(["headingIntro", gsapWithCSS.to([...headerSpans], {
+            opacity: 1,
+            scale: 1,
+            delay: 1,
+            y: 0,
+            rotationX: 0,
+            z: 0,
+            duration: 0.8,
+            stagger: { amount: 0.2 },
+            perspective: 0,
+            ease: "power3.in"
+          })], "<").add(["firstDebris", gsapWithCSS.fromTo(
+            [...firstDebris],
+            {
+              x: gsapWithCSS.utils.random(containerRect.left, containerRect.right),
+              y: gsapWithCSS.utils.random(containerRect.top, containerRect.bottom),
+              opacity: 1
+            },
+            {
+              x: gsapWithCSS.utils.random(0, windowWidth),
+              y: gsapWithCSS.utils.random(0, windowHeight),
+              opacity: 0,
+              duration: 0.3,
               ease: "power3.out",
               stagger: {
-                amount: 0.2
+                amount: 0.05
               }
-            });
-          }
-        }
-      })], "<").add([
-        "cameraShake",
-        gsapWithCSS.to(".mdx-hero__teaser", {
-          x: "random(-5, 5)",
-          y: "random(-5, 5)",
-          duration: 0.2,
-          repeat: 3,
-          yoyo: true,
-          ease: "none",
-          clearProps: "x,y"
-        })
-      ], ">").add(["intoParagraphs", gsapWithCSS.to([...paragraphSpans], {
-        opacity: 1,
-        scale: 1,
-        y: 0,
-        rotationX: 0,
-        z: 0,
-        duration: 0.5,
-        ease: "power3.in",
-        stagger: {
-          amount: 0.2
-        },
-        perspective: 0
-      })], "-=0.5").add(["debris", gsapWithCSS.to(createDebris(ctaParagraph), {
-        x: "random(-100, 100)",
-        y: "random(-100, 100)",
-        opacity: 0,
-        duration: 0.3,
-        ease: "power3.out",
-        stagger: {
-          amount: 0.1
-        }
-      })], "-=0.3").add(["buttonIntro", gsapWithCSS.to("#hero-primary-button", {
-        opacity: 1,
-        scale: 1,
-        y: 0,
-        rotationX: 0,
-        z: 0,
-        duration: 0.6,
-        ease: "power3.in",
-        perspective: 0,
-        onComplete: () => {
-          gsapWithCSS.to("#hero-primary-button", {
-            y: -10,
-            rotationX: -5,
-            duration: 1.2,
-            repeat: 4,
-            yoyo: true,
-            ease: "power1.inOut"
+            }
+          )], "-=0.2").add([
+            "cameraShake",
+            gsapWithCSS.to(".mdx-hero__teaser", {
+              x: "random(-5, 5)",
+              y: "random(-5, 5)",
+              duration: 0.2,
+              repeat: 3,
+              yoyo: true,
+              ease: "none",
+              clearProps: "x,y"
+            })
+          ], ">").add(["intoParagraphs", gsapWithCSS.to([...paragraphSpans], {
+            opacity: 1,
+            scale: 1,
+            y: 0,
+            rotationX: 0,
+            z: 0,
+            duration: 0.6,
+            ease: "power3.in",
+            stagger: {
+              amount: 0.2
+            },
+            perspective: 0
+          })], "-=0.3").add(["secondDebris", gsapWithCSS.fromTo(
+            [...secondDebris],
+            {
+              x: gsapWithCSS.utils.random(paragraphRect.left, paragraphRect.right),
+              y: gsapWithCSS.utils.random(paragraphRect.top, paragraphRect.bottom),
+              opacity: 1
+            },
+            {
+              x: gsapWithCSS.utils.random(0, windowWidth),
+              y: gsapWithCSS.utils.random(0, windowHeight),
+              opacity: 0,
+              duration: 0.3,
+              ease: "power3.out",
+              stagger: {
+                amount: 0.05
+              }
+            }
+          )], "-=0.25").add(["buttonIntro", gsapWithCSS.to("#hero-primary-button", {
+            opacity: 1,
+            scale: 1,
+            y: 0,
+            rotationX: 0,
+            z: 0,
+            duration: 0.6,
+            ease: "power3.in",
+            perspective: 0,
+            onComplete: () => {
+              gsapWithCSS.to("#hero-primary-button", {
+                y: -1,
+                x: 2,
+                rotationX: -1,
+                duration: 0.1,
+                repeat: 10,
+                yoyo: true,
+                ease: "power1.inOut"
+              });
+            }
+          })], ">").add(["buttonTextAnimation", gsapWithCSS.to([...buttonTextSpans], {
+            opacity: 1,
+            visibility: "visible",
+            duration: 0.5,
+            perspective: 0,
+            stagger: {
+              amount: 0.1
+            },
+            color: "var(--emerald)"
+          })], "-=0.1").call(() => {
+            logger.info("Hero text animation completed");
           });
+          return of(tl);
         }
-      })], ">").add(["buttonTextIntro", gsapWithCSS.set([...buttonTextSpans || [document.createElement("span")]], {
-        opacity: 0,
-        color: "var(--turkey-red)"
-      })], "<").add(["buttonTextFadeIn", gsapWithCSS.delayedCall(0.1, () => buttonTextSpans == null ? void 0 : buttonTextSpans.forEach((span) => button.appendChild(span)))], ">").add(["buttonTextAnimation", gsapWithCSS.to([...buttonTextSpans || [document.createElement("span")]], {
-        opacity: 1,
-        duration: 0.3,
-        perspective: 0,
-        stagger: {
-          amount: 0.1
-        },
-        color: "var(--emerald)"
-      })], "-=0.1").call(() => {
-        logger.info("Hero text animation completed");
-      });
-      return tl;
-    }
-  });
+      }
+    )
+  );
 }
 
 // src/assets/javascripts/hero/imageshuffle/index.ts
@@ -15627,8 +15678,8 @@ var HERO_CONFIG = {
     }
   }
 };
-var customWindow2 = window;
-var { location$: location$3, viewport$: viewport$3 } = customWindow2;
+var customWindow3 = window;
+var { location$: location$3, viewport$: viewport$3 } = customWindow3;
 var isPortrait$ = watchMediaQuery("(orientation: portrait)");
 var isPageVisible = () => !document.hidden;
 var isAtHome = () => {
@@ -15637,7 +15688,7 @@ var isAtHome = () => {
   return isHome(loc) && isOnSite(loc);
 };
 var leftPage = () => !isAtHome() && isOnSite(getLocation());
-var parallaxLayer = customWindow2.document.getElementById("parallax-hero-image-layer");
+var parallaxLayer = customWindow3.document.getElementById("parallax-hero-image-layer");
 var _HeroStateManager = class _HeroStateManager {
   /**
    * Creates an instance of HeroStateManager and initializes the shuffled heroes and subscriptions.
@@ -15729,14 +15780,14 @@ var _HeroStateManager = class _HeroStateManager {
     this.shuffledHeroes = [...this.getHeroes()].sort(() => Math.random() - 0.5);
     this.setupHomeWatcher();
     this.setupPageSubscriptions();
-    customWindow2.addEventListener("unload", () => this.dispose());
+    customWindow3.addEventListener("unload", () => this.dispose());
   }
   /**
    * Calculates the optimal width based on the current screen dimensions.
    * @returns The optimal width for the hero images.
    */
   getOptimalWidth() {
-    const screenWidth = Math.max(customWindow2.innerWidth, customWindow2.innerHeight);
+    const screenWidth = Math.max(customWindow3.innerWidth, customWindow3.innerHeight);
     if (screenWidth <= 1024) {
       return 1280;
     }
@@ -15756,7 +15807,7 @@ var _HeroStateManager = class _HeroStateManager {
     return {
       activeImageIndex: 0,
       currentImage: null,
-      currentTimeline: gsapWithCSS.timeline(),
+      currentTimeline: of(gsapWithCSS.timeline()),
       isAtHome: isAtHome(),
       isVisible: isPageVisible(),
       lastActiveTime: Date.now(),
@@ -15787,11 +15838,11 @@ var _HeroStateManager = class _HeroStateManager {
       tap((isVisible) => this.updateState({ isVisible }))
     ).subscribe();
     const orientationSub = merge(
-      fromEvent(customWindow2, "resize").pipe(
+      fromEvent(customWindow3, "resize").pipe(
         switchMap(() => viewport$3),
         map(({ size }) => size.width < size.height ? "portrait" : "landscape")
       ),
-      fromEvent(customWindow2, "orientationchange"),
+      fromEvent(customWindow3, "orientationchange"),
       isPortrait$.pipe(map((result) => result ? "portrait" : "landscape"))
     ).pipe(
       debounceTime(150),
@@ -15808,7 +15859,9 @@ var _HeroStateManager = class _HeroStateManager {
           optimalWidth
         );
       }),
-      filter(() => this.state$.value.currentTimeline.isActive()),
+      switchMap(() => this.state$.value.currentTimeline),
+      filter((timeline2) => timeline2.isActive()),
+      // wait for next image if animation isn't active
       tap(() => {
         this.cycleImage(true);
       })
@@ -15847,7 +15900,7 @@ var _HeroStateManager = class _HeroStateManager {
     const headerHeight = headerRect.height;
     this.updateState({ headerHeight });
     setCssVariable("--header-height", `${headerHeight}px`);
-    const effectiveViewHeight = customWindow2.innerHeight - headerHeight;
+    const effectiveViewHeight = customWindow3.innerHeight - headerHeight;
     const maxFade = effectiveViewHeight * 1.4;
     if (!parallaxLayer || headerHeight <= 0) {
       const currentValue = document.documentElement.style.getPropertyValue("--fade-height");
@@ -16018,7 +16071,6 @@ var _HeroStateManager = class _HeroStateManager {
     logger.info("processed Bounding rect:", boundingRect);
     img.style.scale = "";
     img.style.opacity = "";
-    img.style.visibility = "";
     return {
       computedStyle: processedStyle,
       naturalWidth,
@@ -16079,7 +16131,7 @@ var _HeroStateManager = class _HeroStateManager {
   }
   createImageAnimation(img, imageName) {
     if (!img || !parallaxLayer) {
-      return void 0;
+      return of(gsapWithCSS.timeline());
     }
     const tl = gsapWithCSS.timeline({
       paused: true,
@@ -16087,38 +16139,29 @@ var _HeroStateManager = class _HeroStateManager {
       defaults: { ease: HERO_CONFIG.ANIMATION.PAN.ease },
       smoothChildTiming: true
     });
-    if (this.layerEmpty()) {
-      Promise.allSettled([initHeroTextAnimation$()]).then(([textAnimation]) => {
-        if (textAnimation.status === "fulfilled" && textAnimation.value instanceof gsapWithCSS.core.Timeline) {
-          tl.add(["introTextAnimation", textAnimation.value], "<");
-        } else {
-          logger.error("Failed to load text animation:", textAnimation.status);
+    return of(tl).pipe(switchMap(
+      (timeline2) => {
+        return combineLatest({
+          timeline: of(timeline2),
+          prefersReducedMotion: prefersReducedMotion$,
+          textAnimation: this.layerEmpty() ? initHeroTextAnimation$() : of(null)
+        });
+      }
+    ), switchMap(
+      ({ timeline: timeline2, prefersReducedMotion: prefersReducedMotion2, textAnimation }) => {
+        if (textAnimation && textAnimation instanceof gsapWithCSS.core.Timeline) {
+          timeline2.add(textAnimation, "<");
         }
-      });
-      from(initHeroTextAnimation$()).pipe(switchMap((timeline2) => {
-        if (timeline2 && timeline2 instanceof gsapWithCSS.core.Timeline) {
-          tl.add(["introTextAnimation", timeline2], "<");
-          return of(timeline2);
+        const startTime = tl.totalDuration() < 1 ? 0 : tl.totalDuration();
+        const currentImage = this.layerNotEmpty() ? this.currentImage() : null;
+        if (currentImage) {
+          timeline2.add(["currentImgFadeOut", gsapWithCSS.to(currentImage, { ...HERO_CONFIG.ANIMATION.EXIT })], "<");
         }
-        return of(null);
-      })).subscribe((timeline2) => {
-        if (timeline2) {
-          tl.add(timeline2, "<");
-        }
-      });
-    }
-    const startTime = tl.totalDuration() < 1 ? 0 : tl.totalDuration();
-    const currentImage = this.layerNotEmpty() ? this.currentImage() : null;
-    if (currentImage) {
-      tl.add(["currentImgFadeOut", gsapWithCSS.to(currentImage, { ...HERO_CONFIG.ANIMATION.EXIT })], "<");
-    }
-    tl.add(["updateText", () => this.updateTextElements(imageName)], startTime).add(["addImage", () => parallaxLayer.append(img)], "<").add(["imageFadeIn", gsapWithCSS.to(img, { ...HERO_CONFIG.ANIMATION.ENTER })], startTime);
-    prefersReducedMotion$.subscribe({
-      next: (prefersReducedMotion2) => {
+        timeline2.add(["addImage", () => parallaxLayer.append(img)], "<");
+        timeline2.add(["imageFadeIn", gsapWithCSS.to(img, { ...HERO_CONFIG.ANIMATION.ENTER })], "<");
+        timeline2.add(["updateText", () => this.updateTextElements(imageName)], startTime);
         if (prefersReducedMotion2) {
-          this.state$.value.currentTimeline.kill();
-          this.updateState({ currentTimeline: tl });
-          return;
+          return of(timeline2);
         } else {
           const sizingData = this.testImageDimensions(img);
           const dimensions = {
@@ -16138,14 +16181,19 @@ var _HeroStateManager = class _HeroStateManager {
           );
           if (waypoints.length > 0) {
             waypoints.forEach((waypoint, index) => {
-              tl.add([`waypoint${index.toString()}`, gsapWithCSS.to(img, { x: waypoint.position.x, y: waypoint.position.y, duration: waypoint.duration * HERO_CONFIG.ANIMATION.PAN.duration })], ">");
+              timeline2.add([`waypoint${index.toString()}`, gsapWithCSS.to(img, { x: waypoint.position.x, y: waypoint.position.y, duration: waypoint.duration * HERO_CONFIG.ANIMATION.PAN.duration })], ">");
             });
           }
-          this.state$.value.currentTimeline.kill();
-          this.updateState({ currentTimeline: tl });
+          if (this.state$.value.currentTimeline) {
+            this.state$.value.currentTimeline.pipe(first(), map((oldTl) => {
+              oldTl.kill();
+            }));
+          }
+          this.updateState({ currentTimeline: of(timeline2) });
+          return of(timeline2);
         }
       }
-    });
+    ));
   }
   /**
    * Cycles to the next image in the hero image array.
@@ -16177,17 +16225,17 @@ var _HeroStateManager = class _HeroStateManager {
       }
       const loadImage$ = this.loadedImages.has(nextImageName) ? of(this.loadedImages.get(nextImageName)) : this.loadAndPrepareImage(nextImage).pipe(
         switchMap((img) => {
-          if (img instanceof HTMLImageElement) {
-            if (!img.complete) {
-              return new Promise((resolve3) => {
-                img.onload = () => resolve3(img);
-              });
-            }
+          return from(new Promise((resolve3) => {
+            img.onload = () => resolve3(img);
+          }));
+        }),
+        switchMap((img) => {
+          if (img && img instanceof HTMLImageElement) {
             this.loadedImages.set(nextImageName, img);
             this.trackImageMetadata(img);
             return of(img);
           } else {
-            return throwError(() => new Error("Failed to load image"));
+            throwError(() => new Error("Failed to load image"));
           }
         }),
         tap(
@@ -16201,12 +16249,11 @@ var _HeroStateManager = class _HeroStateManager {
       );
       return loadImage$.pipe(
         switchMap((newImageElement) => {
-          this.createImageAnimation(newImageElement, nextImageName);
-          const timeline2 = this.state$.value.currentTimeline;
+          const completedTimeline = this.createImageAnimation(newImageElement, nextImageName);
           this.updateState({
             activeImageIndex: nextIndex,
             currentImage: newImageElement,
-            currentTimeline: timeline2 || gsapWithCSS.timeline()
+            currentTimeline: completedTimeline || of(gsapWithCSS.timeline())
           });
           if (imageInDOM && imageInDOM instanceof HTMLImageElement) {
             try {
@@ -16215,7 +16262,10 @@ var _HeroStateManager = class _HeroStateManager {
               logger.error("Error removing image:", error);
             }
           }
-          timeline2 == null ? void 0 : timeline2.play();
+          return completedTimeline;
+        }),
+        exhaustMap((timeline2) => {
+          timeline2.play();
           return of(void 0);
         }),
         catchError((error) => {
@@ -16241,7 +16291,7 @@ var _HeroStateManager = class _HeroStateManager {
   dispose() {
     this.loadedImages.forEach((img) => this.cleanupImageResources(img));
     this.loadedImages.clear();
-    this.state$.value.currentTimeline.kill();
+    firstValueFrom(this.state$.value.currentTimeline).then((timeline2) => timeline2.kill());
     this.imageMetadata = /* @__PURE__ */ new WeakMap();
     this.updateState({ status: "paused" });
     this.state$.complete();
@@ -16323,21 +16373,27 @@ _HeroStateManager.createCycler = () => {
 var HeroStateManager = _HeroStateManager;
 var cyclerRef = { current: null };
 var initCycler = () => {
-  var _a2;
+  var _a2, _b, _c;
   if (!parallaxLayer) {
     logger.warn("No parallax layer found");
     return;
   }
   logger.info("Initializing cycler");
-  (_a2 = cyclerRef.current) == null ? void 0 : _a2.stop();
-  cyclerRef.current = HeroStateManager.createCycler();
-  const subscription = cyclerRef.current.start();
-  return () => {
+  let subscription = new Subscription();
+  const state = ((_a2 = cyclerRef.current) == null ? void 0 : _a2.heroState) ? (_b = cyclerRef.current) == null ? void 0 : _b.heroState.getCurrentState() : null;
+  const cleanupFunction = () => {
     var _a3;
     subscription == null ? void 0 : subscription.unsubscribe();
     (_a3 = cyclerRef.current) == null ? void 0 : _a3.stop();
     cyclerRef.current = null;
   };
+  if (state && state.status !== "cycling" && state.isAtHome) {
+    subscription = (_c = cyclerRef.current) == null ? void 0 : _c.start();
+    return cleanupFunction;
+  }
+  cyclerRef.current = HeroStateManager.createCycler();
+  subscription = cyclerRef.current.start();
+  return cleanupFunction;
 };
 var shuffle$ = () => {
   var _a2;
@@ -16345,16 +16401,18 @@ var shuffle$ = () => {
     logger.warn("No parallax layer found");
     return EMPTY;
   }
-  initCycler();
+  if (!cyclerRef.current) {
+    initCycler();
+  }
   return interval(HERO_CONFIG.INTERVAL).pipe(
     withLatestFrom(((_a2 = cyclerRef.current) == null ? void 0 : _a2.heroState.canCycle$) || of(false)),
     filter(([_, canCycle]) => canCycle),
     switchMap(() => {
-      var _a3;
+      var _a3, _b;
       if (!((_a3 = cyclerRef.current) == null ? void 0 : _a3.heroState)) {
-        return EMPTY;
+        initCycler();
       }
-      return from(cyclerRef.current.heroState.cycleImage()).pipe(
+      return from((_b = cyclerRef.current) == null ? void 0 : _b.heroState.cycleImage()).pipe(
         catchError((error) => {
           logger.error("Error during image cycle:", error);
           return EMPTY;
@@ -16696,10 +16754,10 @@ var subscribeToAnimation$ = () => {
 
 // src/assets/javascripts/index.ts
 gsapWithCSS.registerPlugin(ScrollTrigger2, ScrollToPlugin);
-var customWindow3 = window;
-var { document$: document$3 } = customWindow3;
 document.documentElement.classList.remove("no-js");
 document.documentElement.classList.add("js");
+var customWindow4 = window;
+var { document$: document$3 } = customWindow4;
 var extractUrls = (elements, attribute) => Array.from(elements).map((el) => el.getAttribute(attribute)).filter((url) => url !== null);
 var createScript = (src, async2 = true, defer2 = true) => {
   const alreadyLoaded = document.querySelector(`script[src="${src}"]`);
@@ -16938,4 +16996,4 @@ gsap/ScrollToPlugin.js:
    * @author: Jack Doyle, jack@greensock.com
   *)
 */
-//# sourceMappingURL=index.6INGU5MO.js.map
+//# sourceMappingURL=index.P4PVDA3E.js.map

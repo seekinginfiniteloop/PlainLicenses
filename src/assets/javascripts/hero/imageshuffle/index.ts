@@ -13,7 +13,9 @@ import {
   EMPTY,
   Observable,
   Subscription,
+  combineLatest,
   defer,
+  firstValueFrom,
   from,
   fromEvent,
   interval,
@@ -26,8 +28,10 @@ import {
   catchError,
   debounceTime,
   distinctUntilChanged,
+  exhaustMap,
   filter,
   finalize,
+  first,
   map,
   mergeMap,
   switchMap,
@@ -47,7 +51,6 @@ import { initHeroTextAnimation$ } from "../impactText"
 
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { ScrollToPlugin } from "gsap/ScrollToPlugin"
-import { text } from "stream/consumers"
 
 gsap.registerPlugin(ScrollTrigger,ScrollToPlugin)
 
@@ -174,7 +177,7 @@ class HeroStateManager {
     return {
       activeImageIndex: 0,
       currentImage: null,
-      currentTimeline: gsap.timeline(),
+      currentTimeline: of(gsap.timeline()),
       isAtHome: isAtHome(),
       isVisible: isPageVisible(),
       lastActiveTime: Date.now(),
@@ -276,7 +279,8 @@ class HeroStateManager {
           optimalWidth
         )
       }),
-      filter(() => this.state$.value.currentTimeline.isActive()),
+      switchMap(() => this.state$.value.currentTimeline),
+      filter((timeline) => timeline.isActive()), // wait for next image if animation isn't active
       tap(() => {
         this.cycleImage(true)
       })
@@ -577,7 +581,7 @@ class HeroStateManager {
     if (!emplacedElement) {
       throw new Error("Emplaced element not found")
     }
-    const {naturalHeight, naturalWidth} = emplacedElement
+    const { naturalHeight, naturalWidth } = emplacedElement
     // shell game to avoid garbage collector
     const elementRect = emplacedElement.getBoundingClientRect()
     const elementStyle = JSON.stringify(window.getComputedStyle(emplacedElement))
@@ -591,7 +595,6 @@ class HeroStateManager {
     logger.info("processed Bounding rect:", boundingRect)
     img.style.scale = ""
     img.style.opacity = ""
-    img.style.visibility = ""
     return {
       computedStyle: processedStyle,
       naturalWidth,
@@ -658,7 +661,7 @@ class HeroStateManager {
 
   private createImageAnimation(img: HTMLImageElement, imageName: string) {
     if (!img || !parallaxLayer) {
-      return void 0
+      return of(gsap.timeline())
     }
 
     const tl = gsap.timeline({
@@ -668,80 +671,58 @@ class HeroStateManager {
       smoothChildTiming: true
     })
 
-    // Add new image and text updates
-    if (this.layerEmpty()) {
-      Promise.allSettled([initHeroTextAnimation$()]).then(([textAnimation]) => {
-        if (textAnimation.status === "fulfilled" && textAnimation.value instanceof gsap.core.Timeline) {
-          tl.add(["introTextAnimation", textAnimation.value], "<")
-        } else {
-          logger.error("Failed to load text animation:", textAnimation.status)
-        }
+    return of(tl).pipe(switchMap((timeline) => {
+      return combineLatest({
+        timeline: of(timeline),
+        prefersReducedMotion: prefersReducedMotion$,
+        textAnimation: this.layerEmpty() ? initHeroTextAnimation$() : of(null)
       })
-
-      from(initHeroTextAnimation$()).pipe(switchMap((timeline) => {
-        if (timeline && timeline instanceof gsap.core.Timeline) {
-          tl.add(["introTextAnimation", timeline], "<")
-          return of(timeline)
-        } return of(null)
-      })).subscribe((timeline) => { if (timeline) { tl.add(timeline, "<") } })
     }
-    const startTime = tl.totalDuration() < 1 ? 0 : tl.totalDuration()
-    const currentImage = this.layerNotEmpty() ? this.currentImage() : null
-
-  // Handle existing image fade out
-    if (currentImage) {
-      tl.add(["currentImgFadeOut", gsap.to(currentImage, {...HERO_CONFIG.ANIMATION.EXIT})], "<")
-    }
-    tl.add(["updateText", () => this.updateTextElements(imageName)], startTime)
-    .add(["addImage", () => parallaxLayer.append(img)], "<")
-    .add(["imageFadeIn", gsap.to(img, { ...HERO_CONFIG.ANIMATION.ENTER })], startTime)
-
-    prefersReducedMotion$.subscribe({
-      next: (prefersReducedMotion) => {
-        if (prefersReducedMotion) {
-          this.state$.value.currentTimeline.kill()
-          this.updateState({ currentTimeline: tl })
-          return
-        } // Skip animations if user prefers reduced motion
-        else {
-          const sizingData = this.testImageDimensions(img)
-          const dimensions = {
-            width: sizingData.boundingRect.width,
-            height: sizingData.boundingRect.height
-          }
-
-          const viewportSize = {
-            width: this.state$.value.viewportDimensions.width,
-            height: this.state$.value.viewportDimensions.height
-          }
-
-          const focalPoints = this.getFocalPoints(img)
-
-/**
- * const transforms = this.transformCalc.calculateAnimationTransforms(
- * dimensions,
- * viewportSize,
- * this.state$.value.headerHeight,
- * focalPoints
- * )
- */
-          const waypoints = this.transformCalc.calculateAnimationWaypoints(
-            dimensions,
-            viewportSize,
-            this.state$.value.headerHeight,
-            [focalPoints.secondary, focalPoints.main]
-          )
-
-      // Apply transforms
-          if (waypoints.length > 0) {
-            waypoints.forEach((waypoint, index) => { tl.add([`waypoint${index.toString()}`, gsap.to(img, { x: waypoint.position.x, y: waypoint.position.y, duration: (waypoint.duration * HERO_CONFIG.ANIMATION.PAN.duration)})], ">") })
-          }
-
-          this.state$.value.currentTimeline.kill()
-          this.updateState({ currentTimeline: tl })
-        }
+    ), switchMap(({ timeline, prefersReducedMotion, textAnimation }) => {
+      if (textAnimation && textAnimation instanceof gsap.core.Timeline) {
+        timeline.add(textAnimation, "<")
       }
-    })
+      const startTime = tl.totalDuration() < 1 ? 0 : tl.totalDuration()
+      const currentImage = this.layerNotEmpty() ? this.currentImage() : null
+      if (currentImage) {
+        timeline.add(["currentImgFadeOut", gsap.to(currentImage, { ...HERO_CONFIG.ANIMATION.EXIT })], "<")
+      }
+      timeline.add(["addImage", () => parallaxLayer.append(img)], "<")
+      timeline.add(["imageFadeIn", gsap.to(img, { ...HERO_CONFIG.ANIMATION.ENTER })], "<")
+      timeline.add(["updateText", () => this.updateTextElements(imageName)], startTime)
+      if (prefersReducedMotion) {
+        return of(timeline)
+      } else {
+        const sizingData = this.testImageDimensions(img)
+        const dimensions = {
+          width: sizingData.boundingRect.width,
+          height: sizingData.boundingRect.height
+        }
+        const viewportSize = {
+          width: this.state$.value.viewportDimensions.width,
+          height: this.state$.value.viewportDimensions.height
+        }
+        const focalPoints = this.getFocalPoints(img)
+        const waypoints = this.transformCalc.calculateAnimationWaypoints(
+          dimensions,
+          viewportSize,
+          this.state$.value.headerHeight,
+          [focalPoints.secondary, focalPoints.main]
+        )
+
+        // Apply transforms
+        if (waypoints.length > 0) {
+          waypoints.forEach((waypoint, index) => { timeline.add([`waypoint${index.toString()}`, gsap.to(img, { x: waypoint.position.x, y: waypoint.position.y, duration: (waypoint.duration * HERO_CONFIG.ANIMATION.PAN.duration) })], ">") })
+        }
+
+        if (this.state$.value.currentTimeline) {
+          this.state$.value.currentTimeline.pipe(first(), map((oldTl) => { oldTl.kill() }))
+        }
+        this.updateState({ currentTimeline: of(timeline) })
+        return of(timeline)
+      }
+    }
+    ))
   }
 
   /**
@@ -779,43 +760,41 @@ class HeroStateManager {
         }
       }
 
-    const loadImage$ = this.loadedImages.has(nextImageName) ?
-      of(this.loadedImages.get(nextImageName)!) :
-      this.loadAndPrepareImage(nextImage).pipe(
-        switchMap(img => {
-          if (img instanceof HTMLImageElement) {
-            if (!img.complete) {
-              return new Promise((resolve) => {
-                img.onload = () => resolve(img)
-              })
-            }
-            this.loadedImages.set(nextImageName, img)
-            this.trackImageMetadata(img)
-            return of(img)
-          } else { return throwError(() => new Error("Failed to load image")) }
-        }),
-        tap((img) => {
+      const loadImage$ = this.loadedImages.has(nextImageName) ?
+        of(this.loadedImages.get(nextImageName)!) :
+        this.loadAndPrepareImage(nextImage).pipe(
+          switchMap(img => { return from(new Promise((resolve) => { img.onload = () => resolve(img) })) }),
+          switchMap(img => {
+            if (img && img instanceof HTMLImageElement) {
+              this.loadedImages.set(nextImageName, img)
+              this.trackImageMetadata(img)
+              return of(img)
+            } else { throwError(() => new Error("Failed to load image")) }
+          }),
+          tap((img) => {
           this.updateState({ activeImageIndex: nextIndex })
           logger.info("Image loaded and prepared for", nextImageName)
           logger.info("Current image index:", nextIndex)
           logger.info(`type: ${typeof img}; Image name: ${nextImageName}; image URL: ${nextImage.src}; height: ${(img as HTMLImageElement).naturalHeight}; width: ${(img as HTMLImageElement).naturalWidth}`)
           }
-        ))
+          ))
 
     return loadImage$.pipe(
       switchMap(newImageElement => {
-        this.createImageAnimation(newImageElement as HTMLImageElement, nextImageName)
-        const timeline = this.state$.value.currentTimeline
+        const completedTimeline = this.createImageAnimation(newImageElement as HTMLImageElement, nextImageName)
 
         this.updateState({
           activeImageIndex: nextIndex,
           currentImage: newImageElement as HTMLImageElement,
-          currentTimeline: timeline || gsap.timeline(),
+          currentTimeline: completedTimeline || of(gsap.timeline()),
         })
         if (imageInDOM && imageInDOM instanceof HTMLImageElement) {
           try { imageInDOM.remove() } catch (error) { logger.error("Error removing image:", error) }
         }
-        timeline?.play()
+        return completedTimeline
+      }),
+      exhaustMap(timeline => {
+        timeline.play()
         return of(void 0)
       }),
       catchError(error => {
@@ -842,7 +821,7 @@ class HeroStateManager {
   public dispose(): void {
     this.loadedImages.forEach(img => this.cleanupImageResources(img))
     this.loadedImages.clear()
-    this.state$.value.currentTimeline.kill()
+    firstValueFrom(this.state$.value.currentTimeline).then(timeline => timeline.kill())
     this.imageMetadata = new WeakMap()
     this.updateState({ status: 'paused'})
     this.state$.complete()
@@ -884,13 +863,19 @@ const initCycler = () => {
   let subscription = new Subscription()
 
   const state = cyclerRef.current?.heroState ? cyclerRef.current?.heroState.getCurrentState() : null
-  // Clean up any existing cycler
+
+  const cleanupFunction = () => {
+    subscription?.unsubscribe()
+    cyclerRef.current?.stop()
+    cyclerRef.current = null
+  }
+
+  // if we have a cycler, at home, and not cycling -- start cycling
   if (state && state.status !== 'cycling' && state.isAtHome) {
-   subscription = cyclerRef.current.start()
-   return {subscription.unsubscribe(),
-    cyclerRef.current?.stop(),
-    cyclerRef.current = null }
-}
+    subscription = cyclerRef.current?.start()
+
+    return cleanupFunction
+  }
 
   // Create new cycler
   cyclerRef.current = HeroStateManager.createCycler()
@@ -899,12 +884,8 @@ const initCycler = () => {
   subscription = cyclerRef.current.start()
 
   // Return cleanup function
-  return () => {
-    subscription?.unsubscribe()
-    cyclerRef.current?.stop()
-    cyclerRef.current = null
+  return cleanupFunction
   }
-}
 
 /**
  * Creates an observable that handles continuous image cycling
@@ -915,17 +896,17 @@ export const shuffle$ = (): Observable<void> => {
     logger.warn("No parallax layer found")
     return EMPTY
   }
-
-  initCycler()
-
+  if (!cyclerRef.current) {
+    initCycler()
+  }
   return interval(HERO_CONFIG.INTERVAL).pipe(
     withLatestFrom(cyclerRef.current?.heroState.canCycle$ || of(false)),
     filter(([_, canCycle]) => canCycle as boolean),
     switchMap(() => {
       if (!cyclerRef.current?.heroState) {
-        return EMPTY
+        initCycler()
       }
-      return from(cyclerRef.current.heroState.cycleImage()).pipe(
+      return from(cyclerRef.current?.heroState.cycleImage()).pipe(
         catchError(error => {
           logger.error("Error during image cycle:", error)
           return EMPTY

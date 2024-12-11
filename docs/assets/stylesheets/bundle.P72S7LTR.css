@@ -7178,7 +7178,8 @@ header#header-target.md-header {
   user-select: none;
   object-fit: cover;
 }
-#hero-primary-button {
+#hero-primary-button,
+#hero-primary-button:visited {
   z-index: 3000;
   box-sizing: content-box;
   display: inline-block;
@@ -7724,7 +7725,9 @@ h1.hero-content-section.header-mid.line span {
   text-transform: uppercase;
   white-space: nowrap;
   font-display: swap;
+  visibility: hidden;
   object-position: bottom left;
+  opacity: 0;
   transition: 300ms color ease;
   animation: glow 3000ms ease-in-out infinite alternate;
   -webkit-font-smoothing: antialiased;
@@ -7749,10 +7752,12 @@ h1.hero-content-section.header-mid.line span {
   text-transform: uppercase;
   white-space: nowrap;
   font-display: swap;
+  visibility: hidden;
   object-position: bottom left;
+  opacity: 0;
+  transition: 300ms color ease;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  transition: 300ms color ease;
 }
 @media screen and (width <= 416px) {
   #CTA_header {
@@ -7864,14 +7869,14 @@ h1.hero-content-section.header-mid.line span {
     --p-color: var(--atomic-tangerine);
   }
 }
-#parallax-hero-image-layer.hero-parallax__image:not(:first-of-type(img)) {
+#parallax-hero-image-layer img:not(:first-of-type) {
   position: absolute;
   top: 0;
   z-index: -300;
   visibility: hidden;
   opacity: 0;
 }
-#parallax-hero-image-layer.hero-parallax__image:first-of-type(img) {
+#parallax-hero-image-layer img:first-of-type {
   top: 0;
   visibility: visible;
   opacity: 1;
@@ -7904,4 +7909,4 @@ h1.hero-content-section.header-mid.line span {
 }
 
 /* src/assets/stylesheets/bundle.css */
-/*# sourceMappingURL=bundle.HDSB5ACS.css.map */
+/*# sourceMappingURL=bundle.P72S7LTR.css.map */

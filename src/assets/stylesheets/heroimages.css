@@ -67,7 +67,9 @@ so it made sense for them to live here
   text-transform: uppercase;
   white-space: nowrap;
   font-display: swap;
+  visibility: hidden;
   object-position: bottom left;
+  opacity: 0;
   transition: 300ms color ease;
   animation: glow 3000ms ease-in-out infinite alternate;
   -webkit-font-smoothing: antialiased;
@@ -88,10 +90,12 @@ so it made sense for them to live here
   text-transform: uppercase;
   white-space: nowrap;
   font-display: swap;
+  visibility: hidden;
   object-position: bottom left;
+  opacity: 0;
+  transition: 300ms color ease;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  transition: 300ms color ease;
 }
 
 @media screen and (width <= 416px) {

@@ -129,7 +129,8 @@ header#header-target.md-header {
   object-fit: cover;
 }
 
-#hero-primary-button {
+#hero-primary-button,
+#hero-primary-button:visited {
   z-index: 3000;
   box-sizing: content-box;
   display: inline-block;
