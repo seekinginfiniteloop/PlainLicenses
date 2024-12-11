@@ -42,7 +42,7 @@ import {
 
 import { getLocation } from "~/browser"
 
-import { isHome, isOnSite, navigationEvents$, prefersReducedMotion$, setCssVariable, watchMediaQuery } from "~/utils"
+import { ImageValidationHandler, isHome, isOnSite, navigationEvents$, prefersReducedMotion$, setCssVariable, watchMediaQuery } from "~/utils"
 import { getAsset$ } from "~/cache"
 import { HeroImage, ImageFocalPoints, heroImages } from "~/hero/imageshuffle/data"
 import { logger } from "~/log"
@@ -505,6 +505,50 @@ class HeroStateManager {
   public getImageMetadata(img: HTMLImageElement): ImageMetadata | undefined {
     return this.imageMetadata.get(img)
   }
+const validateLoadedImage = (img: HTMLImageElement): boolean => 
+  Boolean(
+    img &&
+    img instanceof HTMLImageElement &&
+    img.complete &&
+    img.naturalWidth > 0 &&
+    img.naturalHeight > 0
+  );
+
+const waitForImageLoad = (img: HTMLImageElement): Promise<HTMLImageElement> => {
+  if (img.complete) {
+    return validateLoadedImage(img) 
+      ? Promise.resolve(img)
+      : Promise.reject(new Error('Image failed to load properly - zero dimensions'));
+  }
+
+  return new Promise((resolve, reject) => {
+    const cleanup = () => {
+      img.removeEventListener('load', onLoad);
+      img.removeEventListener('error', onError);
+      clearTimeout(timeout);
+    };
+
+    const onLoad = () => {
+      cleanup();
+      validateLoadedImage(img) 
+        ? resolve(img)
+        : reject(new Error('Image loaded but has invalid dimensions'));
+    };
+
+    const onError = () => {
+      cleanup();
+      reject(new Error(`Failed to load image: ${img.src}`));
+    };
+
+    img.addEventListener('load', onLoad);
+    img.addEventListener('error', onError);
+
+    const timeout = setTimeout(() => {
+      cleanup();
+      reject(new Error('Image load timed out'));
+    }, 30000);
+  });
+};
 
   /**
    * Loads and prepares an image based on the provided settings.
@@ -512,26 +556,28 @@ class HeroStateManager {
    * @returns A promise that resolves to the loaded image element.
    */
   public loadAndPrepareImage(imgSettings: HeroImage): Observable<HTMLImageElement> {
-    if (!parallaxLayer || !imgSettings.src) {
-      throw new Error("Parallax layer or image source not found")
-    }
-    return this.loadImage(imgSettings.src).pipe(
-      map(blob => {
-        const img = new Image()
-        img.src = URL.createObjectURL(blob)
-        this.setImageAttributes(img, blob, imgSettings.imageName, imgSettings.srcset, imgSettings.focalPoints)
-        return img
-      }),
-      tap(img => {
-        if (!img.complete) {
-          return new Promise((resolve) => {
-            img.onload = () => resolve(img)
-          })
-        }
-        return img
-      })
-    )
+  if (!parallaxLayer || !imgSettings.src) {
+    return throwError(() => new Error("Parallax layer or image source not found"));
   }
+
+  return this.loadImage(imgSettings.src).pipe(
+    map(blob => {
+      const img = new Image();
+      // Set attributes and prepare image
+      this.setImageAttributes(img, blob, imgSettings.imageName, imgSettings.srcset, imgSettings.focalPoints);
+      return img;
+    }),
+    switchMap(img => from(waitForImageLoad(img)).pipe(
+      catchError(error => {
+        // Clean up on error
+        if (img.src.startsWith('blob:')) {
+          URL.revokeObjectURL(img.src);
+        }
+        return throwError(() => error);
+      })
+    ))
+  );
+}
 
   /**
    * Sets the attributes for the specified image element.
@@ -571,37 +617,78 @@ class HeroStateManager {
    * @returns The dimensions of the image.
    */
   private testImageDimensions(img: HTMLImageElement): ImageDimensions {
-    if (!parallaxLayer) {
-      throw new Error("Parallax layer not found")
-    }
-    img.style.opacity = "0"
-    img.style.scale = "1"
-    parallaxLayer.append(img)
-    const emplacedElement = this.lastImage()
-    if (!emplacedElement) {
-      throw new Error("Emplaced element not found")
-    }
-    const { naturalHeight, naturalWidth } = emplacedElement
-    // shell game to avoid garbage collector
-    const elementRect = emplacedElement.getBoundingClientRect()
-    const elementStyle = JSON.stringify(window.getComputedStyle(emplacedElement))
-    const rectJSON = JSON.stringify(elementRect)
-    logger.info("Testing image in DOM:", img, "Emplaced element:", emplacedElement)
-    logger.info("Bounding rect:", rectJSON, "Element style:", elementStyle, "Natural dimensions:", naturalWidth, naturalHeight)
-    emplacedElement.remove()
-    const boundingRect = JSON.parse(rectJSON)
-    const processedStyle = JSON.parse(elementStyle)
-    logger.info("Processed style:", processedStyle)
-    logger.info("processed Bounding rect:", boundingRect)
-    img.style.scale = ""
-    img.style.opacity = ""
-    return {
-      computedStyle: processedStyle,
-      naturalWidth,
-      naturalHeight,
-      boundingRect
-    } as unknown as ImageDimensions
+  // First validate that we have a proper image with natural dimensions
+  const initialValidation = ImageValidationHandler.validateNaturalDimensions(img);
+  if (!initialValidation.isValid) {
+    throw new Error(`Invalid image: ${initialValidation.errors.join(', ')}`);
   }
+
+  if (!parallaxLayer) {
+    throw new Error("Parallax layer not found");
+  }
+
+  // Save original styles
+  const originalOpacity = img.style.opacity;
+  const originalScale = img.style.scale;
+
+  // Prepare for DOM insertion
+  img.style.opacity = "0";
+  img.style.scale = "1";
+
+  try {
+    // Insert into DOM
+    parallaxLayer.append(img);
+    const emplacedElement = this.lastImage();
+    
+    if (!emplacedElement) {
+      throw new Error("Failed to find emplaced element");
+    }
+
+    // Gather all dimensions
+    const dimensions = {
+      naturalWidth: emplacedElement.naturalWidth,
+      naturalHeight: emplacedElement.naturalHeight,
+      boundingRect: emplacedElement.getBoundingClientRect()
+    };
+
+    // Validate the gathered dimensions
+    const validationResult = ImageValidationHandler.validateDOMTestResult(dimensions);
+    if (!validationResult.isValid) {
+      throw new Error(`Invalid dimensions from DOM test: ${validationResult.errors.join(', ')}`);
+    }
+
+    // Log the dimensions for debugging
+    logger.debug('Image dimensions test results:', {
+      natural: {
+        width: dimensions.naturalWidth,
+        height: dimensions.naturalHeight
+      },
+      computed: {
+        width: dimensions.boundingRect.width,
+        height: dimensions.boundingRect.height
+      }
+    });
+
+    // Return full dimension data
+    return {
+      naturalWidth: dimensions.naturalWidth,
+      naturalHeight: dimensions.naturalHeight,
+      boundingRect: dimensions.boundingRect,
+      // Include computed style if needed, but mark as optional
+      computedStyle: window.getComputedStyle(emplacedElement)
+    } as ImageDimensions;
+
+  } finally {
+    // Always clean up
+    const emplacedElement = this.lastImage();
+    if (emplacedElement) {
+      ImageValidationHandler.safelyRemoveFromDOM(emplacedElement);
+    }
+    // Restore original styles
+    img.style.opacity = originalOpacity;
+    img.style.scale = originalScale;
+  }
+}
 
   /**
    * Computes the combined bounding rectangle for the specified rectangles.
@@ -660,25 +747,26 @@ class HeroStateManager {
   }
 
   private createImageAnimation(img: HTMLImageElement, imageName: string) {
-    if (!img || !parallaxLayer) {
-      return of(gsap.timeline())
-    }
+  if (!img || !parallaxLayer) {
+    return of(gsap.timeline());
+  }
 
-    const tl = gsap.timeline({
-      paused: true,
-      repeat: 0,
-      defaults: { ease: HERO_CONFIG.ANIMATION.PAN.ease },
-      smoothChildTiming: true
-    })
+  const tl = gsap.timeline({
+    paused: true,
+    repeat: 0,
+    defaults: { ease: HERO_CONFIG.ANIMATION.PAN.ease },
+    smoothChildTiming: true
+  });
 
-    return of(tl).pipe(switchMap((timeline) => {
+  return of(tl).pipe(
+    switchMap((timeline) => {
       return combineLatest({
         timeline: of(timeline),
         prefersReducedMotion: prefersReducedMotion$,
         textAnimation: this.layerEmpty() ? initHeroTextAnimation$() : of(null)
-      })
-    }
-    ), switchMap(({ timeline, prefersReducedMotion, textAnimation }) => {
+      });
+    }),
+    switchMap(({ timeline, prefersReducedMotion, textAnimation }) => {
       if (textAnimation && textAnimation instanceof gsap.core.Timeline) {
         timeline.add(textAnimation, "<")
       }
@@ -690,40 +778,64 @@ class HeroStateManager {
       timeline.add(["addImage", () => parallaxLayer.append(img)], "<")
       timeline.add(["imageFadeIn", gsap.to(img, { ...HERO_CONFIG.ANIMATION.ENTER })], "<")
       timeline.add(["updateText", () => this.updateTextElements(imageName)], startTime)
-      if (prefersReducedMotion) {
-        return of(timeline)
-      } else {
-        const sizingData = this.testImageDimensions(img)
+       if (prefersReducedMotion) {
+        return of(timeline);
+      }
+
+      try {
+        const sizingData = this.testImageDimensions(img);
+
+        // Use sizing data for animation calculations
         const dimensions = {
           width: sizingData.boundingRect.width,
           height: sizingData.boundingRect.height
-        }
+        };
+
         const viewportSize = {
-          width: this.state$.value.viewportDimensions.width,
-          height: this.state$.value.viewportDimensions.height
-        }
-        const focalPoints = this.getFocalPoints(img)
+          width: this.state$.value.viewportDimensions.width || window.innerWidth,
+          height: this.state$.value.viewportDimensions.height || window.innerHeight
+        };
+
+        // Fallback for header height if undefined
+        const headerHeight = this.state$.value.headerHeight ?? 0;
+
+        const focalPoints = this.getFocalPoints(img);
+        
         const waypoints = this.transformCalc.calculateAnimationWaypoints(
           dimensions,
           viewportSize,
-          this.state$.value.headerHeight,
+          headerHeight,
           [focalPoints.secondary, focalPoints.main]
-        )
+        );
 
-        // Apply transforms
         if (waypoints.length > 0) {
-          waypoints.forEach((waypoint, index) => { timeline.add([`waypoint${index.toString()}`, gsap.to(img, { x: waypoint.position.x, y: waypoint.position.y, duration: (waypoint.duration * HERO_CONFIG.ANIMATION.PAN.duration) })], ">") })
+          waypoints.forEach((waypoint, index) => {
+            if (Number.isFinite(waypoint.position.x) && 
+                Number.isFinite(waypoint.position.y) && 
+                Number.isFinite(waypoint.duration)) {
+              timeline.add(
+                [`waypoint${index}`, 
+                gsap.to(img, {
+                  x: waypoint.position.x,
+                  y: waypoint.position.y,
+                  duration: waypoint.duration * HERO_CONFIG.ANIMATION.PAN.duration
+                })],
+                ">"
+              );
+            } else {
+              logger.warn('Invalid waypoint:', waypoint);
+            }
+          });
         }
 
-        if (this.state$.value.currentTimeline) {
-          this.state$.value.currentTimeline.pipe(first(), map((oldTl) => { oldTl.kill() }))
-        }
-        this.updateState({ currentTimeline: of(timeline) })
-        return of(timeline)
+        return of(timeline);
+      } catch (error) {
+        logger.error('Error calculating animation:', error);
+        return of(timeline);  // Return basic timeline without transforms
       }
-    }
-    ))
-  }
+    })
+  );
+}
 
   /**
    * Cycles to the next image in the hero image array.
@@ -761,24 +873,24 @@ class HeroStateManager {
       }
 
       const loadImage$ = this.loadedImages.has(nextImageName) ?
-        of(this.loadedImages.get(nextImageName)!) :
-        this.loadAndPrepareImage(nextImage).pipe(
-          switchMap(img => { return from(new Promise((resolve) => { img.onload = () => resolve(img) })) }),
-          switchMap(img => {
-            if (img && img instanceof HTMLImageElement) {
-              this.loadedImages.set(nextImageName, img)
-              this.trackImageMetadata(img)
-              return of(img)
-            } else { throwError(() => new Error("Failed to load image")) }
-          }),
-          tap((img) => {
-          this.updateState({ activeImageIndex: nextIndex })
-          logger.info("Image loaded and prepared for", nextImageName)
-          logger.info("Current image index:", nextIndex)
-          logger.info(`type: ${typeof img}; Image name: ${nextImageName}; image URL: ${nextImage.src}; height: ${(img as HTMLImageElement).naturalHeight}; width: ${(img as HTMLImageElement).naturalWidth}`)
-          }
-          ))
-
+  defer(() => {
+    const cachedImage = this.loadedImages.get(nextImageName);
+    return validateLoadedImage(cachedImage!)
+      ? of(cachedImage!)
+      : throwError(() => new Error('Cached image invalid'));
+  }).pipe(
+    catchError(() => {
+      // Remove invalid cached image and reload
+      this.loadedImages.delete(nextImageName);
+      return this.loadAndPrepareImage(nextImage);
+    })
+  ) :
+  this.loadAndPrepareImage(nextImage).pipe(
+    tap(img => {
+      this.loadedImages.set(nextImageName, img);
+      this.trackImageMetadata(img);
+    })
+  );
     return loadImage$.pipe(
       switchMap(newImageElement => {
         const completedTimeline = this.createImageAnimation(newImageElement as HTMLImageElement, nextImageName)
