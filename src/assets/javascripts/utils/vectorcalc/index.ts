@@ -21,6 +21,80 @@ import { logger } from "~/log"
  * So I learned some of that math and wrote these.
  */
 
+class DimensionValidator {
+  static validateImageSize(imageSize: ImageSize): void {
+    if (!imageSize || typeof imageSize !== 'object') {
+      throw new Error('Invalid image size: must be an object with width and height')
+    }
+
+    if (!Number.isFinite(imageSize.width) || !Number.isFinite(imageSize.height)) {
+      throw new Error('Invalid image dimensions: width and height must be finite numbers')
+    }
+
+    if (imageSize.width <= 0 || imageSize.height <= 0) {
+      throw new Error('Invalid image dimensions: width and height must be positive numbers')
+    }
+  }
+
+  static validateViewportSize(viewportSize: ViewportSize): void {
+    if (!viewportSize || typeof viewportSize !== 'object') {
+      throw new Error('Invalid viewport size: must be an object with width and height')
+    }
+
+    if (!Number.isFinite(viewportSize.width) || !Number.isFinite(viewportSize.height)) {
+      throw new Error('Invalid viewport dimensions: width and height must be finite numbers')
+    }
+
+    if (viewportSize.width <= 0 || viewportSize.height <= 0) {
+      throw new Error('Invalid viewport dimensions: width and height must be positive numbers')
+    }
+  }
+
+  static validateHeaderHeight(headerHeight: number): void {
+    if (!Number.isFinite(headerHeight)) {
+      throw new Error('Invalid header height: must be a finite number')
+    }
+
+    if (headerHeight < 0) {
+      throw new Error('Invalid header height: must be non-negative')
+    }
+  }
+
+  static validateFocalPoints(focalPoints: FocalPoint[]): void {
+    if (!Array.isArray(focalPoints)) {
+      throw new Error('Invalid focal points: must be an array')
+    }
+
+    focalPoints.forEach((fp, index) => {
+      if (!fp || typeof fp !== 'object') {
+        throw new Error(`Invalid focal point at index ${index}: must be an object with x and y coordinates`)
+      }
+
+      if (!Number.isFinite(fp.x) || !Number.isFinite(fp.y)) {
+        throw new Error(`Invalid focal point coordinates at index ${index}: x and y must be finite numbers`)
+      }
+
+      // Focal points should typically be between 0 and 1, but we'll allow some overflow for edge cases
+      if (fp.x < -0.5 || fp.x > 1.5 || fp.y < -0.5 || fp.y > 1.5) {
+        throw new Error(`Invalid focal point coordinates at index ${index}: x and y should be approximately between 0 and 1`)
+      }
+    })
+  }
+
+  static validateCalculationResult(result: { scale: number, scaledDimensions: { width: number, height: number } }): void {
+    if (!Number.isFinite(result.scale) || result.scale <= 0) {
+      throw new Error('Invalid calculation result: scale must be a positive finite number')
+    }
+
+    if (!Number.isFinite(result.scaledDimensions.width) || result.scaledDimensions.width <= 0) {
+      throw new Error('Invalid calculation result: scaled width must be a positive finite number')
+    }
+
+    if (!Number.isFinite(result.scaledDimensions.height) || result.scaledDimensions.height <= 0) {
+      throw new Error('Invalid calculation result: scaled height must be a positive finite number')
+    }
+  }
+}
 
 /**
  * Transform a homogeneous vector back to 2D space
@@ -244,13 +318,30 @@ export class ImageTransformCalculator {
     }
   }
 
-  calculateAnimationWaypoints(
-    imageSize: ImageSize,
-    viewportSize: ViewportSize,
-    headerHeight: number,
-    focalPoints: FocalPoint[],  // Array of focal points in sequence
-    variance = 0.2
-  ) {
+calculateAnimationWaypoints(
+  imageSize: ImageSize,
+  viewportSize: ViewportSize,
+  headerHeight: number,
+  focalPoints: FocalPoint[],
+  variance = 0.2
+) {
+  // Validate inputs
+  DimensionValidator.validateImageSize(imageSize);
+  DimensionValidator.validateViewportSize(viewportSize);
+  DimensionValidator.validateHeaderHeight(headerHeight);
+  DimensionValidator.validateFocalPoints(focalPoints);
+
+  // Get initial scale calculation
+  const scaleResult = ScaleCalculator.calculateMinimumScale(
+    imageSize,
+    viewportSize,
+    this.config.minTranslation,
+    headerHeight
+  );
+
+  // Validate scale calculation result
+  DimensionValidator.validateCalculationResult(scaleResult);
+
     const bounds = this.calculateSafeBounds(imageSize, viewportSize, headerHeight)
     const extendedBounds = this.calculateExtendedBounds(bounds)
 
@@ -294,13 +385,21 @@ export class ImageTransformCalculator {
 }
 
 export class ScaleCalculator {
-  static calculateMinimumScale(
-    imageSize: ImageSize,
-    viewportSize: ViewportSize,
-    minOverflow = 100,
-    headerHeight = 0
-  ) {
-    const visibleHeight = viewportSize.height - headerHeight
+static calculateMinimumScale(
+  imageSize: ImageSize,
+  viewportSize: ViewportSize,
+  minOverflow = 100,
+  headerHeight = 0
+) {
+  // Validate inputs
+  DimensionValidator.validateImageSize(imageSize);
+  DimensionValidator.validateViewportSize(viewportSize);
+  DimensionValidator.validateHeaderHeight(headerHeight);
+
+  const visibleHeight = viewportSize.height - headerHeight;
+  if (visibleHeight <= 0) {
+    throw new Error('Invalid dimensions: viewport height minus header height must be positive');
+}
     logger.info('Visible Height:', visibleHeight)
 
     const requiredWidth = viewportSize.width + minOverflow
