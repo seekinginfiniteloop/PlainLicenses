@@ -26,7 +26,7 @@ import { logger } from "~/log"
 import { isHelpingIndex, isHome, isLicense, isOnSite, navigationEvents$, watchLicenseHashChange$, watchTable$, windowEvents } from "~/utils"
 import { cacheAsset$, cleanupCache$, deleteOldCache$, getAsset$ } from "./cache"
 import { shuffle$ } from "./hero/imageshuffle"
-import { subscribeToAnimation$ } from "./hero/animation"
+import { subscribeToAnimation$ } from "./heroScroll"
 
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin)
 

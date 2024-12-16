@@ -1,0 +1,5 @@
+import './impactText'
+import './panning'
+import './scrollTo'
+import './scrollTrigger'
+import './transforms'

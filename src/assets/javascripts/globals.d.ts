@@ -6,7 +6,7 @@
  */
 
 import type { Observable, Subject } from "rxjs"
-import { ImageTransformCalculator, ScaleCalculator } from "./utils/vectorcalc"
+import { ImageTransformCalculator, ScaleCalculator } from "./vectorcalc"
 import { extend } from "tablesort"
 
 declare global {
