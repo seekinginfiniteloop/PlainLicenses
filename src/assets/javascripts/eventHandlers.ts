@@ -4,8 +4,10 @@ import * as bundle from "@/bundle"
 import { NEVER, Observable, Subject, debounceTime, defer, distinctUntilChanged, distinctUntilKeyChanged, filter, finalize, from, fromEvent, fromEventPattern, map, merge, mergeMap, of, share, shareReplay, startWith, switchMap, take, tap, throttleTime, toArray } from "rxjs"
 import Tablesort from "tablesort"
 
-import { elementIsVisible, isEggBoxOpen, isLicense, isOnSite, isValidEvent } from "./conditionChecks"
+import { elementIsVisible, isEggBoxOpen, isLicense, isValidEvent } from "./conditionChecks"
 import { getLocation, watchElementBoundary } from "~/browser"
+
+import { logger } from "~/log"
 
 const LICENSE_HASHES = ["#reader", "#html", "#markdown", "#plaintext", "#changelog", "#official"]
 export const NAV_EXIT_DELAY = 60000
@@ -294,3 +296,29 @@ export function watchElementInView(
     )
   )
 }
+
+async function initCacheWorker() {
+  if ('serviceWorker' in navigator) {
+    try {
+      const registration = await navigator.serviceWorker.register('/image-sw.js', {
+          scope: '/assets/images/' // Limit SW to just image requests
+        })
+
+        // Wait for the SW to be ready
+      await navigator.serviceWorker.ready
+      this.serviceWorkerReady.next(true)
+
+        // Optional: listen for SW messages
+      navigator.serviceWorker.addEventListener('message', (event) => {
+          if (event.data.type === 'IMAGE_CACHED') {
+            // Handle newly cached image
+            logger.info(`Image cached by SW: ${event.data.url}`)
+          }
+        })
+    } catch (error) {
+      logger.error('ServiceWorker registration failed:', error)
+    }
+  }
+}
+
+export const cacheWorker$ = defer(() => initCacheWorker()).pipe(shareReplay(1))

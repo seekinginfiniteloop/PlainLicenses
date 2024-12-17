@@ -74,18 +74,19 @@ export class TabManager {
     const events = ['mouseenter', 'mouseleave', 'focus', 'focus-visible', 'blur']
     const interactionStreams = events.map(event => createEventStream(this.tabs, event))
 
-    // Handle icon clicks
-    const iconClicks = this.tabs.map(({ iconAnchor, input }) => {
-      fromEvent(iconAnchor, 'click').pipe(
-        tap(() => {
-      preventDefault
-      if (!input.checked) {
-        input.checked = true
-        input.dispatchEvent(new Event('change'))
-      }
-    })
-      )
-  })
+  // Handle icon clicks
+    const iconClicks = this.tabs.map(({ iconAnchor, input }) =>
+    fromEvent(iconAnchor, 'click').pipe(
+      tap(() => {
+        preventDefault
+        if (!input.checked) {
+          input.checked = true
+          input.dispatchEvent(new Event('change'))
+        }
+      }),
+      map(() => ({ id: input.id, event: 'click' }))
+    )
+    )
 
     // Handle tab selection
     const selections = this.tabs.map(({ input }) =>

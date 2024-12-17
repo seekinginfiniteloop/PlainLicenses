@@ -31,7 +31,7 @@ export const isHelpingIndex = (url: URL) => { return url.pathname.includes("help
 const isProd = (url: URL) => { return url.hostname === "plainlicense.org" && url.protocol === "https:" }
 
 // tests if the site is in a development environment
-const isDev = (url: URL) => { return (url.hostname === "localhost" && url.port === "8000") || (url.hostname === "127.0.0.1" && url.port === "8000") }
+export const isDev = (url: URL) => { return (url.hostname === "localhost" && url.port === "8000") || (url.hostname === "127.0.0.1" && url.port === "8000") }
 
 // tests if the URL is on the site
 export const isOnSite = (url: URL) => { return isProd(url) || isDev(url) }

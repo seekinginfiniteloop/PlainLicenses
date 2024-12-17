@@ -6,7 +6,7 @@ import { isPageVisible$, watchMediaQuery } from "./eventHandlers"
 import { Transform2D, clamp, lerp } from "./transformUtils"
 import { logger } from "~/log"
 import { HeroImage, heroImages } from "./heroImageData"
-import { getAsset$ } from "~/cache"
+import { getAssets } from "~/cache"
 
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
@@ -23,7 +23,7 @@ if (!parallaxLayer) {
 }
 
 // Initialize ImageLoader and AnimationManager
-const imageLoader = new ImageLoader(getAsset$)
+const imageLoader = new ImageLoader(getAssets)
 const animationManager = new AnimationManager(parallaxLayer)
 
 // Initialize ImageCycler

@@ -1,3 +1,73 @@
+/* eslint-disable no-unused-vars */
+
+export enum StateCondition {
+  AtHome = 1 << 0,
+  LandingVisible = 1 << 1,
+  PageVisible = 1 << 2,
+  EggActive = 1 << 3,
+  ReducedMotion = 1 << 4,
+  ArrivedAtHome = 1 << 5,
+}
+// Derived states that components care about
+export enum ComponentState {
+
+  // Carousel can cycle when: AtHome && LandingVisible && PageVisible && !EggActive
+  CanCycle =
+  StateCondition.AtHome &
+  StateCondition.LandingVisible &
+  StateCondition.PageVisible &
+  ~StateCondition.EggActive,
+  // Pause cycle when ANY: EggActive || !AtHome || !LandingVisible || !PageVisible
+  PauseCycle =
+  StateCondition.EggActive | ~StateCondition.AtHome | ~StateCondition.LandingVisible | ~StateCondition.PageVisible,
+
+  // Can show impact when: CanCycle && !ReducedMotion
+  CanImpact = (
+    StateCondition.AtHome &
+  StateCondition.LandingVisible &
+  StateCondition.PageVisible &
+  StateCondition.ArrivedAtHome)
+  &
+  (~StateCondition.EggActive |
+    ~StateCondition.ReducedMotion),
+
+  // Pause impact when ANY: EggActive || !AtHome || !LandingVisible || !PageVisible || ReducedMotion
+  NoImpact =
+  ~StateCondition.AtHome |
+  ~StateCondition.LandingVisible |
+  ~StateCondition.PageVisible |
+  ~ StateCondition.ArrivedAtHome |
+  StateCondition.EggActive |
+  StateCondition.ReducedMotion,
+
+  // Can pan when: CanCycle && !ReducedMotion
+  CanPan =
+  StateCondition.AtHome &
+  StateCondition.LandingVisible &
+  StateCondition.PageVisible &
+  (~StateCondition.EggActive |
+    ~StateCondition.ReducedMotion),
+
+  // Pause pan when ANY: EggActive || !AtHome || !LandingVisible || !PageVisible || ReducedMotion
+  NoPan =
+  ~StateCondition.AtHome |
+  ~StateCondition.LandingVisible |
+  ~StateCondition.PageVisible |
+  StateCondition.EggActive |
+  StateCondition.ReducedMotion,
+
+  // Scroll to is button activated, so the only condition is ReducedMotion
+  CanScrollTo = ~StateCondition.ReducedMotion,
+  NoScrollTo = StateCondition.ReducedMotion,
+
+  // Scroll trigger inherently requires the page to be visible and them to be on the page
+  CanScrollTrigger =
+  ~StateCondition.EggActive &
+  ~StateCondition.ReducedMotion,
+  CanReduceScrollTrigger =
+  (~StateCondition.EggActive &
+  StateCondition.ReducedMotion)
+}
 export interface CarouselStatus {
   active: boolean
   currentImage: symbol | null

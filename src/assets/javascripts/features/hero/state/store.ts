@@ -1,173 +1,162 @@
-import { BehaviorSubject, Observable, Subscription, combineLatest, debounceTime, distinctUntilChanged, filter, finalize, map, of, shareReplay, startWith, switchMap, tap } from 'rxjs'
+import { BehaviorSubject, Observable, Subscription, combineLatest, debounceTime, distinctUntilChanged, map, shareReplay,  } from 'rxjs'
+import { ComponentState, StateCondition } from './types'
 
-import { HeroState } from './types'
-import { isPageVisible$, navigationEvents$, prefersReducedMotion$, watchEasterEgg, watchElementInView, watchMediaQuery } from '~/eventHandlers'
-import { isHome, isOnSite } from '~/conditionChecks'
+import { isPageVisible$, navigationEvents$, prefersReducedMotion$, watchElementInView,  watchMediaQuery } from '~/eventHandlers'
+import { isHome } from '~/conditionChecks'
 import { logger } from '~/log'
-import { ImageLoader } from '../imageCarousel/loader'
 
-let customWindow = window as unknown as CustomWindow
+
+let customWindow: CustomWindow = window as unknown as CustomWindow
 
 const { viewport$ } = customWindow
 
-const defaultState: HeroState = {
-  atHome: false,
-  canCycle: false,
-  eggActive: false,
-  error: null,
-  prefersReducedMotion: false,
-  viewport: { offset: { x: 0, y: 0 }, size: { width: 0, height: 0 } },
-  pageOrientation: 'landscape',
-  landing: {
-    carousel: {
-      active: false,
-      currentImage: null,
-      imageIndex: 0,
-      imagePreloaded: false,
-      isPaused: true,
-      imageCount: 0,
-      progress: 0,
-    },
-    panning: {
-      active: false,
-      imageIndex: 0,
-      paused: false,
-      progress: 0,
-    },
-    impact: {
-      active: false,
-      preLoaded: false,
-      progress: 0,
-      paused: false,
-      wasShown: false,
-    },
-    landingVisible: false,
-    scroll: {
-      target: null,
-      wayPoint: null,
-      wayPointPause: 0,
-      duration: 0,
-      progress: 0,
-      triggerEnabled: false,
-    },
-  },
-}
-
-/**
- * A singleton store for state management of the hero section.
- */
 export class HeroStore {
-  private static instance: HeroStore | null = null
+  private static instance: HeroStore | null = null;
 
-  public state$ = new BehaviorSubject<HeroState>({ ...defaultState })
+  // Core state observable
+  private conditions$ = new BehaviorSubject<number>(0);
 
-  public navBeacon$ = navigationEvents$.pipe(shareReplay(1))
-
-  private watchSubscriptions = new Subscription()
+  // Track subscriptions for cleanup
+  private subscriptions = new Subscription();
 
   private constructor() {
-    this.initSubscriptions()
-  }
-
-  /**
-   * It says what it does.
-   * @returns The singleton instance of the HeroStore.
-   */
-  public static getInstance(): HeroStore {
-    return this.instance ??= new HeroStore()
-  }
-
-  /**
-   * Constructs a series of observables that will update the store's state.
-   * @returns An array of observables that will update the store's state.
-   */
-  private getObservables() {
-
-    const atHome$ = this.navBeacon$.pipe(
-      map(isHome),
-      distinctUntilChanged(),
-      startWith(isHome(new URL(location.href))),
-      shareReplay(1),
-      tap(atHome => this.updateState({ atHome })))
-
-    const motionPreference$ = prefersReducedMotion$.pipe(
-      tap(prefersReducedMotion => this.updateState({
-        prefersReducedMotion
-      })))
-
-    const eggActive$ = this.navBeacon$.pipe(
-      filter(isHome),
-      switchMap(() => watchEasterEgg()),
-      filter((eggActive): eggActive is boolean => eggActive !== null),
-      tap(eggActive => this.updateState({ eggActive })))
-
-    const viewportChange$ = viewport$.pipe(
-      filter((viewport): viewport is Viewport => viewport != null), distinctUntilChanged(),
-      debounceTime(200), tap(viewport => this.updateState({ viewport })
-      ))
-
-    const landingInView$ = this.navBeacon$.pipe(filter(isHome), switchMap(() => watchElementInView(document.getElementById('hero__parallax'))), tap(landingVisible => this.updateState({ landing: { ...this.state$.value.landing, landingVisible } })))
-
-    const orientation$ = watchMediaQuery('(orientation: portrait)').pipe(
-      map(matches => matches ? 'portrait' : 'landscape'),
-      distinctUntilChanged(),
-      tap(pageOrientation => this.updateState({ pageOrientation })))
-
-    const PageIsVisible$ = atHome$.pipe(
-      filter(atHome => atHome),
-      switchMap(() => isPageVisible$))
-
-    const leftSite$ = this.navBeacon$.pipe(
-      filter((url) => !isOnSite(url)),
-      debounceTime(30000),
-      finalize(() => this.destroy())
-    )
-
-    const canCycle$ = combineLatest([
-      atHome$.pipe(filter(atHome => atHome)),
-      eggActive$.pipe(filter(eggActive => !eggActive)),
-      landingInView$.pipe(filter(landingVisible => landingVisible)),
-      PageIsVisible$.pipe(filter(visible => visible))
-    ]).pipe(
-      filter(([atHome, eggActive, inView, pageVisible]) => { return atHome && !eggActive && inView && pageVisible }),
-      switchMap(() => of(true)),
-      tap(() => this.updateState({ canCycle: true })))
-
-    return [atHome$, motionPreference$, eggActive$, viewportChange$,
-      landingInView$, leftSite$, canCycle$, PageIsVisible$, orientation$
-    ]
-  }
-
-  /**
-   * Initializes the store's subscriptions.
-   */
-  private initSubscriptions() {
-    const observables = this.getObservables() as Array<Observable<any>>
-
-    observables.forEach(obs => this.watchSubscriptions.add(obs.subscribe()))
-  }
-
-  /**
-   * Updates the store's state.
-   * @param state The new state to update the store with.
-   */
-  public updateState(state: Partial<HeroState>) {
-    if (state.error instanceof Error) {
-      logger.error(`New error in HeroStore's state: ${state.error}`)
+    if (process.env.NODE_ENV === 'development') {
+      // Debug state changes in development
+      this.subscriptions.add(
+        this.conditions$.subscribe(state => {
+          this.debugState('State updated', state);
+        })
+      );
     }
-    const newState = { ...this.state$.value, ...state }
-    this.state$.next(newState)
   }
 
-  /**
-   * Destroys the store by unsubscribing from all subscriptions and completing the state subject.
-   */
-  public destroy() {
-    ImageLoader.getInstance().destroy()
+  static getInstance(): HeroStore {
+    return HeroStore.instance ??= new HeroStore();
+  }
 
+  // Component-specific state observables
+  getCarouselState$(): Observable<{ canPlay: boolean }> {
+    return this.conditions$.pipe(
+      map(state => ({
+        canPlay: this.checkState(state, ComponentState.CanCycle),
+        shouldPause: this.checkState(state, ComponentState.PauseCycle)
+      })),
+      distinctUntilChanged((prev, curr) =>
+        prev.canPlay === curr.canPlay &&
+        prev.shouldPause === curr.shouldPause
+      ),
+      shareReplay(1)
+    );
+  }
 
-    this.watchSubscriptions.unsubscribe()
-    this.state$.complete()
-    HeroStore.instance = null
+  getImpactState$(): Observable<{ canPlay: boolean }> {
+    return this.conditions$.pipe(
+      map(state => ({
+        canPlay: this.checkState(state, ComponentState.CanImpact),
+        shouldStop: this.checkState(state, ComponentState.NoImpact)
+      })),
+      distinctUntilChanged((prev, curr) =>
+        prev.canPlay === curr.canPlay &&
+        prev.shouldStop === curr.shouldStop
+      ),
+      shareReplay(1)
+    );
+  }
+
+  getPanningState$(): Observable<{ canPan: boolean }> {
+    return this.conditions$.pipe(
+      map(state => ({
+        canPan: this.checkState(state, ComponentState.CanPan),
+        shouldPause: this.checkState(state, ComponentState.NoPan)
+      })),
+      distinctUntilChanged((prev, curr) =>
+        prev.canPan === curr.canPan &&
+        prev.shouldPause === curr.shouldPause
+      ),
+      shareReplay(1)
+    );
+  }
+
+  getScrollState$(): Observable<{
+    canScrollTo: boolean,
+    canTrigger: boolean,
+    useReducedTriggers: boolean
+  }> {
+    return this.conditions$.pipe(
+      map(state => ({
+        canScrollTo: this.checkState(state, ComponentState.CanScrollTo),
+        canTrigger: this.checkState(state, ComponentState.CanScrollTrigger),
+        useReducedTriggers: this.checkState(state, ComponentState.CanReduceScrollTrigger)
+      })),
+      distinctUntilChanged((prev, curr) =>
+        prev.canScrollTo === curr.canScrollTo &&
+        prev.canTrigger === curr.canTrigger &&
+        prev.useReducedTriggers === curr.useReducedTriggers
+      ),
+      shareReplay(1)
+    );
+  }
+
+  // State updates
+  updateCondition(condition: StateCondition, value: boolean): void {
+    const currentState = this.conditions$.value;
+    const newState = value
+      ? currentState | condition
+      : currentState & ~condition;
+
+    if (this.isValidStateTransition(currentState, newState)) {
+      this.conditions$.next(newState);
+    } else {
+      logger.warn(
+        'Invalid state transition attempted',
+        { from: currentState, to: newState }
+      );
+    }
+  }
+
+  // State validation
+  private isValidStateTransition(from: number, to: number): boolean {
+    // Can't arrive at home without being at home
+    if ((to & StateCondition.ArrivedAtHome) && !(to & StateCondition.AtHome)) {
+      return false;
+    }
+
+    // Can't have landing visible without being at home
+    if ((to & StateCondition.LandingVisible) && !(to & StateCondition.AtHome)) {
+      return false;
+    }
+
+    return true;
+  }
+
+  private checkState(state: number, requiredState: ComponentState): boolean {
+    return (state & requiredState) === requiredState;
+  }
+
+  private debugState(message: string, state: number): void {
+    if (process.env.NODE_ENV !== 'development') return;
+
+    const activeConditions = Object.entries(StateCondition)
+      .filter(([_, value]) => typeof value === 'number')
+      .filter(([_, value]) => state & value)
+      .map(([key]) => key);
+
+    const activeStates = Object.entries(ComponentState)
+      .filter(([_, value]) => typeof value === 'number')
+      .filter(([_, value]) => this.checkState(state, value))
+      .map(([key]) => key);
+
+    console.group(message);
+    console.log('Active Conditions:', activeConditions);
+    console.log('Active States:', activeStates);
+    console.log('Binary:', state.toString(2).padStart(6, '0'));
+    console.groupEnd();
+  }
+
+  // Cleanup
+  destroy(): void {
+    this.subscriptions.unsubscribe();
+    this.conditions$.complete();
+    HeroStore.instance = null;
   }
 }

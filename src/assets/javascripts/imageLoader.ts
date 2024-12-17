@@ -19,7 +19,7 @@ export interface ImageFocalPoints {
 export class ImageLoader {
   private loadedImages = new Map<string, HTMLImageElement>()
 
-  constructor(private getAsset$: (url: string, cache: boolean) => Observable<Response>) {}
+  constructor(private getAssets: (url: string, cache: boolean) => Observable<Response>) {}
 
   loadImage(imageUrl: string, imageName: string): Observable<HTMLImageElement> {
     // Return cached image if available
@@ -27,7 +27,7 @@ export class ImageLoader {
       return of(this.loadedImages.get(imageName)!)
     }
 
-    return this.getAsset$(imageUrl, true).pipe(
+    return this.getAssets(imageUrl, true).pipe(
       switchMap(response => {
         if (!response.ok) {
           throw new Error(`Failed to fetch image: ${response.statusText}`)

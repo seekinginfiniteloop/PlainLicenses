@@ -21,11 +21,11 @@ import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { ScrollToPlugin } from "gsap/ScrollToPlugin"
 
 import { feedback$ } from "~/feedback"
-import { setupTabIconSync$ } from "~/licenses"
+import { TabManager } from "~/features/licenses/tabManager"
 import { logger } from "~/log"
-import { isHelpingIndex, isHome, isLicense, isOnSite, navigationEvents$, watchLicenseHashChange$, watchTable$, windowEvents } from "~/utils"
-import { cacheAsset$, cleanupCache$, deleteOldCache$, getAsset$ } from "./cache"
-import { shuffle$ } from "./hero/imageshuffle"
+import { isHome, isLicense, isHelpingIndex, isOnSite } from "~/conditionChecks"
+import { navigationEvents$ } from "./eventHandlers"
+import { cachePageAssets, cleanupCache, deleteOldCaches, getAssets } from "./cache"
 import { subscribeToAnimation$ } from "./heroScroll"
 
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin)
@@ -58,12 +58,26 @@ const createScript = (src: string, async = true, defer = true) => {
   document.head.appendChild(script)
 }
 
+const prioritizeFonts = (urls: string[]) => {
+  const loadOrder = isHome(new URL(window.location.href)) ? ['bangers', 'inter', 'sourcecodepro', 'raleway'] : ['inter', 'sourcecodepro', 'bangers', 'raleway']
+  return urls.sort((a, b) => {
+    const aIndex = loadOrder.indexOf(a.includes('inter') ? 'inter' :
+      a.includes('sourcecodepro') ? 'sourcecodepro' :
+      a.includes('raleway') ? 'raleway' : 'bangers')
+    const bIndex = loadOrder.indexOf(b.includes('inter') ? 'inter' :
+      b.includes('sourcecodepro') ? 'sourcecodepro' :
+      b.includes('raleway') ? 'raleway' : 'bangers')
+    return aIndex - bIndex
+  })
+}
+
 // Preloads fonts from the stylesheet
 const preloadFonts = async () => {
-  const fontUrls = extractUrls(document.querySelectorAll("link[rel=stylesheet][href*=fonts]"), 'href')
+  let fontUrls = extractUrls(document.querySelectorAll("link[rel=stylesheet][href*=fonts]"), 'href')
+  fontUrls = prioritizeFonts(fontUrls)
   for (const url of fontUrls) {
     try {
-      const response = getAsset$(url)
+      const response = getAssets(url)
       const blob = response ? await (await firstValueFrom(response)).blob() : undefined
       if (blob) {
         const blobUrl = URL.createObjectURL(blob)
@@ -89,21 +103,21 @@ const preloadStaticAsset$ = () => {
   const imageUrls = extractUrls(document.querySelectorAll("img[src]"), 'src')
 
   return merge(
-    ...styleUrls.map(url => getAsset$(url)),
-    ...scriptUrls.map(url => getAsset$(url)),
-    ...imageUrls.map(url => getAsset$(url))
+    ...styleUrls.map(url => getAssets(url)),
+    ...scriptUrls.map(url => getAssets(url)),
+    ...imageUrls.map(url => getAssets(url))
   )
 }
 
 // Caches assets from the stylesheet, scripts, and images
-const cleanCache$ = cleanupCache$(8000).pipe(
+const cleanCache$ = cleanupCache(8000).pipe(
   tap(() => logger.info("Attempting to clean up cache")),
   mergeMap(() =>
     merge(
-      cacheAsset$("stylesheets", document.querySelectorAll("link[rel=stylesheet][href*=stylesheets]") as NodeListOf<HTMLElement>),
-      cacheAsset$("javascripts", document.querySelectorAll("script[src*=javascripts]") as NodeListOf<HTMLElement>),
-      cacheAsset$("fonts", document.querySelectorAll("link[rel=stylesheet][href*=fonts]") as NodeListOf<HTMLElement>),
-      cacheAsset$("images", document.querySelectorAll("img[src]") as NodeListOf<HTMLElement>),
+      cachePageAssets("stylesheets", document.querySelectorAll("link[rel=stylesheet][href*=stylesheets]") as NodeListOf<HTMLElement>),
+      cachePageAssets("javascripts", document.querySelectorAll("script[src*=javascripts]") as NodeListOf<HTMLElement>),
+      cachePageAssets("fonts", document.querySelectorAll("link[rel=stylesheet][href*=fonts]") as NodeListOf<HTMLElement>),
+      cachePageAssets("images", document.querySelectorAll("img[src]") as NodeListOf<HTMLElement>),
     )
   ),
   tap(() => logger.info("Assets cached"))
@@ -114,12 +128,15 @@ const insertAnalytics = () => createScript("https://app.tinyanalytics.io/pixel/e
 
 const insertButtonScript = () => createScript("https://buttons.github.io/buttons.js", true, true)
 
+const setupTabIconSync$ = () => {
+  navigationEvents$.pipe()
+
 const analytic$ = of(insertAnalytics())
 const animate$ = document$.pipe(switchMap(() => subscribeToAnimation$()))
 const asset$ = preloadStaticAsset$()
 const buttonScript$ = of(insertButtonScript())
 const color$ = of(document.body.setAttribute("data-md-color-scheme", "slate"))
-const deleteCache$ = deleteOldCache$()
+const deleteCache$ = deleteOldCaches()
 const font$ = from(preloadFonts())
 const license$ = setupTabIconSync$()
 const licenseView$ = watchLicenseHashChange$()

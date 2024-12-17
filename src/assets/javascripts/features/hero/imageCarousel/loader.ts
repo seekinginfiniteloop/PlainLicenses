@@ -1,11 +1,11 @@
 // src/features/hero/components/imageCarousel/loader.ts
-import { BehaviorSubject, Observable, catchError, debounceTime, distinctUntilChanged, filter, firstValueFrom, from, map, mergeMap, of, retry, switchMap, tap } from 'rxjs'
-import { HeroImage } from './types'
-import { getAsset$ } from '~/cache'
+import { BehaviorSubject, Observable, Subscription, distinctUntilChanged, firstValueFrom, from, map, mergeMap, of, retry, switchMap, tap } from 'rxjs'
+import { CacheStatus, HeroImage, PreloadStatus } from './types'
+import { getAssets } from '~/cache'
 import { HeroStore } from '../state/store'
-import { HeroState } from '../state/types'
 import { heroImages } from './heroImages'
 import { logger } from '~/log'
+import { ImageOptions, ImageWidths } from '~/types'
 
 type RangeMap = {
   range: [number, number]
@@ -26,19 +26,27 @@ export class ImageLoader {
 
   private cache = new Map<symbol, HTMLImageElement>()
 
-  public refreshReady = new BehaviorSubject<boolean>(false)
-
-  public optimalWidth = new BehaviorSubject<number>(this.getOptimalWidth(this.store.state$.value.viewport.size.width))
-
   public maxWidths = new BehaviorSubject<number[]>(this.getMaxWidths())
 
+  private widthSubscription = new Subscription()
+
   private constructor(private heroes: HeroImage[] = heroImages) {
-    this.initOptimalWidthSubscription()
+    this.initWidthWatcher()
     this.heroes = heroes
   }
 
   public static getInstance(): ImageLoader {
     return this.instance ??= new ImageLoader()
+  }
+
+  private initWidthWatcher(): void {
+    const widths$ = this.store.state$.pipe(
+      map(({ prefersReducedMotion }) => prefersReducedMotion),
+      distinctUntilChanged(),
+      switchMap(() => of(this.getMaxWidths())),
+      tap((widths) => this.maxWidths.next(widths))
+    )
+    this.widthSubscription.add(widths$.subscribe())
   }
 
   private getMaxWidths(): number[] {
@@ -47,80 +55,56 @@ export class ImageLoader {
     return widthArray.slice(0, -1)
   }
 
-  private getOptimalWidth(width: number): number {
-    return this.store.state$.value.prefersReducedMotion === true ? sizeRanges.find(((range) => range.value <= width))?.value ?? 3840
-      : sizeRanges.find(({ range }) => width >= range[0] && width < range[1])?.value ?? 3840
-  }
-
-  private initOptimalWidthSubscription() {
-    this.store.state$.pipe(
-      map((state: HeroState) => ({
-        optimalWidth: this.getOptimalWidth(state.viewport.size.width),
-        prefersReducedMotion: state.prefersReducedMotion
-      })),
-      debounceTime(50),
-      distinctUntilChanged(),
-      tap((state) => {
-        this.optimalWidth.next(state.optimalWidth)
-        this.maxWidths.next(this.getMaxWidths())
-        this.refreshCachedImages()
-      }),
-      map((state) => state.prefersReducedMotion),
-      distinctUntilChanged(),
-      tap(() => this.refreshReady.next(true))
-    ).subscribe()
-  }
-
-  public loadImage(heroSymbol: symbol, refresh = false): Observable<HTMLImageElement> {
+  public loadImage(heroSymbol: symbol): Observable<HTMLImageElement> {
     const heroImage = this.heroes.find(hero => Symbol.for(hero.imageName) === heroSymbol) as HeroImage
-    const srcImageUrl = heroImage.widths[this.optimalWidth.value]
 
-    if (!refresh && this.cache.has(heroSymbol)) {
+    if (this.cache.has(heroSymbol)) {
       return of(this.cache.get(heroSymbol)) as Observable<HTMLImageElement>
     }
 
-    return getAsset$(srcImageUrl, true).pipe(
-      mergeMap(async response => {
-        const blob = await response.blob()
-        return firstValueFrom(
-          from(this.createImageElement(
-            heroImage, blob, srcImageUrl, refresh)))
-      }),
-      retry(3),
-      catchError(() => {
-        logger.error(`Failed to load image: ${srcImageUrl}`)
-        return of(null)
-      }),
-      filter((img): img is HTMLImageElement => img !== null),
-      map(img => { return img })
-    )
+    return new Observable<HTMLImageElement>(observer => {
+    const img = new Image()
+    this.setImageAttributes(img, heroImage)
+
+    // Let browser pick the best source based on srcset/sizes
+    requestAnimationFrame(() => {
+      const selectedSource = img.currentSrc
+      const options: ImageOptions = {
+        widths: this.maxWidths.value as ImageWidths[],
+        urls: Object.values(heroImage.widths),
+        currentSrc: selectedSource
+      }
+      getAssets(selectedSource, true, options).pipe(
+        mergeMap(async response => {
+          const blob = await response.blob()
+          img.src = URL.createObjectURL(blob)
+          return firstValueFrom(from(this.finalizeImage(img, heroImage, selectedSource)))
+        }),
+        retry(3)
+      ).subscribe({
+        next: (finalImg) => observer.next(finalImg),
+        error: (err) => observer.error(err),
+        complete: () => observer.complete()
+      })
+    })
+  })
   }
 
-  private createImageElement(
+  private async finalizeImage(
+    img: HTMLImageElement,
     heroImage: HeroImage,
-    blob: Blob,
-    srcImageUrl: string,
-    refresh: boolean
-  ) {
-    const awaitLoad = async () => {
-      try {
-        await img.decode()
-        this.cache.set(Symbol.for(heroImage.imageName), img)
-        return img
-      } catch (error) {
-        const loadError = new Error(`Failed to load image: ${srcImageUrl}, error: ${error}`)
-        logger.error(loadError.message)
-        this.store.updateState({ error: loadError })
-        throw loadError
-      }
+    source: string
+  ): Promise<HTMLImageElement> {
+    try {
+      await img.decode()
+      this.cache.set(Symbol.for(heroImage.imageName), img)
+      return img
+    } catch (error) {
+      const loadError = new Error(`Failed to load image: ${source}, error: ${error}`)
+      logger.error(loadError.message)
+      this.store.updateState({ error: loadError })
+      throw loadError
     }
-
-    const img = new Image()
-    img.src = URL.createObjectURL(blob)
-
-    this.setImageAttributes(img, heroImage)
-    img.loading = (refresh || this.cache.size > 0) ? "lazy" : "eager"
-    return awaitLoad()
   }
 
   private setImageAttributes(img: HTMLImageElement, heroImage: HeroImage): void {
@@ -144,20 +128,9 @@ export class ImageLoader {
     }
   }
 
-  private refreshCachedImages(): void {
-    this.cache.forEach((image, srcImageUrl) => {
-      const {imageName} = image.dataset
-
-      if (imageName) {
-        this.cache.delete(srcImageUrl)
-        this.loadImage(Symbol.for(imageName), true).subscribe()
-      }
-    })
-  }
-
   public destroy(): void {
     this.cache.clear()
-    this.optimalWidth.complete()
+    this.widthSubscription.unsubscribe()
     ImageLoader.instance = undefined
   }
 }
