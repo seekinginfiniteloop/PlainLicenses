@@ -2,7 +2,7 @@ import { BehaviorSubject, Observable, Subscription, combineLatest, debounceTime,
 import { ComponentState, StateCondition } from './types'
 
 import { isPageVisible$, navigationEvents$, prefersReducedMotion$, watchElementInView,  watchMediaQuery } from '~/eventHandlers'
-import { isHome } from '~/conditionChecks'
+import { isHome, isDev } from '~/conditionChecks'
 import { logger } from '~/log'
 
 
@@ -20,7 +20,7 @@ export class HeroStore {
   private subscriptions = new Subscription();
 
   private constructor() {
-    if (process.env.NODE_ENV === 'development') {
+    if (isDev) {
       // Debug state changes in development
       this.subscriptions.add(
         this.conditions$.subscribe(state => {
@@ -134,7 +134,7 @@ export class HeroStore {
   }
 
   private debugState(message: string, state: number): void {
-    if (process.env.NODE_ENV !== 'development') return;
+    if (!isDev) return;
 
     const activeConditions = Object.entries(StateCondition)
       .filter(([_, value]) => typeof value === 'number')
@@ -146,11 +146,9 @@ export class HeroStore {
       .filter(([_, value]) => this.checkState(state, value))
       .map(([key]) => key);
 
-    console.group(message);
-    console.log('Active Conditions:', activeConditions);
-    console.log('Active States:', activeStates);
-    console.log('Binary:', state.toString(2).padStart(6, '0'));
-    console.groupEnd();
+    logger.info('Active Conditions:', activeConditions);
+    logger.info('Active States:', activeStates);
+    logger.info('Binary:', state.toString(2).padStart(6, '0'));
   }
 
   // Cleanup
