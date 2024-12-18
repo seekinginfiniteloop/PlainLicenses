@@ -1,6 +1,6 @@
 // src/features/hero/components/imageCarousel/loader.ts
 import { BehaviorSubject, Observable, Subscription, distinctUntilChanged, firstValueFrom, from, map, mergeMap, of, retry, switchMap, tap } from 'rxjs'
-import { CacheStatus, HeroImage, PreloadStatus } from './types'
+import { HeroImage } from './types'
 import { getAssets } from '~/cache'
 import { HeroStore } from '../state/store'
 import { heroImages } from './heroImages'
@@ -102,7 +102,7 @@ export class ImageLoader {
     } catch (error) {
       const loadError = new Error(`Failed to load image: ${source}, error: ${error}`)
       logger.error(loadError.message)
-      this.store.updateState({ error: loadError })
+      this.store.updateState({})
       throw loadError
     }
   }

@@ -90,7 +90,8 @@
 				"akmarnafi.comment-headers",
 				"aaron-bond.better-comments",
 				"oven.bun-vscode",
-				"Orta.vscode-jest"
+				"Orta.vscode-jest",
+				"sketchbuch.vsc-quokka-statusbar"
 			]
 		}
 	}

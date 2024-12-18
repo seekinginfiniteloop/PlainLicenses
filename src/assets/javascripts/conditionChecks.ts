@@ -1,4 +1,3 @@
-import { getElementSize } from "~/browser"
 
 // tests if the URL is the home page
 export const isHome = (url: URL) => { return url.pathname === "/" || url.pathname === "/index.html" }

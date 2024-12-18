@@ -38,22 +38,6 @@ declare global {
    * Interfaces
    * ------------------------------------------------------------------------- */
 
-  // Image state management
-  interface HeroState {
-    status: 'loading' | 'cycling' | 'paused' | 'error'
-    isVisible: boolean
-    currentTimeline: Observable<gsap.core.Timeline>
-    currentImage: HTMLImageElement | null
-    isAtHome: boolean
-    headerHeight: number
-    viewportDimensions: { width: number, height: number }
-    activeImageIndex: number
-    orientation: 'portrait' | 'landscape'
-    readonly optimalWidth: number
-    lastActiveTime: number
-    preloadedImage: boolean
-  }
-
   interface ScrollTargets {
     target: Element
     wayPoint: Element

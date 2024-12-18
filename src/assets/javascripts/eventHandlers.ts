@@ -4,8 +4,9 @@ import * as bundle from "@/bundle"
 import { NEVER, Observable, Subject, debounceTime, defer, distinctUntilChanged, distinctUntilKeyChanged, filter, finalize, from, fromEvent, fromEventPattern, map, merge, mergeMap, of, share, shareReplay, startWith, switchMap, take, tap, throttleTime, toArray } from "rxjs"
 import Tablesort from "tablesort"
 
-import { elementIsVisible, isEggBoxOpen, isLicense, isValidEvent } from "./conditionChecks"
-import { getLocation, watchElementBoundary } from "~/browser"
+import { isEggBoxOpen, isLicense, isValidEvent } from "./conditionChecks"
+import { getLocation, watchElementBoundary, watchViewportAt } from "~/browser"
+import { getComponentElement, watchHeader } from "~/components"
 
 import { logger } from "~/log"
 
@@ -15,7 +16,7 @@ export const PAGE_CLEANUP_DELAY = 20000
 
 let customWindow: CustomWindow = window as unknown as CustomWindow
 
-const { document$, location$ } = customWindow
+const { document$, location$, viewport$ } = customWindow
 
 export const preventDefault = (ev: Event) => { ev.preventDefault(); return ev }
 
@@ -90,9 +91,17 @@ export const watchScroll$ = (): Observable<{ scrollX: number, scrollY: number }>
   )
 }
 
-export function ElementNotVisible(el: Element | null): Observable<boolean> {
-  const elHeight = el?.clientHeight || 0
-  return watchElementBoundary(el as HTMLElement, 0 - elHeight).pipe(debounceTime(100), shareReplay(1))
+const header$ = watchHeader(getComponentElement("header"), { viewport$ })
+
+export function isPartiallyInViewport(el: HTMLElement): Observable<boolean> {
+  return watchViewportAt(el, { viewport$, header$ }).pipe(
+    map(({ offset: { y }, size: { height } }) => {
+      const elementHeight = el.offsetHeight
+      return y < height && (y + elementHeight) > 0
+    }),
+    distinctUntilChanged(),
+    shareReplay(1)
+  )
 }
 
 /**
@@ -118,6 +127,7 @@ const mapLocation = (ev: Event) => {
 
 export const navigationEvents$ = 'navigation' in customWindow ?
   // If the browser supports the navigation event, we use it
+
   fromEventPattern<NavigateEvent>(
     handler => customWindow.navigation.addEventListener('navigate', handler),
     handler => customWindow.navigation.removeEventListener('navigate', handler)
@@ -125,7 +135,8 @@ export const navigationEvents$ = 'navigation' in customWindow ?
     filter((event) => event !== null && event instanceof NavigateEvent),
     map((event) => { return new URL((event as NavigateEvent).destination.url) }),
     startWith(getLocation()),
-    shareReplay(1)
+    shareReplay(1),
+    share()
   )
   : // otherwise we use the browser's built-in events
   merge(merge(
@@ -136,11 +147,14 @@ export const navigationEvents$ = 'navigation' in customWindow ?
   ).pipe(
     filter(event => isValidEvent(event as Event)),
     map((event) => { return mapLocation(event as Event) }),
-    startWith(getLocation()),
-    shareReplay(1)
   ),
-  location$.pipe(distinctUntilKeyChanged("pathname"), startWith(getLocation()), shareReplay(1), share())
+  location$.pipe(
+    distinctUntilChanged(),
   )
+  ).pipe(
+    startWith(getLocation()),
+    shareReplay(1),
+    share())
 
 /**
  * Observes changes to the location pathname.
@@ -149,7 +163,7 @@ export const navigationEvents$ = 'navigation' in customWindow ?
  */
 export function watchPathnameChange(predicate: (_url: URL) => boolean) {
   return navigationEvents$.pipe(
-    distinctUntilKeyChanged("pathname"),
+    distinctUntilChanged((prev, curr) => prev.pathname === curr.pathname),
     filter((url) => predicate(url)),
     startWith(getLocation()),
     shareReplay(1),
@@ -256,46 +270,7 @@ export const watchEasterEgg = () => {
   ).pipe(filter(isValidEvent), map(() => isEggBoxOpen()), distinctUntilChanged(), startWith(isEggBoxOpen()), shareReplay(1), share())
 }
 
-const entry$ = new Subject<IntersectionObserverEntry>()
 
-const elementVisible$ = (el: HTMLElement | null) => {
-  return of(el).pipe(filter(el => el !== null), filter(elementIsVisible), take(1))
- }
-
-const outOfView$ = defer(() => of(
-  new IntersectionObserver(entries => {
-    for (const entry of entries)
-      entry$.next(entry)
-  }, {
-    threshold: 0,
-    rootMargin: "-100% 0px 0px 0px" // Negative top margin means element must be fully below viewport
-  })
-)).pipe(
-  switchMap(observer => merge(NEVER, of(observer))
-    .pipe(
-      finalize(() => observer.disconnect())
-    )
-  ),
-  shareReplay(1)
-)
-
-export function watchElementInView(
-  el: HTMLElement | null
-): Observable<boolean> {
-  return elementVisible$(el).pipe(
-    switchMap(() => outOfView$), filter(() => el !== null),
-    tap(observer => observer.observe(el as Element)),
-    switchMap(observer => entry$
-      .pipe(
-        filter(({ target }) => target === el), // Only care about the element we're watching
-        finalize(() => observer.unobserve(el as Element)),
-        map(({ isIntersecting }) => isIntersecting),
-        startWith(elementIsVisible(el)),
-        shareReplay(1),
-      )
-    )
-  )
-}
 
 async function initCacheWorker() {
   if ('serviceWorker' in navigator) {
