@@ -1,7 +1,25 @@
-import { CarouselStatus, HeroState, ImpactStatus, PanningStatus, ScrollStatus } from "../state/types"
+/* eslint-disable no-unused-vars */
+/**
+ * @module types (animations)
+ * @description Types for the Hero feature animations.
+ * @requires ../imageCarousel/heroImages
+ * @exports AnimationState
+ * @exports AnimationType
+ * @exports Animations
+ * @exports HeroKey
+ * @exports HeroValue
+ */
+
+import { HeroState } from "../state/types"
 import { heroImages } from "../imageCarousel/heroImages"
 
-export type AnimationStateUpdate = "pause" | "play" | "stop" | "finished" | "reset" | "update" | "disable"
+export enum AnimationState {
+  Playing = "playing",
+  Error = "error",
+  Idle = "idle",
+  Paused = "paused",
+  Disabled = "disabled"
+}
 
 type ImageKey = typeof heroImages[number]["imageName"]
 
@@ -10,21 +28,6 @@ type PanningKey = `panning-${ImageKey}`
 export type AnimationType = "transition" | "scrollTrigger" | "scrollTo" | "impact" | PanningKey
 
 export type Animations = Map<symbol, gsap.core.Timeline>
-
-// A modified version of HeroState with pertinent properties pushed to the top level
-export interface AnimationStates extends Partial<HeroState> {
-  canCycle: boolean
-  carousel: CarouselStatus
-  eggActive: boolean
-  impact: ImpactStatus
-  landingVisible: boolean
-  panning: PanningStatus
-  prefersReducedMotion: boolean
-  scroll: ScrollStatus
-  triggerEnabled: boolean
-  viewport: Viewport
-}
-
 
 export type HeroKey = keyof HeroState
 export type HeroValue = HeroState[HeroKey]

@@ -1,9 +1,11 @@
 import gsap from "gsap"
-import { BehaviorSubject, Subscription, distinctUntilChanged, filter, map, skip, skipWhile, tap } from "rxjs"
+import { BehaviorSubject, Observable, Subscription, distinctUntilChanged, filter,tap, merge } from "rxjs"
 
-import type { AnimationStateUpdate, AnimationStates, Animations } from "./types"
+import type { Animations } from "./types"
 import { HeroStore } from "../state/store"
-import { HeroState, LandingViewStatus } from "../state/types"
+import { HeroState } from "../state/types"
+
+const getInitialLandingPermissions = (): LandingPermissions => ({})
 
 export class AnimationManager {
 
@@ -13,174 +15,79 @@ export class AnimationManager {
 
   private store = HeroStore.getInstance()
 
-  private storeState$ = this.store.state$
+  private storeState$: BehaviorSubject<HeroState> = this.store.state$
 
   private subscriptions = new Subscription()
-
-  private state: BehaviorSubject<AnimationStates>
-
-  private landingKeys = ["impact", "transition", "panning"]
 
   public static getInstance(): AnimationManager {
     return this.instance ??= new AnimationManager()
   }
 
   constructor() {
-    this.state = new BehaviorSubject(this.getAnimationStates(this.store.state$.value))
     this.initSubscriptions()
   }
 
   private initSubscriptions() {
 
     const animationState$ = this.storeState$.pipe(
-      map((state) => this.getAnimationStates(state)),
       distinctUntilChanged(),
-      skip(1),
-      tap((state) => this.state.next(state))
     )
 
-    const pauseWatch$ = this.state.pipe(map((state) => ({ canCycle: state.canCycle, landingVisible: state.landingVisible })),
-      distinctUntilChanged(),
-      filter(({ canCycle }) => !canCycle),
-      tap(() => this.pause(false)),
-      filter(({ landingVisible }) => !landingVisible),
-      tap(() => this.pause()),
-      tap(({ landingVisible }) => { if (!landingVisible) { this.pause() } }))
-
-    const reducedMotion$ = this.state.pipe(filter((state) => state.prefersReducedMotion), tap(() =>
-    ))
-
-    const watchPreference$ = this.state.pipe(
-      map((state) => state.prefersReducedMotion),
-      distinctUntilChanged(),
-      iif
+    const landingPermissions$ = merge(
+      // do stuff
     )
-
     this.subscriptions.add(animationState$.subscribe())
-    this.subscriptions.add(pauseWatch$.subscribe())
-  }
 
-  public getAnimationStates(storeState: HeroState): AnimationStates {
-    return Object.entries(storeState).map(([key, value]) => {
-      if (["canCycle", "eggActive", "prefersReducedMotion", "triggerEnabled", "viewport"].includes(key)) {
-        return { [key]: value }
-      }
-      if (key === "landing" && typeof value === "object") {
-        const v = value as LandingViewStatus
-        return { ...v }
-      }
-      return null
-    }
-    ).filter((v) => v !== null) as unknown as AnimationStates
-  }
-
-  public pause(all: boolean = true) {
-    if (all) {
-      this.animations.forEach((timeline, key) => {
-        if (timeline.isActive()) {
-          timeline.pause()
-          this.updateState(key, ["pause" as AnimationStateUpdate])
+    // Subscribe to carouselState$ from HeroStore
+    this.store.carouselState$.pipe(
+      distinctUntilChanged(),
+      tap((state) => {
+        logger.info("Carousel State Changed:", state)
+        // Add logic based on carousel state
+        // For example:
+        if (state.canPlay) {
+          // Trigger animations or other actions
+        } else {
+          // Handle pause or other states
         }
       })
-    } else {
-      this.animations.forEach((timeline, key) => {
-        const keyName = this.normalizeKeyName(key)
-        if (keyName && this.landingKeys.includes(keyName) && timeline.isActive()) {
-          timeline.pause()
-          this.updateState(key, ["pause" as AnimationStateUpdate])
-        }
-      })
+    ).subscribe()
+
+    // TODO add logic for landing permissions, and caching impact animations if they don't start at the home page
+  }
+
+  private checkCache(key: symbol): gsap.core.Timeline {
+    const cachedTimeline = this.animations.get(key)
+    if (cachedTimeline) {
+      return cachedTimeline
+    }
+    return gsap.timeline()
+  }
+
+  private setupLandingAnimations(nextImage, currentImage?): gsap.core.Timeline {
+    const timeline = gsap.timeline()
+    const { canCycle, canImpact, canPan } = this.landingPermissions$.value
+    if (canImpact) {
+      const impactTimeline = this.checkCache(Symbol.for("impact"))
+      if (impactTimeline.totalDuration() > 0) {
+        timeline.add(impactTimeline)
+      } else {
+        timeline.add(this.animateImpact())
+      }
+
+      if (canPan) {
+        // do pan animation
+      }
     }
   }
 
-  /** ============================================
-   *               STATE UPDATES
-   *=============================================**/
-
-  private updateState(key: symbol, update: AnimationStateUpdate[]) {
-    const keyName = this.normalizeKeyName(key)
-    if (!keyName) {
-      return
-    }
-
-    const updates = this.getStateUpdates(update)
-    const currentState = this.storeState$.value
-
-    const stateUpdateMap: Record<string, () => void> = {
-      transition: () => this.updateLandingCarousel(currentState, updates),
-      panning: () => this.updatePanningAndCarousel(currentState, updates),
-      impact: () => this.updateImpactState(currentState, updates),
-      scroll: () => this.updateScrollState(currentState, updates)
-    }
-
-    stateUpdateMap[keyName]?.()
+  animateImpact(): gsap.core.TimelineChild {
+    throw new Error("Method not implemented.")
   }
 
-  private normalizeKeyName(key: symbol): string | null {
-    const keyName = Symbol.keyFor(key)
-    if (!keyName) {
-      return null
-    }
-    return keyName.startsWith("panning") ? "panning" :
-         keyName.startsWith("scroll") ? "scroll" :
-         keyName
-  }
-
-  private getStateUpdates(updates: AnimationStateUpdate[]) {
-    const updateMap = {
-      "pause": { isPaused: true },
-      "play": { isPaused: false, active: true },
-      "stop": { active: false, isPaused: false },
-      "finished": { wasShown: true, progress: 0 },
-      "reset": { progress: 0 },
-      "update": {},
-      "disable": { triggerEnabled: false, progress: 0, isPaused: false, active: false }
-    }
-    return updates.reduce((acc, update) => ({ ...acc, ...updateMap[update] }), {})
-  }
-
-  private updateLandingCarousel(state: HeroState, updates: object) {
-    this.store.updateState({
-    ...state,
-    landing: {
-      ...state.landing,
-      carousel: { ...state.landing.carousel, ...updates }
-    }
-  })
-  }
-
-  private updatePanningAndCarousel(state: HeroState, updates: object) {
-    this.store.updateState({
-    ...state,
-    landing: {
-      ...state.landing,
-      panning: { ...state.landing.panning, ...updates },
-      carousel: { ...state.landing.carousel, ...updates }
-    }
-  })
-  }
-
-  private updateImpactState(state: HeroState, updates: object) {
-    this.store.updateState({
-    ...state,
-    landing: {
-      ...state.landing,
-      panning: { ...state.landing.panning, ...updates },
-      carousel: { ...state.landing.carousel, ...updates },
-      impact: { ...state.landing.impact, ...updates }
-    }
-  })
-  }
-
-  private updateScrollState(state: HeroState, updates: object) {
-
-    this.store.updateState({
-    ...state,
-    landing: {
-      ...state.landing,
-      scroll: { ...state.landing.scroll, ...updates }
-    }
-  })
+  public static animateTransition(nextImage: Observable<HTMLImageElement>, currentImage?: HTMLImageElement): void {
+    const instance = AnimationManager.instance || AnimationManager.getInstance()
+    const landingTimeline = instance.setupLandingAnimations(nextImage, currentImage)
   }
 
 }

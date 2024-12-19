@@ -358,7 +358,7 @@ const metaOutputMap = async (output: esbuildOutputs): Promise<buildJson> => {
   const cssSrcKey = keys.find((key) => key.endsWith('.css') && key.includes("bundle") && !key.includes("javascripts"));
   let noScriptImageContent =`
   <img srcset="${noScriptImage.srcset}" alt="hero image" class="hero-parallax__image hero-parallax__image--minimal" src="${noScriptImage.widths[1280]}" alt="hero image"
-  sizes="(max-width: 1024px) 1280px, (max-width: 1600px) 1920px, (max-width: 2048px) 2560px, 3840px" loading="eager" fetchpriority="high" draggable="false"
+  sizes="(max-width: 1280px) 1280px, (max-width: 1920px) 1920px, (max-width: 2560px) 2560px, 3840px" loading="eager" fetchpriority="high" draggable="false"
   style="align-content:flex-start;align-self:flex-start">
   `;
 

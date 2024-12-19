@@ -1,4 +1,20 @@
-import { BehaviorSubject, Observable } from 'rxjs'
+/**
+ * @module types (carousel)
+ * @description Types for the Hero feature image carousel.
+ * @exports RangeMap
+ * @exports ImageMap
+ * @exports Conditions
+ * @exports Point
+ * @exports FocalPoint
+ * @exports HeroImage
+ * @exports ImageConfig
+ * @exports ImageFocalPoints
+ */
+
+export type RangeMap = {
+  range: [number, number]
+  value: number
+}
 
 export type ImageMap = Map<symbol, HeroImage>
 
@@ -15,11 +31,16 @@ export interface Point {
   y: number
 }
 
+// FocalPoint isn't a Point in the same sense as Point... its values are decimal percentages of the image (e.g., 0.5, 0.5 is the center of the image)
+export type FocalPoint = { x: number, y: number }
+
+
 export interface HeroImage {
   imageName: string
+  parent: string
   widths: Record<number, string>
   srcset: string
-  symbol: symbol
+  symbol?: symbol
   focalPoints?: ImageFocalPoints
 }
 
@@ -30,24 +51,6 @@ export interface ImageConfig {
   focalPoints: ImageFocalPoints
 }
 export interface ImageFocalPoints {
-  main: Point
-  secondary: Point
-}
-
-export enum PreloadStatus {
-  Loaded,
-  NotLoaded,
-}
-
-export enum CacheStatus {
-  NotCached,
-  FullyCached,
-}
-
-export interface ImageLoader {
-  cacheStatus: BehaviorSubject<CacheStatus>
-  onDeckStatus: BehaviorSubject<PreloadStatus>
-  maxWidths: BehaviorSubject<number[]>
-  // eslint-disable-next-line no-unused-vars
-  loadImage(heroSymbol: symbol): Observable<HTMLImageElement>
+  main: FocalPoint
+  secondary: FocalPoint
 }

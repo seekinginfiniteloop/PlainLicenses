@@ -58,6 +58,12 @@ const focalPoints: HeroImageFocalPoints[] = [
     }
   },
   {
+    "minimal": {
+      main: [0.34, 0.36],
+      secondary: [0.26, 0.66],
+    }
+  },
+  {
     "surreal": {
       main: [0.60, 0.54],
       secondary: [0.37, 0.30],
