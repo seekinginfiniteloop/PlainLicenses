@@ -1,5 +1,5 @@
 import './cycler'
+import './config'
 import './loader'
 import './types'
 import './heroImages'
-

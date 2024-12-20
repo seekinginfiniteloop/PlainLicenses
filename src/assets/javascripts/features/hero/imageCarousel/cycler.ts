@@ -20,6 +20,7 @@ import { catchError, take } from 'rxjs/operators'
 
 import { AnimationManager } from "../animations/animationManager"
 import { ImageLoader } from "./loader"
+import { CAROUSEL_CONFIG } from "./config"
 import { heroImages } from "./heroImages"
 import { HeroImage } from "./types"
 import { HeroStore } from "../state/store"
@@ -49,11 +50,7 @@ export class ImageCycler {
 
   // config constants
 
-  private readonly CONFIG = {
-    INTERVAL: 20000,
-    MAX_IMAGES_IN_LAYER: 3,
-    LAYER: document.getElementById("parallax-layer") as HTMLElement
-  } as const
+  private readonly config = CAROUSEL_CONFIG
 
   // injected dependencies
   private store: HeroStore = HeroStore.getInstance()
@@ -65,7 +62,7 @@ export class ImageCycler {
 
   public readonly carousel$: BehaviorSubject<AnimationState> = new BehaviorSubject<AnimationState>(AnimationState.Idle)
 
-  public readonly layerStatus$ = new BehaviorSubject<number>(this.CONFIG.LAYER.getElementsByTagName("img").length)
+  public readonly layerStatus$ = new BehaviorSubject<number>(this.config.layer.getElementsByTagName("img").length)
 
   private shuffledHeroes: HeroImage[] = [...heroImages].sort(() => Math.random() - 0.5)
 
@@ -106,7 +103,7 @@ export class ImageCycler {
     // subscribe to state changes
     this.subscriptions.add(this.state$.subscribe())
 
-    const baseObservable = this.carouselState$.pipe(
+    const baseObservable = this.store.carouselState$.pipe(
       map((state: CarouselState) => state.canPlay)
     )
 
@@ -122,12 +119,12 @@ export class ImageCycler {
     )
 
     const layerBouncer$ = this.layerStatus$.pipe(
-      filter((layerStatus) => layerStatus > this.CONFIG.MAX_IMAGES_IN_LAYER),
+      filter((layerStatus) => layerStatus > this.config.maxImagesInLayer),
       tap(() => {
         const layerImages = this.getLayerImages()
-        const imagesToRemove = layerImages.slice(this.CONFIG.MAX_IMAGES_IN_LAYER - 1)
+        const imagesToRemove = layerImages.slice(this.config.maxImagesInLayer - 1)
         imagesToRemove.forEach(image => {
-          this.CONFIG.LAYER.removeChild(image)
+          this.config.layer.removeChild(image)
         })
     this.layerStatus$.next(this.layerCount())
       }))
@@ -142,12 +139,12 @@ export class ImageCycler {
   }
 
   // counts the number of images in the layer
-  private layerCount = () => this.CONFIG.LAYER.getElementsByTagName("img").length
+  private layerCount = () => this.config.layer.getElementsByTagName("img").length
 
   // initializes the first image in the sequence
   private initializeFirstImage() {
     return race(
-      fromEvent(this.CONFIG.LAYER, 'DOMNodeInserted').pipe(take(1)),
+      fromEvent(this.config.layer, 'DOMNodeInserted').pipe(take(1)),
       timer(5000).pipe(take(1))
     ).pipe(
       map((value) => value instanceof Event ? value : null),
@@ -164,7 +161,7 @@ export class ImageCycler {
 
   // creates an observable that cycles images at a regular interval
   private createCycleObservable(baseObservable: Observable<boolean>) {
-    return interval(this.CONFIG.INTERVAL).pipe(
+    return interval(this.config.interval).pipe(
       switchMap(() => baseObservable.pipe(
         tap((canPlay) => this.carousel$.next(this.mapToAnimationState(canPlay))),
         filter((canPlay) => this.hasImage && canPlay),
@@ -234,14 +231,14 @@ export class ImageCycler {
     const layerImages = this.getLayerImages()
     const currentImage = layerImages.length > 0 ? layerImages[0] : undefined
     const nextImage = this.loader.loadImage(this.shuffledHeroes[nextIndex].symbol || Symbol.for(this.shuffledHeroes[nextIndex].imageName))
-    AnimationManager.animateTransition(nextImage, currentImage)
+    AnimationManager.getInstance().setupTransition(nextImage, currentImage)
 
     this.layerStatus$.next(this.layerCount())
   }
 
   // gets the images in the layer
   private getLayerImages() {
-    return Array.from(this.CONFIG.LAYER.getElementsByTagName("img"))
+    return Array.from(this.config.layer.getElementsByTagName("img"))
   }
 
   /**
@@ -265,7 +262,7 @@ export class ImageCycler {
   public destroy(): void {
     this.subscriptions.unsubscribe()
     const imagesInLayer = this.getLayerImages().slice(1)
-    imagesInLayer.forEach(img => this.CONFIG.LAYER.removeChild(img))
+    imagesInLayer.forEach(img => this.config.layer.removeChild(img))
   }
 
 }

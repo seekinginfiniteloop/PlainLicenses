@@ -25,9 +25,19 @@ type ImageKey = typeof heroImages[number]["imageName"]
 
 type PanningKey = `panning-${ImageKey}`
 
-export type AnimationType = "transition" | "scrollTrigger" | "scrollTo" | "impact" | PanningKey
+export type AnimationType = "transition" | "scrollTrigger" | "scrollTo" | "impact" | PanningKey | "mainTimeline"
 
 export type Animations = Map<symbol, gsap.core.Timeline>
 
 export type HeroKey = keyof HeroState
 export type HeroValue = HeroState[HeroKey]
+
+export interface TimelineData extends gsap.TimelineVars {
+  canImpact: boolean
+  hasImpact?: boolean
+  impactDuration?: number
+  canCycle: boolean
+  canPan: boolean
+  hasPan: boolean
+  panDuration?: number
+}

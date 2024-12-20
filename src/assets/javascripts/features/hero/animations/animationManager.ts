@@ -1,11 +1,10 @@
 import gsap from "gsap"
-import { BehaviorSubject, Observable, Subscription, distinctUntilChanged, filter,tap, merge } from "rxjs"
+import { BehaviorSubject, Observable, Subscription, distinctUntilChanged, iif, of, switchMap, tap } from "rxjs"
 
 import type { Animations } from "./types"
 import { HeroStore } from "../state/store"
 import { HeroState } from "../state/types"
-
-const getInitialLandingPermissions = (): LandingPermissions => ({})
+import { logger } from "~/log"
 
 export class AnimationManager {
 
@@ -14,6 +13,9 @@ export class AnimationManager {
   private animations: Animations = new Map<symbol, gsap.core.Timeline>()
 
   private store = HeroStore.getInstance()
+
+
+  private landing$ = this.store.landingPermissions$
 
   private storeState$: BehaviorSubject<HeroState> = this.store.state$
 
@@ -33,10 +35,16 @@ export class AnimationManager {
       distinctUntilChanged(),
     )
 
-    const landingPermissions$ = merge(
-      // do stuff
-    )
+    const initialSetup$ = this.storeState$.pipe(
+      switchMap(state => iif(
+        () => !state.atHome,
+        of(this.cacheImpact()),
+        of(null))
+      ))
+
+    this.subscriptions.add(this.landing$.subscribe())
     this.subscriptions.add(animationState$.subscribe())
+    this.subscriptions.add(initialSetup$.subscribe())
 
     // Subscribe to carouselState$ from HeroStore
     this.store.carouselState$.pipe(
@@ -56,6 +64,10 @@ export class AnimationManager {
     // TODO add logic for landing permissions, and caching impact animations if they don't start at the home page
   }
 
+  private cacheImpact(): void {
+    this.animateImpact()
+  }
+
   private checkCache(key: symbol): gsap.core.Timeline {
     const cachedTimeline = this.animations.get(key)
     if (cachedTimeline) {
@@ -64,30 +76,56 @@ export class AnimationManager {
     return gsap.timeline()
   }
 
-  private setupLandingAnimations(nextImage, currentImage?): gsap.core.Timeline {
+  private animate(timeline: gsap.core.Timeline): void {
+    const initialValues = this.landing$.value
+    timeline.data = initialValues
+    timeline.eventCallback("onUpdate", () => {
+
+    })
+}
+
+  private setupLandingAnimations(nextImage: HTMLImageElement, currentImage?: HTMLImageElement | undefined): gsap.core.Timeline {
     const timeline = gsap.timeline()
-    const { canCycle, canImpact, canPan } = this.landingPermissions$.value
+    const { canImpact, canPan } = this.landing$.value
     if (canImpact) {
       const impactTimeline = this.checkCache(Symbol.for("impact"))
-      if (impactTimeline.totalDuration() > 0) {
+      if (timeline.totalDuration() > 0) {
         timeline.add(impactTimeline)
       } else {
         timeline.add(this.animateImpact())
       }
-
-      if (canPan) {
-        // do pan animation
+    }
+    timeline.add(this.animateTransition(nextImage, currentImage))
+    if(canPan) {
+      const prevDuration = timeline.totalDuration()
+      const panTimeline = this.checkCache(Symbol.for(`panning-${nextImage.dataset.imageName}`))
+      if (timeline.totalDuration() > prevDuration) {
+        timeline.add(panTimeline)
+      } else {
+        timeline.add(this.animatePanning(nextImage))
       }
     }
+      this.timeline.data = landing$.value
+      this.animations.set(Symbol.for('mainTimeline'), timeline)
+      return this.animateImpact()
   }
 
-  animateImpact(): gsap.core.TimelineChild {
-    throw new Error("Method not implemented.")
+  private animatePanning(): gsap.core.TimelineChild {
+
+    // include logic for caching before returning
   }
 
-  public static animateTransition(nextImage: Observable<HTMLImageElement>, currentImage?: HTMLImageElement): void {
-    const instance = AnimationManager.instance || AnimationManager.getInstance()
-    const landingTimeline = instance.setupLandingAnimations(nextImage, currentImage)
+  private animateImpact(): gsap.core.TimelineChild {
+
+    // include logic for caching before returning
+  }
+
+  private animateTransition(nextImage: HTMLImageElement, currentImage?: HTMLImageElement | undefined): gsap.core.TimelineChild {
+
+  }
+
+  public setupTransition(nextImage: Observable<HTMLImageElement>, currentImage?: HTMLImageElement | undefined): void {
+    const landingTimeline = this.setupLandingAnimations(nextImage, currentImage)
   }
 
 }

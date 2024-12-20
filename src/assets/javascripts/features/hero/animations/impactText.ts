@@ -1,18 +1,32 @@
 import gsap from 'gsap'
-import { prefersReducedMotion$ } from '~/eventHandlers'
+import { IMPACT_CONFIG } from '~/config'
 import { logger } from '~/log'
 
+const config = IMPACT_CONFIG
 
-const CONFIG = {
-  travelSpeed: 500,           // Base speed for debris travel
-  glowDuration: 0.2,          // Duration of each glow pulsation
-  glowIntensity: 2,           // Intensity of the glow effect
-  glowPulsations: 3,          // Number of glow pulsations
-  debrisOriginRatio: 0.25,    // Fraction of element width to determine debris origin spread
-} as const
+// TODO: refactor to use gsap.registerEffect and gsap.distribute() for better performance, reduced code, and reduced callbacks
 
-let prefersReducedMotion: boolean = true // assume reduced motion by default in case of error
+// Randomizer functions
+const getRandomSize = gsap.utils.random(config.minParticleSize, config.maxParticleSize, 0.5, true)
 
+const getRandomRadii = gsap.utils.random(25, 95, 5, true)
+const getRandomBorderRadius = () => `${getRandomRadii}% ${getRandomRadii}% ${getRandomRadii}% ${getRandomRadii}%`
+const baseColors = ['var(--atomic-tangerine)', 'var(--turkey-red)', 'var(--saffron)', 'var(--mindaro)', 'var(--burgundy)']
+const extendedColors = [...baseColors, 'var(--mauve)', 'var(--ecru)', 'var(--emerald)', 'var(--cherry-blossom-pink)', 'var(--shamrock-green)', 'var(--aqua)', 'var(--aquamarine)', 'var(--castleton-green)', 'var(--blue-blue)']
+const randomColorArray = () => gsap.utils.shuffle(extendedColors).slice(0, "getclearterms".length - 1)
+
+const getRandomStartColor = gsap.utils.random(baseColors, true)
+const getRandomRotation = gsap.utils.random(-1080, 1080, 45, true)
+
+// Register custom effects
+gsap.registerEffect({
+  name: "debrisAnimation",
+  effect: (targets, config) => {
+    return gsap.fromTo(targets, config.fromVars, config.toVars)
+  },
+  defaults: { /* default settings */ },
+  extendTimeline: true
+})
 
 // ================== Debris Creation ==================
 
@@ -22,9 +36,9 @@ let prefersReducedMotion: boolean = true // assume reduced motion by default in 
  * @param {number} maxCount - Maximum number of debris particles to create.
  * @returns {HTMLDivElement[]} Array of created debris particles.
  */
-function createDebris(target: HTMLElement, maxCount: number = 16): HTMLDivElement[] {
+function createDebris(target: HTMLElement, maxCount: number = config.maxParticles): HTMLDivElement[] {
   const debris: HTMLDivElement[] = []
-  const debrisCount = gsap.utils.random(4, maxCount, 1)
+  const debrisCount = gsap.utils.random(config.minParticles, maxCount, 1, true)()
   const container = document.createElement('div')
   container.style.position = 'absolute'
   container.style.left = '0'
@@ -38,10 +52,10 @@ function createDebris(target: HTMLElement, maxCount: number = 16): HTMLDivElemen
     const particle = document.createElement('div')
     particle.className = `debris debris-${i}`
     particle.style.position = 'absolute'
-    particle.style.width = `${gsap.utils.random(1, 4, 1)}px`
-    particle.style.height = `${gsap.utils.random(1, 4, 1)}px`
-    particle.style.backgroundColor = Math.random() < 0.5 ? 'var(--atomic-tangerine)' : 'var(--mindaro)'
-    particle.style.borderRadius = `${gsap.utils.random(25, 95, 1)}% ${gsap.utils.random(25, 90, 1)}% ${gsap.utils.random(15, 98, 1)}% ${gsap.utils.random(40, 75, 1)}%`
+    particle.style.width = `${getRandomSize()}px`
+    particle.style.height = `${getRandomSize()}px`
+    particle.style.backgroundColor = getRandomStartColor()
+    particle.style.borderRadius = getRandomBorderRadius()
     particle.style.pointerEvents = 'none'
     container.appendChild(particle)
     debris.push(particle)
@@ -62,7 +76,7 @@ function createDebris(target: HTMLElement, maxCount: number = 16): HTMLDivElemen
 function animateDebris(debris: HTMLDivElement[], originRec: DOMRect, headerAdjust: number = 100): gsap.core.Timeline {
   const debrisTimeline = gsap.timeline({ paused: true })
 
-  const widthRatio = originRec.width * CONFIG.debrisOriginRatio
+  const widthRatio = originRec.width * config.debrisOriginRatio
   const rectRanges = {
     x1: originRec.left - widthRatio,
     x2: originRec.right + widthRatio,
@@ -78,7 +92,7 @@ function animateDebris(debris: HTMLDivElement[], originRec: DOMRect, headerAdjus
     const destY = gsap.utils.random(headerAdjust, window.innerHeight, 1)
 
     const distance = getDistance(originX, originY, destX, destY)
-    const travelDuration = distance / CONFIG.travelSpeed
+    const travelDuration = distance / config.travelSpeed
 
     debrisTimeline.add([
       `debris-${idx}`,
@@ -101,17 +115,17 @@ function animateDebris(debris: HTMLDivElement[], originRec: DOMRect, headerAdjus
           ease: 'power4.out',
           onStart: () => {
             gsap.from(particle, {
-              filter: `brightness(${CONFIG.glowIntensity * 4}) blur(${gsap.utils.random(1, 4, 1)}px) drop-shadow(0.5px var(--mindaro))`,
+              filter: `brightness(${config.glowIntensity * 4}) blur(${gsap.utils.random(1, 4, 1)}px) drop-shadow(0.5px var(--mindaro))`,
               duration: 0.05,
               ease: 'power4.out',
             })
           },
           onUpdate: () => {
             gsap.to(particle, {
-              filter: `brightness(${CONFIG.glowIntensity}) blur(1px)`,
-              duration: CONFIG.glowDuration,
+              filter: `brightness(${config.glowIntensity}) blur(1px)`,
+              duration: config.glowDuration,
               yoyo: true,
-              repeat: Math.max(Math.round(CONFIG.glowPulsations * (distance / getMaxDistance(originX, originY, headerAdjust))), 1),
+              repeat: Math.max(Math.round(config.glowPulsations * (distance / getMaxDistance(originX, originY, headerAdjust))), 1),
               ease: 'sine.inOut',
             })
           },
@@ -194,9 +208,8 @@ function wordsToSpans(el: HTMLElement, button: boolean = false): void {
  * @returns {gsap.core.Timeline} GSAP timeline for letters animation.
  */
 function animateLetters(el: HTMLElement): gsap.core.Timeline {
-  const spans = el.querySelectorAll('span')
+  const letters = gsap.utils.toArray<HTMLElement>('span', el)
   const lettersTimeline = gsap.timeline({ paused: true })
-  const letters = Array.from(spans) as HTMLElement[]
   const windowWidth = window.innerWidth
   const windowHeight = window.innerHeight
 
@@ -280,132 +293,123 @@ function animateLetters(el: HTMLElement): gsap.core.Timeline {
 // ================== Animation Timeline ==================
 
 /**
- * Initializes the hero text animation.
+ * Initializes the hero text animation using GSAP's matchMedia for responsive behavior.
  * @returns {gsap.core.Timeline} The gsap timeline for the hero text animation.
  */
 export function initHeroTextAnimation$(): gsap.core.Timeline {
   const tl = gsap.timeline({ paused: true })
 
-  const motionPreference = () => {
-        prefersReducedMotion$.subscribe({
-            next: (prefersReducedMotion) => {
-                if (typeof prefersReducedMotion === 'boolean') {
-                  prefersReducedMotion = prefersReducedMotion
-                }
-            }
-        })
-    }
-  motionPreference()
+  const mm = gsap.matchMedia() // Initialize matchMedia
 
-  if (prefersReducedMotion) {
-    logger.info(`User prefers reduced motion: ${prefersReducedMotion}`)
-    return tl.add(
-      gsap.from(['#CTA_header', '#CTA_paragraph', '#hero-primary-button'], {
-                opacity: 0,
-                duration: 1,
-                stagger: 0.2,
-                delay: 0.5,
-                visibility: 'hidden',
-            })
-    )
-  } else {
-    const ctaContainer = document.querySelector('#CTA_header') as HTMLElement
-    const ctaParagraph = document.querySelector('#CTA_paragraph') as HTMLElement
-    const button = document.querySelector('#hero-primary-button') as HTMLElement
+  mm.add(
+    {
+      // Media query for users who prefer reduced motion
+      "(prefers-reduced-motion: reduce)"() {
+        logger.info(`User prefers reduced motion`)
+        tl.add(
+          gsap.from(['#CTA_header', '#CTA_paragraph', '#hero-primary-button'], {
+            opacity: 0,
+            duration: 1,
+            stagger: 0.2,
+            delay: 0.5,
+            visibility: 'hidden',
+          })
+        )
+      },
+      // Default animation for users without motion preference
+      "all"() {
+        const ctaContainer = document.querySelector('#CTA_header') as HTMLElement
+        const ctaParagraph = document.querySelector('#CTA_paragraph') as HTMLElement
+        const button = document.querySelector('#hero-primary-button') as HTMLElement
 
-    if (!ctaContainer || !ctaParagraph || !button) {
-      logger.error('CTA elements not found')
-      return tl
-    }
+        if (!ctaContainer || !ctaParagraph || !button) {
+          logger.error('CTA elements not found')
+          return
+        }
 
-    wordsToSpans(ctaContainer)
-    wordsToSpans(ctaParagraph)
-    wordsToSpans(button, true)
+        wordsToSpans(ctaContainer)
+        wordsToSpans(ctaParagraph)
+        wordsToSpans(button, true)
 
-    const buttonTextSpans = button.querySelectorAll('span')
+        const buttonTextSpans = button.querySelectorAll('span')
 
         // Animate Headers and Paragraphs
-    tl.add(['headerAnimation', animateLetters(ctaContainer)], 0)
-            .add(['paragraphAnimation', animateLetters(ctaParagraph)], 0.5)
-            .set(button, { opacity: 0 })
+        tl.add(['headerAnimation', animateLetters(ctaContainer)], 0)
+          .add(['paragraphAnimation', animateLetters(ctaParagraph)], 0.5)
+          .set(button, { opacity: 0 })
 
         // ================== Button Animation ==================
-    const buttonDebris = createDebris(button, 16)
-    const buttonRect = button.getBoundingClientRect()
-    const animateDebrisButton = animateDebris(buttonDebris, buttonRect, 100)
+        const buttonDebris = createDebris(button, 16)
+        const buttonRect = button.getBoundingClientRect()
+        const animateDebrisButton = animateDebris(buttonDebris, buttonRect, 100)
 
-    tl.add([
-      'buttonIntro',
-      gsap.from(button, {
-                opacity: 0,
-                scale: gsap.utils.random(1.5, 2, 0.1),
-                y: window.innerHeight,
-                x: 'random(0, window.innerWidth)',
-                rotationX: gsap.utils.random(-720, 720),
-                rotationY: gsap.utils.random(-360, 360),
-                rotationZ: gsap.utils.random(-720, 720),
-                z: gsap.utils.random(300, 600, 1),
-                visibility: 'hidden',
-                duration: 1,
-                ease: 'power4.out',
-                onStart: () => {
-                    gsap.set(button, { visibility: 'visible', opacity: 1 })
-                    gsap.to(button, { filter: 'brightness(2) drop-shadow(0 0 2px var(--mindaro))', duration: 1 })
-                },
-                onComplete: () => {
-                    animateDebrisButton.play()
+        tl.add([
+          'buttonIntro',
+          gsap.from(button, {
+            opacity: 0,
+            scale: gsap.utils.random(1.5, 2, 0.1),
+            y: window.innerHeight,
+            x: 'random(0, window.innerWidth)',
+            rotationX: getRandomRotation(),
+            rotationY: getRandomRotation(),
+            rotationZ: getRandomRotation(),
+            z: gsap.utils.random(300, 600, 1),
+            visibility: 'hidden',
+            duration: 1,
+            ease: 'power4.out',
+            onStart: () => {
+              gsap.set(button, { visibility: 'visible', opacity: 1 })
+              gsap.to(button, { filter: 'brightness(2) drop-shadow(0 0 2px var(--mindaro))', duration: 1 })
+            },
+            onComplete: () => {
+              animateDebrisButton.play()
 
-                    // Jiggle the button for extra effect
-                    gsap.to(button, {
-                        x: 'random(-1, 1, 0.5)',
-                        y: 'random(-1, 1, 0.5)',
-                        duration: 0.5,
-                        scale: 1.05,
-                        repeat: 5,
-                        yoyo: true,
-                        ease: 'elastic',
-                    })
+              // Jiggle the button for extra effect
+              gsap.to(button, {
+                x: 'random(-1, 1, 0.5)',
+                y: 'random(-1, 1, 0.5)',
+                duration: 0.5,
+                scale: 1.05,
+                repeat: 5,
+                yoyo: true,
+                ease: 'elastic',
+              })
 
-                    // Reset button to normal state after jiggle
-                    gsap.to(button, {
-                        scale: 1,
-                        filter: 'none',
-                        duration: 1.5,
-                        ease: 'power2.in',
-                    })
-                },
-            })],
-    '-=0.5' // Overlap button animation slightly with previous animation
-    )
+              // Reset button to normal state after jiggle
+              gsap.to(button, {
+                scale: 1,
+                filter: 'none',
+                duration: 1.5,
+                ease: 'power2.in',
+              })
+            },
+          })],
+        '-=0.5' // Overlap button animation slightly with previous animation
+        )
 
         // ================== Button Text Color Effect ==================
-    tl.add([
-      'buttonTextAnimation',
-      gsap.to(buttonTextSpans, {
-                opacity: 1,
-                visibility: 'visible',
-                duration: 1,
-                stagger: { amount: 0.1 },
+        tl.add([
+          'buttonTextAnimation',
+          gsap.to(buttonTextSpans, {
+            opacity: 1,
+            visibility: 'visible',
+            duration: 1,
+            stagger: { amount: 0.1 },
+            color: gsap.utils.wrapYoyo(randomColorArray()),
+            refreshUpdate: true,
+            onComplete() {
+              // Ensure final color is set
+              gsap.to(buttonTextSpans, {
                 color: 'var(--emerald)',
-                onUpdate() {
-                    // Simulate flowing text with color cycling
-                  this.targets().forEach((el: HTMLElement) => {
-                        el.style.color = gsap.utils.random(
-                          ['var(--ecru)', 'var(--turkey-red)', 'var(--saffron)', 'var(--shamrock-green)'],
-                          true
-                        )()
-                    })
-                },
-                onComplete() {
-                    // Ensure final color is set
-                  gsap.to(buttonTextSpans, {
-                        color: 'var(--emerald)',
-                        duration: 0.3,
-                    })
-                },
-            })],
-    '-=0.5'
-    )
-    return tl
-  }
+                duration: 0.3,
+              })
+            },
+          })],
+        '-=0.5'
+        )
+      }
+    }
+  )
+
+  return tl
 }
