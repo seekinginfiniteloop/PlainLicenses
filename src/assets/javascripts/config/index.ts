@@ -18,8 +18,8 @@ export const IMPACT_CONFIG = {
   maxParticles: 16,
   minParticleSize: 1,
   maxParticleSize: 4,
-  travelSpeed: 500
-
+  debrisTravelSpeed: 500,
+  letterTravelSpeed: 50
 } as const
 
 export const SCROLL_TO_CONFIG = {

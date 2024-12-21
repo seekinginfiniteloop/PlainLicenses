@@ -17,8 +17,8 @@ export interface ImpactConfig {
   maxParticles: number
   minParticleSize: number
   maxParticleSize: number
-  travelSpeed: number
-
+  debrisTravelSpeed: number
+  letterTravelSpeed: number
 }
 
 export interface scrollToConfig {
@@ -28,7 +28,7 @@ export interface scrollToConfig {
 }
 
 export interface scrollTriggerConfig {
-  fadeInOne: gsap.plugins.
+  fadeInOne: string
   fadeInTwoDuration: number
 }
 
