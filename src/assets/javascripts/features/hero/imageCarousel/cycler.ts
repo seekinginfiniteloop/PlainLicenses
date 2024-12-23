@@ -11,6 +11,7 @@
  * @requires ~/log
  *
  * @exports ImageCycler
+ * 
  * @license Plain-Unlicense
  * @copyright No rights reserved.
  */
@@ -20,7 +21,7 @@ import { catchError, take } from 'rxjs/operators'
 
 import { AnimationManager } from "../animations/animationManager"
 import { ImageLoader } from "./loader"
-import { CAROUSEL_CONFIG } from "./config"
+import { CAROUSEL_CONFIG } from "~/config"
 import { heroImages } from "./heroImages"
 import { HeroImage } from "./types"
 import { HeroStore } from "../state/store"

@@ -6,8 +6,8 @@ export interface CarouselConfig {
 }
 
 export interface ImpactConfig {
-  // debrisOriginRatio: fraction of element width to define debris origin's radius (e.g, 0.25 means debris can originate from within the element and 25% of its width outside)
-  debrisOriginRatio: number
+  // debrisOriginRadius: fraction of element width to define debris origin's radius (e.g, 0.25 means debris can originate from within the element and 25% of its width outside)
+  debrisOriginRadius: number
   // particle glow settings
   glowDuration: number
   glowIntensity: number
@@ -19,6 +19,27 @@ export interface ImpactConfig {
   maxParticleSize: number
   debrisTravelSpeed: number
   letterTravelSpeed: number
+
+  baseColors: string[]
+  extendedColors: string[]
+}
+
+export interface ImpactElementConfig {
+  id: string
+  axis: string
+  textType: string
+  maxParticles?: number
+  isButton?: boolean
+}
+
+export interface ImpactDebrisConfig extends gsap.TimelineVars {
+  originRect: DOMRect
+  headerAdjust: number
+}
+
+export interface ImpactTextConfig extends gsap.TimelineVars {
+  textType: string
+  axis: string
 }
 
 export interface scrollToConfig {

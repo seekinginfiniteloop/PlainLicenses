@@ -1,6 +1,6 @@
 import gsap from 'gsap'
 import { Observable, first, from, of, switchMap } from 'rxjs'
-import { prefersReducedMotion$ } from './eventHandlers'
+import { prefersReducedMotion$ } from './utilities/eventHandlers'
 import { logger } from './log'
 
 
@@ -9,7 +9,7 @@ const CONFIG = {
   glowDuration: 0.2,          // Duration of each glow pulsation
   glowIntensity: 2,           // Intensity of the glow effect
   glowPulsations: 3,          // Number of glow pulsations
-  debrisOriginRatio: 0.25,    // Fraction of element width to determine debris origin spread
+  debrisOriginRadius: 0.25,    // Fraction of element width to determine debris origin spread
 } as const
 
 // ================== Debris Creation ==================
@@ -60,7 +60,7 @@ function createDebris(target: HTMLElement, maxCount: number = 16): HTMLDivElemen
 function animateDebris(debris: HTMLDivElement[], originRec: DOMRect, headerAdjust: number = 100): gsap.core.Timeline {
   const debrisTimeline = gsap.timeline({ paused: true })
 
-  const widthRatio = originRec.width * CONFIG.debrisOriginRatio
+  const widthRatio = originRec.width * CONFIG.debrisOriginRadius
   const rectRanges = {
     x1: originRec.left - widthRatio,
     x2: originRec.right + widthRatio,

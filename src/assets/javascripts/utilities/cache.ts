@@ -8,7 +8,7 @@
 import { Observable, firstValueFrom, from, fromEvent, of, throwError } from "rxjs"
 import { catchError, defaultIfEmpty, delay, map, mergeMap, retry, switchMap, tap, toArray } from "rxjs/operators"
 import { logger } from "~/log"
-import { ImageOptions } from "./types"
+import { ImageOptions } from "../types"
 
 export const CONFIG: CacheConfig = {
   CACHE_NAME: "static-assets-cache-v1",
@@ -31,6 +31,27 @@ export const CONFIG: CacheConfig = {
       contentType: 'application/javascript'
     }
   }
+}
+
+/**
+ * Memoizes a function to cache results based on arguments.
+ * @param fn - The function to memoize.
+ * @returns The memoized function.
+ */
+export const memoize = <T extends (..._args: any[]) => any>(fn: T): T => {
+  const cache = new Map<string, ReturnType<T>>()
+  return ((...args: Parameters<T>): ReturnType<T> => {
+    const key = args.map(arg =>
+      arg && typeof arg === 'object'
+        ? JSON.stringify(Object.entries(arg).sort())
+        : String(arg)
+    ).join('|')
+
+    if (!cache.has(key)) {
+      cache.set(key, fn(...args))
+    }
+    return cache.get(key)!
+  }) as T
 }
 
 // opens the cache as an observable

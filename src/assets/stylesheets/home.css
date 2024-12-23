@@ -3,9 +3,14 @@
 
 /*
 Main stylesheet for the home page
-
+visible
 These are basic customizations for the home page.
 */
+:root {
+  --button-text-color: var(--emerald);
+  --button-background-color: var(--zaffre);
+}
+
 @media screen and (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -26,7 +31,7 @@ header#header-target.md-header {
   display: inline-flex;
   align-self: flex-start;
   padding: 0.1rem;
-  margin-top: calc(var(--nav-height) - 0.2rem);
+  margin-top: clamp(0, calc(var(--header-height) - 0.2rem), max(0, var(--header-height) - 0.2rem));
   background: var(--zaffre);
 }
 
@@ -141,13 +146,13 @@ header#header-target.md-header {
   font-family: Inter, "Noto Sans", "Open Sans", Lato, Helvetica, Arial, system-ui, sans-serif;
   font-size: 1.1rem;
   font-weight: 700;
-  color: var(--emerald);
+  color: var(--button-text-color);
   font-display: swap;
   pointer-events: all;
   cursor: pointer;
   user-select: none;
   object-fit: cover;
-  background: rgba(var(--zaffre-adj), 0.85);
+  background: var(--zaffre);
   border-radius: 0.3rem;
   transition:
     background-color 350ms ease-in-out,

@@ -2,19 +2,25 @@
 /**
  * @module types (state)
  * @description Types for the Hero feature state management.
- * @exports HeroState
- * @exports AnimationComponent
- * @exports StatePredicate
- * @exports CarouselState
- * @exports ImpactState
- * @exports PanningState
- * @exports ScrollState
- * @exports ScrollToState
- * @exports ScrollTriggerState
- * @exports ComponentState
- * @exports ComponentUpdateFunction
- * @exports LandingPermissions
+ * @requires ../components
+ *
+ * @exports
+ * -----------------
+ * @enum {AnimationComponent}
+ * @interface ComponentState
+ * @interface HeroState
+ * @interface PanningState
+ * @interface ScrollState
+ * @type {CarouselState}
+ * @type {ComponentUpdateFunction}
+ * @type {ImpactState}
+ * @type {LandingPermissions}
+ * @type {ScrollToState}
+ * @type {ScrollTriggerState}
+ * @type {StatePredicate}
  */
+
+import { Header } from "~/components"
 
 
 export interface HeroState {
@@ -25,6 +31,8 @@ export interface HeroState {
   prefersReducedMotion: boolean
   newToHome: boolean // an oddball, the impact animation will switch off when it's done; everything else is set by HeroStore
   viewport: Viewport
+  header: Header
+  parallaxHeight: number
   location: URL
   tearDown: boolean
 }
@@ -48,11 +56,10 @@ export interface PanningState { canPan: boolean}
 export interface ScrollState {
   canScrollTo: boolean
   canTrigger: boolean
-  useReducedTriggers: boolean
 }
 
 export type ScrollToState = Pick<ScrollState, 'canScrollTo'>
-export type ScrollTriggerState = Pick<ScrollState, 'canTrigger' | 'useReducedTriggers'>
+export type ScrollTriggerState = Pick<ScrollState, 'canTrigger'>
 
 export interface LandingPermissions {
   canPan: boolean

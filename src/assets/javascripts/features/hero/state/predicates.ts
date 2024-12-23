@@ -2,7 +2,7 @@
  * @module predicates
  * @description A collection of state predicates for HeroState and its sub-states
  *
- * @requires ./types
+ * @requires ./types (state)
  *
  * @exports isFullyVisible
  * @exports hasNoRestrictions
@@ -29,15 +29,15 @@ export const isFullyVisible = (state: HeroState): boolean =>
 
 /**
  * test if the hero section has no restrictions
- * that the egg is not active and the user does not prefer reduced motion
+ * that the egg is not active
  * @param state - the current hero state
  * @returns boolean
  */
 export const hasNoRestrictions = (state: HeroState): boolean =>
-  !state.eggActive && !state.prefersReducedMotion
+  !state.eggActive
 
 /** ======================
- *   COMPONENT PREDICATES
+ **   COMPONENT PREDICATES
  *========================**/
 
 export const carouselPredicates = {
@@ -62,8 +62,5 @@ export const scrollPredicates = {
     !state.prefersReducedMotion,
 
   canTrigger: (state: HeroState): boolean =>
-    !state.eggActive && !state.prefersReducedMotion,
-
-  useReducedTriggers: (state: HeroState): boolean =>
-    !state.eggActive && state.prefersReducedMotion
+    !state.eggActive,
 }

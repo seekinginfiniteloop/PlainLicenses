@@ -2,11 +2,11 @@
 import { ImageLoader } from "./imageLoader"
 import { AnimationManager } from "./imageAnimationManager"
 import { ImageCycler } from "./imageCycler"
-import { isPageVisible$, watchMediaQuery } from "./eventHandlers"
+import { isPageVisible$, watchMediaQuery } from "./utilities/eventHandlers"
 import { Transform2D, clamp, lerp } from "./transformUtils"
 import { logger } from "~/log"
 import { HeroImage, heroImages } from "./heroImageData"
-import { getAssets } from "~/cache"
+import { getAssets } from "~/utilities/cache"
 
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"

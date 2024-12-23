@@ -23,9 +23,9 @@ import { ScrollToPlugin } from "gsap/ScrollToPlugin"
 import { feedback$ } from "~/feedback"
 import { TabManager } from "~/features/licenses/tabManager"
 import { logger } from "~/log"
-import { isHome, isLicense, isHelpingIndex, isOnSite } from "~/conditionChecks"
-import { navigationEvents$ } from "./eventHandlers"
-import { cachePageAssets, cleanupCache, deleteOldCaches, getAssets } from "./cache"
+import { isHome, isLicense, isHelpingIndex, isOnSite } from "~/utilities/conditionChecks"
+import { navigationEvents$ } from "./utilities/eventHandlers"
+import { cachePageAssets, cleanupCache, deleteOldCaches, getAssets } from "./utilities/cache"
 import { subscribeToAnimation$ } from "./heroScroll"
 
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin)

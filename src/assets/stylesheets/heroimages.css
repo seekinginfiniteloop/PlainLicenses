@@ -98,7 +98,7 @@ so it made sense for them to live here
   -moz-osx-font-smoothing: grayscale;
 }
 
-@media screen and (width <= 416px) {
+@media screen and (width <=416px) {
   #CTA_header {
     font-size: clamp(15px, calc(100vw / 16), 10rem);
   }
@@ -252,21 +252,57 @@ so it made sense for them to live here
 
   /* initial value */
 
-  --fade-height: var(--parallax-height);
-
   top: 0;
   left: 0;
   z-index: 5;
-  width: 100vw;
-  height: var(--fade-height);
+  width: var(--viewport-offset-width);
+  height: var(--parallax-height);
   overflow: hidden clip;
   pointer-events: none;
   background:
-    linear-gradient(
-      to bottom,
+    linear-gradient(to bottom,
       rgba(var(--gunmetal-adj), 0) 70%,
       rgba(var(--gunmetal-adj), 0.3) 85%,
       rgba(var(--gunmetal-adj), 0.6) 90%,
-      rgba(var(--gunmetal-adj), 1) 100%
-    );
+      rgba(var(--gunmetal-adj), 1) 100%);
+  filter: blur(0.5rem);
+}
+
+.debris-container {
+  position: "absolute";
+  top: 0;
+  left: 0;
+  z-index: 1100;
+  width: var(--viewport-offset-width);
+  height: var(--viewport-offset-height);
+  pointer-events: "none";
+  visibility: "hidden";
+}
+
+.debris {
+  position: "absolute";
+  z-index: 3000;
+  display: "none";
+  pointer-events: "none";
+}
+
+.button-text {
+  z-index: 5000;
+  display: "inline-block";
+  color: var(--button-text-color);
+  visibility: "hidden";
+}
+
+.button-word {
+  display: "inline-block";
+  color: var(--button-text-color);
+}
+
+.button-word::after {
+  content: " ";
+}
+
+.button-char {
+  display: "inline-block";
+  color: var(--button-text-color);
 }

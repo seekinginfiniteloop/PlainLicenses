@@ -1,4 +1,45 @@
 /* eslint-disable no-console */
+
+/**
+ * @module BuildConfig
+ * @description Configuration module for Plain License's build process.
+ *
+ * @overview
+ * Provides configuration and utility functions for:
+ * - esbuild project configuration
+ * - Hero image processing
+ * - Asset management
+ * - Glob-based file resolution
+ *
+ ** Key Features:
+ ** - Dynamic esbuild configuration
+ ** - Automatic hero image srcset generation
+ ** - Focal point mapping for images
+ ** - Flexible asset processing
+ ** - Cross-platform build support
+ *
+ * @requires esbuild
+ * @requires globby
+ * @requires esbuild-plugin-tsconfig-paths
+ * @requires esbuild-css-modules-plugin
+ * @requires esbuild-plugin-copy
+ * @requires ../types (build)
+ *
+ * @exports
+ * - webConfig: esbuild configuration options
+ * - baseProject: Base project build configuration
+ * - heroImages: Function to generate hero image configurations
+ * - generateSrcset: Utility for generating image srcsets
+ *
+ * Core Utilities:
+ * - resolveGlob: Resolve file paths using glob patterns
+ * - getHeroParents: Retrieve hero image parent directories
+ *
+ * @see {@link https://esbuild.github.io/} esbuild Documentation
+ * @see {@link https://github.com/sindresorhus/globby} Globby Documentation
+ */
+
+
 import { cssModulesPlugin } from "@asn.aeb/esbuild-css-modules-plugin"
 // @ts-ignore
 import { tsconfigPathsPlugin } from "esbuild-plugin-tsconfig-paths"

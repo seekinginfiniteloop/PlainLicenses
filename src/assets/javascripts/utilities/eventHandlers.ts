@@ -1,11 +1,52 @@
-// EventHandlers.ts
+/**
+ * @module EventHandlers
+ * @description Reactive event handling and observation utilities
+ *
+ * @overview
+ * Provides event management and observation capabilities using RxJS,
+ * covering navigation, viewport, media queries, visibility, and custom browser interactions.
+ *
+ * Key Features:
+ * - Reactive navigation event streams
+ * - Viewport and scroll monitoring
+ * - Media query and visibility tracking
+ * - Cross-browser event normalization
+ * - Custom event handling for specific interactions
+ *
+ * @dependencies
+ * - RxJS
+ * - Tablesort
+ * - Custom browser utilities
+ *
+ * @exports
+ * -----------------
+ * @const navigationEvents$: Observable tracking navigation events
+ * @function watchMediaQuery: Function to observe media query states
+ * @function watchViewportResize: Function to track viewport changes
+ * @function watchLicenseHashChange: Function to manage license link interactions
+ * @function watchEasterEgg: Function to observe Easter egg dialog states
+ * @function watchTables: Function to observe and apply Tablesort to tables
+ * @function isPartiallyInViewport: Function to check if an element is partially in the viewport
+ * @const isPageVisible$: Observable tracking page visibility
+ * @const prefersReducedMotion$: Observable for reduced motion preference
+ * @function setCssVariable: Utility for setting CSS variables
+ * @function watchPathnameChange: Function to observe pathname changes
+ * @function watchScroll$: Function to track scroll position
+ *
+ * @see {@link https://rxjs.dev/} RxJS Documentation
+ * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Navigation_API} Navigation API
+ * @license Plain-Unlicense (Public Domain)
+ * @copyright No rights reserved.
+ */
+
+
 import * as bundle from "@/bundle"
 
-import { NEVER, Observable, Subject, debounceTime, defer, distinctUntilChanged, distinctUntilKeyChanged, filter, finalize, from, fromEvent, fromEventPattern, map, merge, mergeMap, of, share, shareReplay, startWith, switchMap, take, tap, throttleTime, toArray } from "rxjs"
+import { Observable, debounceTime, defer, distinctUntilChanged, filter, from, fromEvent, fromEventPattern, map, merge, mergeMap, of, share, shareReplay, startWith, switchMap, tap, throttleTime, toArray } from "rxjs"
 import Tablesort from "tablesort"
 
 import { isEggBoxOpen, isLicense, isValidEvent } from "./conditionChecks"
-import { getLocation, watchElementBoundary, watchViewportAt } from "~/browser"
+import { getLocation, watchViewportAt } from "~/browser"
 import { getComponentElement, watchHeader } from "~/components"
 
 import { logger } from "~/log"
@@ -23,6 +64,9 @@ export const preventDefault = (ev: Event) => { ev.preventDefault(); return ev }
 /**
  * Watches a media query and emits a boolean indicating if it matches.
  * Applies debouncing to limit recalculations during rapid changes.
+ * Uses either the `matchMedia` API or the deprecated `addListener` method
+ * as a fallback for older browsers.
+ *
  * @param query The media query string.
  * @returns An observable emitting the match status.
  */
@@ -93,6 +137,11 @@ export const watchScroll$ = (): Observable<{ scrollX: number, scrollY: number }>
 
 const header$ = watchHeader(getComponentElement("header"), { viewport$ })
 
+/**
+ * Emits a boolean indicating if an element is partially in the viewport.
+ * @param el The element to observe.
+ * @returns An observable emitting the visibility status.
+ */
 export function isPartiallyInViewport(el: HTMLElement): Observable<boolean> {
   return watchViewportAt(el, { viewport$, header$ }).pipe(
     map(({ offset: { y }, size: { height } }) => {
@@ -206,6 +255,13 @@ const isLicenseLink = (link: HTMLAnchorElement) =>
 const isHashedLink = (link: HTMLAnchorElement) =>
   LICENSE_HASHES.some(hash => link.href.includes(hash))
 
+/**
+ * Uses the navigationEvents$ observable to watch for license hash changes and
+ * navigate to the appropriate license section. The license hashes are really
+ * just the IDs of the license sections.
+ *
+ * @returns {Observable} An observable stream handling license link navigation events
+ */
 export const watchLicenseHashChange = () => {
   const allLinks = Array.from(document.getElementsByTagName("a"))
 
@@ -259,7 +315,10 @@ export const watchLicenseHashChange = () => {
   )
 }
 
-
+/**
+ * Watches for the Easter egg dialog to open, close, or be cancelled
+ * @returns An observable that emits when the Easter egg dialog is opened, closed, or cancelled
+ */
 export const watchEasterEgg = () => {
   const eggInfoBox = document.getElementById("egg-box") as HTMLDialogElement
 
@@ -271,7 +330,7 @@ export const watchEasterEgg = () => {
 }
 
 
-
+// ! TODO: This is a placeholder for the cache worker
 async function initCacheWorker() {
   if ('serviceWorker' in navigator) {
     try {

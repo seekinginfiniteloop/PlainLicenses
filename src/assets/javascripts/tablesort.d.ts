@@ -1,4 +1,17 @@
 /* eslint-disable no-unused-vars */
+
+/**
+ * @module tablesort
+ * @description Self-produced type definitions for the TableSort library.
+ * @requires none
+ * @exports Tablesort
+ * @exports TablesortOptions
+ * @exports SortOption
+ *
+ * @license Plain-Unlicense
+ * @copyright No rights reserved.
+ */
+
 declare module "tablesort" {
   interface TablesortOptions {
     sortAttribute?: string

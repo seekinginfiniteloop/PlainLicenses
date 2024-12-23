@@ -1,9 +1,10 @@
 /**
  * @module HeroStore
- * @description Reactive state management module for hero section
+ * @description
+ * Reactive state management module for hero section
  *
  * Centralized state management for hero section with reactive state updates.
- * Implements a singleton HeroStore class for managing complex UI state using RxJS.
+ * Implements a singleton HeroStore class for managing UI state using RxJS.
  *
  * @requires RxJS
  * @requires ./types
@@ -19,14 +20,15 @@
  * @copyright No rights reserved
  */
 
-import { BehaviorSubject, Observable, Observer, Subscription, debounceTime, distinctUntilChanged, distinctUntilKeyChanged, filter, map, merge, shareReplay, startWith, switchMap, tap } from 'rxjs'
+import { BehaviorSubject, Observable, Observer, Subscription, combineLatest, debounceTime, distinctUntilChanged, distinctUntilKeyChanged, filter, map, merge, shareReplay, startWith, switchMap, tap } from 'rxjs'
 import { AnimationComponent, CarouselState, ComponentState, ComponentUpdateFunction, HeroState, ImpactState, LandingPermissions, PanningState, ScrollState, StatePredicate } from './types'
 
-import { isPageVisible$, isPartiallyInViewport, navigationEvents$, prefersReducedMotion$, watchEasterEgg } from '~/eventHandlers'
-import { isDev, isEggBoxOpen, isHome } from '~/conditionChecks'
+import { isPageVisible$, isPartiallyInViewport, navigationEvents$, prefersReducedMotion$, setCssVariable, watchEasterEgg, watchMediaQuery } from '~/utilities/eventHandlers'
+import { isDev, isEggBoxOpen, isHome } from '~/utilities/conditionChecks'
 import { logger } from '~/log'
 import * as predicates from './predicates'
 import { getViewportOffset, getViewportSize } from '~/browser'
+import { Header, getComponentElement, watchHeader } from '~/components'
 
 let customWindow: CustomWindow = window as unknown as CustomWindow
 const weAreDev = isDev(new URL(customWindow.location.href))
@@ -61,6 +63,8 @@ export class HeroStore {
       offset: getViewportOffset(),
       size: getViewportSize()
     },
+    header: { height: 0, hidden: true },
+    parallaxHeight: getViewportOffset().y * 1.4,
     location: initialUrl,
     tearDown: false
   }
@@ -75,7 +79,6 @@ export class HeroStore {
   public scrollState$ = new BehaviorSubject<ScrollState>({
     canScrollTo: false,
     canTrigger: false,
-    useReducedTriggers: true
   })
 
   public landingPermissions$ = new BehaviorSubject<LandingPermissions>({
@@ -83,6 +86,8 @@ export class HeroStore {
     canCycle: false,
     canImpact: false
   })
+
+  public parallaxHeight$ = new BehaviorSubject<number>(getViewportOffset().y * 1.4)
 
 
   private subscriptions = new Subscription()
@@ -185,7 +190,41 @@ export class HeroStore {
       distinctUntilChanged(),
       debounceTime(100),
       shareReplay(1),
+      tap((viewport) => {
+        setCssVariable('--viewport-offset-height', `${viewport.offset.y}px`)
+        setCssVariable('--viewport-offset-width', `${viewport.offset.x}px`)
+      }),
       tap(this.createObserver('view$', (viewport) => ({ viewport }))))
+
+    const header$ = watchHeader(getComponentElement("header"), { viewport$ }).pipe(
+      tap((header: Header) => {
+        setCssVariable('--header-height', header.hidden ? '0' : `${header.height}px`)
+      }),
+      tap(this.createObserver('header$', (header) => ({ header }))))
+
+    const parallax$ = combineLatest([
+      viewport$,
+      watchHeader(getComponentElement("header"), { viewport$ }),
+      watchMediaQuery('(orientation: portrait)')]
+    ).pipe(
+      map(([viewport, header, portrait]) => {
+        return {
+          viewHeight: viewport.offset.y,
+          headerHeight: header.height,
+          portrait
+        }
+      }),
+      map(({ viewHeight, headerHeight, portrait }) => {
+        const adjustedHeight = viewHeight - headerHeight
+        return portrait ? adjustedHeight * 1.4 : adjustedHeight * 1.6
+      }),
+      distinctUntilChanged(),
+      shareReplay(1),
+      tap((parallaxHeight) => {
+        setCssVariable('--parallax-height', `${parallaxHeight}px`)
+      }),
+      tap(this.createObserver('parallaxHeight$', (parallaxHeight) => ({ parallaxHeight })))
+    )
 
     const location$ = navigationEvents$.pipe(
       tap(this.createObserver('location$', (location) => ({ location }))))
@@ -219,7 +258,9 @@ export class HeroStore {
     this.subscriptions.add(egg$.subscribe())
     this.subscriptions.add(newToHome$.subscribe())
     this.subscriptions.add(view$.subscribe())
+    this.subscriptions.add(header$.subscribe())
     this.subscriptions.add(location$.subscribe())
+    this.subscriptions.add(parallax$.subscribe())
     this.subscriptions.add(carousel$.subscribe())
     this.subscriptions.add(impact$.subscribe())
     this.subscriptions.add(panning$.subscribe())
@@ -306,19 +347,18 @@ export class HeroStore {
   /**
    * Creates an observable for the scroll state
    * @param observerFunc - ComponentUpdateFunction - Function to update the component state
-   * @returns Observable<ScrollState> - Observable for scroll state indicating scroll to, trigger, and reduced trigger conditions
+   * @returns Observable<ScrollState> - Observable for scroll state indicating scroll to, and trigger
    */
   private getScrollState$(observerFunc: ComponentUpdateFunction): Observable<ScrollState> {
     return this.state$.pipe(
       map(state => ({
         canScrollTo: predicates.scrollPredicates.canScrollTo(state),
         canTrigger: predicates.scrollPredicates.canTrigger(state),
-        useReducedTriggers: predicates.scrollPredicates.useReducedTriggers(state)
       })),
-      distinctUntilChanged((prev, curr) =>
-        prev.canScrollTo === curr.canScrollTo ||
-        prev.canTrigger === curr.canTrigger ||
-        prev.useReducedTriggers === curr.useReducedTriggers
+      distinctUntilChanged((prev, curr) => {
+        return prev.canScrollTo === curr.canScrollTo ||
+          prev.canTrigger === curr.canTrigger
+      }
       ),
       shareReplay(1),
       tap(this.getComponentObserver('scrollState$', observerFunc))

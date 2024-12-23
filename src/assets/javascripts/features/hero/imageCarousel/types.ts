@@ -1,14 +1,17 @@
 /**
  * @module types (carousel)
  * @description Types for the Hero feature image carousel.
- * @exports RangeMap
- * @exports ImageMap
- * @exports Conditions
- * @exports Point
- * @exports FocalPoint
- * @exports HeroImage
- * @exports ImageConfig
- * @exports ImageFocalPoints
+ *
+ * @exports
+ * -----------------
+ * @interface Conditions
+ * @interface HeroImage
+ * @interface ImageConfig
+ * @interface ImageFocalPoints
+ * @interface Point
+ * @type {FocalPoint}
+ * @type {ImageMap}
+ * @type {RangeMap}
  */
 
 export type RangeMap = {

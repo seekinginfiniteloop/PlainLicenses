@@ -1,3 +1,18 @@
+/**
+ * @module types (licenses)
+ *
+ * @description Types for the licenses feature.
+ *
+ * @exports
+ * --------------------
+ * @interface TabElement
+ * @interface TabState
+ * @type {TabStateType}
+ *
+ * @license Plain-Unlicense (Public Domain)
+ * @copyright No rights reserved.
+ */
+
 export interface TabElement {
   input: HTMLInputElement
   label: HTMLLabelElement

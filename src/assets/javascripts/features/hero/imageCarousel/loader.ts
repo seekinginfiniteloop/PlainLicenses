@@ -10,7 +10,7 @@
  * - Error handling and retry logic
  *
  * @requires rxjs
- * @requires ./types
+ * @requires ./types (carousel)
  * @requires ~/types // anything prefixed with `~` is root level
  * @requires ~/cache
  * @requires ../state/store
@@ -25,7 +25,7 @@
 
 import { BehaviorSubject, Observable, Subscription, defer, distinctUntilChanged, from, map, mergeMap, of, retry, switchMap, tap } from 'rxjs'
 import { HeroImage, RangeMap } from './types'
-import { getAssets } from '~/cache'
+import { getAssets } from '~/utilities/cache'
 import { HeroStore } from '../state/store'
 import { heroImages } from './heroImages'
 import { logger } from '~/log'

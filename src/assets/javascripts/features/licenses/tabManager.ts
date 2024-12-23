@@ -2,8 +2,29 @@ import { Observable, Subscription, fromEvent, merge } from 'rxjs'
 import { debounceTime, filter, map, share, tap } from 'rxjs/operators'
 import { TabElement, TabState, TabStateType } from './types'
 import { logger } from '../../log'
-import { preventDefault } from '~/eventHandlers'
+import { preventDefault } from '~/utilities/eventHandlers'
 
+/**
+ * @class TabManager
+ *
+ * @description
+ * - Dynamically initializes and manages tab elements
+ * - Handles complex interaction states (hover, focus, selection) for tabs, linking behaviors to ARIA roles and states between elements
+ * - Provides reactive event handling using RxJS
+ *
+ * @property {TabElement[]} tabs - Collection of initialized tab elements
+ * @property {Subscription} subscription - RxJS subscription for managing tab interactions
+ *
+ * @method init - Initializes tab styles and sets up interaction streams
+ * @method cleanup - Unsubscribes from event streams and performs cleanup
+ *
+ * @example
+ * const tabManager = new TabManager();
+ * // Automatically sets up tab interactions
+ *
+ * @see {@link https://rxjs.dev/} RxJS Documentation
+ * @see {@link https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles/tab_role} ARIA Tab Role
+ */
 export class TabManager {
   private readonly tabs: TabElement[]
 

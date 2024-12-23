@@ -1,12 +1,21 @@
 /**
- * Handles feedback form submission
+ * @module feedback
+ * @description Handles feedback form submission
+ *
+ * @requires rxjs
+ * @requires ./utilities/conditionChecks
+ * @requires ./utilities/eventHandlers
+ * @requires ~/log
+ *
+ * @exports feedback
+ *
  * @license Plain Unlicense(Public Domain)
  * @copyright No rights reserved. Created by and for Plain License www.plainlicense.org
  */
 import { filter, fromEvent, map, of, tap, throttleTime } from "rxjs"
 import { logger } from "~/log"
-import { isValidEvent } from "./conditionChecks"
-import { preventDefault } from "./eventHandlers"
+import { isValidEvent } from "./utilities/conditionChecks"
+import { preventDefault } from "./utilities/eventHandlers"
 
 export const feedback = () => {
 const feedbackForm = document.forms?.namedItem("feedback")

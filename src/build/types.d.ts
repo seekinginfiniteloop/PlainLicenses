@@ -1,3 +1,40 @@
+/**
+ * @module BuildTypes
+ * @description Type definitions for build process and asset management
+ *
+ * @overview
+ * Provides TypeScript interfaces and types for:
+ * - Hero image configurations
+ * - esbuild build outputs
+ * - Project build settings
+ * - File hashing
+ * - Asset metadata
+ *
+ * Key Features:
+ * - Strongly typed image configurations
+ * - Flexible width and srcset mappings
+ * - Detailed esbuild output typing
+ * - Build project configuration interfaces
+ * - Focal point definitions for responsive images
+ *
+ * @exports
+ * - HeroImage: Comprehensive hero image configuration
+ * - esbuildOutputs: Build output metadata structure
+ * - Project: Project build configuration
+ * - FileHashes: CSS file hash tracking
+ * - buildJson: Build artifact mapping
+ *
+ * Core Types:
+ * - WidthMap: Flexible width-to-path mapping
+ * - HeroImageBase: Minimal hero image configuration
+ * - HeroImageFocalPoints: Image focal point definitions
+ *
+ * @see {@link https://www.typescriptlang.org/docs/handbook/interfaces.html} TypeScript Interfaces
+ * @see {@link https://esbuild.github.io/} esbuild Documentation
+ */
+
+
+
 export interface WidthMap {
   [key: string]: string
   [key: number]: string

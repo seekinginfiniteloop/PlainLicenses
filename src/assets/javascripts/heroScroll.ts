@@ -30,7 +30,7 @@ import {
 
 import { prefersReducedMotion$ } from "~/utils"
 import { logger } from "~/log"
-import { preventDefault } from "./eventHandlers"
+import { preventDefault } from "./utilities/eventHandlers"
 
 gsap.registerPlugin(ScrollTrigger,ScrollToPlugin)
 
