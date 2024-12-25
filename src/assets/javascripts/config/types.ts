@@ -19,6 +19,7 @@ export interface ImpactConfig {
   maxParticleSize: number
   debrisTravelSpeed: number
   letterTravelSpeed: number
+  letterTotalDuration: number
 
   baseColors: string[]
   extendedColors: string[]
@@ -42,19 +43,26 @@ export interface ImpactTextConfig extends gsap.TimelineVars {
   axis: string
 }
 
-export interface scrollToConfig {
-  firstScrollRatio: number // ratio of total duration to first scroll
-  secondScrollRatio: number
-  timelineVars: gsap.TimelineVars
-}
-
-export interface scrollTriggerConfig {
-  fadeInOne: string
-  fadeInTwoDuration: number
-}
-
 export interface AnimationConfig {
   defaultParentVars: gsap.TimelineVars
   defaultChildVars: gsap.TimelineVars
 
+}
+
+export interface FadeConfig {
+  fadeInSections: readonly string[] // selectors for fade-ins
+  fadeInDuration: number // duration of fade-in
+}
+
+export interface SlideConfig {
+  slideDuration: number // duration of slide
+  clickPause: number // pause duration on click
+  scrollPause: number // pause duration on scroll
+}
+
+export interface ObserverConfig {
+  fades: FadeConfig
+  slides: SlideConfig
+  clickTargets: string // selector class for click targets
+  ignoreTargets: string // selectors for ignored targets
 }

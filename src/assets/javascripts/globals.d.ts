@@ -236,6 +236,7 @@ declare global {
     alert$: Subject<string> // clipboard.js integration
     progress$: Subject<number> // progress indicator
     component$: Observable<CustomEvent>
+    particlePool?: HTMLDivElement[]
   }
 
   /**

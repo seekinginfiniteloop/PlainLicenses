@@ -196,43 +196,54 @@ const createDistributionFunctions = (origin: OriginDimensions) => {
 /** ========================================================================
  **                     DEBRIS ANIMATION EFFECT
  *========================================================================**/
+
+function debrisStart(particles: HTMLDivElement[], container: HTMLDivElement, letter: HTMLElement) {
+  batchDOMOperations([() => {
+    particles.forEach((particle: HTMLDivElement) => {
+      particle.style.display = 'block'
+      container.appendChild(particle)
+    })
+    letter.appendChild(container)
+  }])
+}
+
+function debrisComplete(particles: HTMLDivElement[], container: HTMLDivElement, returnFunc: (_particles: HTMLDivElement[]) => void) {
+  batchDOMOperations([() => {
+    particles.forEach((particle: HTMLDivElement) => {
+      particle.remove()
+    })
+    returnFunc(particles)
+    container.remove()
+  }])
+}
+
+
 gsap.registerEffect({
   name: "debrisAnimation",
   paused: true,
   extendTimeline: true,
   effect: (effectConfig: DebrisAnimationConfig) => {
     const { debris, originRect } = effectConfig.impactLetter
-    const { container, particles, letter } = debris
+    const { container, retrieveParticles, returnParticles, letter } = debris
     const { originDistributionX, originDistributionY, destDistributionX, destDistributionY } = createDistributionFunctions(getOriginDimensions(originRect))
+    const fetchedParticles = retrieveParticles()
     const debrisTimeline = gsap.timeline({
         name: "debrisTimeline",
       paused: true,
-      onStart: () => {
-        batchDOMOperations([() => {
-          particles.forEach((particle: HTMLDivElement) => {
-            particle.style.display = 'block'
-            particle.style.opacity = '1'
-            particle.style.willChange = 'transform, position, opacity, color, filter, textShadow, translate, scale, rotate'
-          })
-          letter.appendChild(container)
-        }])
-        },
-        // cleanup the container after the animation completes
-        onComplete: () => {
-            requestAnimationFrame(() => {
-              container.remove()
-            })
-        }
+      onStart: debrisStart,
+      onStartParams: [fetchedParticles, container, letter],
+      onComplete: debrisComplete,
+      onCompleteParams: [fetchedParticles, container, returnParticles],
     })
       const { maxDistanceX, maxDistanceY } = getMaxDistance(getOriginDimensions(originRect))
       const maxDistance = Math.max(maxDistanceX, maxDistanceY)
 
     // iterate over each particle and add animations
-    particles.forEach((particle: HTMLDivElement, idx: number) => {
-    const originX = originDistributionX(idx, particle, particles)
-    const originY = originDistributionY(idx, particle, particles)
-    const destX = destDistributionX(idx, particle, particles)
-    const destY = destDistributionY(idx, particle, particles)
+    fetchedParticles.forEach((particle: HTMLDivElement, idx: number) => {
+    const originX = originDistributionX(idx, particle, fetchedParticles)
+    const originY = originDistributionY(idx, particle, fetchedParticles)
+    const destX = destDistributionX(idx, particle, fetchedParticles)
+    const destY = destDistributionY(idx, particle, fetchedParticles)
     const distance = getDistance(originX, originY, destX, destY)
     const particleSize = { width: particle.offsetWidth, height: particle.offsetHeight }
 
@@ -332,6 +343,7 @@ gsap.registerEffect({
     .add([`particleFade_${idx}`,
       gsap.to(particle, {
         opacity: 0,
+        display: 'none',
         duration: gsap.utils.clamp(Math.min(config.glowDuration, travelDuration), Math.max(config.glowDuration, travelDuration) + 0.6, 0.5),
         ease: 'power4.out',
       })
@@ -369,6 +381,45 @@ const precomputeDistributions = () => {
   }
 }
 
+function onLetterStart(configs: LetterAnimationConfig) {
+
+  const {impactLetters, parentFragment} = configs
+  batchDOMOperations([
+    () => {
+      const parentElement = configs[0].textType === 'button' ? document.getElementById('hero-primary-button') : (configs[0].textType === 'h1' ? document.getElementById('CTA_header') : document.getElementById('CTA_paragraph'))
+      // insert letters into the DOM
+      if (configs[0].textType === 'button') {
+        Array.from(parentFragment.children).forEach((child) => {
+          (child as HTMLElement).style.visibility = 'hidden'
+        })
+      }
+        parentElement?.appendChild(parentFragment)
+      },
+    () => {
+    impactLetters.map((cfg: ImpactLetter) => {
+      if (cfg.textType !== 'button') {
+        gsap.set(cfg.letter, {
+          visibility: 'visible',
+          opacity: 1,
+          color: cfg.textType === 'h1' ? 'var(--h1-color)' : 'var(--p-color)',
+          filter: 'brightness(1) blur(0)',
+          textShadow: 'none',
+        })
+      } else {
+        // for button, this is the actual button element
+        // we should probably change the name...
+        gsap.set(cfg.letter, {
+          visibility: 'hidden',
+          opacity: 0,
+          color: 'var(--button-text-color)',
+          filter: 'brightness(1) blur(0)',
+          textShadow: 'none',
+        })
+      }
+          })
+      }])
+}
+
 // Register the meteor target animation effect
 gsap.registerEffect({
     name: "meteortargetAnimation",
@@ -376,107 +427,73 @@ gsap.registerEffect({
     extendTimeline: true,
     paused: true,
     effect: (configs: LetterAnimationConfig) => {
-        const targetsTimeline = gsap.timeline({
-            name: "meteorTimeline",
-            paused: true,
-            // make sure the letters are visible and reset
-          onStart: () => {
-            const { impactLetters, parentFragment } = configs
-            batchDOMOperations([() => {
+      const targetsTimeline = gsap.timeline({
+        name: "meteorTimeline",
+        paused: true,
+        // make sure the letters are visible and reset
+        onStart: onLetterStart,
+        onStartParams: [configs]
+      })
+      const targets = Array.from(configs.impactLetters.map((config) => config.letter))
 
-                const parentElement = configs[0].textType === 'button' ? document.getElementById('hero-primary-button') : (configs[0].textType === 'h1' ? document.getElementById('CTA_header') : document.getElementById('CTA_paragraph'))
-              // insert letters into the DOM
-              if (configs[0].textType === 'button') {
-                Array.from(parentFragment.children).forEach((child) => {
-                  (child as HTMLElement).style.visibility = 'hidden'
-                })
-              }
-                parentElement?.appendChild(parentFragment)
-               },
-            () => {
-              impactLetters.map((cfg: ImpactLetter) => {
-                if (cfg.textType !== 'button') {
-                  gsap.set(cfg.letter, {
-                    visibility: 'visible',
-                    opacity: 1,
-                    color: cfg.textType === 'h1' ? 'var(--h1-color)' : 'var(--p-color)',
-                    filter: 'brightness(1) blur(0)',
-                    textShadow: 'none',
-                  })
-                } else {
-                  // for button, this is the actual button element
-                  gsap.set(cfg.letter, {
-                    visibility: 'hidden',
-                    opacity: 0,
-                    color: 'var(--button-text-color)',
-                    filter: 'brightness(1) blur(0)',
-                    textShadow: 'none',
-                  })
-                }
-                    })
-                }])
-          }
-        })
-        const targets = Array.from(configs.impactLetters.map((config) => config.letter))
-
-        // iterate over each letter and add animations
-        // !NOTE: we're really iterating over `ImpactLetter` config objects, not letters
+      // iterate over each letter and add animations
+      // !NOTE: we're really iterating over `ImpactLetter` config objects, not letters
       // This way we can add the debris timeline to the config object
       // without nesting gsap effects, which apparently results in
       // pan-dimensional collapse of the universe
-        configs.forEach((cfg: ImpactLetter, idx: number) => {
-            const { letter, originRect, debrisTimeline, axis, textType } = cfg
-            const { xOriginDistribution, stagger } = precomputeDistributions()
-            const distribution = xOriginDistribution
-            const start = axis === 'x' ? [distribution(idx, letter, targets), 0] : [0, pageDimensions.height - distribution(idx, letter, targets)]
-            const startTime = stagger(idx, letter, targets)
-            const distance = getDistance(start[0], start[1], originRect.left + originRect.width / 2, originRect.top + originRect.height / 2)
-            const flightDuration = distance / config.letterTravelSpeed
-            // point in flight where atmospheric flame effect starts
-            const flameStart = flightDuration * 0.4
-            const flameDuration = flightDuration * 0.35
-            targetsTimeline.add([`targetFlight_${idx}`, gsap.from(
-              letter,
-                {
-                    x: start[0],
-                    y: start[1],
-                    opacity: 1,
-                    scale: 2,
-                    rotationX: getRandomRotation(),
-                    rotationY: getRandomRotation(),
-                    rotationZ: getRandomRotation(),
-                    z: gsap.utils.random(300, 600, 1),
-                    duration: flightDuration,
-                    ease: 'power4.out',
-                }
-            )], startTime)
-            // atmospheric glow effect
-                .add([`targetAtmosphericGlow_${idx}`, gsap.to(letter, {
-                    duration: flameDuration,
-                    keyframes: {
-                      "0%": {
-                        filter: 'brightness(2) blur(2px)',
-                        textShadow: '-.1em 0 .3em #fefcc9, .1em -.1em .3em #feec85, -.2em -.2em .4em #ffae34, .2em -.3em .3em #ec760c, -.2em -.4em .4em #cd4606, .1em -.5em .7em #973716, .1em -.7em .7em #451b0e',
-                        ease: 'power4.out',
-                      },
-                      "40%": {
-                        filter: 'brightness(6) blur(5px)',
-                        textShadow: '-.1em -.2em .6em #fefcc9, -.15em 0 .6em #feec85, .1em -.25em .6em #ffae34, -.15em -.45em .5em #ec760c, .1em -.5em .6em #cd4606, 0 -.8em .6em #973716, -.2em -1em .8em #451b0e',
-                        ease: 'power4.out',
-                      },
-                      "100%": {
-                        filter: 'brightness(1) blur(0)',
-                        textShadow: 'none',
-                        ease: 'power4.in',
-                        color: textType === 'h1' ? 'var(--h1-color)' : 'var(--p-color)',
-                      }
+      configs.forEach((cfg: ImpactLetter, idx: number) => {
+          const { letter, originRect, debrisTimeline, axis, textType } = cfg
+          const { xOriginDistribution, stagger } = precomputeDistributions()
+          const distribution = xOriginDistribution
+          const start = axis === 'x' ? [distribution(idx, letter, targets), 0] : [0, pageDimensions.height - distribution(idx, letter, targets)]
+          const startTime = stagger(idx, letter, targets)
+          const distance = getDistance(start[0], start[1], originRect.left + originRect.width / 2, originRect.top + originRect.height / 2)
+          const flightDuration = distance / config.letterTravelSpeed
+          // point in flight where atmospheric flame effect starts
+          const flameStart = flightDuration * 0.4
+          const flameDuration = flightDuration * 0.35
+          targetsTimeline.add([`targetFlight_${idx}`, gsap.from(
+            letter,
+              {
+                  x: start[0],
+                  y: start[1],
+                  opacity: 1,
+                  scale: 2,
+                  rotationX: getRandomRotation(),
+                  rotationY: getRandomRotation(),
+                  rotationZ: getRandomRotation(),
+                  z: gsap.utils.random(300, 600, 1),
+                  duration: flightDuration,
+                  ease: 'power4.out',
+              }
+          )], startTime)
+          // atmospheric glow effect
+              .add([`targetAtmosphericGlow_${idx}`, gsap.to(letter, {
+                  duration: flameDuration,
+                  keyframes: {
+                    "0%": {
+                      filter: 'brightness(2) blur(2px)',
+                      textShadow: '-.1em 0 .3em #fefcc9, .1em -.1em .3em #feec85, -.2em -.2em .4em #ffae34, .2em -.3em .3em #ec760c, -.2em -.4em .4em #cd4606, .1em -.5em .7em #973716, .1em -.7em .7em #451b0e',
+                      ease: 'power4.out',
+                    },
+                    "40%": {
+                      filter: 'brightness(6) blur(5px)',
+                      textShadow: '-.1em -.2em .6em #fefcc9, -.15em 0 .6em #feec85, .1em -.25em .6em #ffae34, -.15em -.45em .5em #ec760c, .1em -.5em .6em #cd4606, 0 -.8em .6em #973716, -.2em -1em .8em #451b0e',
+                      ease: 'power4.out',
+                    },
+                    "100%": {
+                      filter: 'brightness(1) blur(0)',
+                      textShadow: 'none',
+                      ease: 'power4.in',
+                      color: textType === 'h1' ? 'var(--h1-color)' : 'var(--p-color)',
                     }
-                })], `targetFlight_${idx}+=${flameStart}`)
-            if (debrisTimeline) {
-              targetsTimeline.add(debrisTimeline, `>targetFlight_${idx}`)
-            }
-        }) // end forEach
-        return targetsTimeline
+                  }
+              })], `targetFlight_${idx}+=${flameStart}`)
+          if (debrisTimeline) {
+            targetsTimeline.add(debrisTimeline, `>targetFlight_${idx}`)
+          }
+      }) // end forEach
+      return targetsTimeline
     }
 })
 
@@ -484,21 +501,8 @@ gsap.registerEffect({
  **                 BUTTON TEXT ANIMATION EFFECT
  *========================================================================**/
 
-gsap.registerEffect({
-  name: "buttonTextAnimation",
-  defaults: { paused: true },
-  extendTimeline: true,
-  paused: true,
-  effect: (letterConfig: ImpactLetter) => {
-    const { buttonText, letter } = letterConfig
-    const wordArray = buttonText as HTMLDivElement[]
-    const charArray = wordArray.map((word) => { return Array.from(word.querySelectorAll('.text-char')) }).flat() as HTMLDivElement[]
-    // !NOTE: `letter` is actually the button element here
-    const colorArray = getRandomColorArray(charArray.length)
-    const buttonTimeline = gsap.timeline({
-      name: "buttonTextTimeline",
-      paused: true,
-      onStart: () => {
+function onButtonStart(wordArray: HTMLDivElement[], charArray: HTMLDivElement[], colorArray: string[], button: HTMLButtonElement) {
+  () => {
         batchDOMOperations([() => {
           wordArray?.forEach((word: HTMLDivElement) => {
             Object.assign(word.style, {
@@ -507,7 +511,7 @@ gsap.registerEffect({
               z: 0.1,
               fontFamily: "Inter, 'Noto Sans', 'Open Sans', Lato, Helvetica, Arial, system-ui, sans-serif",
             })
-            letter.appendChild(word)
+            button.appendChild(word)
           })
         },
         () => {
@@ -519,6 +523,25 @@ gsap.registerEffect({
         }
         ])
       }
+}
+
+gsap.registerEffect({
+  name: "buttonTextAnimation",
+  defaults: { paused: true },
+  extendTimeline: true,
+  paused: true,
+  effect: (letterConfig: ImpactLetter) => {
+    const { buttonText, letter } = letterConfig
+    // !NOTE: `letter` is actually the button element here
+    const button = letter
+    const wordArray = buttonText as HTMLDivElement[]
+    const charArray = wordArray.map((word) => { return Array.from(word.querySelectorAll('.text-char')) }).flat() as HTMLDivElement[]
+    const colorArray = getRandomColorArray(charArray.length)
+    const buttonTimeline = gsap.timeline({
+      name: "buttonTextTimeline",
+      paused: true,
+      onStart: onButtonStart,
+      onStartParams: [wordArray, charArray, colorArray, button]
     })
     buttonTimeline.add(['initialSetup', gsap.set(wordArray, { visibility: 'visible', opacity: 1 })])
       .add(['buttonTextZoomIntro', gsap.from(wordArray, {
@@ -577,8 +600,8 @@ gsap.registerEffect({
           axis: 'x',
         },
         modifiers: {
-          color: (index) => {
-            return gsap.utils.shuffle(colorArray)[index]
+          color: (idx) => {
+            return gsap.utils.shuffle(colorArray)[idx]
           }
         },
         ease: 'power1.inOut',
@@ -624,6 +647,7 @@ gsap.registerEffect({
 /**
  * Main constructor for an impact timeline.
  * @param letterConfig - The letter animation configuration.
+ * @param particlePool - The particle pool for debris animations.
  * @param label - The label for the timeline.
  * @returns The impact timeline.
  */

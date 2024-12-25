@@ -27,15 +27,6 @@ import { HeroState } from './types'
 export const isFullyVisible = (state: HeroState): boolean =>
   state.atHome && state.landingVisible && state.pageVisible
 
-/**
- * test if the hero section has no restrictions
- * that the egg is not active
- * @param state - the current hero state
- * @returns boolean
- */
-export const hasNoRestrictions = (state: HeroState): boolean =>
-  !state.eggActive
-
 /** ======================
  **   COMPONENT PREDICATES
  *========================**/
@@ -49,18 +40,15 @@ export const impactPredicates = {
   canPlay: (state: HeroState): boolean =>
     isFullyVisible(state) &&
     state.newToHome &&
-    hasNoRestrictions(state)
+    !state.eggActive
 }
 
 export const panningPredicates = {
   canPan: (state: HeroState): boolean =>
-    isFullyVisible(state) && hasNoRestrictions(state),
+    isFullyVisible(state) && !state.eggActive,
 }
 
 export const scrollPredicates = {
-  canScrollTo: (state: HeroState): boolean =>
-    !state.prefersReducedMotion,
-
   canTrigger: (state: HeroState): boolean =>
     !state.eggActive,
 }

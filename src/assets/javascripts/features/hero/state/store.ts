@@ -77,7 +77,6 @@ export class HeroStore {
   public panningState$ = new BehaviorSubject<PanningState>({ canPan: false })
 
   public scrollState$ = new BehaviorSubject<ScrollState>({
-    canScrollTo: false,
     canTrigger: false,
   })
 
@@ -121,7 +120,6 @@ export class HeroStore {
       case AnimationComponent.Panning:
         this.panningState$.next(update )
         break
-      case AnimationComponent.ScrollTo:
       case AnimationComponent.ScrollTrigger:
         this.scrollState$.next({ ...this.scrollState$.value, ...update } as ScrollState)
         break
@@ -133,6 +131,10 @@ export class HeroStore {
         }
 
     }
+  }
+
+  public updateHeroState(update: Partial<HeroState>): void {
+    this.state$.next({ ...this.state$.value, ...update })
   }
 
   /**
@@ -274,6 +276,30 @@ export class HeroStore {
     ))
   }
 
+  public getState(): HeroState {
+    return this.state$.getValue()
+  }
+
+  public getStateValue(subject: string): any {
+    return this.state$.value[subject as keyof HeroState]
+  }
+
+  public getComponentValue(component: string): ComponentState | LandingPermissions {
+    switch (component) {
+      case AnimationComponent.Carousel:
+        return this.carouselState$.value
+      case AnimationComponent.Impact:
+        return this.impactState$.value
+      case AnimationComponent.Panning:
+        return this.panningState$.value
+      case AnimationComponent.ScrollTrigger:
+        return this.scrollState$.value
+      default:
+        return this.landingPermissions$.value
+    }
+
+  }
+
   /** ============================================
    *          Component Specific Observables
    *=============================================**/
@@ -352,18 +378,17 @@ export class HeroStore {
   private getScrollState$(observerFunc: ComponentUpdateFunction): Observable<ScrollState> {
     return this.state$.pipe(
       map(state => ({
-        canScrollTo: predicates.scrollPredicates.canScrollTo(state),
         canTrigger: predicates.scrollPredicates.canTrigger(state),
       })),
       distinctUntilChanged((prev, curr) => {
-        return prev.canScrollTo === curr.canScrollTo ||
-          prev.canTrigger === curr.canTrigger
+        return prev.canTrigger === curr.canTrigger
       }
       ),
       shareReplay(1),
       tap(this.getComponentObserver('scrollState$', observerFunc))
     )
   }
+
 
   /**
    * Creates an observable for the scroll state

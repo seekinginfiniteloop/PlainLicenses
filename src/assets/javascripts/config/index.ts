@@ -22,6 +22,7 @@ export const IMPACT_CONFIG = {
   maxParticleSize: 4,
   debrisTravelSpeed: 500,
   letterTravelSpeed: 50,
+  letterTotalDuration: 1.5,
   baseColors,
   extendedColors: [
     ...baseColors,
@@ -63,4 +64,18 @@ export const SCROLL_TO_CONFIG = {
   secondScrollRatio: 0.6,
   timelineVars: {
   }
+} as const
+
+export const OBSERVER_CONFIG = {
+  fades: {
+    fadeInSections: ['.hero__parallax', '#pt2-hero-content-section', '#pt3-hero-content-section'],
+    fadeInDuration: 0.5
+  },
+  slides: {
+    slideDuration: 1.25,
+    clickPause: 5,
+    scrollPause: 10
+  },
+  clickTargets: 'hero-target-selector',
+  ignoreTargets: 'a, button, clickTargets, #the-egg, header, navigation, md-tabs'
 } as const

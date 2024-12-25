@@ -23,18 +23,23 @@
 	"customizations": {
 		"vscode": {
 			"extensions": [
+				// I may have an extension addiction...
 				"Alexey-Strakh.stackoverflow-search",
 				"DavidAnson.vscode-markdownlint",
 				"Mukundan.python-docs",
+				"Orta.vscode-jest",
 				"PascalReitermann93.vscode-yaml-sort",
 				"Tock.vscode-css-custom-properties",
 				"Tyriar.sort-lines",
 				"VisualStudioExptTeam.intellicode-api-usage-examples",
 				"VisualStudioExptTeam.vscodeintellicode",
 				"WallabyJs.quokka-vscode",
+				"WallabyJs.wallaby-vscode",
 				"YoavBls.pretty-ts-errors",
 				"ZainChen.json",
 				"Zignd.html-css-class-completion",
+				"aaron-bond.better-comments",
+				"akmarnafi.comment-headers",
 				"almenon.birdseye-vscode",
 				"anteprimorac.html-end-tag-labels",
 				"antfu.iconify",
@@ -53,6 +58,7 @@
 				"fill-labs.dependi",
 				"firefox-devtools.vscode-firefox-debug",
 				"formulahendry.auto-rename-tag",
+				"github.vscode-github-actions",
 				"hbenl.vscode-test-explorer",
 				"jock.svg",
 				"kakumei.ts-debug",
@@ -68,12 +74,15 @@
 				"njpwerner.autodocstring",
 				"njqdev.vscode-python-typehint",
 				"oderwat.indent-rainbow",
+				"oven.bun-vscode",
 				"pamaron.pytest-runner",
 				"qcz.text-power-tools",
 				"redhat.vscode-yaml",
 				"remcohaszing.schemastore",
 				"rogalmic.bash-debug",
+				"rvest.vs-code-prettier-eslint",
 				"shakram02.bash-beautify",
+				"sketchbuch.vsc-quokka-statusbar",
 				"sourcery.sourcery",
 				"stylelint.vscode-stylelint",
 				"tamasfe.even-better-toml",
@@ -84,14 +93,7 @@
 				"wholroyd.jinja",
 				"wix.vscode-import-cost",
 				"wmontalvo.vsc-jsonsnippets",
-				"yzhang.markdown-all-in-one",
-				"rvest.vs-code-prettier-eslint",
-				"github.vscode-github-actions",
-				"akmarnafi.comment-headers",
-				"aaron-bond.better-comments",
-				"oven.bun-vscode",
-				"Orta.vscode-jest",
-				"sketchbuch.vsc-quokka-statusbar"
+				"yzhang.markdown-all-in-one"
 			]
 		}
 	}

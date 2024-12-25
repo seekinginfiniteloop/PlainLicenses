@@ -41,7 +41,6 @@ export enum AnimationComponent {
   Carousel = 'carousel',
   Impact = 'impact',
   Panning = 'panning',
-  ScrollTo = 'scrollTo',
   ScrollTrigger = 'scrollTrigger'
 }
 
@@ -51,15 +50,12 @@ export type CarouselState = {canPlay: boolean}
 
 export type ImpactState = {canPlay: boolean}
 
-export interface PanningState { canPan: boolean}
+export interface PanningState { canPan: boolean }
 
 export interface ScrollState {
-  canScrollTo: boolean
   canTrigger: boolean
 }
 
-export type ScrollToState = Pick<ScrollState, 'canScrollTo'>
-export type ScrollTriggerState = Pick<ScrollState, 'canTrigger'>
 
 export interface LandingPermissions {
   canPan: boolean
@@ -67,6 +63,6 @@ export interface LandingPermissions {
   canImpact: boolean
 }
 
-export type ComponentState = CarouselState | ImpactState | PanningState | ScrollState | ScrollToState | ScrollTriggerState
+export type ComponentState = CarouselState | ImpactState | PanningState
 
 export type ComponentUpdateFunction = (_state: ComponentState) => void // updates the component state but there's no return value

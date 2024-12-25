@@ -12,7 +12,7 @@
  * @requires rxjs
  * @requires ./types (carousel)
  * @requires ~/types // anything prefixed with `~` is root level
- * @requires ~/cache
+ * @requires ~/utilities/cache
  * @requires ../state/store
  * @requires ./heroImages
  * @requires ~/log

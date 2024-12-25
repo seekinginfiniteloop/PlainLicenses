@@ -5,7 +5,7 @@ import type { Animations, ImpactTimeline } from "./types"
 import { HeroStore } from "../state/store"
 import { HeroState } from "../state/types"
 import { logger } from "~/log"
-import { animateText } from "./impactText"
+import { ImpactAnimation } from "./impactText"
 
 export class AnimationManager {
 
@@ -17,8 +17,11 @@ export class AnimationManager {
 
   private store = HeroStore.getInstance()
 
+  private impactAnimator = ImpactAnimation.getInstance()
 
   private landing$ = this.store.landingPermissions$
+
+  private scrollState$ = this.store.scrollState$
 
   private storeState$: BehaviorSubject<HeroState> = this.store.state$
 
@@ -34,7 +37,7 @@ export class AnimationManager {
 
   private initSubscriptions() {
 
-    const animationState$ = this.storeState$.pipe(
+    const heroState$ = this.storeState$.pipe(
       distinctUntilChanged(),
     )
 
@@ -46,8 +49,9 @@ export class AnimationManager {
       ))
 
     this.subscriptions.add(this.landing$.subscribe())
-    this.subscriptions.add(animationState$.subscribe())
+    this.subscriptions.add(heroState$.subscribe())
     this.subscriptions.add(initialSetup$.subscribe())
+    this.subscriptions.add(this.scrollState$.subscribe())
 
     // Subscribe to carouselState$ from HeroStore
     this.store.carouselState$.pipe(
@@ -85,7 +89,7 @@ export class AnimationManager {
     timeline.eventCallback("onUpdate", () => {
 
     })
-}
+  }
 
   private setupLandingAnimations(nextImage: HTMLImageElement, currentImage?: HTMLImageElement | undefined): gsap.core.Timeline {
     const timeline = gsap.timeline()
@@ -96,7 +100,7 @@ export class AnimationManager {
       if (this.isNewTimeline(impactTimeline)) {
         timeline.add(impactTimeline)
       } else {
-      const impactTimeline: ImpactTimeline = animateText()
+        const impactTimeline: ImpactTimeline = this.impactAnimator.animateText()
         this.animations.set(Symbol.for("impact"), impactTimeline)
         timeline.add(impactTimeline)
       }
@@ -111,8 +115,8 @@ export class AnimationManager {
 
       }
     }
-      this.timeline.data = landing$.value
-      this.animations.set(Symbol.for('mainTimeline'), timeline)
+    this.timeline.data = landing$.value
+    this.animations.set(Symbol.for('mainTimeline'), timeline)
   }
 
   private cacheImpact() {

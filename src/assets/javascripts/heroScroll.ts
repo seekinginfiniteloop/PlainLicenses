@@ -28,7 +28,7 @@ import {
   switchMap,
   tap} from "rxjs/operators"
 
-import { prefersReducedMotion$ } from "~/utils"
+import { prefersReducedMotion$ } from "~/utilities/eventHandlers"
 import { logger } from "~/log"
 import { preventDefault } from "./utilities/eventHandlers"
 
