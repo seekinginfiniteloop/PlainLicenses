@@ -1,53 +1,91 @@
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
-import { debounceTime, filter, map } from "rxjs/operators"
+import { Observer } from "gsap/Observer"
+import { debounceTime, distinctUntilChanged, filter, map } from "rxjs/operators"
 import { OBSERVER_CONFIG } from "~/config"
 import { FadeConfig, SlideConfig } from "~/config/types"
 import { GsapMatchMediaConditions, Section } from "./types"
 import { HeroStore } from "../state/store"
 import { getMatchMediaInstance, normalizeResolution } from "./utils"
-import { BehaviorSubject } from "rxjs"
+import { BehaviorSubject, combineLatest, Subscription } from "rxjs"
 
-gsap.registerPlugin(ScrollTrigger)
+gsap.registerPlugin(Observer, ScrollTrigger)
 
 class ObservationAnimation {
 
-  private static instance: ObservationAnimation
+    private store = HeroStore.getInstance()
 
-  private store = HeroStore.getInstance()
+    private clickTargets: string
 
-  private scrollState = this.store.scrollState$
+    private currentIndex = -1
 
-  private observerConfig = OBSERVER_CONFIG
+    private fades: FadeConfig
 
-  private fades: FadeConfig
+    private ignoreTargets: string
 
-  private slides: SlideConfig
+    private observerConfig = OBSERVER_CONFIG
 
-  private clickTargets: string
+    private scrollState = this.store.scrollState$
 
-  private ignoreTargets: string
+    private sectionAnimations: { [key: string]: gsap.core.Timeline }
 
-  private sections: Section[] = []
+    private sections: Section[] = []
 
-  private currentIndex = -1
+    private slides: SlideConfig
 
-  public animating = false
+    private static instance: ObservationAnimation
 
-  private sectionAnimations: { [key: string]: gsap.core.Timeline }
+    private subscriptions = new Subscription()
 
-  private setupSubscriptions() {
-    this.scrollState.pipe(
-      map(state => state.canTrigger),
-    ).subscribe((canTrigger) => {
-      if (canTrigger) {
-        this.assignFadeIns(this.fades.fadeInSections.slice(1))
-        this.setupSections()
-        this.setupObserver()
-        this.transitionToSection(0, 1)
-        ScrollTrigger.refresh()
-      }
-    })
+    private trigger = ScrollTrigger
+
+    private observers: Observer[] = []
+
+    public animating = false //* only public property
+
+// we can access scroll trigger from within the `this` in a gsap instance
+
+    private setupSubscriptions() {
+        const trigger$ = this.scrollState.pipe(
+            map(state => state.canTrigger),
+            distinctUntilChanged(),
+        )
+
+      const resizeWatcher$ = combineLatest([
+          this.store.state$.pipe(
+          map(state => ({ viewport: state.viewport, header: state.header })),
+          debounceTime(100),
+          ),
+          trigger$.pipe(filter(canTrigger => canTrigger))
+      ]
+      ).pipe(
+          map(([{ viewport, header }, _]) => { return ({
+                  y: viewport.offset.y,
+                  headerHidden: header.hidden,
+                  headerHeight: header.height,
+              })
+          }),
+          distinctUntilChanged((prev, curr) => {
+                return prev.y === curr.y && prev.headerHidden === curr.headerHidden && prev.headerHeight === curr.headerHeight
+          })
+      )
+
+        this.subscriptions.add(
+            trigger$.subscribe(canTrigger => {
+                if (canTrigger) {
+                    this.assignFadeIns(this.fades.fadeInSections.slice(1))
+                    this.setupSections()
+                    this.setupObserver()
+                    this.transitionToSection(0, 1)
+                }
+            }
+            ))
+        this.subscriptions.add(
+            resizeWatcher$.subscribe(() => {
+                this.trigger.refresh()
+                this.trigger.update()
+            })
+        )
   }
 
   private constructor() {
@@ -56,7 +94,7 @@ class ObservationAnimation {
     this.clickTargets = this.observerConfig.clickTargets
     this.ignoreTargets = this.observerConfig.ignoreTargets
     this.sectionAnimations = Object.fromEntries(
-    this.fades.fadeInSections.map(key => [key, gsap.timeline()]))
+    this.fades.fadeInSections.map((key: string) => [key, gsap.timeline()]))
     this.setupSubscriptions()
   }
 
@@ -150,107 +188,48 @@ class ObservationAnimation {
 
   }
 
-  private setupObserver() {
+    private downTransition(_self: Observer) {
+        const { target } = _self
+        const clickTargets = Array.from(document.querySelectorAll(this.clickTargets))
+        const isClickTarget = clickTargets.includes(target)
+        if (!this.animating && this.currentIndex < this.sections.length - 1) {
+            this.transitionToSection(this.currentIndex + 1, 1, isClickTarget ? this.slides.clickPause : this.slides.scrollPause)
+        }
+    }
+
+    private upTransition(_self: Observer) {
+        if (!this.animating && this.currentIndex > 0) {
+            this.transitionToSection(this.currentIndex - 1, -1)
+        }
+    }
+
+    private setupObserver() {
     const ignoreTargets = Array.from(document.querySelectorAll(this.ignoreTargets))
-    ScrollTrigger.observe({
+    const movementObserver = this.trigger.observe({
       target: document.body,
       axis: "y",
       type: "wheel,touch,scroll",
       wheelSpeed: -1,
-      onDown: () => {
-        if (!this.animating && this.currentIndex < this.sections.length - 1) {
-          this.transitionToSection(this.currentIndex + 1, 1, this.slides.scrollPause)
-        }
-      },
-      onUp: () => {
-        if (!this.animating && this.currentIndex > 0) {
-          this.transitionToSection(this.currentIndex - 1, -1)
-        }
-      },
+      onDown: this.downTransition.bind(this),
+      onUp: this.upTransition.bind(this),
       ignore: ignoreTargets,
       dragMinimum: 25,
       tolerance: 25,
       preventDefault: true
     })
-    ScrollTrigger.observe({
+    const clickObserver = this.trigger.observe({
       target: this.clickTargets,
       type: "pointer,touch",
-      preventDefault: true,
-      onClick: () => {
-        if (!this.animating) {
-          this.transitionToSection(this.currentIndex + 1, 1, this.slides.clickPause)
-        }
-      },
-      onPress: () => {
-        if (!this.animating) {
-          this.transitionToSection(this.currentIndex + 1, 1, this.slides.clickPause)
-        }
-      }
+        preventDefault: true,
+      onClick: this.downTransition.bind(this),
+      onPress: this.downTransition.bind(this),
     })
+        this.observers = [movementObserver, clickObserver]
+        this.observers.forEach(observer => observer.enable())
   }
-}
-
-/**
-
-
-gsap.registerEffect(
-    {
-        name: "JumpBlinkEmphasis",
-        extendTimeline: true,
-        effect: (targets: HTMLElement[], config?: gsap.TimelineVars) => {
-            const normedHeight = normalizeResolution()
-            const defaults = {
-              ease: "elastic",
-              repeat: -1,
-              delay: 5,
-              yoyo: true,
-                repeatDelay: 1,
-            }
-            const timelineConfig = config ? { ...config, ...defaults } : defaults
-          const timeline = gsap.timeline(timelineConfig)
-
-
-            timeline.add(["blink", gsap.to(targets, { autoAlpha: 0, duration: 0.5, repeat: 1, yoyo: true, ease: "power4.in" })], 0)
-            timeline.add(["jump", gsap.to(targets, { y: 5, duration: 0.5, ease: "elastic" })], 0)
-
-            })
-            const defaults: gsap.TweenVars = {
-
-              y: Math.max(5, 25 * normedHeight),
-              scale: 1.5 + gsap.utils.mapRange(0, 1, 0, 1.5, normedHeight)
-            }
-            }
-        }
-
-
-)
-
-const arrowDownAnimation = () => {
-    const mm =   gsap.matchMedia().add(
-    {
-      lowMotion: 'prefers-reduced-motion: reduce',
-      normalMotion: 'prefers-reduced-motion: no-preference'
-        },
-    (context) => {
-            const { lowMotion } = context.conditions as GsapMatchMediaConditions
-            if (lowMotion) {
-              tl.add(["arrowDownPointer",
-                gsap.to('#arrow-down', {
-                    y: 5,
-                    duration: 1,
-                    ease: 'elastic',
-                    repeat: -1,
-                    repeatDelay: 2,
-                    delay: 5,
-                    })],
-              0)
-            }
-
-
-
+    public destroy() {
+        this.trigger.getAll().forEach(trigger => trigger.kill())
+        this.trigger.update()
+        this.subscriptions.unsubscribe()
     }
-    )
-    const tl = gsap.timeline({ repeat: -1, yoyo: true })
-    tl.add(["arrowDownPointer", gsap.to('#arrow-down', { y: 10, duration: 0.5, ease: 'elastic' })], 0)
-
- }
+}

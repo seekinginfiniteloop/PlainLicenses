@@ -50,9 +50,46 @@ export function normalizeResolution(): number {
 }
 
 
-export function getMatchMediaInstance(func: gsap.ContextFunc, scope?: Element | string | object): gsap.MatchMedia {
-  return gsap.matchMedia().add({
-    lowMotion: 'prefers-reduced-motion: reduce',
-    normalMotion: 'prefers-reduced-motion: no-preference'
-  }, func, scope)
+/**
+ * Retrieves a matchMedia instance with the specified contextFunction and optional scope.
+ * @param context - The context function to use.
+ * @param scope - The scope to use (defaults to document.documentElement).
+ * @returns A matchMedia instance.
+ */
+/**
+ * Retrieves a matchMedia instance with the specified contextFunction and optional scope.
+ * @param context - The context function to use.
+ * @param scope - The scope to use (defaults to document.documentElement).
+ * @returns A matchMedia instance.
+ */
+export function getMatchMediaInstance(
+  context: gsap.ContextFunc,
+  scope?: Element | string | object) {
+  return gsap.matchMedia().add(
+    {
+      lowMotion: 'prefers-reduced-motion: reduce',
+      normalMotion: 'prefers-reduced-motion: no-preference'
+    },
+    context, scope || document.documentElement
+  )
+}
+
+/**
+ * Retrieves the distance from the target element to the viewport.
+ * @param target - The target element.
+ * @param edge - The edge to measure from (defaults to 'bottom'). Accepts 'top', 'right', 'bottom', 'left'.
+ * @returns The distance from the target element to the viewport.
+ */
+export function getDistanceToViewport(
+  target: Element,
+  edge: 'top' | 'right' | 'bottom' | 'left' = 'bottom') {
+  const rect = target.getBoundingClientRect()
+  const {viewport} = store.state$.getValue()
+  const distanceMap = {
+    top: rect.top,
+    right: viewport.offset.x - rect.right,
+    bottom: viewport.offset.y - rect.bottom,
+    left: rect.left
+  }
+  return distanceMap[edge]
 }

@@ -1,6 +1,15 @@
 #!/bin/bash
 
 # Update and install packages
+echo "adding nameservers to resolve.conf"
+echo "nameserver 1.1.1.2" | sudo tee /etc/resolv.conf > /dev/null
+echo "nameserver 1.0.0.2" | sudo tee -a /etc/resolv.conf > /dev/null
+echo "nameserver 103.247.36.36" | sudo tee -a /etc/resolv.conf > /dev/null
+echo "nameserver 103.247.37.37 | sudo tee -a /etc/resolv.conf > /dev/null"
+echo "options attempts:3" | sudo tee -a /etc/resolv.conf > /dev/null
+echo "options timeout:5" | sudo tee -a /etc/resolv.conf > /dev/null
+echo "nameservers added resolv.conf:"
+cat /etc/resolv.conf
 cd /workspaces/PlainLicense || return
 sudo apt update &&
 sudo apt upgrade -y &&
@@ -38,7 +47,6 @@ python3 \
 python3-dev \
 readline-common \
 shellcheck \
-sqlite-utils \
 sqlite3 \
 unzip \
 xclip \
@@ -50,11 +58,14 @@ zsh-autosuggestions \
 zsh-syntax-highlighting &&
 
 function initial_installs() {
+    echo "installing uv"
     export BUN_INSTALL="/home/vscode/.bun"
     export UV_PYTHON_DOWNLOADS="automatic"
     # sync and install tools
     curl -LsSf https://astral.sh/uv/install.sh | sh &&
+    echo "installing bun"
     curl -fsSL https://bun.sh/install | bash &&
+    echo "installing rustup"
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y &&
     source "$HOME/.cargo/env" &&
     git clone --depth=1 https://gitee.com/romkatv/powerlevel10k.git "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k" &&
@@ -74,7 +85,7 @@ function set_configs() {
     P10K="/workspaces/PlainLicense/.devcontainer/.p10k.zsh"
     LOLCATE_CONFIG="/workspaces/PlainLicense/.devcontainer/lolcate_config.toml"
     LOLCATE_IGNORES="/workspaces/PlainLicense/.devcontainer/lolcate_ignores"
-
+    echo "setting configurations for zsh, powerlevel10k, bash, and completions"
     cat "$ZSHRC" > "$HOME/.zshrc"
     cat "$BASHRC" > "$HOME/.bashrc"
     cat "$P10K" > "$HOME/.p10k.zsh"
@@ -106,14 +117,18 @@ EOF
 
 
 function setup_rust_helpers() {
+    echo "installing ripgrep"
     cargo install --all-features ripgrep &&
+    echo "installing typos-cli"
     cargo install typos-cli &&
+    echo "installing lolcate"
     cargo install --git https://github.com/ngirard/lolcate-rs
 }
 
 function uv_install() {
     export UV_PYTHON_DOWNLOADS="automatic"
     local uvloc=/home/vscode/.local/bin/uv
+    echo "setting up python environment"
     $uvloc python install 3.13 &&
     $uvloc venv --allow-existing .venv &&
     $uvloc tool install ipython -q &&
@@ -128,11 +143,13 @@ function uv_install() {
 function bun_install() {
     export BUNOPTS="--no-interactive --silent"
     local bunloc=/home/vscode/.bun/bin/bun
+    echo "setting up TS environment"
     $bunloc install "${BUNOPTS}" &&
     $bunloc install -g "${BUNOPTS}" @linthtml/linthtml stylelint eslint prettier semantic-release-cli markdownlint-cli2 commitizen commitlint node
 }
 
 function set_completions() {
+    echo "adding rustup, cargo, and rg completions"
     "$HOME"/.cargo/bin/rustup completions zsh > "$HOME/.zfunc/_rustup"
     "$HOME"/.cargo/bin/rustup completions bash > "$bash_completion/rustup"
     "$HOME"/.cargo/bin/rustup completions zsh cargo > "$HOME/.zfunc/_cargo"

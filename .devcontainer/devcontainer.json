@@ -2,10 +2,25 @@
 {
 	"name": "Ubuntu",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"image": "mcr.microsoft.com/devcontainers/base:noble",
+	"image": "mcr.microsoft.com/devcontainers/base:ubuntu",
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	"forwardPorts": [
 		8000
+	],
+	"portsAttributes": {
+		"8000": {
+			"label": "MKDocs dev server"
+		}
+	},
+	"runArgs": [
+		"--dns",
+		"1.1.1.2",
+		"--dns",
+		"1.0.0.2",
+		"--dns",
+		"103.247.36.36",
+		"--dns",
+		"103.247.37.37"
 	],
 	"containerEnv": {
 		"UV_LINK_MODE": "copy",

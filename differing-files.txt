@@ -1,0 +1,7 @@
+
+Differing file: src/assets/javascripts/features/hero/animations/animationManager.ts
+Differing file: src/assets/javascripts/features/hero/animations/impactEffects.ts
+Differing file: src/assets/javascripts/features/hero/animations/impactText.ts
+Differing file: src/assets/javascripts/features/hero/animations/observer.ts
+Differing file: src/assets/javascripts/features/hero/animations/types.ts
+Differing file: src/assets/javascripts/features/hero/animations/utils.ts
