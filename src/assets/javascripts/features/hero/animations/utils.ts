@@ -4,11 +4,12 @@
  */
 
 import gsap from 'gsap'
+import { IMPACT_CONFIG } from '~/config'
 import { HeroStore } from '../state/store'
 
 const store = HeroStore.getInstance()
 
-export const getRandomStartColor = gsap.utils.random(config.baseColors, true)
+export const getRandomStartColor = gsap.utils.random(IMPACT_CONFIG.baseColors, true)
 
 // supports the exported `getRandomBorderRadius` function
 const getRandomRadii = gsap.utils.random(20, 95, 5, true)
