@@ -10,9 +10,22 @@
             html {
                 scroll-behavior: smooth;
             }
+            #CTA_header {
+            animation: glow 3000ms ease-in-out infinite alternate;
+            }
             #CTA_header,
             #CTA_paragraph {
                 opacity: 1;
+                visibility: visible;
+                  transition:
+                    background-color 350ms ease-in-out,
+                    color 300ms ease-in-out,
+                    scale 350ms ease-in;
+            }
+            #pt2-hero-content-section h1 {
+                visibility: visible;
+            }
+            #pt3-hero-content-section {
                 visibility: visible;
             }
 
@@ -29,11 +42,7 @@
                 Fight</h1>
             <p id="CTA_paragraph" contenteditable="false">To End Confusion!</p>
             <div class="hero-cta-button">
-                <a class="hero-target-selector" href="#pt3-hero-content-section"
-                    data-smooth-scroll data-scroll-duration="5" data-scroll-pause-duration="1.7"
-                    data-anchor-target="#pt3-hero-content-section"
-                    data-scroll-pause-id="#pt2-hero-content-section" contenteditable="false">
-
+                <a class="hero-target-selector" href="#pt3-hero-content-section" contenteditable="false">
                     <button contenteditable="false" id="hero-primary-button"
                         class="md-button">Get
                         Clear

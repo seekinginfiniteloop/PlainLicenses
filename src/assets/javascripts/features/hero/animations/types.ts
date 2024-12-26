@@ -125,6 +125,8 @@ export interface ImpactLetter {
   letter: HTMLElement
   originRect: Rect
   textType: "h1" | "p" | "button"
+  dustDuration: number
+  dustLayer: HTMLSpanElement
 }
 
 export type ImpactLetters = ImpactLetter[]

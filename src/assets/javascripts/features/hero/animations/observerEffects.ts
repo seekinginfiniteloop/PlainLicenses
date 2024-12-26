@@ -14,16 +14,16 @@ const blink = (
 
 const jump = (
     targets: gsap.TweenTarget,
-    y: number = 5,
     duration: number = 0.5,
     yoyo: boolean = true,
     repeat: number = -1,
     delay: number = 2,
-    ease: gsap.EaseString | gsap.EaseFunction = "elastic"
+    ease: gsap.EaseString | gsap.EaseFunction = "elastic",
+    modifiers: {}
 ) => {
     return gsap.to(targets, {
         delay, duration, ease, repeat, yoyo,
-        modifiers: { y }
+        modifiers: { y: (y)}
      })
 }
 
@@ -55,7 +55,7 @@ gsap.registerEffect({
                 .add(["reducedMotionJump", jump(targets, 5, 2, true, 1, 5, "elastic")], ">")
         const locoMotion = emphasisTimeline
             .add(["blinkEmphasis", blink(targets, 3, true, 0.2, 0.2, "power4.in")], 0)
-            .add(["jumpEmphasis", jump(targets, , 0.5, true, 1, 0.5, "elastic")], ">")
+            .add(["jumpEmphasis", jump(targets, 0.5, true, 1, 0.5, "elastic")], ">")
 
 
         return gsap.timeline({

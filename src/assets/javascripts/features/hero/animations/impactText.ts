@@ -40,7 +40,7 @@ import { GsapMatchMediaConditions, ImpactLetter, ImpactTimeline, LetterAnimation
 import { memoize } from '~/utilities/cache'
 import { ImpactElementConfig } from '~/config/types'
 import { HeroStore } from '../state/store'
-import { getMatchMediaInstance } from './utils'
+import { getMatchMediaInstance, getRandomBorderRadius } from './utils'
 
 const store = HeroStore.getInstance()
 let {viewport} = store.state$.value
@@ -52,14 +52,16 @@ const elementConfigs = IMPACT_ELEMENT_CONFIG
 // ================== Utility Functions ==================
 
 const getRandomSize = gsap.utils.random(impactConfig.minParticleSize, impactConfig.maxParticleSize, 0.5, true)
-const getRandomRadii = gsap.utils.random(25, 95, 5, true)
-const getRandomBorderRadius = () => `${getRandomRadii()}% ${getRandomRadii()}% ${getRandomRadii()}% ${getRandomRadii()}%`
 
 const getSpacingTime = gsap.utils.random(0.5, impactConfig.letterTotalDuration, 0.1, true)
 
 const getDebrisCount = memoize((minParticles?: number, maxParticles?: number) => {
   return gsap.utils.random(minParticles || impactConfig.minParticles, maxParticles || impactConfig.maxParticles, 1, true)
 })
+const getRandomDustDuration = gsap.utils.random(1.5, 4, 0.1, true)
+const getRandomDustMultiplier = gsap.utils.random(1.3, 2.5, 0.1, true)
+const randomizeHighValue = gsap.utils.random(0.7, 0.9, 0.05, true)
+const randomizeLowValue = gsap.utils.random(0.08, 0.18, 0.01, true)
 
 export class ImpactAnimation {
   private static instance: ImpactAnimation
@@ -280,7 +282,30 @@ export class ImpactAnimation {
   private createImpactLetterConfigs(target: HTMLElement, axis: 'x' | 'y', textType: 'h1' | 'p' | 'button', maxCount: number = impactConfig.maxParticles): ImpactLetter {
     const debrisCount = getDebrisCount(impactConfig.minParticles, maxCount)()
     const container = document.createElement('div') // empty container for debris
+    const targetRect = target.getBoundingClientRect()
+    const hazeSpan = document.createElement('span') // haze effect
+    const dustDuration = getRandomDustDuration()
+    const multiplier = getRandomDustMultiplier()
     container.classList.add('debris-container')
+
+    // we'll use a from tween with yoyo, so this is the apex of the effect
+    Object.assign(hazeSpan.style, {
+      backgroundColor: 'var(--saffron)',
+      borderRadius: '100%',
+      filter: `blur(${2 * multiplier * multiplier}px) brightness(1.1) sepia(${randomizeLowValue()}) contrast(${randomizeHighValue()})`,
+      height: '100%',
+      left: '50%',
+      mixBlendMode: 'screen',
+      opacity: randomizeLowValue(),
+      pointerEvents: textType === 'button' ? 'auto' : 'none',
+      position: 'absolute',
+      top: '50%',
+      transform: `translate(-50%, -50%) scale(${multiplier})`,
+      transformOrigin: 'center center',
+      width: '100%',
+      z: 100,
+      zIndex: 300,
+    })
 
     return {
       axis,
@@ -293,8 +318,10 @@ export class ImpactAnimation {
         letter: target
       },
       letter: target as HTMLElement,
-      originRect: target.getBoundingClientRect(),
-      textType
+      originRect: targetRect,
+      textType,
+      dustDuration,
+      dustLayer: hazeSpan
     }
   }
 

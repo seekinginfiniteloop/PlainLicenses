@@ -8,6 +8,15 @@ import { HeroStore } from '../state/store'
 
 const store = HeroStore.getInstance()
 
+// supports the exported `getRandomBorderRadius` function
+const getRandomRadii = gsap.utils.random(20, 95, 5, true)
+
+/**
+ * Generates a random border radius value.
+ * @returns {string} A random border radius value for each corner.
+ */
+export const getRandomBorderRadius = () => `${getRandomRadii()}% ${getRandomRadii()}% ${getRandomRadii()}% ${getRandomRadii()}%`
+
 /**
  * Randomly selects and removes an item from an array, reshuffling if depleted.
  *

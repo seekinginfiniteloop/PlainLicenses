@@ -9,6 +9,10 @@ These are basic customizations for the home page.
 :root {
   --button-text-color: var(--emerald);
   --button-background-color: var(--zaffre);
+  --gap: 2vw;
+  --min-width: 16rem;
+  --grid-template-rows: repeat(2, 1fr);
+  --grid-template-columns: repeat(3, 1fr);
 }
 
 @media screen and (prefers-reduced-motion: reduce) {
@@ -150,14 +154,11 @@ header#header-target.md-header {
   font-display: swap;
   pointer-events: all;
   cursor: pointer;
+  visibility: hidden;
   user-select: none;
   object-fit: cover;
   background: var(--zaffre);
   border-radius: 0.3rem;
-  transition:
-    background-color 350ms ease-in-out,
-    color 300ms ease-in-out,
-    scale 350ms ease-in;
   scale: 1;
 }
 
@@ -192,38 +193,10 @@ svg#arrow-down {
   border-radius: 100%;
   fill: var(--white);
   stroke-width: 0.4rem;
-  animation: blink 5000ms infinite;
 }
 
 svg#arrow-down:hover {
   fill: var(--emerald);
-  animation: blink 3000ms infinite;
-}
-
-@keyframes blink {
-  25% {
-    opacity: 0.5;
-  }
-
-  50% {
-    opacity: 1;
-  }
-
-  100% {
-    opacity: 0.7;
-  }
-}
-
-/* Slide content */
-
-@keyframes background-pan {
-  from {
-    background-position: 0% center;
-  }
-
-  to {
-    background-position: -200% center;
-  }
 }
 
 #pt2-hero-content-section {
@@ -257,6 +230,7 @@ svg#arrow-down:hover {
   min-width: 100vw;
   max-height: 95vh;
   overflow: contain;
+  visibility: hidden;
 }
 
 h1.hero-content-section.header-mid {
@@ -327,6 +301,7 @@ h1.hero-content-section.header-mid.line {
   padding: 1rem;
   margin: 0.5rem 0;
   overflow: hidden visible;
+  visibility: hidden;
   scroll-snap-type: y proximity;
   scroll-snap-align: start;
   scroll-snap-stop: always;
@@ -367,13 +342,6 @@ h1.hero-content-section.header-mid.line {
   height: 100vh;
   padding: 0.2rem 2rem;
   overflow: hidden;
-}
-
-:root {
-  --gap: 2vw;
-  --min-width: 16rem;
-  --grid-template-rows: repeat(2, 1fr);
-  --grid-template-columns: repeat(3, 1fr);
 }
 
 @media screen and (min-width <= 600px) {
@@ -606,34 +574,13 @@ a#yoshimi-link:focus {
   .hero-parallax__image {
     object-fit: cover;
     scale: 1;
-    translate: 0%;
   }
 }
 
-/* Container for underlined text needs relative positioning */
-.cta-container,
-.special-container {
-  position: relative;
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  margin: 0 auto;
-  text-align: center;
-}
-
-h1.hero-content-section.header-mid.line span {
+h1.hero-content-section.header-mid.line div {
   display: block;
   width: 100%;
   padding: 0;
   margin: 0;
   text-align: center;
-}
-
-/* Special highlight for text shadow effect */
-.special-highlight {
-  position: relative;
-
-  /* Initial state - will be animated by GSAP */
-  text-shadow: 0 0 0 transparent;
-  transform: translateX(0);
 }

@@ -25,6 +25,7 @@
  * @see {@link https://greensock.com/docs/} GSAP Documentation
  */
 
+ // TODO: Break up effects into smaller components
 
 import gsap from 'gsap'
 import { distinctUntilChanged, map } from 'rxjs'
@@ -37,6 +38,7 @@ import { HeroState } from '../state/types'
 import { memoize } from '~/utilities/cache'
 import { logger } from '~/log'
 import { pluckRandomFrom } from './utils'
+import { parse } from 'path'
 
 
 const store = HeroStore.getInstance()
@@ -50,6 +52,7 @@ const extendedColors = gsap.utils.shuffle([...config.extendedColors])
 const getRandomColorArray = (arrayLength: number) => {
   return arrayLength >= extendedColors.length ? extendedColors : extendedColors.slice(0, arrayLength)
 }
+const getRandomMuliplier = gsap.utils.random(1.2, 3, 0.1, true)
 
 /**
  * Batch DOM operations to run on the next animation frame.
@@ -197,16 +200,29 @@ const createDistributionFunctions = (origin: OriginDimensions) => {
  **                     DEBRIS ANIMATION EFFECT
  *========================================================================**/
 
+/**
+ * Function for the debris effect's gsap start callback.
+ * @param particles - The debris particles.
+ * @param container - The debris container.
+ * @param letter - The impact letter element.
+ */
 function debrisStart(particles: HTMLDivElement[], container: HTMLDivElement, letter: HTMLElement) {
   batchDOMOperations([() => {
     particles.forEach((particle: HTMLDivElement) => {
       particle.style.display = 'block'
       container.appendChild(particle)
     })
+    gsap.set([...particles, container], { autoAlpha: 1 })
     letter.appendChild(container)
   }])
 }
 
+/**
+ * Function for the debris effect's gsap complete callback.
+ * @param particles - The debris particles.
+ * @param container - The debris container.
+ * @param returnFunc - The function to return the particles to the pool.
+ */
 function debrisComplete(particles: HTMLDivElement[], container: HTMLDivElement, returnFunc: (_particles: HTMLDivElement[]) => void) {
   batchDOMOperations([() => {
     particles.forEach((particle: HTMLDivElement) => {
@@ -217,6 +233,10 @@ function debrisComplete(particles: HTMLDivElement[], container: HTMLDivElement, 
   }])
 }
 
+/**
+ ** DEBRIS ANIMATION EFFECT
+ * Registers the debris animation effect with GSAP.
+ */
 
 gsap.registerEffect({
   name: "debrisAnimation",
@@ -247,7 +267,8 @@ gsap.registerEffect({
     const distance = getDistance(originX, originY, destX, destY)
     const particleSize = { width: particle.offsetWidth, height: particle.offsetHeight }
 
-    // calculate the unit size for the flame effect; proportional to the particle size
+      // calculate the unit size for the flame effect; proportional to the particle size
+      // Are we making up units now? I think we are.
     const calculateBaseFlameUnit = memoize((particleSize: { width: number, height: number }) => {
     const bFU = ((particleSize.width + particleSize.height) / 2) / 10
     return (multiplier: number) => `${bFU * multiplier}`
@@ -264,15 +285,18 @@ gsap.registerEffect({
     keyframes: {
       "0%": {
         filter: 'brightness(1) blur(1px)',
+        mixBlendMode: 'overlay',
         boxShadow: `- ${bFUs(1)}px 0 ${bFUs(2)}px #fefcc9, ${bFUs(1)}px - ${bFUs(1)}px ${bFUs(3)}px #feec85, -${bFUs(2)}px - ${bFUs(2)}px ${bFUs(4)}px #ffae34, ${bFUs(3)}px -${bFUs(3)}px ${bFUs(3)}px #ec760c, -${bFUs(4)}px -${bFUs(4)}px ${bFUs(4)}px #cd4606, ${bFUs(1)}px -${bFUs(5)}px ${bFUs(7)}px #973716, ${bFUs(1)}px -${bFUs(7)}px ${bFUs(7)}px #451b0e`
       },
       "40%": {
-        filter: 'brightness(4) blur(2px)',
+        filter: `brightness(4) blur(${getRandomMuliplier}px)`,
+        mixBlendMode: 'overlay',
         boxShadow: `-${bFUs(1)}px -${bFUs(2)}px ${bFUs(6)}px #fefcc9, -${bFUs(15)}px 0 ${bFUs(6)}px #feec85, ${bFUs(1)}px -${bFUs(25)}px ${bFUs(6)}px #ffae34, -${bFUs(15)}px -${bFUs(45)}px ${bFUs(5)}px #ec760c, ${bFUs(1)}px -${bFUs(5)}px ${bFUs(6)}px #cd4606, 0 -${bFUs(8)}px ${bFUs(6)}px #973716, -${bFUs(2)}px -${bFUs(100)}px ${bFUs(8)}px #451b0e`,
         ease: 'power4.out',
       },
       "100%": {
         filter: 'brightness(1) blur(0)',
+        mixBlendMode: 'overlay',
         boxShadow: 'none',
         ease: 'power4.in',
       },
@@ -282,9 +306,9 @@ gsap.registerEffect({
       .add([`particleFlight_${idx}`, gsap.fromTo(
         particle,
         {
+          autoAlpha: 1,
           x: originX,
           y: originY,
-          opacity: 1,
           rotation: getRandomBaseRotation(),
           backgroundColor: getRandomStartColor(),
         },
@@ -342,10 +366,10 @@ gsap.registerEffect({
     // fade out the particle at the end of its flight if it hasn't already
     .add([`particleFade_${idx}`,
       gsap.to(particle, {
-        opacity: 0,
+        autoAlpha: 0,
         display: 'none',
         duration: gsap.utils.clamp(Math.min(config.glowDuration, travelDuration), Math.max(config.glowDuration, travelDuration) + 0.6, 0.5),
-        ease: 'power4.out',
+        ease: 'power2.out',
       })
     ], 0)
     })
@@ -390,27 +414,26 @@ function onLetterStart(configs: LetterAnimationConfig) {
       // insert letters into the DOM
       if (configs[0].textType === 'button') {
         Array.from(parentFragment.children).forEach((child) => {
-          (child as HTMLElement).style.visibility = 'hidden'
+          gsap.set(child, { autoAlpha: 1, display: 'inline-block' })
         })
       }
-        parentElement?.appendChild(parentFragment)
-      },
+      parentElement?.appendChild(parentFragment)
+    },
     () => {
     impactLetters.map((cfg: ImpactLetter) => {
       if (cfg.textType !== 'button') {
         gsap.set(cfg.letter, {
-          visibility: 'visible',
-          opacity: 1,
+          autoAlpha: 1,
           color: cfg.textType === 'h1' ? 'var(--h1-color)' : 'var(--p-color)',
           filter: 'brightness(1) blur(0)',
           textShadow: 'none',
         })
       } else {
-        // for button, this is the actual button element
-        // we should probably change the name...
+        // * despite the name, this is actually the button element
+        // think of `letter` as a debris container
+        // We should probably change it to `debrisContainer` or something
         gsap.set(cfg.letter, {
-          visibility: 'hidden',
-          opacity: 0,
+          autoAlpha: 0,
           color: 'var(--button-text-color)',
           filter: 'brightness(1) blur(0)',
           textShadow: 'none',
@@ -420,7 +443,9 @@ function onLetterStart(configs: LetterAnimationConfig) {
       }])
 }
 
-// Register the meteor target animation effect
+// * METEOR TARGET ANIMATION EFFECT
+// * Registers the meteor target animation effect with GSAP.
+
 gsap.registerEffect({
     name: "meteortargetAnimation",
     defaults: { paused: true },
@@ -440,31 +465,34 @@ gsap.registerEffect({
       // !NOTE: we're really iterating over `ImpactLetter` config objects, not letters
       // This way we can add the debris timeline to the config object
       // without nesting gsap effects, which apparently results in
-      // pan-dimensional collapse of the universe
+      // pan-dimensional collapse of the universe,
+      // ... or worse, *Battlefield Earth*.
       configs.forEach((cfg: ImpactLetter, idx: number) => {
-          const { letter, originRect, debrisTimeline, axis, textType } = cfg
+          const { letter, originRect, debrisTimeline, dustDuration, dustLayer, axis, textType } = cfg
           const { xOriginDistribution, stagger } = precomputeDistributions()
           const distribution = xOriginDistribution
           const start = axis === 'x' ? [distribution(idx, letter, targets), 0] : [0, pageDimensions.height - distribution(idx, letter, targets)]
           const startTime = stagger(idx, letter, targets)
+          // flight distance and duration are proportional to the distance from the destination
           const distance = getDistance(start[0], start[1], originRect.left + originRect.width / 2, originRect.top + originRect.height / 2)
           const flightDuration = distance / config.letterTravelSpeed
-          // point in flight where atmospheric flame effect starts
+          // atmospheric flame effect starts at flameStart, 40% of the way through the flight
           const flameStart = flightDuration * 0.4
-          const flameDuration = flightDuration * 0.35
+        const flameDuration = flightDuration * 0.35
+        targetsTimeline.add(gsap.set(letter, { autoAlpha: 1 }), 0)
           targetsTimeline.add([`targetFlight_${idx}`, gsap.from(
             letter,
               {
                   x: start[0],
                   y: start[1],
-                  opacity: 1,
                   scale: 2,
                   rotationX: getRandomRotation(),
                   rotationY: getRandomRotation(),
                   rotationZ: getRandomRotation(),
                   z: gsap.utils.random(300, 600, 1),
                   duration: flightDuration,
-                  ease: 'power4.out',
+                ease: 'power4.out', // approximates a rapid deceleration
+                startAt: { autoAlpha: 1 },
               }
           )], startTime)
           // atmospheric glow effect
@@ -480,18 +508,77 @@ gsap.registerEffect({
                       filter: 'brightness(6) blur(5px)',
                       textShadow: '-.1em -.2em .6em #fefcc9, -.15em 0 .6em #feec85, .1em -.25em .6em #ffae34, -.15em -.45em .5em #ec760c, .1em -.5em .6em #cd4606, 0 -.8em .6em #973716, -.2em -1em .8em #451b0e',
                       ease: 'power4.out',
+                      mixBlendMode: 'screen',
                     },
                     "100%": {
                       filter: 'brightness(1) blur(0)',
                       textShadow: 'none',
                       ease: 'power4.in',
                       color: textType === 'h1' ? 'var(--h1-color)' : 'var(--p-color)',
+                      mixBlendMode: 'normal',
                     }
                   }
               })], `targetFlight_${idx}+=${flameStart}`)
-          if (debrisTimeline) {
-            targetsTimeline.add(debrisTimeline, `>targetFlight_${idx}`)
-          }
+            // dust effect on landing
+            targetsTimeline.add([`landingDust_${idx}`,
+              gsap.to(letter, {
+                duration: dustDuration * 1.2,
+                filter: 'brightness(0.8) blur(2px) opacity(0.85) sepia(0.15) contrast(0.85) saturate(0.8)',
+                ease: "power4.in",
+                inset: 0,
+                boxShadow: "0 0 0.5em var(--floral-white)",
+                yoyoEase: "power2.out",
+                repeat: 1,
+                startAt: { autoAlpha: 1, scale: 1, z: -0.1 },
+                onStart: () => {
+                  letter.appendChild(dustLayer)
+                  const dustTimeline = gsap.timeline({paused: true})
+                  dustTimeline.add(gsap.from(dustLayer, {
+                    duration: dustDuration * 0.4,
+                    paused: false,
+                    filter: 'brightness(1) blur(0) sepia(0) contrast(1)',
+                    repeat: 0,
+                    inset: 0,
+                    keyframes: {
+                      "0%": {
+                        mixBlendMode: 'color-dodge',
+                        backgroundColor: 'var(--cool-gray)',
+                      },
+                      "15%": {
+                        mixBlendMode: 'overlay',
+                        backgroundColor: 'var(--saffron)'
+                      }
+                    },
+                    z: 0.1,
+                    scale: 0.3,
+                    opacity: parseFloat(dustLayer.style.opacity) * 1.1,
+                    ease: 'power4.in',
+                  }))
+                  .add(gsap.to(dustLayer, {
+                    duration: dustDuration * 0.7,
+                    delay: 0.1,
+                    autoAlpha: 0,
+                    scale: parseFloat(dustLayer.style.scale) * 1.5,
+                    ease: 'power2.in',
+                    repeat: 0,
+                    filter: 'brightness(1) blur(0) sepia(0.1) contrast(1) luminance(1.3)',
+                    z: 200,
+                    mixBlendMode: 'overlay',
+                    onComplete: () => {
+                      requestAnimationFrame(() => {
+                        dustLayer.remove()
+                      })
+                    }
+                  }), '>')
+                  dustTimeline.play()
+                },
+                onStartParams: [letter, dustLayer, dustDuration],
+
+              })], `>targetFlight_${idx}`)
+
+        if (debrisTimeline) {
+          targetsTimeline.add(debrisTimeline, `>targetFlight_${idx}`)
+        }
       }) // end forEach
       return targetsTimeline
     }
@@ -537,13 +624,14 @@ gsap.registerEffect({
     const wordArray = buttonText as HTMLDivElement[]
     const charArray = wordArray.map((word) => { return Array.from(word.querySelectorAll('.text-char')) }).flat() as HTMLDivElement[]
     const colorArray = getRandomColorArray(charArray.length)
+    const colorWrapper = gsap.utils.wrap(colorArray)
     const buttonTimeline = gsap.timeline({
       name: "buttonTextTimeline",
       paused: true,
       onStart: onButtonStart,
       onStartParams: [wordArray, charArray, colorArray, button]
     })
-    buttonTimeline.add(['initialSetup', gsap.set(wordArray, { visibility: 'visible', opacity: 1 })])
+    buttonTimeline
       .add(['buttonTextZoomIntro', gsap.from(wordArray, {
         scale: 4,
         z: 1000,
@@ -552,6 +640,7 @@ gsap.registerEffect({
         textShadow: '0 0 1em #fff, 0 0 2em #fff, 0 0 4em #fff, 0 0 8em #ff00ff, 0 0 0.1em #ff00ff, 0 0 0.1em #ff00ff, 0 0 0.1em #ff00ff',
         filter: 'brightness(3) blur(1px) hue-rotate(135deg)',
         duration: 3,
+        color: colorWrapper,
         fontFamily: "Bangers, Impact, Haettenschweiler, Charcoal, 'Arial Narrow Bold', Gadget, sans-serif",
         ease: 'power4.inOut',
         repeat: 0,
@@ -561,6 +650,7 @@ gsap.registerEffect({
           axis: 'x',
           ease: 'power3.in',
         },
+        startAt: { autoAlpha: 1 },
       })])
       // flash effect
       .add(['buttonTextStyleFlash', gsap.to(wordArray, {
@@ -599,14 +689,11 @@ gsap.registerEffect({
           from: 'start',
           axis: 'x',
         },
-        modifiers: {
-          color: (idx) => {
-            return gsap.utils.shuffle(colorArray)[idx]
-          }
-        },
+        color: colorWrapper,
         ease: 'power1.inOut',
 
         filter: 'brightness(2) blur(0)',
+        mixBlendMode: 'overlay',
         yoyo: true,
         textShadow: 'none',
         duration: 0.5,
@@ -620,11 +707,12 @@ gsap.registerEffect({
           ease: 'power1.out'
         },
         duration: 1,
-        yoyo: true,
+        textDecoration: 'underline overline var(--turkey-red) solid 1rem',
+        yoyoEase: 'power1.out',
         repeat: 1,
-        scaleX: 1,
-        borderBottom: '3px solid var(--turkey-red)',
+        repeatDelay: 1,
         ease: 'power4.inOut',
+        startAt: {x: 0, textDecoration: 'none'},
       }), '>=buttonTextRainbowShimmer'])
       .add(["finalSetup", gsap.set(wordArray, {
         borderBottom: 'none',
