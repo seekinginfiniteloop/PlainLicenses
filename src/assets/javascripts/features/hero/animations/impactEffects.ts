@@ -20,7 +20,6 @@
  * @requires Hero Store for viewport and header state
  *
  * @exports constructImpactTimeline: Primary timeline construction function
- * @exports getRandomStartColor: Utility for generating random start colors
  *
  * @see {@link https://greensock.com/docs/} GSAP Documentation
  */
@@ -37,9 +36,8 @@ import { HeroStore } from '~/features/hero/state/store'
 import { HeroState } from '../state/types'
 import { memoize } from '~/utilities/cache'
 import { logger } from '~/log'
-import { pluckRandomFrom } from './utils'
+import { getRandomStartColor, pluckRandomFrom } from './utils'
 import { parse } from 'path'
-
 
 const store = HeroStore.getInstance()
 
@@ -47,7 +45,6 @@ const config = IMPACT_CONFIG
 
 const getRandomBaseRotation = gsap.utils.random(-360, 360, 45, true)
 const getRandomRotation = gsap.utils.random(-1440, 1440, 45, true)
-export const getRandomStartColor = gsap.utils.random(config.baseColors, true)
 const extendedColors = gsap.utils.shuffle([...config.extendedColors])
 const getRandomColorArray = (arrayLength: number) => {
   return arrayLength >= extendedColors.length ? extendedColors : extendedColors.slice(0, arrayLength)
