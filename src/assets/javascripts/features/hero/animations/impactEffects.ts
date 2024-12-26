@@ -535,7 +535,6 @@ gsap.registerEffect({
                   const dustTimeline = gsap.timeline({paused: true})
                   dustTimeline.add(gsap.from(dustLayer, {
                     duration: dustDuration * 0.4,
-                    paused: false,
                     filter: 'brightness(1) blur(0) sepia(0) contrast(1)',
                     repeat: 0,
                     inset: 0,
