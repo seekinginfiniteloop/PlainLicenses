@@ -40,7 +40,7 @@ import { GsapMatchMediaConditions, ImpactLetter, ImpactTimeline, LetterAnimation
 import { memoize } from '~/utilities/cache'
 import { ImpactElementConfig } from '~/config/types'
 import { HeroStore } from '../state/store'
-import { getMatchMediaInstance, getRandomBorderRadius } from './utils'
+import { getMatchMediaInstance, getRandomBorderRadius, getRandomStartColor } from './utils'
 
 const store = HeroStore.getInstance()
 let {viewport} = store.state$.value
@@ -91,7 +91,7 @@ export class ImpactAnimation {
  * @returns
  */
   private createParticleConfig = (): ParticleConfig => ({
-  backgroundColor: effects.getRandomStartColor(),
+  backgroundColor: getRandomStartColor(),
   borderRadius: getRandomBorderRadius(),
   className: 'debris',
   display: 'none',
