@@ -60,23 +60,6 @@ declare global {
     stop: () => void
   }
 
-  interface AssetTypeConfig {
-    cacheable: boolean
-    contentType?: string
-  }
-
-  interface CacheConfig {
-    CACHE_NAME: string
-    ROOT_URL: string
-    ASSET_TYPES: Record<string, AssetTypeConfig>
-  }
-
-  interface TabElement {
-    input: HTMLInputElement
-    label: HTMLLabelElement
-    iconAnchor: HTMLAnchorElement
-    iconSVG: SVGElement
-  }
 
   interface Keyboard {
     mode: KeyboardMode

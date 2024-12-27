@@ -29,15 +29,14 @@
 import gsap from 'gsap'
 import { distinctUntilChanged, map } from 'rxjs'
 
-import { IMPACT_CONFIG } from '~/config'
+import { IMPACT_CONFIG } from '~/config/config'
 import { DebrisAnimationConfig, ImpactLetter, ImpactTimeline, LetterAnimationConfig, MaxDistance, OriginDimensions, PageDimensions, Rect } from './types'
 
 import { HeroStore } from '~/features/hero/state/store'
 import { HeroState } from '../state/types'
-import { memoize } from '~/utilities/cache'
+import { memoize } from '~/utils/cache'
 import { logger } from '~/log'
 import { getRandomStartColor, pluckRandomFrom } from './utils'
-import { parse } from 'path'
 
 const store = HeroStore.getInstance()
 

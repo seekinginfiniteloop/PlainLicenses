@@ -1,6 +1,11 @@
 /**
  * @module BuildProcess
- * @description Comprehensive build and asset management system for Plain License.
+ * @description Comprehensive build and asset management system for Plain License
+ * Handles image processing, esbuild configuration, hash breaking,
+ * and metadata generation.
+ *
+ * It also generates a TypeScript file for hero images, with all associated metadata,
+ * and provides metadata used in the MKDocs build process.
  *
  * @overview
  * A build script that handles:
@@ -19,19 +24,20 @@
  ** - Asset directory cleanup
  ** - Metadata generation
  *
- * @requires Node.js built-in modules (fs, path, crypto)
+ * @requires Node.js fs, path, crypto
  * @requires esbuild
  * @requires RxJS
  * @requires SVGO
- * @requires child_process (exec)
+ * @requires child_process exec
  *
  ** Core Utilities:
- ** - handleHeroImages: Process, transform, and hash hero images
- ** - build: Compile projects using esbuild
+ * {@link handleHeroImages} Process, transform, and hash hero images
+ * {@link build} Compile projects using esbuild
  *
  * @see {@link https://esbuild.github.io/} esbuild Documentation
  * @see {@link https://rxjs.dev/} RxJS Documentation
  *
+ * @author Adam Poulemanos adam<at>plainlicense<.>org
  * @license Plain-Unlicense (Public Domain)
  * @copyright No rights reserved.
  */
@@ -53,6 +59,7 @@ const cssSrc = "src/assets/stylesheets/bundle.css";
 
 // TODO: Refactor to use esbuild's transform API and reduce the number of file reads and writes
 
+// template for the noScriptImage, which is inserted into the build output and later added to the main.html template
 let noScriptImage: HeroImage = {
   imageName: '',
   parent: '',
@@ -65,9 +72,10 @@ let noScriptImage: HeroImage = {
 }
 
 /**
- * Strips a file hash from a full path to a file.
- * @param fullPath - the full path to the file
- * @returns the file hash
+ * @function getFileHash
+ * @param {string} fullPath - the full path to the file
+ * @returns {string} the file hash
+ * @description Extracts the hash from a file name
  */
 async function getFileHash(fullPath: string): Promise<string> {
   if (!fullPath || typeof fullPath !== 'string' || !fullPath.includes('.')) {
@@ -88,9 +96,10 @@ async function getFileHash(fullPath: string): Promise<string> {
 }
 
 /**
- * minifies an SVG file
- * @param data - SVG data
- * @returns the minified SVG data
+ * @function minsvg
+ * @param {string} data - SVG data
+ * @returns {string} the minified SVG data
+ * @description Minifies SVG data
  */
 function minsvg(data: string): string {
   if (!data.startsWith("<")) {
@@ -117,9 +126,10 @@ function minsvg(data: string): string {
 }
 
 /**
- * Generates an MD5 hash for a file and appends it to the file name
+ * @function getmd5Hash
  * @param filePath - the path to the file
- * @returns new filename with the hash appended
+ * @returns {string} new filename with the hash appended
+ * @description Generates an MD5 hash for a file
  */
 async function getmd5Hash(filePath: string): Promise<string> {
   const content = await fs.readFile(filePath, 'utf8');
@@ -129,17 +139,28 @@ async function getmd5Hash(filePath: string): Promise<string> {
   return parts.join('.') + '.' + hash + '.' + ext;
 }
 
+/**
+ * @function toTitleCase
+ * @param {string} str - the string to convert
+ * @returns {string} the title-cased string
+ */
 function toTitleCase(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
+/**
+ * @function toEnumString
+ * @param {string} str - the string to convert
+ * @returns {string} the enum string
+ */
 function toEnumString(str: string): string {
   return `${toTitleCase(str)} = "${str.toUpperCase()}"`;
 }
 
 /**
- * Exports the processed hero images to a TypeScript file
- * @param images - the processed hero images
+ * @function exportImagesToTS
+ * @param {HeroImage[]} images - the processed hero images
+ * @description Exports the hero images to a TypeScript file
  */
 async function exportImagesToTS(images: HeroImage[]) {
   const fileContent = `
@@ -150,19 +171,18 @@ async function exportImagesToTS(images: HeroImage[]) {
  * @module heroImages
  * @description A collection of hero images for the landing page
  *
- * @requires ./types (carousel)
- *
  * @exports
  * --------------------
  * @enum {HeroName} HeroName - The names of the hero images
- * @function heroImages - Returns the hero images
+ * {Function} heroImages - Returns the hero images
 */
+
 import { HeroImage, ImageFocalPoints, Point } from './types'
 
 /**
- * Replaces the 'docs' part of the path with the current location's protocol and host
  * @param src - the source path
  * @returns the updated path
+ * @description Replaces the 'docs' path with the current location
  */
 function replaceDocs(src: string): string {
   const protocol = location.protocol === 'http:' ? 'http:' : 'https:'
@@ -170,17 +190,24 @@ function replaceDocs(src: string): string {
   return src.replace(/docs/g, \`\${protocol}//\${host}\`)
 }
 
+/**
+ * @constant The raw hero images data as a json string
+ */
 const rawHeroImages = ${JSON.stringify(images, null, 2)} as const
 
 /**
- * The names of the hero images as enum values
+ * @exports HeroName
+ * @enum {HeroName}
+ * @description The names of the hero images as enum values
  */
 export enum HeroName {
     ${images.map(image => toEnumString(image.imageName)).join(',\n    ')}
 
 /**
- * The hero images
- * @returns the hero images
+ * @exports heroImages
+ * @function heroImages
+ * @returns {HeroImage[]} the hero images
+ * @description Returns the hero images
 */
 export const heroImages = rawHeroImages.map(image => ({
     imageName: image.imageName,
@@ -196,8 +223,13 @@ export const heroImages = rawHeroImages.map(image => ({
 })) as HeroImage[]
 `;
 
+  // Write the file to the output path
   const outputPath = path.join('src', 'assets', 'javascripts', 'features', 'hero', 'imageCarousel', 'heroImages.ts');
 
+  /**
+   * @function runLint
+   * @description Runs ESLint on the generated file to strip the quotes from keys
+   */
   const runLint = async () => {
     await fs.writeFile(outputPath, fileContent);
     console.log('Hero images data exported to heroImages.ts');
@@ -218,7 +250,8 @@ export const heroImages = rawHeroImages.map(image => ({
   await runLint();
 }
 /**
- * Processes the hero images for the landing page. Facilitates hashing, copying, updating paths, and sending them to get written to a typescript file.
+ * @function handleHeroImages
+ * @description Processes the hero images for the landing page. Hashes, copies, and exports the images to a TypeScript file.
  */
 async function handleHeroImages() {
   const images: HeroImage[] = [];
@@ -248,9 +281,9 @@ async function handleHeroImages() {
     await exportImagesToTS(images);
   }
 /**
- * main esbuild build function
- * @param project - the project to build
- * @returns an observable
+ * @function build
+ * @param {Project} project - the project to build
+ * @returns {Observable<Promise<void>>} an observable
  */
 async function build(project: Project): Promise<Observable<unknown>> {
   console.log(`Building ${project.platform}...`);
@@ -272,7 +305,8 @@ async function build(project: Project): Promise<Observable<unknown>> {
 }
 
 /**
- * removes hashed files in the src directory
+ * @function removeHashedFilesInSrc
+ * @description Removes hashed files in the src directory
  */
 async function removeHashedFilesInSrc() {
   const hashedFiles = await globby('src/**/*.{js,css,avif}', { onlyFiles: true, unique: true });
@@ -289,7 +323,8 @@ async function removeHashedFilesInSrc() {
 }
 
 /**
- * clears assets directories of all files except for tablesort.js, feedback.js, and pixel.js
+ * @function clearDirs
+ * @description Clears the directories in the docs folder
  */
 async function clearDirs() {
   const parents = await heroParents;
@@ -314,7 +349,9 @@ async function clearDirs() {
   }
 
 /**
- * transforms SVG files in src/assets/images directory
+ * @function transformSvg
+ * @returns {Promise<void>}
+ * @description Transforms SVG files, minifying and writing them back to the source directory
  */
 async function transformSvg(): Promise<void> {
   const svgFiles = await globby('src/assets/images/*.svg', { onlyFiles: true, unique: true });
@@ -326,8 +363,9 @@ async function transformSvg(): Promise<void> {
 }
 
 /**
- *  gets the file hashes for Material for MKDocs palette and main CSS files
- * @returns the file hashes for palette and main CSS files
+ * @function getFileHashes
+ * @returns {FileHashes} the file hashes for palette and main CSS files
+ * @description Gets the file hashes for palette and main CSS files
  */
 async function getFileHashes(): Promise<FileHashes> {
   const fastGlobSettings = { onlyFiles: true, unique: true };
@@ -339,7 +377,9 @@ async function getFileHashes(): Promise<FileHashes> {
 }
 
 /**
- * Replaces placeholders in bundle.css with file hashes for Material for MKDocs palette and main CSS files
+ * @function replacePlaceholders
+ * @returns {Promise<void>}
+ * @description Replaces the CSS placeholders
  */
 async function replacePlaceholders(): Promise<void> {
   const { palette, main } = await getFileHashes();
@@ -362,9 +402,11 @@ async function replacePlaceholders(): Promise<void> {
 }
 
 /**
- * builds all projects, main pipeline function
- */
-async function buildAll() {
+ * @function buildAll
+ * @description Builds all projects
+ * @returns {Promise<void>}
+*/
+async function buildAll(): Promise<void> {
   const handleSubscription = async (project: any) => {
     (await build(project)).subscribe({
       next: () => console.log(`Build for ${project.platform} completed successfully`),
@@ -386,9 +428,10 @@ async function buildAll() {
 }
 
 /**
- * Get the 'outputs' section of the esbuild metafile
- * @param result - the esbuild build result
- * @returns the 'outputs' section of the esbuild metafile
+ * @function metaOutput
+ * @param {esbuild.BuildResult} result - the esbuild build result
+ * @returns {esbuild.BuildResult.esbuildOutputs} the 'outputs' section of the esbuild metafile
+ * @description Gets the 'outputs' section of the esbuild metafile
  */
 const metaOutput = async (result: esbuild.BuildResult) => {
   if (!result.metafile) {
@@ -408,8 +451,10 @@ const metaOutput = async (result: esbuild.BuildResult) => {
 }
 
 /**
- * Create a mapping of original file names to hashed file names
- * @param output - the metaOutput object
+ * @function metaOutputMap
+ * @param {esbuildOutputs} output - the esbuild outputs
+ * @returns {Promise<buildJson>} the mapping object
+ * @description Maps the metafile outputs
  */
 const metaOutputMap = async (output: esbuildOutputs): Promise<buildJson> => {
   const keys = Object.keys(output);
@@ -433,8 +478,9 @@ const metaOutputMap = async (output: esbuildOutputs): Promise<buildJson> => {
 }
 
 /**
- * Write the meta.json file
- * @param metaOutput - the metafile outputs
+ * @function writeMeta
+ * @param {Object} metaOutput - the meta output
+ * @description Writes the meta output to a file
  */
 const writeMeta = async (metaOutput: {}) => {
   const metaJson = JSON.stringify({ metaOutput }, null, 2);

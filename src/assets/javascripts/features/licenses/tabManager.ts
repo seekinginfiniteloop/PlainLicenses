@@ -1,10 +1,33 @@
-import { Observable, Subscription, fromEvent, merge } from 'rxjs'
-import { debounceTime, filter, map, share, tap } from 'rxjs/operators'
+/**
+ * @module TabManager
+ *
+ * @description Coordinates tab interactions with corresponding link icons and labels
+ *
+ * @exports TabManager
+ * @class TabManager
+ *
+ * @requires rxjs Observable, Subscription, debounceTime, filter, fromEvent, map, merge, share, tap
+ *
+ * @dependencies
+ * - {@link module:log} - {@link logger} - Logging utility
+ * - {@link module:eventHandlers} - {@link preventDefault} - Prevents the default event behavior
+ *
+ * @types {@link module:types} - {@link TabElement} - Tab element structure
+ * @types {@link module:types} - {@link TabState} - Tab state structure
+ * @types {@link module:types} - {@link TabStateType} - Tab state type
+ *
+ * @license Plain-Unlicense (Public Domain)
+ * @author Adam Poulemanos adam<at>plainlicense<dot>org
+ * @copyright No rights reserved
+ */
+
+import { Observable, Subscription, debounceTime, filter, fromEvent, map, merge, share, tap } from 'rxjs'
 import { TabElement, TabState, TabStateType } from './types'
 import { logger } from '../../log'
-import { preventDefault } from '~/utilities/eventHandlers'
+import { preventDefault } from '~/utils/eventHandlers'
 
 /**
+ * @exports TabManager
  * @class TabManager
  *
  * @description
@@ -17,10 +40,6 @@ import { preventDefault } from '~/utilities/eventHandlers'
  *
  * @method init - Initializes tab styles and sets up interaction streams
  * @method cleanup - Unsubscribes from event streams and performs cleanup
- *
- * @example
- * const tabManager = new TabManager();
- * // Automatically sets up tab interactions
  *
  * @see {@link https://rxjs.dev/} RxJS Documentation
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles/tab_role} ARIA Tab Role
@@ -35,11 +54,22 @@ export class TabManager {
 
   public subscription: Subscription = new Subscription()
 
-  constructor() {
+  /**
+   * @constructor
+   * @public
+   * @description Initializes tab elements and sets up interactions
+   */
+  public constructor() {
     this.tabs = this.initializeTabs()
     this.init()
   }
 
+  /**
+   * @method initializeTabs
+   * @private
+   * @returns {TabElement[]} Collection of initialized tab elements
+   * @description Initializes tab elements by querying the DOM for input, label, and icon elements
+   */
   private initializeTabs(): TabElement[] {
     const inputs = Array.from(document.querySelectorAll(this.selectors.inputs))
 
@@ -59,6 +89,13 @@ export class TabManager {
       .filter((tab): tab is TabElement => tab !== null)
   }
 
+  /**
+   * @method styleTab
+   * @private
+   * @param {TabElement} tab - Tab element to style
+   * @param {TabState} state - Tab state object
+   * @description Styles tab elements based on state
+   */
   private styleTab(tab: TabElement, { isSelected, state }: TabState): void {
     const { label, iconAnchor, iconSVG } = tab
     const fillColor = state === 'normal' ? '' : 'var(--hover-color)'
@@ -71,7 +108,12 @@ export class TabManager {
     label.style.color = isSelected ? selectedColor : fillColor
   }
 
-
+  /**
+   * @method setupInteractions
+   * @private
+   * @returns {Observable<void>} Observable for tab interactions
+   * @description Sets up interaction streams for tab elements
+   */
   private setupInteractions(): Observable<void> {
     // Create event streams
     const createEventStream = (elements: TabElement[], eventName: string) => {
@@ -139,6 +181,11 @@ export class TabManager {
     )
   }
 
+  /**
+   * @method init
+   * @private
+   * @description Initializes tab styles and sets up interaction streams
+   */
   private init() {
     logger.info('Initializing license tabs')
 
@@ -151,6 +198,11 @@ export class TabManager {
     )
   }
 
+  /**
+   * @method cleanup
+   * @public
+   * @description Unsubscribes from event streams and performs cleanup
+   */
   public cleanup(): void {
     logger.info('Cleaning up license tabs')
     if (this.subscription) {

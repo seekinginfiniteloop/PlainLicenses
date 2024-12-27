@@ -28,9 +28,9 @@ import {
   switchMap,
   tap} from "rxjs/operators"
 
-import { prefersReducedMotion$ } from "~/utilities/eventHandlers"
+import { prefersReducedMotion$ } from "~/utils/eventHandlers"
 import { logger } from "~/log"
-import { preventDefault } from "./utilities/eventHandlers"
+import { preventDefault } from "./utils/eventHandlers"
 
 gsap.registerPlugin(ScrollTrigger,ScrollToPlugin)
 

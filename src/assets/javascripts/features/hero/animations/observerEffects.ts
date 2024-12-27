@@ -22,10 +22,8 @@ const jump = (
     modifiers: {}
 ) => {
     return gsap.to(targets, {
-        delay, duration, ease, repeat, yoyo,
-        modifiers: { y: (y)}
-     })
-}
+        delay, duration, ease, repeat, yoyo, modifiers}
+    )}
 
 const scaleUp = (
     targets: gsap.TweenTarget,

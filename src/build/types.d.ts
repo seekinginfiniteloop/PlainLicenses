@@ -18,18 +18,17 @@
  * - Focal point definitions for responsive images
  *
  * @exports
- * - HeroImage: Comprehensive hero image configuration
- * - esbuildOutputs: Build output metadata structure
- * - Project: Project build configuration
- * - FileHashes: CSS file hash tracking
- * - buildJson: Build artifact mapping
+ * @interface HeroImage: Comprehensive hero image configuration
+ * @interface esbuildOutputs: Build output metadata structure
+ * @interface Project: Project build configuration
+ * @interface FileHashes: CSS file hash tracking
+ * @interface buildJson: Build artifact mapping
  *
  * Core Types:
- * - WidthMap: Flexible width-to-path mapping
- * - HeroImageBase: Minimal hero image configuration
- * - HeroImageFocalPoints: Image focal point definitions
+ * @type {WidthMap}  Flexible width-to-path mapping
+ * @type {HeroImageBase} Minimal hero image configuration
+ * @type {HeroImageFocalPoints} Image focal point definitions
  *
- * @see {@link https://www.typescriptlang.org/docs/handbook/interfaces.html} TypeScript Interfaces
  * @see {@link https://esbuild.github.io/} esbuild Documentation
  */
 

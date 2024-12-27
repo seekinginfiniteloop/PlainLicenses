@@ -1,18 +1,39 @@
 /**
  * @module animations/utils
  * @description Utility functions for animations
+ *
+ * @exports getRandomStartColor - Generates a random start color for the impact animation.
+ * @exports getRandomBorderRadius - Generates a random border radius value.
+ * @exports pluckRandomFrom - Randomly selects and removes an item from an array, reshuffling if depleted.
+ * @exports normalizeResolution - Normalizes the largest viewport dimension's offset value to a range between 0 and 1.
+ * @exports getMatchMediaInstance - Retrieves a matchMedia instance with the specified contextFunction and optional scope.
+ * @exports getDistanceToViewport - Retrieves the distance from the target element to the viewport.
+ *
+ * @requires gsap
+ *
+ * @dependencies
+ * - {@link module:state/store} - {@link HeroStore} - State management
+ * - {@link module:config/config} - {@link IMPACT_CONFIG} - Impact animation configuration
+ *
+ * @license Plain-Unlicense (Public Domain)
+ * @author Adam Poulemanos adam<at>plainlicense<.>org
+ * @copyright No rights reserved.
  */
 
 import gsap from 'gsap'
-import { IMPACT_CONFIG } from '~/config'
+import { IMPACT_CONFIG } from '~/config/config'
 import { HeroStore } from '../state/store'
 
 const store = HeroStore.getInstance()
 
-export const getRandomStartColor = gsap.utils.random(IMPACT_CONFIG.baseColors, true)
-
 // supports the exported `getRandomBorderRadius` function
 const getRandomRadii = gsap.utils.random(20, 95, 5, true)
+
+/**
+ * Generates a random start color for the impact animation.
+ * @returns {string} A random color from the baseColors array.
+ */
+export const getRandomStartColor = gsap.utils.random(IMPACT_CONFIG.baseColors, true)
 
 /**
  * Generates a random border radius value.

@@ -1,37 +1,39 @@
 /**
- * Image loader for hero carousel with responsive image handling
- *
  * @module loader
  * @description Manages dynamic image loading, responsive sizing, and performance optimization
  * @features
- * - Singleton pattern image loading
+ * - Singleton pattern image loading with {@link ImageLoader}
  * - Responsive image selection
- * - Uses existing cache (through getAssets) for caching and performance
+* - Uses existing cache (through {@link getAssets}) for caching and performance
  * - Error handling and retry logic
  *
- * @requires rxjs
- * @requires ./types (carousel)
- * @requires ~/types // anything prefixed with `~` is root level
- * @requires ~/utilities/cache
- * @requires ../state/store
- * @requires ./heroImages
- * @requires ~/log
- * @exports ImageLoader
+ * @requires rxjs BehaviorSubject, Observable, Subscription, defer, distinctUntilChanged, from, map, mergeMap, of, retry, switchMap, tap
+ *
+ * @dependencies
+ * - {@link module:utils/cache} - {@link getAssets} - Caching utility
+ * - {@link module:state/store} - {@link HeroStore} - State management
+ * - {@link module:./heroImages} - {@link heroImages} - Hero image data
+ * - {@link module:log} - {@link logger} - Logging utility
+ *
+ * @types {@link module:features/hero/imageCarousel/types} - {@link RangeMap} - {@link HeroImage}
+ * @types {@link module:types} - {@link ImageOptions} - {@link ImageWidths}
+ *
+ * @exports ImageLoader - Singleton image loader class
  *
  * @license Plain-Unlicense
+ * @author Adam Poulemanos adam<at>plainlicense<.>org
  * @copyright No rights reserved.
  */
 
-
 import { BehaviorSubject, Observable, Subscription, defer, distinctUntilChanged, from, map, mergeMap, of, retry, switchMap, tap } from 'rxjs'
 import { HeroImage, RangeMap } from './types'
-import { getAssets } from '~/utilities/cache'
+import { getAssets } from '~/utils/cache'
 import { HeroStore } from '../state/store'
 import { heroImages } from './heroImages'
 import { logger } from '~/log'
 import { ImageOptions, ImageWidths } from '~/types'
 
-// Defines max widths for responsive image loading with the panning animation
+// Responsive image width breakpoints
 const sizeRanges: RangeMap[] = [
   { range: [0, 1024], value: 1280 },
   { range: [1024, 1600], value: 1920 },
@@ -40,20 +42,33 @@ const sizeRanges: RangeMap[] = [
 ]
 
 /**
- * Manages responsive and performant hero image loading with advanced RxJS techniques.
+ * Responsive Hero Image Loading Manager
  *
  * @class ImageLoader
- * @description Manages loading of hero images with smart source selection and error handling, using cached assets for performance (via `~/cache/getAssets`).
- *
  * @singleton
+ * @description Manages responsive hero image loading with RxJS techniques for optimal performance. Handles smart source selection, caching, and error handling for hero carousel images.
+ *
+ * @features
+ ** - Responsive image loading with width breakpoints
+ ** - Reduced motion preference support
+ ** - Dynamic source selection
+ ** - Error handling and retries
+ ** - Image caching via ~/cache/getAssets
  *
  * @property {BehaviorSubject<number[]>} maxWidths - Tracks responsive image width breakpoints
  *
- * @method getInstance - @static Provides global access to the singleton instance
- * @method loadImage - Loads a hero image with advanced source selection and error handling
- * @method destroy - Cleans up subscriptions and resets the singleton instance
+ * @public
+ * @method getInstance - Returns singleton instance
+ * @method loadImage - Loads hero image with source selection
+ * @method destroy - Cleanup and reset singleton
  *
- * @remarks Supports responsive images, reduced motion preferences, and dynamic image loading
+ * @private
+ * @method initWidthWatcher - Monitors reduced motion preferences
+ * @method getMaxWidths - Calculates responsive breakpoints
+ * @method setImageAttributes - Sets up image element properties
+ *
+ * @see {@link HeroStore} For state management
+ * @see {@link getAssets} For caching implementation
  */
 export class ImageLoader {
 
@@ -65,7 +80,12 @@ export class ImageLoader {
 
   private widthSubscription = new Subscription()
 
-  // constructor is private to enforce singleton pattern
+  /**
+   * @constructor
+   * @private
+   * @param {HeroImage[]} heroes - Array of hero images to load
+   * @description Creates a new ImageLoader instance
+   */
   private constructor(private heroes: HeroImage[] = heroImages) {
     this.initWidthWatcher()
     this.heroes = heroes
@@ -73,8 +93,10 @@ export class ImageLoader {
 
   /**
    * @method getInstance
-   * Singleton instance getter for ImageLoader
+   * @static
+   * @public
    * @returns {ImageLoader} Singleton instance of ImageLoader
+   * @description Returns the singleton instance of ImageLoader
    */
   public static getInstance(): ImageLoader {
     return this.instance ??= new ImageLoader()
@@ -82,8 +104,9 @@ export class ImageLoader {
 
   /**
    * @method initWidthWatcher
-   * Creates an observable that monitors the user's preference for reduced motion
-   * to determine the maximum widths for responsive image loading.
+   * @private
+   * @description Creates an observable that monitors the user's preference for
+   * reduced motion to determine the maximum widths for responsive image loading.
    * If the user prefers reduced motion, our panning animation is disabled,
    * so we don't need image overflow like we do for panning.
   */
@@ -99,8 +122,9 @@ export class ImageLoader {
 
   /**
    * @method getMaxWidths
-   * Determines the maximum widths for responsive image loading based on user preference
+   * @private
    * @returns {number[]} Array of maximum widths for responsive image loading
+   * @description Calculates the maximum widths for responsive image loading
    */
   private getMaxWidths(): number[] {
     const { prefersReducedMotion } = this.store.state$.value
@@ -110,9 +134,10 @@ export class ImageLoader {
 
   /**
    * @method loadImage
-   * Loads a hero image based on the provided hero symbol
+   * @public
    * @param {symbol} heroSymbol - Symbol of the hero image to load
    * @returns {Observable<HTMLImageElement>} Observable that emits the loaded image
+   * @description Loads the hero image with the provided symbol
    */
   public loadImage(heroSymbol: symbol): Observable<HTMLImageElement> {
     const heroImage = this.heroes.find(hero => Symbol.for(hero.imageName) === heroSymbol) as HeroImage
@@ -129,9 +154,11 @@ export class ImageLoader {
   }
 
   /**
-   * Prepares the image source for loading, identifying the width the browser will select
-   * @param img - HTMLImageElement to load
-   * @returns Promise that resolves with the selected image source
+   * @method prepareImageSource
+   * @private
+   * @param {HTMLImageElement} img - HTMLImageElement to load
+   * @returns {Promise<string>} that resolves with the selected image source
+   * @description Prepares the image source for the provided image element
    */
   private prepareImageSource(img: HTMLImageElement): Promise<string> {
     return new Promise(resolve => {
@@ -143,10 +170,12 @@ export class ImageLoader {
   }
 
   /**
-   * Gets the image options for the selected image source
-   * @param heroImage - HeroImage to load
-   * @param selectedSource - Selected image source
-   * @returns ImageOptions for the selected hero image; used to precache likely image sizes
+   * @method getImageOptions
+   * @private
+   * @param {HeroImage} heroImage - HeroImage to load
+   * @param {string} selectedSource - Selected image source
+   * @returns {ImageOptions} for the selected hero image; used to precache likely image sizes
+   * @description Creates the ImageOptions object for the selected hero image
    */
   private getImageOptions(heroImage: HeroImage, selectedSource: string): ImageOptions {
     return {
@@ -157,11 +186,13 @@ export class ImageLoader {
   }
 
 /**
- * Loads the image from the selected source
- * @param img - HTMLImageElement to load
- * @param heroImage - HeroImage to load
- * @param selectedSource - Selected image source
- * @returns Observable that emits the loaded image
+ * @method loadImageFromSource
+ * @private
+ * @param {HTMLImageElement} img - HTMLImageElement to load
+ * @param {HeroImage} heroImage - HeroImage to load
+ * @param {string} selectedSource - Selected image source
+ * @returns {Observable<HTMLImageElement>} that emits the loaded image
+ * @description Loads the image from the selected source
  */
   private loadImageFromSource(
     img: HTMLImageElement,
@@ -179,10 +210,11 @@ export class ImageLoader {
   }
 
   /**
-   * Finalizes the image loading process, ensuring the image has been decoded
-   * @param img - HTMLImageElement to finalize
-   * @param source - Source of the image
-   * @returns Promise that resolves with the finalized image
+   * @method finalizeImage
+   * @private
+   * @param {HTMLImageElement} img - HTMLImageElement to finalize
+   * @param {string} source - Source of the image
+   * @returns {Promise<HTMLImageElement>} that resolves with the finalized image
    */
   private async finalizeImage(
     img: HTMLImageElement,
@@ -200,9 +232,11 @@ export class ImageLoader {
 
 
   /**
-   * Sets the image attributes for the provided hero image
-   * @param img - HTMLImageElement to set attributes on
-   * @param heroImage - HeroImage to set attributes for
+   * @method setImageAttributes
+   * @private
+   * @param {HTMLImageElement} img - HTMLImageElement to set attributes on
+   * @param {HeroImage} heroImage - HeroImage to set attributes
+   * @description Sets the image attributes for the provided image element
   */
   private setImageAttributes(img: HTMLImageElement, heroImage: HeroImage): void {
     const { imageName, focalPoints, srcset } = heroImage
@@ -229,7 +263,9 @@ export class ImageLoader {
   }
 
   /**
-   * Destroys the ImageLoader instance
+   * @method destroy
+   * @public
+   * @description Destroys the ImageLoader instance
    */
   public destroy(): void {
     this.widthSubscription.unsubscribe()

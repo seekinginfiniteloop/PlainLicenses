@@ -1,44 +1,45 @@
-/* eslint-disable no-console */
-
 /**
+ * Build Configuration Module
  * @module BuildConfig
- * @description Configuration module for Plain License's build process.
+ * @description
+ * Core build system configuration and utilities for Plain License project.
+ * Handles esbuild setup, image processing, and asset management.
  *
- * @overview
- * Provides configuration and utility functions for:
- * - esbuild project configuration
- * - Hero image processing
- * - Asset management
- * - Glob-based file resolution
- *
- ** Key Features:
- ** - Dynamic esbuild configuration
- ** - Automatic hero image srcset generation
- ** - Focal point mapping for images
- ** - Flexible asset processing
- ** - Cross-platform build support
+ * @packageDocumentation
  *
  * @requires esbuild
  * @requires globby
  * @requires esbuild-plugin-tsconfig-paths
- * @requires esbuild-css-modules-plugin
+ * @requires @asn.aeb/esbuild-css-modules-plugin
  * @requires esbuild-plugin-copy
- * @requires ../types (build)
  *
- * @exports
- * - webConfig: esbuild configuration options
- * - baseProject: Base project build configuration
- * - heroImages: Function to generate hero image configurations
- * - generateSrcset: Utility for generating image srcsets
+ * @exports {BuildOptions} webConfig - esbuild configuration
+ * @exports {Project} baseProject - Base build config
+ * @exports {Function} heroImages - Hero image generator
+ * @exports {Function} generateSrcset - Srcset generator
  *
- * Core Utilities:
- * - resolveGlob: Resolve file paths using glob patterns
- * - getHeroParents: Retrieve hero image parent directories
+ * @type {import('./types').HeroImage} HeroImage
+ * @type {import('./types').HeroImageBase} HeroImageBase
+ * @type {import('./types').HeroImageFocalPoints} HeroImageFocalPoints
  *
- * @see {@link https://esbuild.github.io/} esbuild Documentation
- * @see {@link https://github.com/sindresorhus/globby} Globby Documentation
+ * Features:
+ * - Dynamic esbuild configuration with plugins
+ * - Automated hero image srcset generation
+ * - Smart focal point mapping for responsive images
+ * - Cross-platform asset processing
+ * - Glob-based file resolution
+ *
+ * Core Utils:
+ * - {@link resolveGlob} - File pattern resolver
+ * - {@link getHeroParents} - Hero image directory scanner
+ *
+ * @see {@link https://esbuild.github.io/}
+ * @see {@link https://github.com/sindresorhus/globby}
+ *
+ * @license Plain-Unlicense
+ * @author Adam Poulemanos adam<at>plainlicense<dot>org
+ * @copyright No rights reserved.
  */
-
 
 import { cssModulesPlugin } from "@asn.aeb/esbuild-css-modules-plugin"
 // @ts-ignore
@@ -113,8 +114,9 @@ const focalPoints: HeroImageFocalPoints[] = [
 ]
 
 /**
- * Resolves a glob parent directories of hero images.
- * @returns A promise that resolves to the first file that matches the glob.
+ * @function getHeroParents
+ * @returns {Promise<string[]>} that resolves to the first file that matches the glob.
+ * @description Scans the hero image directory for parent directories.
  */
 async function getHeroParents(): Promise<string[]> {
   const fastGlobSettings = { onlyDirectories: true, unique: true }
@@ -122,9 +124,11 @@ async function getHeroParents(): Promise<string[]> {
 }
 
 /**
- * Resolves a glob to a single file.
- * @param glob The glob to resolve.
+ * @exports heroParents
+ * @function heroParents
+ * @param {string} glob The glob to resolve.
  * @returns An array of files that match the glob.
+ * @description Resolves a glob to a single file.
  */
 export const heroParents: Promise<string[]> = getHeroParents()
 
@@ -145,7 +149,11 @@ const cssBanner = `/**
   *
   */
 `
-
+/**
+ * @exports webConfig
+ * @constant webConfig
+ * @description esbuild configuration for the web platform.
+ */
 export const webConfig: esbuild.BuildOptions = {
   bundle: true,
   minify: false,
@@ -208,10 +216,10 @@ export const baseProject: Project = {
 }
 
 /**
- * Resolves a glob to a single file.
- * @param glob The glob to resolve.
- * @param fastGlobOptions Options to pass to fast-glob.
- * @returns A promise that resolves to the first file that matches the glob.
+ * @function resolveGlob
+ * @param {string} glob The glob to resolve.
+ * @param {globby.GlobbyOptions} fastGlobOptions Options to pass to fast-glob.
+ * @returns {Promise<string[]>} A promise that resolves to the first file that matches the glob.
  */
 async function resolveGlob(glob: string, fastGlobOptions?: {}): Promise<string[]> {
   try {
@@ -229,9 +237,11 @@ async function resolveGlob(glob: string, fastGlobOptions?: {}): Promise<string[]
 }
 
 /**
- * Generates the Srcset for a given image.
- * @param image The image to generate the Srcset for.
- * @returns A promise that resolves to the Srcset for the image.
+ * @exports generateSrcset
+ * @function generateSrcset
+ * @param {HeroImageBase} image The image to generate the Srcset for.
+ * @returns {Promise<string>} A promise that resolves to the Srcset for the image.
+ * @description Generates a Srcset property for the provided image.
  */
 export async function generateSrcset(image: HeroImageBase): Promise<string> {
   const entries = await Promise.all(
@@ -242,6 +252,12 @@ export async function generateSrcset(image: HeroImageBase): Promise<string> {
   return entries.join(", ")
 }
 
+/**
+ * @exports heroImages
+ * @function heroImages
+ * @returns {Promise<Record<string, HeroImage>>} A promise that resolves to a map of hero images.
+ * @description Generates a map of hero images with their respective widths and Srcsets.
+ */
 export const heroImages = async () => {
   const parents = await resolveGlob("src/assets/images/hero/*", { onlyDirectories: true })
   const retrieveKey = (filePath: string) => filePath.split("/").pop()

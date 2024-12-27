@@ -2,90 +2,90 @@ import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { Observer } from "gsap/Observer"
 import { debounceTime, distinctUntilChanged, filter, map } from "rxjs/operators"
-import { OBSERVER_CONFIG } from "~/config"
+import { OBSERVER_CONFIG } from "~/config/config"
 import { FadeConfig, SlideConfig } from "~/config/types"
 import { GsapMatchMediaConditions, Section } from "./types"
 import { HeroStore } from "../state/store"
 import { getMatchMediaInstance, normalizeResolution } from "./utils"
-import { BehaviorSubject, combineLatest, Subscription } from "rxjs"
+import { BehaviorSubject, Subscription, combineLatest } from "rxjs"
 
 gsap.registerPlugin(Observer, ScrollTrigger)
 
-class ObservationAnimation {
+export class ObservationAnimation {
 
-    private store = HeroStore.getInstance()
+  private store = HeroStore.getInstance()
 
-    private clickTargets: string
+  private clickTargets: string
 
-    private currentIndex = -1
+  private currentIndex = -1
 
-    private fades: FadeConfig
+  private fades: FadeConfig
 
-    private ignoreTargets: string
+  private ignoreTargets: string
 
-    private observerConfig = OBSERVER_CONFIG
+  private observerConfig = OBSERVER_CONFIG
 
-    private scrollState = this.store.scrollState$
+  private scrollState = this.store.scrollState$
 
-    private sectionAnimations: { [key: string]: gsap.core.Timeline }
+  private sectionAnimations: { [key: string]: gsap.core.Timeline }
 
-    private sections: Section[] = []
+  private sections: Section[] = []
 
-    private slides: SlideConfig
+  private slides: SlideConfig
 
-    private static instance: ObservationAnimation
+  private static instance: ObservationAnimation
 
-    private subscriptions = new Subscription()
+  private subscriptions = new Subscription()
 
-    private trigger = ScrollTrigger
+  private trigger = ScrollTrigger
 
-    private observers: Observer[] = []
+  private observers: Observer[] = []
 
-    public animating = false //* only public property
+  public animating = false //* only public property
 
 // we can access scroll trigger from within the `this` in a gsap instance
 
-    private setupSubscriptions() {
-        const trigger$ = this.scrollState.pipe(
-            map(state => state.canTrigger),
-            distinctUntilChanged(),
-        )
+  private setupSubscriptions() {
+    const trigger$ = this.scrollState.pipe(
+      map(state => state.canTrigger),
+      distinctUntilChanged(),
+    )
 
-      const resizeWatcher$ = combineLatest([
-          this.store.state$.pipe(
-          map(state => ({ viewport: state.viewport, header: state.header })),
-          debounceTime(100),
-          ),
-          trigger$.pipe(filter(canTrigger => canTrigger))
-      ]
-      ).pipe(
-          map(([{ viewport, header }, _]) => { return ({
-                  y: viewport.offset.y,
-                  headerHidden: header.hidden,
-                  headerHeight: header.height,
-              })
+    const resizeWatcher$ = combineLatest([
+      this.store.state$.pipe(
+        map(state => ({ viewport: state.viewport, header: state.header })),
+        debounceTime(100),
+      ),
+      trigger$.pipe(filter(canTrigger => canTrigger))
+    ]
+    ).pipe(
+      map(([{ viewport, header }, _]) => { return ({
+        y: viewport.offset.y,
+        headerHidden: header.hidden,
+        headerHeight: header.height,
+      })
           }),
-          distinctUntilChanged((prev, curr) => {
+      distinctUntilChanged((prev, curr) => {
                 return prev.y === curr.y && prev.headerHidden === curr.headerHidden && prev.headerHeight === curr.headerHeight
           })
-      )
+    )
 
-        this.subscriptions.add(
-            trigger$.subscribe(canTrigger => {
+    this.subscriptions.add(
+      trigger$.subscribe(canTrigger => {
                 if (canTrigger) {
-                    this.assignFadeIns(this.fades.fadeInSections.slice(1))
-                    this.setupSections()
-                    this.setupObserver()
-                    this.transitionToSection(0, 1)
+                  this.assignFadeIns(this.fades.fadeInSections.slice(1))
+                  this.setupSections()
+                  this.setupObserver()
+                  this.transitionToSection(0, 1)
                 }
             }
-            ))
-        this.subscriptions.add(
-            resizeWatcher$.subscribe(() => {
+      ))
+    this.subscriptions.add(
+      resizeWatcher$.subscribe(() => {
                 this.trigger.refresh()
                 this.trigger.update()
             })
-        )
+    )
   }
 
   private constructor() {
@@ -94,7 +94,7 @@ class ObservationAnimation {
     this.clickTargets = this.observerConfig.clickTargets
     this.ignoreTargets = this.observerConfig.ignoreTargets
     this.sectionAnimations = Object.fromEntries(
-    this.fades.fadeInSections.map((key: string) => [key, gsap.timeline()]))
+      this.fades.fadeInSections.map((key: string) => [key, gsap.timeline()]))
     this.setupSubscriptions()
   }
 
@@ -188,22 +188,22 @@ class ObservationAnimation {
 
   }
 
-    private downTransition(_self: Observer) {
-        const { target } = _self
-        const clickTargets = Array.from(document.querySelectorAll(this.clickTargets))
-        const isClickTarget = clickTargets.includes(target)
-        if (!this.animating && this.currentIndex < this.sections.length - 1) {
-            this.transitionToSection(this.currentIndex + 1, 1, isClickTarget ? this.slides.clickPause : this.slides.scrollPause)
-        }
+  private downTransition(_self: Observer) {
+    const { target } = _self
+    const clickTargets = Array.from(document.querySelectorAll(this.clickTargets))
+    const isClickTarget = clickTargets.includes(target)
+    if (!this.animating && this.currentIndex < this.sections.length - 1) {
+      this.transitionToSection(this.currentIndex + 1, 1, isClickTarget ? this.slides.clickPause : this.slides.scrollPause)
     }
+  }
 
-    private upTransition(_self: Observer) {
-        if (!this.animating && this.currentIndex > 0) {
-            this.transitionToSection(this.currentIndex - 1, -1)
-        }
+  private upTransition(_self: Observer) {
+    if (!this.animating && this.currentIndex > 0) {
+      this.transitionToSection(this.currentIndex - 1, -1)
     }
+  }
 
-    private setupObserver() {
+  private setupObserver() {
     const ignoreTargets = Array.from(document.querySelectorAll(this.ignoreTargets))
     const movementObserver = this.trigger.observe({
       target: document.body,
@@ -224,12 +224,13 @@ class ObservationAnimation {
       onClick: this.downTransition.bind(this),
       onPress: this.downTransition.bind(this),
     })
-        this.observers = [movementObserver, clickObserver]
-        this.observers.forEach(observer => observer.enable())
+    this.observers = [movementObserver, clickObserver]
+    this.observers.forEach(observer => observer.enable())
   }
-    public destroy() {
-        this.trigger.getAll().forEach(trigger => trigger.kill())
-        this.trigger.update()
-        this.subscriptions.unsubscribe()
-    }
+
+  public destroy() {
+    this.trigger.getAll().forEach(trigger => trigger.kill())
+    this.trigger.update()
+    this.subscriptions.unsubscribe()
+  }
 }

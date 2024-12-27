@@ -1,6 +1,6 @@
 import gsap from 'gsap'
 import { Observable, first, from, of, switchMap } from 'rxjs'
-import { prefersReducedMotion$ } from './utilities/eventHandlers'
+import { prefersReducedMotion$ } from './utils/eventHandlers'
 import { logger } from './log'
 
 
