@@ -13,26 +13,6 @@
  * - Cross-browser event normalization
  * - Custom event handling for specific interactions
  *
- * @dependencies
- * - RxJS
- * - Tablesort
- * - Custom browser utilities
- *
- * @exports
- * -----------------
- * @const navigationEvents$: Observable tracking navigation events
- * @function watchMediaQuery: Function to observe media query states
- * @function watchViewportResize: Function to track viewport changes
- * @function watchLicenseHashChange: Function to manage license link interactions
- * @function watchEasterEgg: Function to observe Easter egg dialog states
- * @function watchTables: Function to observe and apply Tablesort to tables
- * @function isPartiallyInViewport: Function to check if an element is partially in the viewport
- * @const isPageVisible$: Observable tracking page visibility
- * @const prefersReducedMotion$: Observable for reduced motion preference
- * @function setCssVariable: Utility for setting CSS variables
- * @function watchPathnameChange: Function to observe pathname changes
- * @function watchScroll$: Function to track scroll position
- *
  * @see {@link https://rxjs.dev/} RxJS Documentation
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Navigation_API} Navigation API
  * @license Plain-Unlicense (Public Domain)
@@ -49,7 +29,7 @@ import { isEggBoxOpen, isLicense, isValidEvent } from "./conditionChecks"
 import { getLocation, watchViewportAt } from "~/browser"
 import { getComponentElement, watchHeader } from "~/components"
 
-import { logger } from "~/log"
+import { logger } from "~/utils/log"
 
 const LICENSE_HASHES = ["#reader", "#html", "#markdown", "#plaintext", "#changelog", "#official"]
 export const NAV_EXIT_DELAY = 60000

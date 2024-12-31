@@ -35,7 +35,7 @@ import { DebrisAnimationConfig, ImpactLetter, ImpactTimeline, LetterAnimationCon
 import { HeroStore } from '~/features/hero/state/store'
 import { HeroState } from '../state/types'
 import { memoize } from '~/utils/cache'
-import { logger } from '~/log'
+import { logger } from '~/utils/log'
 import { getRandomStartColor, pluckRandomFrom } from './utils'
 
 const store = HeroStore.getInstance()

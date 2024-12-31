@@ -5,7 +5,7 @@ import { BehaviorSubject, debounce, debounceTime, distinctUntilChanged, filter, 
 
 import { IMPACT_CONFIG, IMPACT_ELEMENT_CONFIG } from '~/config/config'
 import * as effects from './impactEffects'
-import { logger } from '~/log'
+import { logger } from '~/utils/log'
 import type { GsapMatchMediaConditions, ImpactLetter, ImpactTimeline, LetterAnimationConfig, ParticleConfig } from './types'
 import { memoize } from '~/utils/cache'
 import type { ImpactElementConfig } from '~/config/types'

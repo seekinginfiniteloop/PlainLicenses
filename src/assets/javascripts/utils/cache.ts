@@ -2,28 +2,13 @@
  * @module cache
  * @description Handles caching of assets and cache busting using the Cache API
  *
- * @exports memoize
- * @exports getAssets
- * @exports cachePageAssets
- * @exports cleanupCache
- * @exports deleteOldCaches
- *
- * @requires rxjs Observable, catchError, defaultIfEmpty, delay, firstValueFrom, from, fromEvent, map, mergeMap, of, retry, switchMap, tap, throwError, toArray
- *
- * @dependencies
- * {@link config/config} CACHE_CONFIG
- * {@link log} logger
- *
- * @type {@link module:config/types} - {@link CacheConfig} - Cache configuration
- * @type {@link module:/types} - {@link ImageOptions} - Image options
- *
  * @license Plain-Unlicense (Public Domain)
  * @author Adam Poulemanos adam<at>plainlicense<dot>org
  * @copyright No rights reserved. Created by and for Plain License www.plainlicense.org
  */
 
 import { Observable, catchError, defaultIfEmpty, delay, firstValueFrom, from, fromEvent, map, mergeMap, of, retry, switchMap, tap, throwError, toArray } from "rxjs"
-import { logger } from "~/log"
+import { logger } from "~/utils/log"
 import type { ImageOptions } from "../types"
 import { CACHE_CONFIG } from "../config/config"
 import type { CacheConfig } from "../config/types"
@@ -31,8 +16,6 @@ import type { CacheConfig } from "../config/types"
 const cacheConfig = CACHE_CONFIG as CacheConfig
 
 /**
- * @exports memoize
- * @function memoize
  * @param {Function} fn - The function to memoize.
  * @returns The memoized function.
  * @description Memoizes a function to cache its return values.
@@ -55,12 +38,10 @@ export const memoize = <T extends (..._args: any[]) => any>(fn: T): T => {
 
 /**
  * Opens the cache
- * @type {Observable<Cache>}
  */
 const openCache$: Observable<Cache> = from(caches.open(cacheConfig.cacheName))
 
 /**
- * @function determineSizesToPreload
  * @param {ImageOptions} options the image options
  * @returns {string[]} the urls for sizes to preload
  * @description Determines the sizes of images to preload based on the current source
@@ -90,8 +71,6 @@ function determineSizesToPreload(
 
 
 /**
- * @exports getAssetType
- * @function getAssetType
  * @param {string} url the URL to check for the asset type
  * @returns {"image" | "font" | "style" | "script" | undefined} the asset type or undefined
  * @description Determines the type of asset based on the URL
@@ -116,7 +95,6 @@ const getAssetType = (url: string | undefined): "image" | "font" | "style" | "sc
 }
 
 /**
- * @function createTypedResponse
  * @param {Response} response the original response
  * @param {"image" | "font" | "style" | "script" | undefined} assetType the type of asset
  * @param assetType the type of asset
@@ -143,7 +121,6 @@ const createTypedResponse = (response: Response, assetType: "image" | "font" | "
 }
 
 /**
- * @function extractHashFromUrl
  * @param {string} url the URL to extract the hash from
  * @returns {string | undefined} the hash or undefined
  */
@@ -153,7 +130,6 @@ const extractHashFromUrl = (url: string): string | undefined => {
 }
 
 /**
- * @function cacheItem
  * @param {string} url the URL of the asset
  * @param {Cache} cache the opened cache to store the asset in
  * @param {Response} response the response - the asset to cache
@@ -169,7 +145,6 @@ const cacheItem = (url: string, cache: Cache, response: Response): Observable<Re
 
 
 /**
- * @function fetchAndCacheAsset
  * @param {string} url the URL of the asset
  * @param {Cache} cache the opened cache to store the asset in
  * @returns {Observable<Response>} an observable of the response with the asset
@@ -191,7 +166,6 @@ const fetchAndCacheAsset = (url: string, cache: Cache): Observable<Response> =>
   )
 
 /**
- * @function compareHashes
  * @param {string} requestUrl the URL of the request
  * @param {string} responseUrl the URL of the response
  * @returns {boolean} true if the hashes match, false otherwise
@@ -204,7 +178,6 @@ const compareHashes = (requestUrl: string, responseUrl: string): boolean => {
 }
 
 /**
- * @function cacheBustUrl
  * @param {string} url the URL of the asset
  * @returns {Observable<Response>} an observable of the response with the asset
  * @description Busts the cache and fetches the asset
@@ -244,7 +217,6 @@ const cacheBustUrl = (url: string) => {
 
 
 /**
- * @function preloadImages
  * @param {ImageOptions} options the image options
  * @description Preloads images
  */
@@ -260,8 +232,6 @@ const preloadImages = (options: ImageOptions): void => {
 }
 
 /**
- * @exports getAssets
- * @function getAssets
  * @param {string} url the URL of the asset
  * @param {boolean} heroCaller whether the caller is the hero feature
  * @param {ImageOptions} options the image options
@@ -289,7 +259,6 @@ export const getAssets = (url: string, heroCaller: boolean = false,
 }
 
 /**
- * @function extractUrlFromElement
  * @param {string} type the type of asset
  * @param {Element} el the element to extract the URL from
  * @returns {string} the URL of the asset
@@ -300,8 +269,6 @@ function extractUrlFromElement(type: string, el: Element): string {
 }
 
 /**
- * @exports cachePageAssets
- * @function cachePageAssets
  * @param {string} type the type of asset
  * @param {NodeListOf<Element>} elements the elements to cache
  * @returns {Observable<boolean>} an observable of the cache operation
@@ -328,7 +295,6 @@ export function cachePageAssets(type: string, elements: NodeListOf<Element>): Ob
 }
 
 /**
- * @function getCurrentAssetHashes
  * @returns {Observable<string[]>} an observable of the current asset hashes
  * @description Gets the current asset hashes
  */
@@ -354,8 +320,6 @@ const getCurrentAssetHashes = (): Observable<string[]> => {
 }
 
 /**
- * @exports cleanCache
- * @function cleanCache
  * @returns {Observable<boolean>} an observable of the cache cleaning operation
  * @description Cleans the cache
  * @throws {Error} if the cache cannot be cleaned
@@ -390,8 +354,6 @@ const cleanCache = (): Observable<boolean> => {
   )}
 
 /**
- * @exports cleanupCache
- * @function cleanupCache
  * @param {number} timer the time to wait before cleaning the cache
  * @returns {Observable<Event>} an observable of the cache cleanup operation
  * @description Cleans the cache after a certain time
@@ -411,8 +373,6 @@ export const cleanupCache = (timer: number): Observable<Event> => {
 }
 
 /**
- * @exports deleteOldCaches
- * @function deleteOldCaches
  * @returns {Observable<boolean>} an observable of the cache deletion operation, true if successful, false otherwise
  * @description Deletes old caches
  */

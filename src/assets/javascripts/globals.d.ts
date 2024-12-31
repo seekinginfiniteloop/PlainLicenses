@@ -96,48 +96,6 @@ declare global {
     height: number
   }
 
-  interface TranslationBounds {
-    x: { min: number, max: number }
-    y: { min: number, max: number }
-  }
-
-  interface FocalPoint {
-    x: number
-    y: number
-  }
-
-  interface FocalPoints {
-    main: {
-      x: number
-      y: number
-    }
-    secondary: {
-      x: number
-      y: number
-    }
-  }
-
-  interface FocalPointBounds {
-    minX: number
-    maxX: number
-    minY: number
-    maxY: number
-  }
-
-  interface OverflowRects {
-    top: DOMRect
-    right: DOMRect
-    bottom: DOMRect
-    left: DOMRect
-  }
-
-  interface TranslationPotential {
-    top: boolean
-    right: boolean
-    bottom: boolean
-    left: boolean
-  }
-
   interface SafeZone {
     x: { min: number, max: number }
     y: { min: number, max: number }
@@ -147,52 +105,6 @@ declare global {
   interface Viewport {
     offset: ViewportOffset
     size: ViewportSize
-  }
-
-  interface CssCalculations {
-    scale: number
-    scaledDimensions: {
-      width: number // min-width
-      height: number // min-height
-    }
-    actualOverflow: {
-      horizontal: number
-      vertical: number
-    }
-  }
-
-  interface ComputedImageDimensions {
-    width: number
-    height: number
-    aspectRatio: number
-    orientation: 'portrait' | 'landscape' | 'square'
-  }
-
-  interface ImageDimensions {
-    // computedStyle is a key-value pair of CSS properties and their values
-    // it is NOT a CSSStyleDeclaration object because it is not live
-    computedStyle: { [key: string]: string }
-    naturalWidth: number
-    naturalHeight: number
-    boundingRect: DOMRect
-  }
-
-  interface AnimationWaypoint {
-    position: Point
-    transform: Mat3
-    duration: number  // portion of total duration
-  }
-
-  interface ScaleResults {
-    scale: number
-    scaledDimensions: ImageSize
-    actualOverflow: ImageSize
-    bounds: TranslationBounds
-    transforms:
-    {
-      start: Mat3
-      end: Mat3
-    }
   }
 
 

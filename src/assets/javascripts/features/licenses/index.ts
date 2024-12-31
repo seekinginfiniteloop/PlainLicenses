@@ -3,14 +3,6 @@
  *
  * @description License feature initialization.
  *
- * @requires rxjs Observable, Subscription, map, tap
- *
- * @dependencies
- * - {@link module:tabManager} - {@link TabManager}
- * - {@link module:log} - {@link logger}
- *
- * @exports initLicenseFeature: Initializes the license feature.
- *
  * @license Plain-Unlicense (Public Domain)
  * @author Adam Poulemanos adam<at>plainlicense<dot>org
  * @copyright No rights reserved.
@@ -18,7 +10,7 @@
 
 import { Observable, Subscription, map, tap } from 'rxjs'
 import { TabManager } from './tabManager'
-import { logger } from '~/log'
+import { logger } from '~/utils/log'
 
 let customWindow = window as any as CustomWindow
 const { document$ } = customWindow

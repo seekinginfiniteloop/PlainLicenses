@@ -1,21 +1,11 @@
 /**
  * @module feedback
  * @description Handles feedback form submission
- *
- * @requires rxjs Observable, filter, fromEvent, map, of, tap, throttleTime
- *
- * @dependencies
- * - {@link module:conditionChecks} - {@link isValidEvent} - Checks if the event is valid.
- * - {@link module:eventHandlers} - {@link preventDefault} - Prevents the default event behavior.
- * - {@link module:log} - {@link logger} - Logging utility
- *
- * @exports feedback
- *
  * @license Plain Unlicense(Public Domain)
  * @copyright No rights reserved. Created by and for Plain License www.plainlicense.org
  */
 import { Observable, filter, fromEvent, map, of, tap, throttleTime } from "rxjs"
-import { logger } from "~/log"
+import { logger } from "~/utils/log"
 import { isValidEvent } from "~/utils/conditionChecks"
 import { preventDefault } from "~/utils/eventHandlers"
 

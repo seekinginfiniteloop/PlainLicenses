@@ -30,7 +30,7 @@ import { HeroImage, RangeMap } from './types'
 import { getAssets } from '~/utils/cache'
 import { HeroStore } from '../state/store'
 import { heroImages } from './heroImages'
-import { logger } from '~/log'
+import { logger } from '~/utils/log'
 import { ImageOptions, ImageWidths } from '~/types'
 
 // Responsive image width breakpoints

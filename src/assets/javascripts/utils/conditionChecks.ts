@@ -1,18 +1,6 @@
 /**
  * @module utilities/conditionChecks
  * @description Utility functions for checking conditions
- * @requires none
- *
- * @exports
- * -----------------
- * @function isHome
- * @function isLicense
- * @function isHelpingIndex
- * @function isDev
- * @function isOnSite
- * @function isValidEvent
- * @function isEggBoxOpen
- * @function elementIsVisible
  *
  * @license Plain-Unlicense
  * @copyright No rights reserved.

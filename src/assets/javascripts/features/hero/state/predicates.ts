@@ -2,14 +2,6 @@
  * @module predicates
  * @description A collection of state predicates for HeroState and its sub-states
  *
- * @exports isFullyVisible
- * @exports carouselPredicates
- * @exports impactPredicates
- * @exports panningPredicates
- * @exports scrollPredicates
- *
- * @type {@link module:./types} - {@link HeroState} - Hero state structure
- *
  * @license Plain-Unlicense
  * @author Adam Poulemanos adam<at>plainlicense<dot>org
  * @copyright No rights reserved
@@ -28,56 +20,19 @@ import { HeroState } from './types'
 export const isFullyVisible = (state: HeroState): boolean =>
   state.atHome && state.landingVisible && state.pageVisible
 
+export const noVideo = (state: HeroState): boolean => state.prefersReducedMotion
+
 /** ======================
  **   COMPONENT PREDICATES
  *========================**/
+// there used to be a lot more, but, we simplified it by moving to the video.
 
 /**
- * @exports carouselPredicates
- * @function carouselPredicates
  * @param {HeroState} state - Hero state
- * @returns {CarouselState} Carousel state predicate
+ * @returns {VideoState} Carousel state predicate
  * @description Predicates for the carousel component
 */
-export const carouselPredicates = {
+export const videoPredicate = {
   canPlay: (state: HeroState): boolean =>
-    isFullyVisible(state) && !state.eggActive
-}
-
-/**
- * @exports impactPredicates
- * @function impactPredicates
- * @param {HeroState} state - Hero state
- * @returns {ImpactState} Impact state predicates
- * @description Predicates for the impact component
-*/
-export const impactPredicates = {
-  canPlay: (state: HeroState) =>
-    isFullyVisible(state) &&
-    state.newToHome &&
-    !state.eggActive
-}
-
-/**
- * @exports panningPredicates
- * @function panningPredicates
- * @param {HeroState} state - Hero state
- * @returns {PanningState} Panning state predicates
- * @description Predicates for the panning component
-*/
-export const panningPredicates = {
-  canPan: (state: HeroState): boolean =>
-    isFullyVisible(state) && !state.eggActive,
-}
-
-/**
- * @exports scrollPredicates
- * @function scrollPredicates
- * @param {HeroState} state - Hero state
- * @returns {ScrollState} Scroll state predicates
- * @description Predicates for the scroll trigger component
-*/
-export const scrollPredicates = {
-  canTrigger: (state: HeroState): boolean =>
-    !state.eggActive,
+    isFullyVisible(state) && !noVideo(state),
 }

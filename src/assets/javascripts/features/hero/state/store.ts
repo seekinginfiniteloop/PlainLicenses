@@ -5,30 +5,8 @@
  * Implements a singleton reactive store for managing complex UI state using RxJS,
  * with advanced state tracking, predicate-based logic, and performance optimizations.
  *
- * @requires rxjs BehaviorSubject, Observable, Observer, Subscription, combineLatest, debounceTime, distinctUntilChanged, distinctUntilKeyChanged, filter, map, merge, shareReplay, startWith, switchMap, tap
- * @requires @external {CustomWindow} window - Exported window object from Material for MkDocs' bundled JavaScript
- * @requires @external ~/browser - {@link getViewportOffset}, {@link getViewportSize} - Browser utility functions
- * @requires @external ~/components - {@link getComponentElement}, {@link watchHeader} - Component utility functions
- *
- * @exports HeroStore
- *
- * @dependencies
- * - {@link module:~/utils/eventHandlers} - {@link isPageVisible$}, {@link isPartiallyInViewport}, {@link navigationEvents$}, {@link prefersReducedMotion$}, {@link setCssVariable}, {@link watchEasterEgg}, {@link watchMediaQuery} - Event handling utilities
- * - {@link module:~/utils/conditionChecks} - {@link isDev}, {@link isEggBoxOpen}, {@link isHome} - Conditional check utilities
- * - {@link module:log} - {@link logger} - Logging utility
- * - {@link module:./predicates} - {@link carouselPredicates}, {@link impactPredicates}, {@link panningPredicates}, {@link scrollPredicates} - State predicate functions
- *
- * @type {@link module:~/components} - {@link Header} - Header component
- * @type {@link module:./types} - {@link HeroState} - Hero state structure
- * @type {@link module:./types} - {@link CarouselState} - Carousel state structure
- * @type {@link module:./types} - {@link ImpactState} - Impact state structure
- * @type {@link module:./types} - {@link PanningState} - Panning state structure
- * @type {@link module:./types} - {@link ScrollState} - Scroll state structure
- * @type {@link module:./types} - {@link StatePredicate} - State predicate type
- * @type {@link module:./types} - {@link AnimationComponent} - Animation component types
- * @type {@link module:./types} - {@link ComponentState} - Component state structure
- * @type {@link module:./types} - {@link ComponentUpdateFunction} - Component update function type
- * @type {@link module:./types} - {@link LandingPermissions} - Landing permissions structure
+ * Frankly, it's overkill, but it was designed for a complex UI with many moving parts... and then I changed the design to be simpler... so now it's overkill.
+ * But it works, so I'm leaving it in place.
  *
  * @license Plain-Unlicense (Public Domain)
  * @author Adam Poulemanos adam<at>plainlicense<dot>org
@@ -36,11 +14,11 @@
  */
 
 import { BehaviorSubject, Observable, Observer, Subscription, combineLatest, debounceTime, distinctUntilChanged, distinctUntilKeyChanged, filter, map, merge, shareReplay, startWith, switchMap, tap } from 'rxjs'
-import { AnimationComponent, CarouselState, ComponentState, ComponentUpdateFunction, HeroState, ImpactState, LandingPermissions, PanningState, ScrollState, StatePredicate } from './types'
+import { AnimationComponent, ComponentStateUpdateFunction, HeroState, StatePredicate, VideoState } from './types'
 
-import { isPageVisible$, isPartiallyInViewport, navigationEvents$, prefersReducedMotion$, setCssVariable, watchEasterEgg, watchMediaQuery } from '~/utils/eventHandlers'
-import { isDev, isEggBoxOpen, isHome } from '~/utils/conditionChecks'
-import { logger } from '~/log'
+import { isPageVisible$, isPartiallyInViewport, navigationEvents$, prefersReducedMotion$, setCssVariable, watchMediaQuery } from '~/utils/eventHandlers'
+import { isDev, isHome } from '~/utils/conditionChecks'
+import { logger } from '~/utils/log'
 import * as predicates from './predicates'
 import { getViewportOffset, getViewportSize } from '~/browser'
 import { Header, getComponentElement, watchHeader } from '~/components'
@@ -60,11 +38,7 @@ const initialUrl = new URL(customWindow.location.href)
  * @description Centralized state management for hero section with reactive state updates
  *
  * @property {BehaviorSubject<HeroState>} state$ - BehaviorSubject that holds the current state of the hero section
- * @property {BehaviorSubject<CarouselState>} carouselState$ - BehaviorSubject that holds the current state of the carousel component
- * @property {BehaviorSubject<ImpactState>} impactState$ - BehaviorSubject that holds the current state of the impact component
- * @property {BehaviorSubject<PanningState>} panningState$ - BehaviorSubject that holds the current state of the panning component
- * @property {BehaviorSubject<ScrollState>} scrollState$ - BehaviorSubject that holds the current state of the scroll component
- * @property {BehaviorSubject<LandingPermissions>} landingPermissions$ - BehaviorSubject that holds the current state of the landing permissions
+ * @property {BehaviorSubject<VideoState>} videoState$ - BehaviorSubject that holds the current state of the video component
  * @property {BehaviorSubject<number>} parallaxHeight$ - BehaviorSubject that holds the current state of the parallax height
  * @property {Subscription} subscriptions - Subscription for managing observables
  *
@@ -85,9 +59,7 @@ export class HeroStore {
     atHome: isHome(initialUrl),
     landingVisible: isHome(initialUrl),
     pageVisible: !document.hidden || document.visibilityState === "visible",
-    eggActive: isEggBoxOpen(),
     prefersReducedMotion: customWindow.matchMedia('(prefers-reduced-motion: reduce)').matches,
-    newToHome: isHome(initialUrl),
     viewport: {
       offset: getViewportOffset(),
       size: getViewportSize()
@@ -99,31 +71,13 @@ export class HeroStore {
   }
   )
 
-  public carouselState$ = new BehaviorSubject<CarouselState>({ canPlay: false })
-
-  public impactState$ = new BehaviorSubject<ImpactState>({ canPlay: false })
-
-  public panningState$ = new BehaviorSubject<PanningState>({ canPan: false })
-
-  public scrollState$ = new BehaviorSubject<ScrollState>({
-    canTrigger: false,
-  })
-
-  public landingPermissions$ = new BehaviorSubject<LandingPermissions>({
-    canPan: false,
-    canCycle: false,
-    canImpact: false
-  })
+  public videoState$ = new BehaviorSubject<VideoState>({ canPlay: false })
 
   public parallaxHeight$ = new BehaviorSubject<number>(getViewportOffset().y * 1.4)
-
 
   private subscriptions = new Subscription()
 
   /**
-   * @method getInstance
-   * @static
-   * @public
    * @returns {HeroStore} Singleton instance of the HeroStore
    * @description Static singleton instance getter
    */
@@ -132,8 +86,6 @@ export class HeroStore {
   }
 
   /**
-   * @constructor
-   * @private
    * @description Initializes the HeroStore singleton instance
    */
   private constructor() {
@@ -141,8 +93,6 @@ export class HeroStore {
   }
 
   /**
-   * @method updateState
-   * @private
    * @param {Partial<HeroState>} update - Partial state object to update the hero state
    * @param {AnimationComponent} component Optional component to update
    * @description Updates the hero state with a partial state
@@ -157,18 +107,11 @@ export class HeroStore {
       return
     }
     switch (component) {
-      case AnimationComponent.Carousel:
-        this.carouselState$.next(update as CarouselState)
+      case AnimationComponent.Video:
+        this.videoState$.next(update as VideoState)
         break
-      case AnimationComponent.Impact:
-        this.impactState$.next(update as ImpactState)
-        break
-      case AnimationComponent.Panning:
-        this.panningState$.next(update )
-        break
-      case AnimationComponent.ScrollTrigger:
-        this.scrollState$.next({ ...this.scrollState$.value, ...update } as ScrollState)
-        break
+      // there were more cases, but we simplified it by moving to the video.
+      // keeping this to make it easier to add components in the future.
       case undefined:
         try {
           this.state$.next({ ...this.state$.value, ...update })
@@ -180,8 +123,6 @@ export class HeroStore {
   }
 
   /**
-   * @method updateHeroState
-   * @public
    * @param {Partial<HeroState>} updates - Partial state object to update the hero state
    * @param {AnimationComponent} component Optional component to update state
    * @description Updates the hero state with a partial state
@@ -189,10 +130,9 @@ export class HeroStore {
   public updateHeroState(updates: Partial<HeroState>, component?: AnimationComponent): void {
     logger.info('external component updating state; updates:', updates)
     this.updateState(updates, component)
+  }
 
   /**
-   * @method createObserver
-   * @private
    * @param {string} name - Name of the observable
    * @param {(T) => Partial<HeroState>} updateFn - Function to update state based on observable value
    * @returns {Observer<T>} - Observer for the observable
@@ -210,8 +150,6 @@ export class HeroStore {
   }
 
   /**
-   * @method initSubscriptions
-   * @private
    * @description Initializes all observables and subscriptions
    */
   private initSubscriptions(): void {
@@ -235,15 +173,6 @@ export class HeroStore {
 
     const motion$ = prefersReducedMotion$.pipe(
       tap(this.createObserver('prefersReducedMotion$', (prefersReducedMotion) => ({ prefersReducedMotion }))))
-
-    const egg$ = watchEasterEgg().pipe(
-      tap(this.createObserver('eggActive$', (eggActive) => ({ eggActive }))))
-
-    const newToHome$ = navigationEvents$.pipe(
-      distinctUntilChanged((prev, curr) => prev.pathname === curr.pathname),
-      map(isHome),
-      filter((atHome) => atHome),
-      tap(this.createObserver('newToHome$', (newToHome) => ({ newToHome }))))
 
     const view$ = viewport$.pipe(
       distinctUntilChanged(),
@@ -288,54 +217,21 @@ export class HeroStore {
     const location$ = navigationEvents$.pipe(
       tap(this.createObserver('location$', (location) => ({ location }))))
 
-    const carousel$ = this.getCarouselState$((v) => this.carouselState$.next(v as CarouselState))
-
-    const impact$ = this.getImpactState$((v) => this.impactState$.next(v as ImpactState))
-
-    const panning$ = this.getPanningState$((v) => this.panningState$.next(v as PanningState))
-
-    const scroll$ = this.getScrollState$((v) => this.scrollState$.next(v as unknown as ScrollState))
-
-    const landingStatus$ = merge(
-      this.carouselState$,
-      this.impactState$,
-      this.panningState$,
-    ).pipe(
-      map((state) => ({
-        canCycle: (state as any).canCycle,
-        canImpact: (state as any).canImpact,
-        canPan: (state as any).canPan
-      })),
-      distinctUntilChanged(),
-      shareReplay(1))
+    const video$ = this.getVideoState$((v) => this.videoState$.next(v as VideoState))
 
 
     this.subscriptions.add(atHome$.subscribe())
     this.subscriptions.add(landingVisible$.subscribe())
     this.subscriptions.add(pageVisible$.subscribe())
     this.subscriptions.add(motion$.subscribe())
-    this.subscriptions.add(egg$.subscribe())
-    this.subscriptions.add(newToHome$.subscribe())
     this.subscriptions.add(view$.subscribe())
     this.subscriptions.add(header$.subscribe())
     this.subscriptions.add(location$.subscribe())
     this.subscriptions.add(parallax$.subscribe())
-    this.subscriptions.add(carousel$.subscribe())
-    this.subscriptions.add(impact$.subscribe())
-    this.subscriptions.add(panning$.subscribe())
-    this.subscriptions.add(scroll$.subscribe())
-    this.subscriptions.add(landingStatus$.subscribe(
-      {
-        next: (value) => this.landingPermissions$.next(value as LandingPermissions),
-        error: (error) => logger.error('Error in landingStatus$:', error),
-        complete: () => logger.info('landingStatus$ completed')
-      }
-    ))
+    this.subscriptions.add(video$.subscribe())
   }
 
   /**
-   * @method getState
-   * @public
    * @returns {HeroState} Current state of the hero section
    * @description Gets the current state of the hero section
    */
@@ -344,8 +240,6 @@ export class HeroStore {
   }
 
   /**
-   * @method getStateValue
-   * @public
    * @param {string} subject - Name of the state subject
    * @returns {any} - Current value of the state subject
    * @description Gets the current value of a specific state subject
@@ -356,25 +250,17 @@ export class HeroStore {
 
 
   /**
-   * @method getComponentValue
-   * @public
    * @param {string} component - Name of the component
-   * @returns {ComponentState | LandingPermissions} - Current state of the component
+   * @returns {ComponentState} - Current state of the component
    * @description Gets the current state of a specific
    * component or landing permissions
    */
-  public getComponentValue(component: string): ComponentState | LandingPermissions {
+  public getComponentValue(component: string): VideoState {
     switch (component) {
-      case AnimationComponent.Carousel:
-        return this.carouselState$.value
-      case AnimationComponent.Impact:
-        return this.impactState$.value
-      case AnimationComponent.Panning:
-        return this.panningState$.value
-      case AnimationComponent.ScrollTrigger:
-        return this.scrollState$.value as unknown as ComponentState
+      case AnimationComponent.Video:
+        return this.videoState$.value
       default:
-        return this.landingPermissions$.value
+        return this.videoState$.value
     }
 
   }
@@ -384,19 +270,17 @@ export class HeroStore {
    *=============================================**/
 
   /**
-   * @method getComponentObserver
-   * @private
    * @param {string} name - Name of the observable
-   * @param {ComponentUpdateFunction} func - Function to update the component state
+   * @param {ComponentStateUpdateFunction} func - Function to update the component state
    * @returns {Observer<T>} - Observer for the observable
    * @description Creates a standard observer for a component observable
    */
-  private getComponentObserver<T>(name: string, func?: ComponentUpdateFunction): Observer<T> {
+  private getComponentObserver<T>(name: string, func?: ComponentStateUpdateFunction): Observer<T> {
     return {
       next: (value: T) => {
         logger.info(`${name} received:`, value)
         if (func) {
-          (value: T) => func(value as ComponentState)
+          (value: T) => func(value as VideoState)
         }
       },
       error: (error: Error) => logger.error(`Error in ${name}:`, error),
@@ -405,16 +289,14 @@ export class HeroStore {
   }
 
   /**
-   * @method getCarouselState$
-   * @private
-   * @param {ComponentUpdateFunction} observerFunc Function to update the component state
-   * @returns {Observable<CarouselState>} Observable for carousel state indicating play and pause conditions
+   * @param {ComponentStateUpdateFunction} observerFunc Function to update the component state
+   * @returns {Observable<VideoState>} Observable for carousel state indicating play and pause conditions
    * @description Creates an observable for the carousel state indicating play and pause conditions
    */
-  private getCarouselState$(observerFunc: ComponentUpdateFunction): Observable<CarouselState> {
+  private getVideoState$(observerFunc: ComponentStateUpdateFunction): Observable<VideoState> {
     return this.state$.pipe(
       map(state => ({
-        canPlay: predicates.carouselPredicates.canPlay(state),
+        canPlay: predicates.videoPredicate.canPlay(state),
       })),
       distinctUntilKeyChanged('canPlay'),
       shareReplay(1),
@@ -422,66 +304,9 @@ export class HeroStore {
     )
   }
 
-  /**
-   * @method getImpactState$
-   * @private
-   * @param {ComponentUpdateFunction} observerFunc - Function to update the component state
-   * @returns {Observable<ImpactState>} - Observable for impact state indicating play and pause conditions
-   * @description Creates an observable for the impact state indicating play and pause conditions
-   */
-  private getImpactState$(observerFunc: ComponentUpdateFunction): Observable<ImpactState> {
-    return this.state$.pipe(
-      map(state => ({
-        canPlay: predicates.impactPredicates.canPlay(state)})),
-      distinctUntilKeyChanged('canPlay'),
-      shareReplay(1),
-      tap(this.getComponentObserver('impactState$', observerFunc))
-    )
-  }
-
-  /**
-   * @method getPanningState$
-   * @private
-   * @param {ComponentUpdateFunction} observerFunc - Function to update the component state
-   * @returns {Observable<PanningState>} - Observable for panning state indicating pan conditions
-   * @description Creates an observable for the panning state indicating pan conditions
-   */
-  private getPanningState$(observerFunc: ComponentUpdateFunction): Observable<PanningState> {
-    return this.state$.pipe(
-      map(state => ({
-        canPan: predicates.panningPredicates.canPan(state),
-      })),
-      distinctUntilKeyChanged('canPan'),
-      shareReplay(1),
-      tap(this.getComponentObserver('panningState$', observerFunc))
-    )
-  }
-
-  /**
-   * @method getScrollState$
-   * @private
-   * @param {ComponentUpdateFunction} observerFunc - Function to update the component state
-   * @returns {Observable<ScrollState>} - Observable for scroll state indicating trigger conditions
-   * @description Creates an observable for the scroll state indicating trigger conditions
-   */
-  private getScrollState$(observerFunc: ComponentUpdateFunction): Observable<ScrollState> {
-    return this.state$.pipe(
-      map(state => ({
-        canTrigger: predicates.scrollPredicates.canTrigger(state),
-      })),
-      distinctUntilChanged((prev, curr) => {
-        return prev.canTrigger === curr.canTrigger
-      }
-      ),
-      shareReplay(1),
-      tap(this.getComponentObserver('scrollState$', observerFunc))
-    )
-  }
 
 
   /**
-   * @method debugStateChange
-   * @public
    * @param {Partial<HeroState>} updates - Partial state object to update the hero state
    * @description Logs and updates state changes for debugging
    */

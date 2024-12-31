@@ -3,19 +3,6 @@
  *
  * @description Coordinates tab interactions with corresponding link icons and labels
  *
- * @exports TabManager
- * @class TabManager
- *
- * @requires rxjs Observable, Subscription, debounceTime, filter, fromEvent, map, merge, share, tap
- *
- * @dependencies
- * - {@link module:log} - {@link logger} - Logging utility
- * - {@link module:eventHandlers} - {@link preventDefault} - Prevents the default event behavior
- *
- * @types {@link module:types} - {@link TabElement} - Tab element structure
- * @types {@link module:types} - {@link TabState} - Tab state structure
- * @types {@link module:types} - {@link TabStateType} - Tab state type
- *
  * @license Plain-Unlicense (Public Domain)
  * @author Adam Poulemanos adam<at>plainlicense<dot>org
  * @copyright No rights reserved
@@ -23,13 +10,10 @@
 
 import { Observable, Subscription, debounceTime, filter, fromEvent, map, merge, share, tap } from 'rxjs'
 import { TabElement, TabState, TabStateType } from './types'
-import { logger } from '../../log'
+import { logger } from '../../utils/log'
 import { preventDefault } from '~/utils/eventHandlers'
 
 /**
- * @exports TabManager
- * @class TabManager
- *
  * @description
  * - Dynamically initializes and manages tab elements
  * - Handles complex interaction states (hover, focus, selection) for tabs, linking behaviors to ARIA roles and states between elements
@@ -55,8 +39,6 @@ export class TabManager {
   public subscription: Subscription = new Subscription()
 
   /**
-   * @constructor
-   * @public
    * @description Initializes tab elements and sets up interactions
    */
   public constructor() {
@@ -65,8 +47,6 @@ export class TabManager {
   }
 
   /**
-   * @method initializeTabs
-   * @private
    * @returns {TabElement[]} Collection of initialized tab elements
    * @description Initializes tab elements by querying the DOM for input, label, and icon elements
    */
@@ -90,8 +70,6 @@ export class TabManager {
   }
 
   /**
-   * @method styleTab
-   * @private
    * @param {TabElement} tab - Tab element to style
    * @param {TabState} state - Tab state object
    * @description Styles tab elements based on state
@@ -109,8 +87,6 @@ export class TabManager {
   }
 
   /**
-   * @method setupInteractions
-   * @private
    * @returns {Observable<void>} Observable for tab interactions
    * @description Sets up interaction streams for tab elements
    */
@@ -182,8 +158,6 @@ export class TabManager {
   }
 
   /**
-   * @method init
-   * @private
    * @description Initializes tab styles and sets up interaction streams
    */
   private init() {
@@ -199,8 +173,6 @@ export class TabManager {
   }
 
   /**
-   * @method cleanup
-   * @public
    * @description Unsubscribes from event streams and performs cleanup
    */
   public cleanup(): void {

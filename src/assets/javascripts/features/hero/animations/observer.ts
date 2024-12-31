@@ -7,7 +7,7 @@ import { FadeConfig, SlideConfig } from "~/config/types"
 import { GsapMatchMediaConditions, Section } from "./types"
 import { HeroStore } from "../state/store"
 import { getMatchMediaInstance, normalizeResolution } from "./utils"
-import { BehaviorSubject, Subscription, combineLatest } from "rxjs"
+import { Subscription, combineLatest } from "rxjs"
 
 gsap.registerPlugin(Observer, ScrollTrigger)
 
@@ -24,8 +24,6 @@ export class ObservationAnimation {
   private ignoreTargets: string
 
   private observerConfig = OBSERVER_CONFIG
-
-  private scrollState = this.store.scrollState$
 
   private sectionAnimations: { [key: string]: gsap.core.Timeline }
 
@@ -46,9 +44,11 @@ export class ObservationAnimation {
 // we can access scroll trigger from within the `this` in a gsap instance
 
   private setupSubscriptions() {
-    const trigger$ = this.scrollState.pipe(
-      map(state => state.canTrigger),
-      distinctUntilChanged(),
+
+    const atHome$ = this.store.state$.pipe(
+      map(state => state.atHome),
+      filter(atHome => atHome),
+      distinctUntilChanged()
     )
 
     const resizeWatcher$ = combineLatest([
@@ -56,7 +56,7 @@ export class ObservationAnimation {
         map(state => ({ viewport: state.viewport, header: state.header })),
         debounceTime(100),
       ),
-      trigger$.pipe(filter(canTrigger => canTrigger))
+      atHome$
     ]
     ).pipe(
       map(([{ viewport, header }, _]) => { return ({
@@ -71,21 +71,16 @@ export class ObservationAnimation {
     )
 
     this.subscriptions.add(
-      trigger$.subscribe(canTrigger => {
-                if (canTrigger) {
-                  this.assignFadeIns(this.fades.fadeInSections.slice(1))
-                  this.setupSections()
-                  this.setupObserver()
-                  this.transitionToSection(0, 1)
-                }
-            }
-      ))
-    this.subscriptions.add(
       resizeWatcher$.subscribe(() => {
                 this.trigger.refresh()
                 this.trigger.update()
             })
     )
+    this.subscriptions.add(atHome$.subscribe(() => {
+      this.setupSections()
+      this.assignFadeIns(this.fades.fadeInSections)
+      this.setupObserver()
+     }))
   }
 
   private constructor() {
@@ -115,7 +110,7 @@ export class ObservationAnimation {
     }))
   }
 
-  private assignFadeIns(fadeInSections: string[]) {
+  private assignFadeIns(fadeInSections: readonly string[]) {
     fadeInSections.forEach((selector, idx) => {
       const element = document.querySelector(selector)
       const cls = idx === 0 ? "fade-in" : "fade-in2"

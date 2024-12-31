@@ -2,23 +2,7 @@
  * @module cycler
  * @description Manages dynamic hero image cycling with RxJS-driven transitions and animations
  *
- * @requires rxjs BehaviorSubject, EMPTY, Observable, Subscription, catchError, filter, fromEvent, interval, map, race, single, skipUntil, switchMap, take, tap, timer
- * @requires gsap
- *
- * @dependencies
- * - {@link module:animations} - {@link AnimationManager} - Handles transition animations
- * - {@link module:loader} - {@link ImageLoader} - Manages image preloading
- * - {@link module:state/store} - {@link HeroStore} - Manages carousel state
- * - {@link module:config} - {@link CAROUSEL_CONFIG} - Configuration constants
- * - {@link module:heroImages} - {@link heroImages} - Array of hero images
- * - {@link module:log} - {@link logger} - Logging utility
- *
- * @exports ImageCycler - Singleton image cycler class
- *
- * @types {@link module:features/hero/imageCarousel/types} - {@link HeroState} - {@link CarouselState}
- * @types {@link module:./types} - {@link AnimationState}
- * @types {@link module:types} - {@link HeroImage}
- *
+
  * @author Adam Poulemanos adam<at>plainlicense<.>org
  * @license Plain-Unlicense
  * @copyright This work is in the public domain. No rights reserved.
@@ -26,14 +10,13 @@
 
 import { BehaviorSubject, EMPTY, Observable, Subscription, catchError, filter, fromEvent, interval, map, race, single, skipUntil, switchMap, take, tap, timer } from "rxjs"
 import gsap from "gsap"
-import { AnimationManager } from "../animations/animationManager"
 import { ImageLoader } from "./loader"
 import { CAROUSEL_CONFIG } from "~/config/config"
 import { heroImages } from "./heroImages"
 import type { HeroImage } from "./types"
 import { HeroStore } from "../state/store"
-import type { CarouselState, HeroState } from "../state/types"
-import { logger } from "~/log"
+import type { HeroState, VideoState } from "../state/types"
+import { logger } from "~/utils/log"
 import { AnimationState } from "../animations/types"
 
 /**
@@ -125,7 +108,7 @@ export class ImageCycler {
     this.subscriptions.add(this.state$.subscribe())
 
     const baseObservable = this.store.carouselState$.pipe(
-      map((state: CarouselState) => state.canPlay)
+      map((state: VideoState) => state.canPlay)
     )
 
     const firstImage$ = baseObservable.pipe(
