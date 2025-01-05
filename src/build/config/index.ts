@@ -5,33 +5,12 @@
  * Core build system configuration and utilities for Plain License project.
  * Handles esbuild setup, image processing, and asset management.
  *
- * @packageDocumentation
- *
- * @requires esbuild
- * @requires globby
- * @requires esbuild-plugin-tsconfig-paths
- * @requires @asn.aeb/esbuild-css-modules-plugin
- * @requires esbuild-plugin-copy
- *
- * @exports {BuildOptions} webConfig - esbuild configuration
- * @exports {Project} baseProject - Base build config
- * @exports {Function} heroImages - Hero image generator
- * @exports {Function} generateSrcset - Srcset generator
- *
- * @type {import('./types').HeroImage} HeroImage
- * @type {import('./types').HeroImageBase} HeroImageBase
- * @type {import('./types').HeroImageFocalPoints} HeroImageFocalPoints
- *
  * Features:
  * - Dynamic esbuild configuration with plugins
  * - Automated hero image srcset generation
  * - Smart focal point mapping for responsive images
  * - Cross-platform asset processing
  * - Glob-based file resolution
- *
- * Core Utils:
- * - {@link resolveGlob} - File pattern resolver
- * - {@link getHeroParents} - Hero image directory scanner
  *
  * @see {@link https://esbuild.github.io/}
  * @see {@link https://github.com/sindresorhus/globby}
@@ -47,85 +26,85 @@ import { tsconfigPathsPlugin } from "esbuild-plugin-tsconfig-paths"
 import * as esbuild from "esbuild"
 import { copy } from 'esbuild-plugin-copy'
 import globby from "globby"
+import * as fs from "fs"
 
-import type { HeroImage, HeroImageBase, HeroImageFocalPoints, Project, WidthMap } from "../types.ts"
+import type { HeroImage, HeroImageBase, HeroVideo, Project, VideoConfig, WidthMap } from "../types.ts"
 
-const focalPoints: HeroImageFocalPoints[] = [
-  {
-    "anime": {
-      main: [0.49, 0.385],
-      secondary: [0.57, 0.65],
-    }
-  },
-  {
-    "artbrut": {
-      main: [0.465, 0.38],
-      secondary: [0.23, 0.21],
-    }
-  },
-  {
-    "comic": {
-      main: [0.41, 0.36],
-      secondary: [0.35, 0.72],
-    }
-  },
-  {
-    "fanciful": {
-      main: [0.43, 0.6],
-      secondary: [0.61, 0.44],
-    }
-  },
-  {
-    "fantasy": {
-      main: [0.49, 0.59],
-      secondary: [0.33, 0.34],
-    }
-  },
-  {
-    "farcical": {
-      main: [0.485, 0.6],
-      secondary: [0.35, 0.43],
-    }
-  },
-  {
-    "fauvist": {
-      main: [0.33, 0.48],
-      secondary: [0.30, 0.55],
-    }
-  },
-  {
-    "mystical": {
-      main: [0.36, 0.575],
-      secondary: [0.61, 0.30],
-    }
-  },
-  {
-    "minimal": {
-      main: [0.34, 0.36],
-      secondary: [0.26, 0.66],
-    }
-  },
-  {
-    "surreal": {
-      main: [0.60, 0.54],
-      secondary: [0.37, 0.30],
-    }
-  },
-]
+export const videoConfig: VideoConfig = {
+  resolutions: [
+    { width: 3840, height: 2160 },
+    { width: 2560, height: 1440 },
+    { width: 1920, height: 1080 },
+    { width: 1280, height: 720 },
+    { width: 854, height: 480 },
+    { width: 640, height: 360 }
+  ],
+  codecs: ['av1', 'vp9'],
+  baseDir: 'src/assets/videos/hero'
+}
 
 /**
- * @function getHeroParents
+ * @returns {Promise<string[]>} Directory paths containing hero videos
+ */
+export async function getVideoParents(): Promise<string[]> {
+  return globby("src/assets/videos/hero/*", { onlyDirectories: true, unique: true })
+}
+
+/**
+ * @param {string} baseName The base name of the video
+ * @param {string} codec The codec of the video
+ * @param {number} width The width of the video
+ * @returns {string} Constructed video file path
+ */
+export function buildVideoPath(baseName: string, codec: string, width: number): string {
+  return `src/assets/videos/hero/${baseName}/${baseName}_${codec}_${width}.webm`
+}
+
+/**
+ * @param {string} baseName The base name of the video
+ * @returns {Promise<HeroVideo>} A promise that resolves to the hero video object
+ */
+export async function generateVideoVariants(baseName: string): Promise<HeroVideo> {
+  const variants: { av1: Record<number, string>, vp9: Record<number, string> } = {
+    av1: {},
+    vp9: {}
+  }
+
+  for (const resolution of videoConfig.resolutions) {
+    for (const codec of videoConfig.codecs) {
+      const path = buildVideoPath(baseName, codec, resolution.width)
+      if (await fs.promises.access(path).catch(() => false)) {
+        variants[codec][resolution.width] = path
+      }
+    }
+  }
+
+  // Get matching poster image
+  const images = await heroImages()
+  const posterImage = images[baseName]
+
+  return {
+    baseName,
+    parent: `src/assets/videos/hero/${baseName}`,
+    variants,
+    poster: posterImage,
+  }
+}
+
+/**
  * @returns {Promise<string[]>} that resolves to the first file that matches the glob.
  * @description Scans the hero image directory for parent directories.
  */
 async function getHeroParents(): Promise<string[]> {
   const fastGlobSettings = { onlyDirectories: true, unique: true }
-  return globby("src/assets/images/hero/*", fastGlobSettings)
+  const parents = globby("src/assets/images/hero/*", fastGlobSettings)
+  for await (const parent of await parents) {
+    (await parents).push(parent.replace("images", "videos"))
+  }
+  return parents
 }
 
 /**
- * @exports heroParents
- * @function heroParents
  * @param {string} glob The glob to resolve.
  * @returns An array of files that match the glob.
  * @description Resolves a glob to a single file.
@@ -150,8 +129,6 @@ const cssBanner = `/**
   */
 `
 /**
- * @exports webConfig
- * @constant webConfig
  * @description esbuild configuration for the web platform.
  */
 export const webConfig: esbuild.BuildOptions = {
@@ -162,7 +139,7 @@ export const webConfig: esbuild.BuildOptions = {
   banner: { js: jsBanner, css: cssBanner },
   format: "esm",
   platform: "browser",
-  target: "es2018",
+  target: "es2020",
   outbase: "src",
   chunkNames: "[dir]/assets/javascripts/chunks/[name].[hash]",
   assetNames: "[dir]/[name].[hash]",
@@ -179,6 +156,7 @@ export const webConfig: esbuild.BuildOptions = {
     ".png": "file",
     ".svg": "file",
     ".webp": "file",
+    ".webm": "file",
     ".avif": "file",
   },
   outExtension: {".js": ".js", ".css": ".css"},
@@ -201,13 +179,17 @@ export const webConfig: esbuild.BuildOptions = {
       globbyOptions: { gitignore: true, extglob: true, unique: true },
       assets: [
         { from: "./src/assets/images/*.+(svg|png|webp)", to: "./docs/assets/images" },
+        { from: "./src/assets/fonts/*.+(woff|woff2)", to: "./docs/assets/fonts" },
+        { from: "./src/assets/videos/*.+(webm|avif)", to: "./docs/assets/videos" },
       ],
     }),
   ],
 }
 
 export const baseProject: Project = {
-  entryPoints: ["src/assets/javascripts/index.ts", "src/assets/stylesheets/bundle.css"
+  entryPoints: ["src/assets/javascripts/index.ts",
+    "src/assets/javascripts/workers/cache_worker.ts",
+    "src/assets/stylesheets/bundle.css"
   ],
   tsconfig: "tsconfig.json",
   entryNames: "[dir]/[name].[hash]",
@@ -216,7 +198,6 @@ export const baseProject: Project = {
 }
 
 /**
- * @function resolveGlob
  * @param {string} glob The glob to resolve.
  * @param {globby.GlobbyOptions} fastGlobOptions Options to pass to fast-glob.
  * @returns {Promise<string[]>} A promise that resolves to the first file that matches the glob.
@@ -230,15 +211,13 @@ async function resolveGlob(glob: string, fastGlobOptions?: {}): Promise<string[]
       return result
     }
   } catch (error) {
-
+    // eslint-disable-next-line no-console
     console.error("Error resolving glob:", error)
     throw error
   }
 }
 
 /**
- * @exports generateSrcset
- * @function generateSrcset
  * @param {HeroImageBase} image The image to generate the Srcset for.
  * @returns {Promise<string>} A promise that resolves to the Srcset for the image.
  * @description Generates a Srcset property for the provided image.
@@ -253,12 +232,10 @@ export async function generateSrcset(image: HeroImageBase): Promise<string> {
 }
 
 /**
- * @exports heroImages
- * @function heroImages
  * @returns {Promise<Record<string, HeroImage>>} A promise that resolves to a map of hero images.
  * @description Generates a map of hero images with their respective widths and Srcsets.
  */
-export const heroImages = async () => {
+export const heroImages = async (): Promise<Record<string, HeroImage>> => {
   const parents = await resolveGlob("src/assets/images/hero/*", { onlyDirectories: true })
   const retrieveKey = (filePath: string) => filePath.split("/").pop()
   const getWidthMaps = async () => {
@@ -274,10 +251,8 @@ export const heroImages = async () => {
           }
           return acc
         }, {} as WidthMap) // Initialize acc as an empty WidthMap
-        const focalPoint = focalPoints.find((value: HeroImageFocalPoints) => Object.keys(value)[0] === key)
-        const imageFocii = focalPoint && key ? focalPoint[key] : { main: [0.5, 0.5], secondary: [0.5, 0.5] }
         const srcset = await generateSrcset({ parent, widths: flattenedWidths })
-        return [key, { parent, widths: flattenedWidths, srcset, "focalPoints": imageFocii }] as [string, HeroImage]
+        return [key, { parent, widths: flattenedWidths, srcset }] as [string, HeroImage]
       })
     )
 

@@ -8,7 +8,7 @@
     "allowSyntheticDefaultImports": true,
     "jsx": "react",
     "jsxFactory": "h",
-    "lib": ["dom", "esnext", "webworker", "es2020", "es2018"],
+    "lib": ["DOM", "DOM.Iterable", "esnext", "WebWorker", "es2020", "es2018"],
     "module": "esnext",
     "moduleResolution": "Bundler",
     "noFallthroughCasesInSwitch": true,
@@ -34,7 +34,7 @@
     "strictNullChecks": true,
     "strictPropertyInitialization": true,
     "stripInternal": true,
-    "target": "es2018",
+    "target": "es2020",
     "typeRoots": ["./node_modules/@types"]
   },
   "include": ["src/**/*.ts"],

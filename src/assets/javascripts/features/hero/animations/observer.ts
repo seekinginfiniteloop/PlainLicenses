@@ -5,7 +5,7 @@ import { debounceTime, distinctUntilChanged, filter, map } from "rxjs/operators"
 import { OBSERVER_CONFIG } from "~/config/config"
 import { FadeConfig, SlideConfig } from "~/config/types"
 import { GsapMatchMediaConditions, Section } from "./types"
-import { HeroStore } from "../state/store"
+import { HeroStore } from "../../../state/store"
 import { getMatchMediaInstance, normalizeResolution } from "./utils"
 import { Subscription, combineLatest } from "rxjs"
 

@@ -28,7 +28,7 @@
 import { BehaviorSubject, Observable, Subscription, defer, distinctUntilChanged, from, map, mergeMap, of, retry, switchMap, tap } from 'rxjs'
 import { HeroImage, RangeMap } from './types'
 import { getAssets } from '~/utils/cache'
-import { HeroStore } from '../state/store'
+import { HeroStore } from '../../../state/store'
 import { heroImages } from './heroImages'
 import { logger } from '~/utils/log'
 import { ImageOptions, ImageWidths } from '~/types'

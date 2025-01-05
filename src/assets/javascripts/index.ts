@@ -15,18 +15,17 @@
  */
 
 import "@/bundle"
-import { EMPTY, catchError, filter, firstValueFrom, from, map, merge, mergeMap, of, share, switchMap, tap } from "rxjs"
+import { EMPTY, catchError, filter, from, map, merge, of, share, switchMap, tap } from "rxjs"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { ScrollToPlugin } from "gsap/ScrollToPlugin"
 
-import { feedback$ } from "~/feedback"
+import { feedback } from "~/features/feedback/feedback"
 import { TabManager } from "~/features/licenses/tabManager"
 import { logger } from "~/utils/log"
-import { isHome, isLicense, isHelpingIndex, isOnSite } from "~/utils/conditionChecks"
-import { navigationEvents$ } from "./utils/eventHandlers"
-import { cachePageAssets, cleanupCache, deleteOldCaches, getAssets } from "./utils/cache"
-import { subscribeToAnimation$ } from "./heroScroll"
+import { isHelpingIndex, isHome, isLicense, isOnSite } from "~/utils/conditionChecks"
+import { license$, navigationEvents$ } from "./utils/eventHandlers"
+import { createScript } from "./utils/helpers"
 
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin)
 
@@ -38,111 +37,26 @@ document.documentElement.classList.add("js")
 let customWindow: CustomWindow = window as unknown as CustomWindow
 const { document$ } = customWindow
 
-// Extracts the URLs from a list of elements
-const extractUrls = (elements: NodeListOf<Element>, attribute: string): string[] =>
-  Array.from(elements)
-    .map(el => el.getAttribute(attribute))
-    .filter((url): url is string => url !== null)
-
-// Creates a script element and appends it to the head
-const createScript = (src: string, async = true, defer = true) => {
-  const alreadyLoaded = document.querySelector(`script[src="${src}"]`)
-  if (alreadyLoaded) {
-    return
-  }
-  const script = document.createElement("script")
-  script.type = "text/javascript"
-  script.src = src
-  script.async = async
-  script.defer = defer
-  document.head.appendChild(script)
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('workers/cache-worker.js')
+    .then(() => logger.info('SW registered!'))
+    .catch(err => logger.error('SW registration failed:', err));
 }
 
-const prioritizeFonts = (urls: string[]) => {
-  const loadOrder = isHome(new URL(window.location.href)) ? ['bangers', 'inter', 'sourcecodepro', 'raleway'] : ['inter', 'sourcecodepro', 'bangers', 'raleway']
-  return urls.sort((a, b) => {
-    const aIndex = loadOrder.indexOf(a.includes('inter') ? 'inter' :
-      a.includes('sourcecodepro') ? 'sourcecodepro' :
-      a.includes('raleway') ? 'raleway' : 'bangers')
-    const bIndex = loadOrder.indexOf(b.includes('inter') ? 'inter' :
-      b.includes('sourcecodepro') ? 'sourcecodepro' :
-      b.includes('raleway') ? 'raleway' : 'bangers')
-    return aIndex - bIndex
-  })
-}
 
-// Preloads fonts from the stylesheet
-const preloadFonts = async () => {
-  let fontUrls = extractUrls(document.querySelectorAll("link[rel=stylesheet][href*=fonts]"), 'href')
-  fontUrls = prioritizeFonts(fontUrls)
-  for (const url of fontUrls) {
-    try {
-      const response = getAssets(url)
-      const blob = response ? await (await firstValueFrom(response)).blob() : undefined
-      if (blob) {
-        const blobUrl = URL.createObjectURL(blob)
-        const fontFamily = url.includes('inter') ? 'Inter' :
-                           url.includes('sourcecodepro') ? 'Source Code Pro' :
-                           url.includes('raleway') ? 'Raleway' : 'Bangers'
-        const font = new FontFace(fontFamily, `url(${blobUrl})`)
-        await font.load()
-        await document.fonts.load(font.family)
-        logger.info(`Font loaded from cache: ${url}`)
-        URL.revokeObjectURL(blobUrl)
-      }
-    } catch (error) {
-      logger.error(`Error loading font: ${url}`, error)
-    }
-  }
-}
-
-// Preloads static assets from the stylesheet, scripts, and images
-const preloadStaticAsset$ = () => {
-  const styleUrls = extractUrls(document.querySelectorAll("link[rel=stylesheet][href*=stylesheets]"), 'href')
-  const scriptUrls = extractUrls(document.querySelectorAll("script[src*=javascripts]"), 'src')
-  const imageUrls = extractUrls(document.querySelectorAll("img[src]"), 'src')
-
-  return merge(
-    ...styleUrls.map(url => getAssets(url)),
-    ...scriptUrls.map(url => getAssets(url)),
-    ...imageUrls.map(url => getAssets(url))
-  )
-}
-
-// Caches assets from the stylesheet, scripts, and images
-const cleanCache$ = cleanupCache(8000).pipe(
-  tap(() => logger.info("Attempting to clean up cache")),
-  mergeMap(() =>
-    merge(
-      cachePageAssets("stylesheets", document.querySelectorAll("link[rel=stylesheet][href*=stylesheets]") as NodeListOf<HTMLElement>),
-      cachePageAssets("javascripts", document.querySelectorAll("script[src*=javascripts]") as NodeListOf<HTMLElement>),
-      cachePageAssets("fonts", document.querySelectorAll("link[rel=stylesheet][href*=fonts]") as NodeListOf<HTMLElement>),
-      cachePageAssets("images", document.querySelectorAll("img[src]") as NodeListOf<HTMLElement>),
-    )
-  ),
-  tap(() => logger.info("Assets cached"))
-)
 
 // add analytics to each page (a simple tracking pixel)
 const insertAnalytics = () => createScript("https://app.tinyanalytics.io/pixel/ei74pg7dZSNOtFvI", false, true)
 
 const insertButtonScript = () => createScript("https://buttons.github.io/buttons.js", true, true)
 
-const setupTabIconSync$ = () => {
-  navigationEvents$.pipe()
-
 const analytic$ = of(insertAnalytics())
 const animate$ = document$.pipe(switchMap(() => subscribeToAnimation$()))
-const asset$ = preloadStaticAsset$()
+const feedback$ = of(feedback())
 const buttonScript$ = of(insertButtonScript())
 const color$ = of(document.body.setAttribute("data-md-color-scheme", "slate"))
-const deleteCache$ = deleteOldCaches()
-const font$ = from(preloadFonts())
-const license$ = setupTabIconSync$()
-const licenseView$ = watchLicenseHashChange$()
-const table$ = watchTable$()
+const licenseSub$ = license$.pipe(switchMap(() => of(new TabManager())))
 const windowEvents$ = from(windowEvents())
-
 
 // Define page configurations
 const pageConfigs: PageConfig[] = [
@@ -150,7 +64,6 @@ const pageConfigs: PageConfig[] = [
     matcher: isHome,
     location: "home",
     observables: [
-      shuffle$(),
       animate$,
       color$,
     ]
@@ -158,7 +71,7 @@ const pageConfigs: PageConfig[] = [
   {
     matcher: isLicense,
     location: "licenses",
-    observables: [license$]
+    observables: [licenseSub$]
   },
   {
     matcher: isHelpingIndex,
@@ -170,13 +83,7 @@ const pageConfigs: PageConfig[] = [
     location: "all",
     observables: [
       analytic$,
-      asset$,
-      cleanCache$,
-      deleteCache$,
       feedback$,
-      font$,
-      licenseView$,
-      table$,
       windowEvents$
     ]
   }

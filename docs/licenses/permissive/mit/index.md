@@ -30,7 +30,7 @@ reader_license_text: |
 
   We, the work's authors, give you a license to **use, copy, change, and share the work and all related materials for free.** You can also sell or license the work under different terms. You agree to these terms by using, copying, or sharing the work. Everyone who gets a copy of this work may use the work under these terms.
 
-  ### You Have to Give Us Credit
+  ### You Must Give Us Credit
 
   You **must include our original copyright notice and this license in all copies or substantial portions of this work.**
 

@@ -11,28 +11,14 @@
  * - Asset metadata
  *
  * Key Features:
- * - Strongly typed image configurations
+ * - Strongly typed image and video configurations
  * - Flexible width and srcset mappings
  * - Detailed esbuild output typing
  * - Build project configuration interfaces
  * - Focal point definitions for responsive images
  *
- * @exports
- * @interface HeroImage: Comprehensive hero image configuration
- * @interface esbuildOutputs: Build output metadata structure
- * @interface Project: Project build configuration
- * @interface FileHashes: CSS file hash tracking
- * @interface buildJson: Build artifact mapping
- *
- * Core Types:
- * @type {WidthMap}  Flexible width-to-path mapping
- * @type {HeroImageBase} Minimal hero image configuration
- * @type {HeroImageFocalPoints} Image focal point definitions
- *
  * @see {@link https://esbuild.github.io/} esbuild Documentation
  */
-
-
 
 export interface WidthMap {
   [key: string]: string
@@ -45,17 +31,6 @@ export interface HeroImage {
     [key: number]: string
   }
   srcset: string
-  focalPoints: {
-    main: [number, number]
-    secondary: [number, number]
-  }
-}
-
-export type HeroImageFocalPoints = {
-  [key: string]: {
-    main: [number, number]
-    secondary: [number, number]
-  }
 }
 
 export interface HeroImageBase {
@@ -102,4 +77,32 @@ export interface tsconfigPathsPluginInterface {
   cwd: string
   tsconfig: string
   filter: RegExp
+}
+
+export interface VideoResolution {
+  width: number
+  height: number
+}
+
+export interface VideoVariant {
+  codec: 'av1' | 'vp9'
+  path: string
+  width: number
+  height: number
+}
+
+export interface HeroVideo {
+  baseName: string
+  parent: string
+  variants: {
+    av1: { [key: number]: string }
+    vp9: { [key: number]: string }
+  }
+  poster: HeroImage
+}
+
+export interface VideoConfig {
+  resolutions: VideoResolution[]
+  codecs: ('av1' | 'vp9')[]
+  baseDir: string
 }

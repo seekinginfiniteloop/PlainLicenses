@@ -22,7 +22,7 @@
 
 import gsap from 'gsap'
 import { IMPACT_CONFIG } from '~/config/config'
-import { HeroStore } from '../state/store'
+import { HeroStore } from '../../../state/store'
 
 const store = HeroStore.getInstance()
 

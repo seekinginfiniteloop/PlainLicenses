@@ -133,14 +133,6 @@ export function isPartiallyInViewport(el: HTMLElement): Observable<boolean> {
   )
 }
 
-/**
- * Sets a CSS variable on the document element
- * @param name name of the variable (e.g. data-theme)
- * @param value value to set
- */
-export function setCssVariable(name: string, value: string) {
-  document.documentElement.style.setProperty(name, value)
-}
 
 
 // maps the URL from a legacy event
@@ -235,6 +227,11 @@ const isLicenseLink = (link: HTMLAnchorElement) =>
 const isHashedLink = (link: HTMLAnchorElement) =>
   LICENSE_HASHES.some(hash => link.href.includes(hash))
 
+export const license$ = navigationEvents$.pipe(
+  filter(url => isLicense(url)),
+  shareReplay(1)
+)
+
 /**
  * Uses the navigationEvents$ observable to watch for license hash changes and
  * navigate to the appropriate license section. The license hashes are really
@@ -294,45 +291,3 @@ export const watchLicenseHashChange = () => {
     mergeMap(url => of(handleHashChange(url)))
   )
 }
-
-/**
- * Watches for the Easter egg dialog to open, close, or be cancelled
- * @returns An observable that emits when the Easter egg dialog is opened, closed, or cancelled
- */
-export const watchEasterEgg = () => {
-  const eggInfoBox = document.getElementById("egg-box") as HTMLDialogElement
-
-  return merge(
-    fromEvent(eggInfoBox, "close"),
-    fromEvent(eggInfoBox, "cancel"),
-    fromEvent(eggInfoBox, "show")
-  ).pipe(filter(isValidEvent), map(() => isEggBoxOpen()), distinctUntilChanged(), startWith(isEggBoxOpen()), shareReplay(1), share())
-}
-
-
-// ! TODO: This is a placeholder for the cache worker
-async function initCacheWorker() {
-  if ('serviceWorker' in navigator) {
-    try {
-      const registration = await navigator.serviceWorker.register('/image-sw.js', {
-          scope: '/assets/images/' // Limit SW to just image requests
-        })
-
-        // Wait for the SW to be ready
-      await navigator.serviceWorker.ready
-      this.serviceWorkerReady.next(true)
-
-        // Optional: listen for SW messages
-      navigator.serviceWorker.addEventListener('message', (event) => {
-          if (event.data.type === 'IMAGE_CACHED') {
-            // Handle newly cached image
-            logger.info(`Image cached by SW: ${event.data.url}`)
-          }
-        })
-    } catch (error) {
-      logger.error('ServiceWorker registration failed:', error)
-    }
-  }
-}
-
-export const cacheWorker$ = defer(() => initCacheWorker()).pipe(shareReplay(1))

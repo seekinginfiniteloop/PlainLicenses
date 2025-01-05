@@ -6,7 +6,7 @@
  */
 
 import gsap from 'gsap'
-import { HeroState } from "../state/types"
+import { HeroState } from "../../../state/types"
 import { heroVideos } from "../imageCarousel/heroVideos"
 
 /**

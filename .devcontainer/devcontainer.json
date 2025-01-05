@@ -38,7 +38,6 @@
 	"customizations": {
 		"vscode": {
 			"extensions": [
-				// I may have an extension addiction...
 				"Alexey-Strakh.stackoverflow-search",
 				"DavidAnson.vscode-markdownlint",
 				"Mukundan.python-docs",
@@ -108,7 +107,8 @@
 				"wholroyd.jinja",
 				"wix.vscode-import-cost",
 				"wmontalvo.vsc-jsonsnippets",
-				"yzhang.markdown-all-in-one"
+				"yzhang.markdown-all-in-one",
+				"foxundermoon.shell-format"
 			]
 		}
 	}

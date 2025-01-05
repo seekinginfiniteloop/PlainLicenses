@@ -42,51 +42,54 @@ outro: |
   1. *Copyleft-style* licenses like the Server Side Public License (SSPL) that require competitors to open source their entire stack (not just the changes they made to the original work).
   2. *Delayed permissive* licenses like the Functional Source License (FSL), which forbid competitors from offering the work as a service for a 2-4 year period (2 years for FSL). After that period, the work becomes permissively licensed (e.g., MIT, Apache 2.0). For everyone else, the work is permissively licensed from the start.
 
-  The Elastic License falls between those two approaches. It resembles a permissive license, but with restrictions on competition. Non-competitors can use the work permissively, but competitors can never use it. **We created this Plain Elastic License to help more people understand and use it because we think it's a good option for some projects. It lets you share without compromising protection from competitors.**
+  The Elastic License 2.0 falls between those two approaches. It resembles a permissive license, but with restrictions on competition. Non-competitors can use the work permissively, but direct competitors can never use it. **We created this Plain Elastic License to help more people understand and use it because we think it's a good option for some projects. It lets you share without compromising protection from competitors.**
 
-  We found other licenses with similar terms to the Elastic License, such as the Redis Source Available License 2.0. Because the Elastic License's terms were already clearer than most, we thought it was the best candidate for a plain language license. We hope this helps more people understand and use the Elastic License.
+  We found other licenses with similar terms to the Elastic License, such as the Redis Source Available License 2.0. The Elastic License's terms were the clearest, so we thought it was the best candidate for a plain language license. We hope this helps more people understand and use the Elastic License.
 
   ///
 
 reader_license_text: |
-  <h2 class="license-first-header">Summary of What You Can Do with This Work</h2>
+  <h2 class="license-first-header">Summary: What You Can Do with This Work</h2>
 
   - You can **use, copy, change, and share the work**.
   - **You can't offer the work's features as a service to others.**
   - You must **keep all copyright notices** in the work.
   - There's no warranty, and the we aren't liable for problems or damages.
 
-  ## How You Agree to These Terms
+  ## If you use the work, you agree to this license
 
-  You agree to these terms if you use the work.
+  You can use the work if you agree to these terms.
 
-  ## What You Can Do
+  ## You <u>can</u> use, copy, share, and change the work
 
-  We, the author(s), give you permission to: **use**, **copy**, **share**, and **change** the work.
+  We, the authors, give you permission to: **use**, **copy**, **share**, and **change** the work.
 
-  ## What You Can't Do
+  ## You must follow three rules - you can't offer the work as a service, change license controls, or remove notices
 
-  **You can't**:
-
-  - Offer the work or any of its substantial features as a service to others
-  - If the work includes a license key or other kind of license control, you can't remove or disable it
-  - Remove, change, or hide any copyright or license notices in the work
-  - Use the author's trademarks without permission
+  1) **You can't** offer the work or its substantial features as a service to others.
+      - You can build a product or service using the work, including a product or service for your company or customers.
+      - **You can't offer the work's features as a service to others**
+  2) **You can't** change, disable, or remove any license controls in the work (e.g., license keys).
+  3) **Never change or remove our license, copyright, trademark, or other notices.** You also can't use our trademarks without our permission.
 
   ## Patent Rights
 
-  We give you rights to any patents we can license that are needed to use the work. These rights do not include any rights you infringe when you change the work.
+  We give you rights to any patents we can license that you need to use the work. If you change the work, and your changes infringe a patent, your patent rights from this license don't cover that.
 
-  If you or your company claim the work infringes a patent, your patent rights under this license end immediately.
+  ### You lose your patent rights if you claim the work infringes a patent
+
+  If you or your company claim the work infringes a patent, you lose your patent rights immediately.
+
+  If your company claims the work infringes a patent, you only lose your patent rights for work you do for the company. You don't lose your rights for other work (e.g. for other companies or personal use).
 
   ## Your Responsibilities
 
-  - **Make sure anyone who gets any part of the work from you also gets these license terms**
-  - If you make changes to the work, **clearly state that you've made changes in any versions you share**
+  - **You must give these license terms to anyone you share any part of the work with.**
+  - If you change the work, you must tell people you changed it .
 
-  ## Losing Your Rights
+  ## Losing Your Rights - "Two strikes, you're out"
 
-  Your rights under this license last until you break its terms. If you fix the problem within 30 days after you learn of the breach, your rights are restored. Your rights end permanently if you break the terms again.
+  You keep your rights under this license until you break its terms. Once you learn you broke our terms, you get your rights back if you fix the problem within 30 days.   Your rights end permanently if you break the terms a second time. We don't have to warn you before you lose your rights.
 
   ## We Offer No Warranty and Accept No Liability
 
@@ -166,7 +169,7 @@ official_license_text: |
   **trademark** means trademarks, service marks, and similar rights.
 
 original_gunning_fog: 16.96
-plain_gunning_fog: 12.22
+plain_gunning_fog: 11.58
 
 link_in_original: false
 
