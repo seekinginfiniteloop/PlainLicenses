@@ -30,7 +30,7 @@ jobs:
           with:
             bun-version: latest
         - run: |
-            bun install --no-interactive --frozen-lockfile
+            bun install --no-interactive
             export NODE_ENV=production
             bun build
         - name: setup UV
