@@ -6,7 +6,7 @@ on:
   workflow_dispatch: # Allows manual triggering
   workflow_run: # Allows triggering from other workflows
     branches: [main]
-    workflows: ["Release, Build, and Deploy"]
+    workflows: ["Release"]
     types:
       - completed
 
@@ -21,7 +21,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.13"
 
       - name: Install dependencies
         run: |
