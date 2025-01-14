@@ -1,5 +1,34 @@
 import gsap from 'gsap'
 import { getDistanceToViewport, getMatchMediaInstance } from './utils'
+import { ReducedMotionCondition } from './types'
+
+const fade = (targets: gsap.TweenTarget,
+    direction: number,
+    duration: number = 0.5,
+    delay: number = 0,
+    stagger?: gsap.StaggerVars,
+    ease: gsap.EaseString | gsap.EaseFunction = "power1.inOut",
+    out = false) => {
+    const media = getMatchMediaInstance()
+    media.add({ reducedMotion: "(prefers-reduced-motion: reduce)" }, (context) => {
+        const { reducedMotion } = context.conditions as ReducedMotionCondition
+        if (reducedMotion) {
+          return gsap.fromTo(targets, { autoAlpha: out ? 1 : 0 }, { autoAlpha: out ? 0 : 1, duration, delay, ease })
+        } else {
+          if (direction) {
+            return gsap.fromTo(targets, {
+                    autoAlpha: out ? 1 : 0,
+                    yPercent: out ? 0 : direction * 50
+                }, {
+                    autoAlpha: out ? 0 : 1,
+                    yPercent: out ? direction * 50 : 0,
+                    duration, delay, stagger, ease
+                })
+          }
+          return gsap.fromTo(targets, { autoAlpha: out ? 1 : 0, yPercent: out ? 0 : 50}, { autoAlpha: out ? 0 : 1, yPercent: out ? 50 : 0, duration, delay, stagger, ease })
+        }
+    })
+}
 
 const blink = (
     targets: gsap.TweenTarget,
@@ -14,15 +43,21 @@ const blink = (
 
 const jump = (
     targets: gsap.TweenTarget,
+    modifiers: {},
     duration: number = 0.5,
-    yoyo: boolean = true,
+    yoyoEase: gsap.EaseString | gsap.EaseFunction = "bounce",
     repeat: number = -1,
-    delay: number = 2,
     ease: gsap.EaseString | gsap.EaseFunction = "elastic",
-    modifiers: {}
 ) => {
     return gsap.to(targets, {
-        delay, duration, ease, repeat, yoyo, modifiers}
+        y: -50,
+        duration,
+        ease,
+        repeat,
+        yoyo: true,
+        yoyoEase,
+        modifiers
+    }
     )}
 
 const scaleUp = (
@@ -41,19 +76,20 @@ gsap.registerEffect({
     name: "emphasisReminder",
     extendTimeline: true,
     effect: (targets: gsap.TweenTarget, config: gsap.TimelineVars) => {
-        const emphasisTimeline = gsap.timeline({ repeat: config.repeat, yoyo: config.yoyo, delay: config.delay, extendTimeline: true })
-        const targetsArray = Array.isArray(targets) ? targets : [targets]
+        const emphasisTimeline = gsap.timeline(
+            // default values... override by passing in the config object
+            { repeat: -1, yoyo: true, delay: 3, extendTimeline: true, ...config })
+        const targetsArray = gsap.utils.toArray(targets).map((target) => target instanceof Element ? target : (typeof target === "string" ? document.querySelector(target) : null)).filter((target) => target !== null)
         const distances = targetsArray.map((target) => {
-            const tgt = target instanceof Element ? target : document.querySelector(target)
-            const distance = tgt ? getDistanceToViewport(tgt) : 10
-            return gsap.utils.clamp(distance > 10 ? 10 : distance, distance, 25);})
-        const lowerMotion = emphasisTimeline
-            emphasisTimeline.vars = { ... emphasisTimeline.vars, delay: 7, repeat: 2, yoyo: false }
-            emphasisTimeline.add(["reducedMotionBlink", blink(targets, 2, true, 1, 1, "power4.in")], 0)
-                .add(["reducedMotionJump", jump(targets, 5, 2, true, 1, 5, "elastic")], ">")
-        const locoMotion = emphasisTimeline
-            .add(["blinkEmphasis", blink(targets, 3, true, 0.2, 0.2, "power4.in")], 0)
-            .add(["jumpEmphasis", jump(targets, 0.5, true, 1, 0.5, "elastic")], ">")
+              const distance = getDistanceToViewport(target)
+              return gsap.utils.clamp(distance > 10 ? 10 : distance, distance, 25)
+        })
+        const media = getMatchMediaInstance().add({ reducedMotion: "(prefers-reduced-motion: reduce)" }, (context) => {
+            const { reducedMotion } = context.conditions as ReducedMotionCondition
+            if (reducedMotion) {
+              emphasisTimeline.add(blink(targets, -1, true, 5, 1, "power1.inOut"))
+            }
+        })
 
 
         return gsap.timeline({

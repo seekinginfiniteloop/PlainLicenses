@@ -27,13 +27,29 @@ export interface CacheConfig {
 }
 
 /**
+ * @description Configuration for fade-in animations
+ */
+export interface FadeInConfig {
+  prefersReducedMotion: {
+    from: gsap.TweenVars
+    to: gsap.TweenVars
+  }
+  normal: {
+    from: gsap.TweenVars
+    to: gsap.TweenVars
+  }
+  defaults: gsap.TimelineVars
+}
+
+/**
  * @description Configuration for Observer fade-in animations
- * @property {readonly string[]} fadeInSections - selectors for fade-ins; these are the sections that we will get elements from for the fade-in effect
+ * @property {HTMLElement[]} fadeInSections - array of sections to fade in
  * @property {number} fadeInDuration - duration of fade-in
  */
 export interface FadeConfig {
-  fadeInSections: readonly string[]
+  fadeInSections: HTMLElement[]
   fadeInDuration: number
+  fadeInConfig: FadeInConfig
 }
 
 /**

@@ -19,8 +19,9 @@
     {% set icon_name = config.extra.tags[tag] %}
     {% set icon = "md-tag--" ~ icon_name %}
     {% if icon_name %}
-    <a id="{{ tag }}" href="../../../tags.html#{{ tag }}" class="md-tag md-tag-icon {{ icon }}" title="{{ rendered_text | trim }}">
-    </a>
+  <a id="{{ tag }}" href="../../../tags.html#{{ tag }}" class="md-tag md-tag-icon {{ icon }}"
+    title="{{ rendered_text | trim }}">
+  </a>
     {% endif %}
     {% endif %}
     {% endfor %}

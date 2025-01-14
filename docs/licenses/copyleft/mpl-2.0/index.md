@@ -36,117 +36,186 @@ outro: null
 extra_how: |
     The MPL requires you include notices in parts of your work if you can. There are two notices you can include. You should always include <a href='#notice-a---license-notice' title="notice a">notice a</a>, which tells people that the work is licensed under the Plain MPL. If you distribute the work in a way that isn't compatible with other licenses, you must also include  <a href='#notice-b---incompatible-license-notice' title='notice b'>notice b</a>.
 reader_license_text: |
-    <h2 class="license-first-header">We Give You a License to Use, Change, and Share This Work</h2>
+    ## We Give You a License to Use, Change, and Share This Work
 
-    **We, the authors and contributors of the work, give you a worldwide, free-of-charge, license to this work.** We also give everyone else a license to this work under the same terms.
+    **We, the authors and contributors, give you a free, worldwide license to this work.** Everyone else gets the same license too.
 
     **With this license, you can:**
 
-    - **Use, copy, change, and distribute the work** in any form *(intellectual property rights)*
+    - **Use, copy, change, and distribute the work** in any format *(intellectual property rights)*
     - **Use, sell, transfer, or offer the work** for sale *(patent rights)*
 
-    This license applies to any work, changes, or combinations of the work made by you or anyone else.
+    This license covers:
+
+    - The original work and any changes made by contributors
+    - Any changes you or others make to the work
+    - Any parts of the work included with other works
 
     ## Limits to This License
 
-    **This license implies no other rights. Your rights under this license don't extend to:**
+    **You <em>only</em> have the rights we spell out here. Your rights don't cover:**
 
-    - Any part of the work that a contributor removes
-    - Changes to the work that infringe on patent or intellectual property rights, including by combining the work with another
-    - Patent claims that the work or a work you create with the work infringes on a patent, if the claim covers parts of the work that don't include our contributions
-    - Trademarks, service marks, or logos of any contributor
+    - Any part of the work a contributor removes
+    - Changes to the work that violate someone else's patent or other intellectual property rights (for example, if you combine the work with another work that causes infringement).
+    - Patent claims against parts of the work that don't include our contributions
+    - Any trademarks, service marks, or logos of any contributor
 
-    **If you distribute the work under a different version of this license or another license, we don't give you additional rights.**
+    If you re-license the work under a different license of version of this license, you don't get any new rights from us.
 
-    ## Your License Doesn't Limit Your Rights for Fair Use
+    ## Your License Doesn't Limit Your 'Fair Use' Rights
 
-    Your license does not limit your rights under applicable copyright rules for fair use, fair dealing, or similar exceptions.
+    This license doesn't limit your rights to make fair use (or 'fair dealing') of the work under copyright laws.[^1]
+
+    [^1]: Fair use and fair dealing are legal ideas that let you use copyrighted works in certain ways without permission. For example, you can use a small part of a copyrighted work for a review or to teach a class. The rules for fair use and fair dealing vary by country. You can learn more about fair use in the United States from the [U.S. Copyright Office](https://www.copyright.gov/fair-use/index.html).
 
     ## Contributor Promises
 
-    Contributors promise that their contributions are original or that they have the power to give the rights in this license for their contributions to the work.
+    Each contributor promises: **The work is original**. We made the work or have the right to give it to you under this license.
 
     ## Conditions
 
-    To use the work, **you must follow these conditions**:
+    To keep your license:
 
-    - **Do not change any copyright, patent, trademark, or credit notices in the work.** You can correct factual inaccuracies in the notices.
-    - **License any changes to the work under this license**. You must include a copy of this license with any changes you distribute.
+    - **Keep all copyright, patent, trademark, or credit notices in the work.** You can fix false information in the notices.
+    - **License any changes you make to the work under this license**. Include a copy of this license when you share your changes.
 
-    ## You Must Make the Source Available
+    ## Using this Work in a Larger Work
 
-    **You must make the source of the work available** when you distribute the work covered by this license.
+    You can use this work (or parts of it) in something bigger. You can license a larger work under another license if:
 
-    You may distribute the work in a way that does not allow people to change or see the source under a different license. For example, you can distribute a software executable of the work under a different license if the work is software. If you distribute the work in this way **the license you use can't prevent people from getting reasonable access to the source. You must provide a way for people to get the source in an editable form.**
+    - The license for the larger work doesn't change the license for the parts of the work under this license.
+    - You don't change or limit anyone's rights under this license.
+    - You include a copy of this license with the parts of the work that stay under this license.
 
-    ## Larger Works Don't Change the License, but the License Does Not Apply to the Whole Work
+    The people who get the larger work can choose to use the parts of the work under this license or the other license.
 
-    You can create larger works that include the licensed work and distribute larger works under different terms. **The part of the larger work that came from this work must still comply with this license. Recipients can then choose to use the work under either license.**
+    ### Main Ideas
+
+    `separate parts`
+
+    :   This license covers discrete, or separate, parts of a biggr work, like a software module in a bigger program, or a chapter in a book. You can have separate parts of a work under this license and other licenses.
+
+    `larger work`
+
+    :  A project that includes the Plain MPL-licensed work with other content. For example:
+
+        - A book that includes text or illustrations under this license
+        - Software that includes some code under this license with other code under a different license
+        - A website that uses design elements under this license
+        - A game that uses music or images under this license
+
+    `source form`
+
+    :  The most editable form of the work.
+
+        - For software: source code
+        - For a book: the raw text (e.g., a Word or text file)
+        - For images: the layered or vector file (e.g., a `.psd` or `.svg` file)
+
+    `compatible licenses`
+
+    :  Licenses that work well with the Plain MPL. For example, the [GPL (v2 or later)](https://www.gnu.org/licenses/gpl-3.0.en.html), [LGPL (v2.1 or later)](https://www.gnu.org/licenses/lgpl-3.0.html) and [Affero GPL (v3 or later)](https://www.gnu.org/licenses/agpl-3.0.html). When you combine Plain MPL-licensed work with work under those licenses, you can share it under those terms, as long as you also follow any rules requiring re-licensing under the Plain MPL (if they apply). Similarly, licenses like MIT that allow you to re-license under this license are also compatible.
+
+    ### Mixing this Work into a Larger Work
+
+    If you make a larger work that includes this work, you can choose a different license for the larger work *if you offer the parts of the larger work covered by this license*:
+    - **Under the same terms** as this license, or as a choice between this license and the other license.
+    - **Without changing or limiting anyone's rights** under this license.
+    - **Include a copy of this license**.
+
+    Anyone who gets the larger work can choose to use the parts covered by the Plain MPL under this license or any other license you offer.
+
+    ## Sharing the Work
+
+    **When you share the work, you must:**
+
+    - **Share the source form of the work** under this license.
+    - **Tell people the work is under this license** and give them a copy of this license with the parts you share.
+    - **Not limit or change the rights of people who you share the work with.**
+    - **Make the source form available** in a way that allows people to easily get and use it. If sharing the source form costs money (e.g., copying or shipping costs), you can charge a small fee to cover the cost, but you should try to find a way to share it for free.
+
+    You can still share a version of the work people can’t change or see the source for (like a compiled app or a final PDF), and even license that version differently.
+
+    - The new license can't stop people from easily getting the source form of the parts under this license.
+    - You must provide a practical way for them to get the source form.
 
     ## We Offer No Warranty and Limit Our Liability
 
-    - **We provide the work "as is" without any warranty**. We offer no warranties that the work is free of defects, can be bought or sold, will function, or that it does not infringe on others' rights.
-    - **You assume all risks for the quality and performance of the work.** We accept no liability for any problems with the work. You can't hold us responsible for damages of any kind, such as lost profits, lost goodwill, lost work, equipment failure, or any other commercial or personal loss. If a court does not allow us to limit some damages, then we are only liable for damages that are allowed by law.
+    Use the work at your own risk.
 
-    ## If You Break the Terms of the License, Your License Ends
+    - **We provide the work "as is" with no guarantees**.
+    - We aren't responsible for any problems or damages caused by using the work (e.g., financial loss, data lodd, physical injury)
+    - We don't have to fix any problems you find with the work.
 
-    **If you break our terms, your license to this work ends automatically.** If your license ends, you can get it back:
+    You may offer a warranty yourself, but you must clearly state it’s your warranty, not ours. If we get sued because of your warranty, you agree to cover our costs.
 
-    1. Once you correct the violation, your license returns on a trial basis unless we explicitly end it.
-    2. If you fix the violation within 60 days without notice from any of us, your license is fully restored.
-    3. If one of us notifies you of your violation, and you correct it within 30 days of the notice, your license is fully returned. It will only be returned if it's the first time you've violated the license.
+    ## How You Can Lose (or Regain) Your Rights
 
-    **If you sue anyone for patent infringement related to the work, your rights under this license end immediately.**
+    You usually get one chance to fix mistakes before you lose your rights, unless you sue us for patent infringement -- then you lose your rights permanently.
 
-    If your license ends, all end-user licenses you granted before the end of your license remain valid.
+    If you...   | and...        | Then you...
+    |------------|---------------|-------------------|
+    break these terms for the first time | - You catch it yourself and fix it within 60 days <br> **OR** <br> - Someone tells you, and you fix it within 30 days | Get your rights back
+    Break these terms again (second offense) | *no matter how you find out or how quickly you fix it* | permanently lose your rights
+    sue someone for patent infringement  | the patent claim includes this work  | lose your rights permanently
+    issued end-user licenses to others | you lose your rights | end-user licenses stay in effect
 
-    ## Versions of this License and Compatibility with the Mozilla Public License
+    If you lose your rights, you can't get them back. We don't have to warn you before that happens.
 
-    [Plain License](https://plainlicense.org) maintains this license, which is based on the Mozilla Public License 2.0. You can use any version of this license published by Plain License to distribute the work. If Plain License publishes a new version, you may also distribute the work under the terms of that version.
+    ## Future Versions of This License
 
-    **This license is a plain language translation of the Mozilla Public License 2.0. You should consider the Plain MPL to have the same terms as the Mozilla Public License 2.0.** You can also distribute the work under the terms of the [Mozilla Public License 2.0](https://www.mozilla.org/en-US/MPL/2.0/) or any later version published by the [Mozilla Foundation](https://foundation.mozilla.org/).(1) Plain License does not claim that the Mozilla Foundation or anyone else endorses this license or agrees to its compatibility with the Mozilla Public License 2.0.
-    { .annotate }
+    [Plain License](https://plainlicense.org) maintains this license based on the Mozilla Public License 2.0.
 
-    4. **Don't relicense an existing work to the Plain MPL if the existing work is already licensed under the Mozilla Public License 2.0**. If the [Mozilla Foundation](https://foundation.mozilla.org/) ever clarifies that the Plain MPL is compatible with the Mozilla Public License 2.0, then you may treat the two licenses as compatible.
+    You can share the work under any version of this license published by Plain License. If Plain License releases a new version, you may use the newer version. You can also use the work under the [Mozilla Public License 2.0](https://www.mozilla.org/en-US/MPL/2.0/) or a later version published by the [Mozilla Foundation](https://foundation.mozilla.org/) [^2].
 
-    ## You Must Clearly Describe Any Limitations on Your Compliance with this License
+    [^2]: Plain License isn't affiliated with the Mozilla Foundation. Please don’t relicense something already covered by the original Mozilla Public License 2.0 under the Plain MPL unless Mozilla says the two licenses are compatible.
 
-    If you can't comply with any of this license's terms because of laws or regulations, you must:
+    ## If Your Laws Prevent Following This License
 
-    - **Comply with the terms as much as your laws allow**
-    - **Describe your legal limits, what parts of the work they affect, and how your limits change these terms.** You must describe your limits in plain language, and you must provide enough detail about your limits for an average person to clearly understand them.You must provide these details in a text file, or similar notice, that you provide with all copies of the work.
+    If your local laws or regulations stop you from following any term of this license, you must:
 
-    ## If You Take Legal Action, You Must Take It Where the Defendant Is Based
+    - Follow all other terms as closely as you can.
+    - Explain which parts you can’t follow and why, using clear, plain language, and include this explanation with every copy of the work you share.
 
-    If you want to take legal action related to this license, you must use the courts where the defendant is based. The laws of the defendant's location will apply. This requirement does not prevent you from bringing counter-claims or cross-claims, which are legal actions related to the original claim.
+
+    ## Defedendant's Courts and Laws
+
+    If you sue the authors under this license, you must do it in the courts where the defendant (the person or organization you sued) is located. Their local laws will apply. You can still file counter-claims or cross-claims if you’re sued first.
 
     ## Other Terms
 
-    - **This license is the complete agreement between you and the authors.**
-    - If a court determines it cannot enforce any part of this agreement, it will change that part only as much as needed to make it enforceable.
-    - If any law says that a court should interpret a contract's language the person who wrote the contract, that law does not apply to the authors of this work. This is a standard, publicly available contract, and the authors did not write it to benefit themselves.
+    - This license is our entire agreement. We aren’t giving you any other rights or promises.
+    - If a court can’t enforce part of this agreement, it may change that part just enough to make it enforceable, leaving the rest of the license as is.
+    - Some places interpret contracts in favor of the person who didn’t write them. Those laws don’t apply here, because the authors chose this standard, publicly available license to help everyone, not just themselves.
 
     ## How to Provide Notices
 
-    If you distribute the work in a way that is not compatible with other licenses, you must include a notice that the work is incompatible with other licenses (see [Notice B][#notice-b--incompatible-license-notice]). You also must include a notice that the work is licensed under the Plain MPL (see [Notice A][#notice-a--license-notice]). **Where you can, include these notices in the individual parts of the work.** If you can't, include them in a LICENSE file or in a similar way.
+    If you share the work in a format where it’s hard to embed notices (like certain binaries or images):
 
-    ### Notice A - License Notice
+    - Put notices in a LICENSE file or somewhere else visible when people get the work.
+    - Include a notice that the work is under the Plain MPL (see [Notice A](#notice-a---you-may-use-this-work-under-the-Plain-MPL)).
 
+    You may make your shared version incompatible with the GPL, LGPL, or Affero GPL (meaning people can’t relicense under them), you need to include [Notice B](#notice-b---you-can't-share-this-work-under-the-GPL-LGPL-or-Affero-GPL) along with [Notice A](#notice-a---you-may-use-this-work-under-the-Plain-MPL) wherever you display license info.
+
+    If you share the work in a format where it’s hard to embed notices (like certain binaries or images):
+
+    - Put notices in a LICENSE file or somewhere else people can easily see them.
+    - Include a notice that the work is under the Plain MPL (see Notice A).
+
+
+    ### Notice A - You May Use This Work Under the Plain MPL
 
     ```markdown
 
-    This work is licensed under the Plain MPL. If you didn't get a copy of the license
-    with this work, you can find it at:
-    [plainlicense.org/{{ plain_url | trim('" ') }}](https://plainlicense.org/{{ plain_url | trim('" ') }}).
+    You may use this work under the terms of the [Plain MPL](https://plainlicense.org/{{ plain_url | trim('" ') }}). If you didn't get a copy of the license with this work, you can find it at: [plainlicense.org](https://plainlicense.org).
 
     ```
 
-    ### Notice B - Incompatible License Notice
+    ### Notice B - You Can't Share This Work Under the GPL, LGPL, or Affero GPL
 
     ```markdown
 
-    This work is licensed under the Plain MPL. You may distribute this work under the
-    Plain MPL, or the Mozilla Public License 2.0. You may not distribute this work under any other license.
+    You may use this work under the Plain MPL, or the Mozilla Public License 2.0. You **can't** share this work under the GPL, LGPL, or Affero GPL.
 
     ```
 
@@ -158,19 +227,15 @@ reader_license_text: |
 
     `you`
 
-    :    The person or organization getting, copying, changing, using or providing the work
+    :    Any person or organization getting, copying, changing, using or sharing the work
 
     `contributor`
 
-    :    A person or organization that contributes to the work. You may be a contributor, a user, and an author at the same time. Each set of rights and responsibilities applies to you based on your role.
-
-    `larger work`
-
-    :    A work that combines the licensed work with other works. For example, a software program that includes the licensed work and other software is a larger work.
+    :    Anyone who contributes to the work. You may be a contributor, a user, and an author at the same time. Each role has its own rights and responsibilities.
 
     `the work`
 
-    :    The materials provided under this license
+    :    The materials covered by this license
 
 official_license_text: |
     # Mozilla Public License Version 2.0

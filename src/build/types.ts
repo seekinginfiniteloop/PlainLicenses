@@ -20,6 +20,10 @@
  * @see {@link https://esbuild.github.io/} esbuild Documentation
  */
 
+/** ============================================
+ *               Hero Images
+ *=============================================**/
+
 export interface WidthMap {
   [key: string]: string
   [key: number]: string
@@ -39,6 +43,10 @@ export interface HeroImageBase {
     [key: number]: string
   }
 }
+
+/** ============================================
+ *               esbuild Outputs/Meta
+ *=============================================**/
 export interface esbuildOutputs {
   [k: string]:
   {
@@ -57,6 +65,13 @@ export interface MetaFileOutputs {
   inputs: { [path: string]: { bytesInOutput: number } }
   exports: string[]
   entryPoint?: string
+}
+
+// Output for cache worker's metadata
+export interface CacheConfig {
+  cacheName: string
+  urls: string[]
+  version: string
 }
 
 export interface buildJson {
@@ -79,13 +94,24 @@ export interface tsconfigPathsPluginInterface {
   filter: RegExp
 }
 
+/** ============================================
+ *               VIDEO CONFIG
+ *=============================================**/
+
+type VideoWidth = 426 | 640 | 854 | 1280 | 1920 | 2560 | 3840
+type VideoCodec = 'av1' | 'vp9' | 'h264'
+
+export interface CodecVariants{
+  [key: VideoCodec]: { [key: VideoWidth]: string }
+}
+
 export interface VideoResolution {
-  width: number
+  width: VideoWidth
   height: number
 }
 
 export interface VideoVariant {
-  codec: 'av1' | 'vp9'
+  codec: VideoCodec
   path: string
   width: number
   height: number
@@ -94,15 +120,12 @@ export interface VideoVariant {
 export interface HeroVideo {
   baseName: string
   parent: string
-  variants: {
-    av1: { [key: number]: string }
-    vp9: { [key: number]: string }
-  }
+  variants: CodecVariants
   poster: HeroImage
 }
 
 export interface VideoConfig {
   resolutions: VideoResolution[]
-  codecs: ('av1' | 'vp9')[]
+  codecs: VideoCodec[]
   baseDir: string
 }

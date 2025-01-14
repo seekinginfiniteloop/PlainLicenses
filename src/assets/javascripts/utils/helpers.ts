@@ -35,3 +35,13 @@ export const createScript = (src: string, async = true, defer = true) => {
 export function setCssVariable(name: string, value: string) {
   document.documentElement.style.setProperty(name, value)
 }
+
+/**
+ * Checks if the given URL is an anchor link target
+ * @param url - the URL to check
+ * @returns true if the URL is an anchor link target
+ */
+export function isAnchorLinkTarget(url: string | URL) {
+  url = typeof url === "string" ? new URL(url, window.location.origin) : url
+  return url.origin === window.location.origin && url.hash !== ""
+}

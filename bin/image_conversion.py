@@ -54,7 +54,7 @@ DEFAULT_AVIF_CONFIG: ImageConversionConfig = {
 RESIZE_CONFIG: dict[str, str | list[int] | list[Literal["WEBP", "AVIF", "PNG"]]] = {
     "input_folder": "src/images/hero",
     "output_folder": "src/images/hero",
-    "widths": [3840, 2560, 1920, 1280],
+    "widths": [3840, 2560, 1920, 1280, 854, 640, 426],
     "formats": ["WEBP"],
 }
 

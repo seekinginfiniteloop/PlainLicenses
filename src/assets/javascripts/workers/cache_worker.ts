@@ -132,6 +132,10 @@ async function retrieveCacheConfig(): Promise<CacheConfig> {
 
 /**
  * Cache manager for managing cache operations
+ *
+ * @method init - Initialize cache configuration
+ * @method cleanup - Cleanup old caches
+ * @method precache - Precache all the urls in the cache configuration
  */
 class CacheManager {
   private config: CacheConfig = DEFAULT_CONFIG

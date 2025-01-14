@@ -28,7 +28,7 @@ import { copy } from 'esbuild-plugin-copy'
 import globby from "globby"
 import * as fs from "fs"
 
-import type { HeroImage, HeroImageBase, HeroVideo, Project, VideoConfig, WidthMap } from "../types.ts"
+import type { CodecVariants, HeroImage, HeroImageBase, HeroVideo, Project, VideoConfig, WidthMap } from "../types.ts"
 
 export const videoConfig: VideoConfig = {
   resolutions: [
@@ -37,9 +37,10 @@ export const videoConfig: VideoConfig = {
     { width: 1920, height: 1080 },
     { width: 1280, height: 720 },
     { width: 854, height: 480 },
-    { width: 640, height: 360 }
+    { width: 640, height: 360 },
+    { width: 426, height: 240 },
   ],
-  codecs: ['av1', 'vp9'],
+  codecs: ['av1', 'vp9', 'h264'],
   baseDir: 'src/assets/videos/hero'
 }
 
@@ -65,15 +66,13 @@ export function buildVideoPath(baseName: string, codec: string, width: number): 
  * @returns {Promise<HeroVideo>} A promise that resolves to the hero video object
  */
 export async function generateVideoVariants(baseName: string): Promise<HeroVideo> {
-  const variants: { av1: Record<number, string>, vp9: Record<number, string> } = {
-    av1: {},
-    vp9: {}
-  }
+  const resKeys = Object.fromEntries(videoConfig.resolutions.map(res => [res.width, ""]))
+  const variants: CodecVariants = Object.fromEntries(videoConfig.codecs.map(codec => [codec, resKeys]))
 
   for (const resolution of videoConfig.resolutions) {
     for (const codec of videoConfig.codecs) {
       const path = buildVideoPath(baseName, codec, resolution.width)
-      if (await fs.promises.access(path).catch(() => false)) {
+      if (await fs.promises.access(path).catch(() => false) && Object.keys(variants[codec]).length > 0) {
         variants[codec][resolution.width] = path
       }
     }

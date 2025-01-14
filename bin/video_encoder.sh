@@ -17,10 +17,11 @@ show_help() {
     echo "  -s SEGMENT     One or more segment definitions (see below)"
     echo
     echo "Optional:"
-    echo "  -h CRF         h264 CRF value (default: 24)"
+    echo "  -2 CRF         h264 CRF value (default: 24)"
     echo "  -9 CRF         VP9 CRF value (default: 33)"
     echo "  -a CRF         AV1 CRF value (default: 35)"
     echo "  -c CODEC       Selected codec (av1, h264, vp9)"
+    echo "  -t             Test mode - outputs 10 frame samples for each segment"
     echo
     echo "  -h             Display this help and exit"
     echo
@@ -31,33 +32,40 @@ show_help() {
     echo    (default is all 3), and at resolutions from 4K down to 240p. All output"
     echo "   files, except h.264, will be saved in WebM format -- h.264 saved in .mp4."
     echo
-    echo "  The script will automatically detect the crop values for the video and use"
-    echo "  them to crop the video before encoding. It will also downscale the video"
-    echo "  to the target resolution. (IT ASSUMES A 4K SOURCE VIDEO)"
+    echo "  INPUT:
+    echo "  The input file can be any format supported by FFmpeg with containers:
+    echo " '.mov', '.mp4', '.m4v', '.webm', or '.mkv'., but it assumes two"
+    echo "  sources: 1) an upscaled 4k source, and 2) a 1080p source. The script will
+    echo "  will automatically detect the crop values for the video and use"
+    echo "  them to crop the video before encoding.  Source files should have the same"
+    echo "  name, but with '_4k' and '_1080p' appended."
+    echo " You only supply the root filename \(without the extension\) as the input."
     echo
     echo "  To improve perceived quality, while minimizing file size,"
     echo "  you can define a segment as 'static', 'motion' or 'detail'."
     echo "  The script will use different encoding profiles for each type."
     echo "  and concatenate the segments into a single video file."
     echo
+    echo "  OPTIONS:"
     echo "  Optionally, you may change the CRF values for each codec."
-    echo "  or encode only a specific codec (-c flag)."
+    echo "  or encode only a specific codec \(-c flag\)."
+    echo "  Test mode: \(-t\) will output 10 frame samples for each segment."
     echo
     echo "  YOU MUST PROVIDE: INPUT, OUTPUT, and at least one segment definition."
     echo
     echo "Segment definitions:"
-    echo "Segment format: START|END|TYPE"
-    echo "  START/END: timestamp (HH:MM:SS.mmm) or frame number (Nf)"
+    echo "Segment format: START\|END\|TYPE"
+    echo "  START/END: timestamp \(HH:MM:SS.mmm\) or frame number \(Nf\)"
     echo "  TYPE: static, motion, or detail"
     echo "  START can be '0' or '0f' or 'start' to specify the start of the video"
     echo "  END can be 'end' or '-1' or '-1f' to specify the end of the video"
     echo
     echo "Examples: "
     echo "  Single segment:"
-    echo "    $0 -i source.mp4 -o hero -s 'start|end|static'"
+    echo "    "$0" -i /path/to/source/root_filename" -o hero -s 'start|end|static'"
     echo
     echo "  Multiple segments:"
-    echo "    $0 -i source.mp4 -o hero \\"
+    echo "    $0 -i myRootSourceName -o hero \\"
     echo "      -s '0f|300f|static' \\"
     echo "      -s '301f|600f|motion' \\"
     echo "      -s '00:01:00.000|00:02:00.000|detail'"
@@ -109,41 +117,44 @@ declare -A CODEC_FILTERS=(
 )
 
 # Encoding profiles
-declare -A AV1_PROFILES=(
-    ["static"]="tune=1:enable-qm=1:scm=2:enable-overlays=1:lookahead=120:scd=1:enable-tf=0:keyint=360:qm-min=5:qm-max=15:fast-decode=2"
-    ["motion"]="tune=1:enable-qm=1:scm=2:enable-overlays=1:lookahead=120:scd=1:enable-tf=1:keyint=120:qm-min=8:qm-max=15:fast-decode=2"
-    ["detail"]="tune=1:enable-qm=1:scm=2:enable-overlays=1:lookahead=120:scd=1:enable-tf=0:keyint=240:qm-min=6:qm-max=15:fast-decode=2"
-)
-
-declare -A VP9_PROFILES=(
-    ["static"]="-aq-mode 0 -arnr-maxframes 7 -arnr-strength 5 -lag-in-frames 25 -g 360"
-    ["motion"]="-aq-mode 0 -arnr-maxframes 5 -arnr-strength 3 -lag-in-frames 16 -g 120"
-    ["detail"]="-aq-mode 1 -arnr-maxframes 6 -arnr-strength 5 -lag-in-frames 20 -g 240"
-)
-
+# Modify the encoding profiles sections:
 declare -A H264_PROFILES=(
-    ["static"]="aq-mode=3:aq-strength=0.7:rc-lookahead=250:me=umh:merange=32:bframes=2:keyint=360:min-keyint=360:scenecut=0:ref=16:psy-rd='0.6:0':deblock='-2:-1'"
-    ["motion"]="aq-mode=3:aq-strength=0.6:rc-lookahead=250:me=umh:merange=48:bframes=2:keyint=120:min-keyint=120:scenecut=0:ref=16:psy-rd='0.6\:0':deblock='-2\:-1'"
-    ["detail"]="aq-mode=3:aq-strength=0.65:rc-lookahead=250:me=umh:merange=32:bframes=2:keyint=240:min-keyint=240:no-dct-decimate:ref=16:scenecut=0:psy-rd='0.7\:0':deblock='-2\:-1'"
+    ["static"]="stitchable:aq-mode=1:aq-strength=1.5:rc-lookahead=60:merange=24:keyint=360:min-keyint=360:scenecut=0:psy-rd='0.4:0':psy-rdoq=2.0:deblock='0:0':grain=1:tune=film"
+    ["motion"]="stitchable:aq-mode=2:aq-strength=1.6:rc-lookahead=60:me=hex:merange=32:bframes=2:keyint=120:min-keyint=120:scenecut=0:psy-rd='0.6:0':deblock='-2:-1'"
+    ["detail"]="stitchable:aq-mode=2:aq-strength=1.65:rc-lookahead=60:me=hex:merange=24:bframes=2:keyint=240:min-keyint=240:no-dct-decimate:scenecut=0:psy-rd='0.7:0':deblock='-2:-1'"
 )
 
-declare -g INPUT OUTPUT CRF_H264 CRF_VP9 CRF_AV1 SELECTED_CODEC ONE_SEGMENT
+# Update the AV1_PROFILES array
+declare -A AV1_PROFILES=(
+    ["static"]="tune=1:enable-qm=1:scm=2:enable-overlays=1:lookahead=120:scd=1:enable-tf=0:keyint=360:qm-min=5:fast-decode=2:rc=1:film-grain=12:film-grain-denoise=0"
+    ["motion"]="tune=1:enable-qm=1:scm=2:enable-overlays=1:lookahead=120:scd=1:enable-tf=1:keyint=120:qm-min=8:fast-decode=2:rc=1:film-grain=10:film-grain-denoise=0"
+    ["detail"]="tune=1:enable-qm=1:scm=2:enable-overlays=1:lookahead=120:scd=1:enable-tf=0:keyint=240:qm-min=6:fast-decode=2:rc=1:film-grain=8:film-grain-denoise=0"
+)
+
+# Update the VP9_PROFILES array
+declare -A VP9_PROFILES=(
+    ["static"]="-aq-mode 0 -arnr-maxframes 15 -arnr-strength 6 -lag-in-frames 25 -g 360 -row-mt 1 -undershoot-pct 95 -sharpness 1"
+    ["motion"]="-aq-mode 0 -arnr-maxframes 5 -arnr-strength 3 -lag-in-frames 16 -g 120 -row-mt 1"
+    ["detail"]="-aq-mode 1 -arnr-maxframes 6 -arnr-strength 5 -lag-in-frames 20 -g 240 -row-mt 1"
+)
+
+declare -g INPUT OUTPUT INPUT_4k input_1080p CRF_H264 CRF_VP9 CRF_AV1 SELECTED_CODEC ONE_SEGMENT TEST_MODE SECONDS
 declare -g LOGDIR MASTERLOG TEMPDIR VIDEO_FPS
 
 # Store segments
 declare -a SEGMENTS=()
 
 # argument parsing
-while getopts "i:o:s:8:9:a:c:h" opt; do
+while getopts "i:o:s:2:9:a:c:th" opt; do  # Added 't' for test mode
     case $opt in
     i) INPUT="$OPTARG" ;;
     o) OUTPUT="$OPTARG" ;;
     s) SEGMENTS+=("$OPTARG") ;;
-    8) CRF_H264="$OPTARG" ;;
+    2) CRF_H264="$OPTARG" ;;
     9) CRF_VP9="$OPTARG" ;;
     a) CRF_AV1="$OPTARG" ;;
     c) SELECTED_CODEC="$OPTARG" ;;
-
+    t) TEST_MODE=true ;;  # New flag for test mode
     h)
         show_help
         exit 0
@@ -155,20 +166,85 @@ while getopts "i:o:s:8:9:a:c:h" opt; do
     esac
 done
 
+# 2. Add to help text
+
 # Set default CRF values
 
-CRF_AV1="${CRF_AV1:-35}"
-CRF_H264="${CRF_H264:-24}"
-CRF_VP9="${CRF_VP9:-33}"
+CRF_AV1="${CRF_AV1:-37}"
+CRF_H264="${CRF_H264:-25}"
+CRF_VP9="${CRF_VP9:-35}"
+SELECTED_CODEC="${SELECTED_CODEC:-}"
+TEST_MODE="${TEST_MODE:-false}"
+SECONDS="${SECONDS:-3}"
 
-# ----------- Validate CLI arguments -----------
+# ----------- Setup tempdir and logging -----------
 
 # Validate required parameters
 if [ -z "$INPUT" ] || [ -z "$OUTPUT" ]; then
-    echo "Error: Input and output files are required"
+    echo "Error: Input and output root filenames are required"
     show_help
     exit 1
 fi
+
+# Add temp dir
+TEMPDIR=$(mktemp -d)
+export TEMPDIR
+
+mkdir -p "$TEMPDIR"
+mkdir -p "$OUTPUT"
+
+# Add after TEMPDIR definition:
+LOGDIR="${OUTPUT}_logs"
+if [ -f "$LOGDIR" ]; then
+    rm -rf "$LOGDIR"
+fi
+mkdir -p "$LOGDIR"
+MASTERLOG="${LOGDIR}/encoding.log"
+
+
+
+# log function to keep track of encoding progress and keep echo output clean
+log() {
+    local msg
+    msg="[$(date +'%Y-%m-%d %H:%M:%S')] $*"
+    echo "$msg" >>"$MASTERLOG"
+    # Only show errors on stderr
+    if [[ "$*" == *"Error"* ]]; then
+        echo "$msg" >&2
+    fi
+}
+
+
+# ----------- Validate CLI arguments -----------
+
+get_filename() {
+    local root_name=$1
+    local filename extension
+    filename=$(find . -maxdepth 1 -type f -name "${root_name}.*" 2>/dev/null | head -n1)
+    if [ -z "$filename" ]; then
+        log "Error: Source file not found for ${root_name}"
+        exit 1
+    fi
+    # test if the file is a video container
+    if ! ffprobe -v error -select_streams v:0 -show_entries stream=codec_type -of default=noprint_wrappers=1:nokey=1 "$filename" | grep -q video; then
+        log "Error: Source file is not a video container: ${filename}"
+        exit 1
+    fi
+    echo "${filename}"
+}
+
+process_input_filename() {
+    local input="$1"
+    local input_4k input_1080p
+
+    # Use globbing to find the 4k file
+    input_4k=$(get_filename "${input}_4k")
+    input_1080p=$(get_filename "${input}_1080")
+
+    echo "${input_4k}" "${input_1080p}"
+}
+
+read -r INPUT_4k INPUT_1080p < <(process_input_filename "$INPUT")
 
 # Dependency checks
 deps=(ffmpeg ffprobe bc)
@@ -223,32 +299,43 @@ cleanup() {
 }
 trap cleanup EXIT
 
-
-# ----------- Setup tempdir and logging -----------
-# Add temp dir
-TEMPDIR=$(mktemp -d)
-export TEMPDIR
-
-mkdir -p "$TEMPDIR"
-mkdir -p "$OUTPUT"
-
-# Add after TEMPDIR definition:
-LOGDIR="${OUTPUT}_logs"
-mkdir -p "$LOGDIR"
-MASTERLOG="${LOGDIR}/encoding.log"
-
-# log function to keep track of encoding progress and keep echo output clean
-log() {
-    local msg
-    msg="[$(date +'%Y-%m-%d %H:%M:%S')] $*"
-    echo "$msg" >>"$MASTERLOG"
-    # Only show errors on stderr
-    if [[ "$*" == *"Error"* ]]; then
-        echo "$msg" >&2
-    fi
-}
-
 # ----------- Segment Handling Functions -----------
+
+# Function to get resolution-specific CRF value
+get_resolution_crf() {
+    local width="$1"
+    local base_crf="$2"
+    local result
+
+    # Validate inputs are numeric
+    if ! [[ "$width" =~ ^[0-9]+$ ]] || ! [[ "$base_crf" =~ ^[0-9]+$ ]]; then
+        log "Error: Width ($width) and base CRF ($base_crf) must be integers"
+        echo "23" # Return default CRF
+        return 1
+    fi
+
+    case "$width" in
+        3840)
+            result="$(echo "$base_crf + 4" | bc)"
+            ;;
+        2560)
+            result="$(echo "$base_crf + 2" | bc)"
+            ;;
+        1920)
+            result="$base_crf"
+            ;;
+        1280)
+            result="$(echo "$base_crf - 1" | bc)"
+            ;;
+        *)
+            if [ "$base_crf" -gt 30 ]; then
+                result="$(echo "$base_crf - 2" | bc)"
+            else
+                result="$(echo base_crf - 1 | bc)"
+            fi
+    esac
+    echo "$result"
+}
 
 validate_segment_type() {
     local type="$1"
@@ -273,15 +360,15 @@ get_fps() {
     local num den
     num=$(echo "$fps_raw" | cut -d'/' -f1)
     den=$(echo "$fps_raw" | cut -d'/' -f2)
-    if [ "$den" -eq 0 ]; then
-        VIDEO_FPS=30 # Default to 30 if denominator is zero
+    if [ -z "$den" ] || ! [[ "$den" =~ ^[0-9]+$ ]]; then
+        log "Error: Unable to determine video FPS, setting to 30"
+        VIDEO_FPS=30
+
     else
         VIDEO_FPS=$(echo "scale=3; $num/$den" | bc)
     fi
     echo "$VIDEO_FPS"
 }
-
-VIDEO_FPS=$(get_fps "$INPUT")
 
 # Function to get video duration
 get_video_duration() {
@@ -368,8 +455,10 @@ build_filter_chain() {
     local crop_bottom="$7"
     local crop_left="$8"
     local filter_chain new_fps scale_factor scaled_top scaled_bottom scaled_left scaled_right
+
     filter_chain=""
     new_fps="$NEW_FPS"
+
     # Calculate scaled crop values based on target resolution
     scale_factor=$(echo "scale=10; $target_width / $orig_width" | bc)
     scaled_top=$(echo "$crop_top * $scale_factor" | bc | cut -d. -f1)
@@ -377,25 +466,19 @@ build_filter_chain() {
     scaled_left=$(echo "$crop_left * $scale_factor" | bc | cut -d. -f1)
     scaled_right=$(echo "$crop_right * $scale_factor" | bc | cut -d. -f1)
 
+    filter_chain="format=pix_fmts=yuv420p10le,fps=${new_fps},scale=${target_width}:${target_height}"
+
     # Build crop if needed
     if [ "$crop_top" != "0" ] || [ "$crop_right" != "0" ] || [ "$crop_bottom" != "0" ] || [ "$crop_left" != "0" ]; then
         local crop_width
         crop_width=$(((target_width - scaled_left - scaled_right) / 2 * 2))
         local crop_height
         crop_height=$(((target_height - scaled_top - scaled_bottom) / 2 * 2))
-        filter_chain="crop=${crop_width}:${crop_height}:${scaled_left}:${scaled_top}"
-    fi
-
-    # Add scaling
-    if [ -z "$filter_chain" ]; then
-        filter_chain="fps=${new_fps},scale=${target_width}:${target_height}"
-    else
-        filter_chain="${filter_chain},fps=${new_fps},scale=${target_width}:${target_height}"
+        filter_chain="${filter_chain},crop=${crop_width}:${crop_height}:${scaled_left}:${scaled_top}"
     fi
 
     echo "$filter_chain"
 }
-
 # Function to convert frames to seconds
 frames_to_seconds() {
     local frames="$1"
@@ -403,27 +486,66 @@ frames_to_seconds() {
     echo "scale=3; $frames / $fps" | bc
 }
 
-# Function to convert to time if needed
 # Function to convert time format to seconds
 convert_to_time() {
     local value="$1"
-    if [[ "$value" == *f ]]; then
-        local frame_num
-        frame_num="${value%f}"
-        if [ "$frame_num" -eq 0 ]; then
+    local hours minutes seconds duration total_seconds
+    duration=$(get_video_duration "$INPUT_1080p")
+    case "$value" in
+        start)
             echo "0"
-        elif [ -n "$VIDEO_FPS" ]; then
-            echo "scale=3; $frame_num / $VIDEO_FPS" | bc
-        else
+            ;;
+        end)
+            echo "$duration"
+            ;;
+        0)
             echo "0"
-        fi
-    else
-        # Convert HH:MM:SS.mmm to seconds
-        IFS=: read -r hours minutes seconds <<< "${value//,/.}"
-        local total_seconds
-        total_seconds=$(echo "scale=3; ($hours * 3600) + ($minutes * 60) + $seconds" | bc)
-        echo "$total_seconds"
-    fi
+            ;;
+        0f)
+            echo "0"
+            ;;
+        -1)
+            echo "$duration"
+            ;;
+        -1f)
+            echo "$duration"
+            ;;
+        *f)
+            # Convert frame number to seconds
+            frames=${value%f}
+            total_seconds=$(frames_to_seconds "$frames" "$VIDEO_FPS")
+            echo "$total_seconds"
+            ;;
+        *)
+            # Convert HH:MM:SS.mmm to seconds
+            IFS=: read -r hours minutes seconds <<<"${value//,/.}"
+            total_seconds=$(echo "scale=3; ($hours * 3600) + ($minutes * 60) + $seconds" | bc)
+            echo "$total_seconds"
+            ;;
+    esac
+}
+
+get_final_filename() {
+    local output_base="$1"
+    local codec="$2"
+    local width="$3"
+    local extension
+    case "$codec" in
+        av1)
+            extension="webm"
+            ;;
+        h264)
+            extension="mp4"
+            ;;
+        vp9)
+            extension="webm"
+            ;;
+        *)
+            log "Error: Unsupported codec $codec"
+            exit 1
+            ;;
+    esac
+    echo "${output_base}/${output_base}_${codec}_${width}.${extension}"
 }
 
 # ----------- Main Encoding Function -----------
@@ -434,29 +556,78 @@ encode_video() {
     local start_time="$3"
     local end_time="$4"
     local filter_chain="$5"
-    local crf="$6"
+    local base_crf="$6"
     local output_file="$7"
     local segment_log="$8"
     local pass="$9"
     local profile="${10}"
-    local extension
+    local width="${11}"  # Add width parameter
+    local extension actual_crf ffmpeg_cmd profile_args tile_columns tile_rows av1_rc_params av1_params min_qp max_qp vp9_tile_columns procs perf_preset
+
     extension=$(echo "$output_file" | awk -F . '{print $NF}')
     log "Encoding $codec segment ${output_file} - Pass $pass"
 
+    # Get resolution-specific CRF
+    actual_crf=$(get_resolution_crf "$width" "$base_crf")
+    if [ "$actual_crf" -lt 0 ]; then
+        actual_crf=0
+    elif [ "$actual_crf" -gt 63 ]; then
+        actual_crf=63
+    fi
+    procs=$(nproc)
+    procs=$((procs - 1))
+
+    perf_preset=1
+    if [ "$pass" -eq 1 ]; then
+    # speed up the first pass a bit
+        perf_preset=4
+    fi
+
+
     # Construct ffmpeg command with codec-specific parameters
-    local ffmpeg_cmd=(ffmpeg -y -i "$input" -ss "$start_time" -to "$end_time" -c:v "$codec" -vf "$filter_chain" -crf "$crf" -pix_fmt yuv420p )
+    ffmpeg_cmd=(ffmpeg -y -i "$input" -ss "$start_time" -to "$end_time" -c:v "$codec" -vf "$filter_chain")
+
+    # Add resolution-specific tile settings for AV1
+    if [ "$width" -ge 3840 ]; then
+        tile_columns=4
+        tile_rows=2
+    elif [ "$width" -ge 1920 ]; then
+        tile_columns=3
+        tile_rows=2
+    else
+        tile_columns=2
+        tile_rows=1
+    fi
 
     case "$codec" in
         libsvtav1)
-            ffmpeg_cmd+=( -b:v 0 -profile:v 0 -preset 1 -svtav1-params "$profile" )
+
+            min_qp=$((actual_crf - 15))
+            max_qp=$((actual_crf + 15))
+            if [ "$min_qp" -lt 0 ]; then
+                min_qp=0
+            fi
+            if [ "$max_qp" -gt 63 ]; then
+                max_qp=63
+            fi
+            av1_rc_params="qp=${actual_crf}:min-qp=${min_qp}:max-qp=${max_qp}:tile-columns=${tile_columns}:tile-rows=${tile_rows}:lp=6"
+            av1_params="${profile}:${av1_rc_params}"
+            ffmpeg_cmd+=( -pass "$pass" -profile:v 0 -preset "${perf_preset}" \
+            -svtav1-params "${av1_params}" )
+            log "AV1 params: ${av1_params}"
             ;;
         libx264)
-            # shellcheck disable=SC2206 # we want to split the array
-            ffmpeg_cmd+=( -preset slower -profile:v high -tune:v film -x264-params "$profile" )
+            ffmpeg_cmd+=( -crf "$actual_crf" -preset veryslow -profile:v high10 -tune film -movflags +faststart \
+                         -x264-params "$profile" )
             ;;
         libvpx-vp9)
-            # shellcheck disable=SC2206
-            ffmpeg_cmd+=( -pass "$pass" -b:v 0 -profile:v 0 -deadline good -threads 7 -auto-alt-ref 1 -cpu-used 1 -tune:v ssim "${profile[@]}" -row-mt 1 -tune-content film -tile-columns 6 -frame-parallel 1 -enable-tpl 1 )
+            vp9_tile_columns=$((tile_columns - 1))  # VP9 needs fewer tiles than AV1
+            ffmpeg_cmd+=( -pass "$pass" -crf "$actual_crf" -b:v 0 -profile:v 2 -deadline best \
+                         -threads "${procs}" -auto-alt-ref 1 -cpu-used "${perf_preset}" -tune ssim -row-mt 1 \
+                         -tune-content film -tile-columns "$vp9_tile_columns" -frame-parallel 1 \
+                         -enable-tpl 1 )
+            IFS=' ' read -r -a profile_args <<< "$profile"
+            ffmpeg_cmd+=("${profile_args[@]}")
             ;;
         *)
             log "Error: Unsupported codec $codec"
@@ -465,12 +636,12 @@ encode_video() {
     esac
 
     if [ "$pass" -eq 1 ]; then
+        output_file="/dev/null"
         extension="null"
     fi
 
     ffmpeg_cmd+=( -f "$extension" -an "$output_file")
     log "Executing: ${ffmpeg_cmd[*]}"
-    # Execute ffmpeg command
     "${ffmpeg_cmd[@]}" >>"$segment_log" 2>&1
 }
 
@@ -493,14 +664,12 @@ encode_segment() {
     IFS='|' read -r start end type <<<"$segment"
 
     # Convert start and end to time
-    if [ "${start}" == "0f" ] || [[ "${start,,}" == "start" ]]; then
-        start_time=0
+    if [ "$TEST_MODE" == true ]; then
+        # test mode has already converted to time
+        start_time="$start"
+        end_time="$end"
     else
         start_time=$(convert_to_time "$start")
-    fi
-    if [[ "${end,,}" == "end" ]] || [ "$end" == "-1" ] || [ "$end" == "-1f" ]; then
-        end_time=$(get_video_duration "$input")
-    else
         end_time=$(convert_to_time "$end")
     fi
 
@@ -538,8 +707,9 @@ encode_segment() {
             extension="mp4"
             ;;
         vp9)
+            IFS=: read -r -a profile_args <<<"${VP9_PROFILES[$type]}"
             crf="$CRF_VP9"
-            profile="${VP9_PROFILES[$type]}"
+            profile="${profile_args[*]}"
             library="libvpx-vp9"
             extension="webm"
             ;;
@@ -548,33 +718,45 @@ encode_segment() {
             exit 1
             ;;
     esac
+    local final_out segment_out
+    mkdir -p "$output_base"
+    final_out=$(get_final_filename "$output_base" "$codec" "$width")
+    segment_out="${output_base}/${output_base}_${codec}_${width}_${segment_id}.${extension}"
+    if [ -f "$segment_out" ] || [ -f "$final_out" ]; then
+        log "$codec segment $segment_out already exists. Skipping."
+        if [ "$ONE_SEGMENT" == true ]; then
+            echo "$final_out"
+        elif [ -f "$segment_out" ]; then
+            echo "$segment_out"
+        fi
+        return
+    fi
+    if [ "$ONE_SEGMENT" == true ]; then
+            output_file="${final_out}"
+        else
+            output_file="${segment_out}"
+        fi
     if [ "$pass" -eq 1 ]; then
         output_file="/dev/null"
-    else
-        if [ "$ONE_SEGMENT" == true ]; then
-            output_file="${output_base}/${output_base}_${codec}_${width}.${extension}"
-        else
-            output_file="${output_base}/${output_base}_${codec}_${width}_${segment_id}.${extension}"
-        fi
-        if [ -f "$output_file" ]; then
-            log "$codec segment $output_file already exists. Skipping."
-            echo "$output_file"
-            return
-        fi
-        output_dir="$(dirname "$output_file")"
-        mkdir -p "$output_dir"
     fi
 
     # Encode the segment
-    encode_video "$input" "$library" "$start_time" "$end_time" "$filter_chain" "$crf" "$output_file" "$segment_log" "$pass" "$profile"
+    encode_video "$input" "$library" "$start_time" "$end_time" "$filter_chain" "$crf" "$output_file" "$segment_log" "$pass" "$profile" "$width"
 
     echo "$output_file"
 }
 
 # Function to process segments after encoding
 process_segments() {
+    if [ "${TEST_MODE:-false}" = true ]; then
+        return 0
+    fi
     local segments=("$@")
     local output_file="${segments[-1]}"
+    if [ -f "${output_file}" ]; then
+        log "Output file already exists: ${output_file}"
+        return 0
+    fi
     unset 'segments[${#segments[@]}-1]'
 
     # Create concat file
@@ -601,7 +783,7 @@ process_segments() {
     fi
 
     log "Concatenating segments using: $concat_file"
-    ffmpeg -y -f concat -probesize 2G -analyzeduration 2G -duration_probesize 1G  -safe 0 -i "$concat_file" -c copy "${OUTPUT}/$output_file"
+    ffmpeg -y -f concat -probesize 2G -analyzeduration 2G -duration_probesize 1G  -safe 0 -i "$concat_file" -c copy "$output_file"
     local status=$?
 
     rm -f "$concat_file"
@@ -611,23 +793,110 @@ process_segments() {
     return $status
 }
 
+get_random_time() {
+    local start_time="$1"
+    local end_time="$2"
+    local fps="$3"
+    local segment_length=${4:-3}  # Renamed from SECONDS to avoid builtin conflict
+
+    # Validate segment_length
+    if [ -z "$segment_length" ] || [ "$(echo "$segment_length <= 0" | bc -l)" -eq 1 ]; then
+        log "Invalid segment length: $segment_length, using default of 3"
+        segment_length=3
+    fi
+
+    local start end duration
+
+    # Convert times to seconds with validation
+    start=$(convert_to_time "$start_time")
+    end=$(convert_to_time "$end_time")
+
+    # Calculate duration using bc
+    duration=$(echo "scale=3; $end - $start" | bc)
+    log "Duration: $duration seconds, Start: $start, End: $end, Segment length: $segment_length"
+
+    # Check if duration is less than minimum seconds needed
+    if [ "$(echo "$duration < $segment_length" | bc -l)" -eq 1 ]; then
+        log "Duration too short, returning original times"
+        echo -e "$start\t$end"
+        return
+    fi
+
+    # Calculate maximum random offset (convert to integer milliseconds)
+    local max_offset
+    max_offset=$(echo "($duration - $segment_length) * 1000 / 1" | bc)
+    log "Max offset (ms): $max_offset"
+
+    # Validate max_offset is positive
+    if [ -z "$max_offset" ] || [ "$max_offset" -le 0 ]; then
+        log "Invalid max_offset: $max_offset"
+        echo -e "$start\t$end"
+        return
+    fi
+
+    # Get random offset in milliseconds
+    local random_offset
+    random_offset=$(shuf -i 0-"$max_offset" -n 1)
+    log "Random offset (ms): $random_offset"
+
+    # Calculate new start and end times
+    local new_start new_end
+    new_start=$(echo "scale=3; $start + ($random_offset / 1000)" | bc)
+    new_end=$(echo "scale=3; $new_start + $segment_length" | bc)
+    log "New times - Start: $new_start, End: $new_end, Duration: $segment_length"
+
+
+    # Verify end time doesn't exceed video duration
+    if [ "$(echo "$new_end > $end" | bc -l)" -eq 1 ]; then
+        new_end="$end"
+        new_start=$(echo "scale=3; $end - $segment_length" | bc)
+        [ "$(echo "$new_start < 0" | bc -l)" -eq 1 ] && new_start="0"
+        log "Adjusted times - Start: $new_start, End: $new_end"
+    fi
+
+    # Validate segment duration
+    if [ "$(echo "$new_end <= $new_start" | bc -l)" -eq 1 ]; then
+        log "Invalid segment duration, using original times"
+        echo -e "$start\t$end"
+        return
+    fi
+
+    echo -e "$new_start\t$new_end"
+}
+
+get_test_segments() {
+    local segments=()
+    local segment
+    VIDEO_FPS=$(get_fps "$INPUT_1080p")
+
+    for segment in "${SEGMENTS[@]}"; do
+        log "Generating test segments for $segment"
+        local start end type
+        IFS='|' read -r start end type <<<"$segment"
+
+        local new_start new_end
+        # Use tab as delimiter for reading random time output
+        IFS=$'\t' read -r new_start new_end < <(get_random_time "$start" "$end" "$VIDEO_FPS")
+
+        # Validate read was successful
+        if [[ $? -eq 0 && -n "$new_start" && -n "$new_end" ]]; then
+            segments+=("$new_start|$new_end|$type")
+            log "New segment: $new_start|$new_end|$type"
+        else
+            log "Error: Failed to get random time for segment $segment"
+            segments+=("$start|$end|$type")
+        fi
+    done
+
+    echo "${segments[@]}"
+}
+
 # ----------- Main Pipeline Function -----------
 
 # Main function
 main() {
     # Add output directory check
-    local orig_dimensions orig_width orig_height total_segments total_codecs total_resolutions total_operations current_operation
-
-    # Add input file validation
-    if [ ! -f "$INPUT" ]; then
-        log "Error: Input file $INPUT not found"
-        exit 1
-    fi
-
-    # Get original dimensions
-    orig_dimensions=$(get_video_dimensions "$INPUT")
-    orig_width=$(echo "$orig_dimensions" | cut -d'x' -f1)
-    orig_height=$(echo "$orig_dimensions" | cut -d'x' -f2)
+    local total_segments total_codecs total_resolutions total_operations current_operation
 
     declare -a CODECS
 
@@ -640,13 +909,29 @@ main() {
     total_segments="${#SEGMENTS[@]}"
     total_codecs="${#CODECS[@]}"
     total_resolutions="${#RESOLUTIONS[@]}"
+    if [ "$TEST_MODE" = true ]; then
+        # replace segments with test segments
+        IFS=' ' read -r -a SEGMENTS <<<"$(get_test_segments)"
+    fi
     total_operations=$((total_segments * total_resolutions * total_codecs))
     current_operation=0
 
     for resolution in "${RESOLUTIONS[@]}"; do
-
+        local input
         read -r width height <<< "$resolution"
         log "Processing ${width}x${height} resolution"
+
+        if [ "$width" -gt 1920 ]; then
+            input="$INPUT_4k"
+        else
+            input="$INPUT_1080p"
+        fi
+        VIDEO_FPS=$(get_fps "$input")
+        local orig_dimensions orig_width orig_height
+        # Get original dimensions
+        orig_dimensions=$(get_video_dimensions "$input")
+        orig_width=$(echo "$orig_dimensions" | cut -d'x' -f1)
+        orig_height=$(echo "$orig_dimensions" | cut -d'x' -f2)
 
         # Arrays to store segment files for concatenation
         declare -a av1_segments=()
@@ -658,49 +943,58 @@ main() {
             segment="${SEGMENTS[$segment_index]}"
             log "Processing segment $((segment_index + 1)) of $total_segments"
             for codec in "${CODECS[@]}"; do
-                local output percent_complete
+                local output percent_complete filename
                 percent_complete=$((current_operation * 100 / total_operations))
                 log "Processing codec $codec at resolution ${width}x${height} for ${segment}"
-                echo "Processing codec $codec at resolution ${width}x${height} for ${segment}"
-                echo "Operation ${current_operation} of ${total_operations}"
-                echo "Percent complete ${percent_complete}%"
-                if [ "$codec" != "vp9" ]; then
-                    output=$(encode_segment "$INPUT" "$OUTPUT" "$segment" \
-                        "$width" "$height" "$orig_width" "$orig_height" \
-                        2 "$codec")
-                    if [ "$codec" == "h264" ]; then
-                        h264_segments+=("$output")
-                    else
-                        av1_segments+=("$output")
-                    fi
-                else
-                    encode_segment "$INPUT" "$OUTPUT" "$segment" \
-                        "$width" "$height" "$orig_width" "$orig_height" \
-                        1 "$codec"
-
-                    output=$(encode_segment "$INPUT" "$OUTPUT" "$segment" \
-                        "$width" "$height" "$orig_width" "$orig_height" \
-                        2 "$codec")
-
-                    vp9_segments+=("$output")
+                log "Operation ${current_operation} of ${total_operations}"
+                log "Percent complete ${percent_complete}%"
+                filename=$(get_final_filename "$OUTPUT" "$codec" "$width")
+                if [ -f "$filename" ]; then
+                    log "Output file already exists: $filename"
+                    current_operation=$((current_operation + 1))
+                    continue
                 fi
+                if [ "$codec" == "h264" ]; then
+                        output=$(encode_segment "$input" "$OUTPUT" "$segment" \
+                            "$width" "$height" "$orig_width" "$orig_height" \
+                            2 "$codec" "$width")
+                            h264_segments+=("$output")
+                    else
+                        encode_segment "$input" "$OUTPUT" "$segment" \
+                            "$width" "$height" "$orig_width" "$orig_height" \
+                            1 "$codec" "$width"
+
+                        output=$(encode_segment "$input" "$OUTPUT" "$segment" \
+                            "$width" "$height" "$orig_width" "$orig_height" \
+                            2 "$codec" "$width")
+                        if [ "$codec" == "av1" ]; then
+                            av1_segments+=("$output")
+                        else
+                            vp9_segments+=("$output")
+                        fi
+                    fi
                 current_operation=$((current_operation + 1))
             done
         done
-    if [ "$ONE_SEGMENT" == true ]; then
+    if [ "$ONE_SEGMENT" == true ] || [ "$TEST_MODE" == true ]; then
         continue # If one segment, that's our video. No need to combine
+        # We also leave them as-is for test mode
     else
+        local filename
         if [ "${#av1_segments[@]}" -gt 0 ]; then
             log "Combining AV1 segments"
-            process_segments "${av1_segments[@]}" "${OUTPUT}_av1_${width}.webm"
+            filename=$(get_final_filename "$OUTPUT" "av1" "$width")
+            process_segments "${av1_segments[@]}" "${filename}"
         fi
         if [ "${#h264_segments[@]}" -gt 0 ]; then
             log "Combining H264 segments"
-            process_segments "${h264_segments[@]}" "${OUTPUT}_h264_${width}.mp4"
+            filename=$(get_final_filename "$OUTPUT" "h264" "$width")
+            process_segments "${h264_segments[@]}" "${filename}"
         fi
         if [ "${#vp9_segments[@]}" -gt 0 ]; then
             log "Combining VP9 segments"
-            process_segments "${vp9_segments[@]}" "${OUTPUT}_vp9_${width}.webm"
+            filename=$(get_final_filename "$OUTPUT" "vp9" "$width")
+            process_segments "${vp9_segments[@]}" "${filename}"
         fi
     fi
     done

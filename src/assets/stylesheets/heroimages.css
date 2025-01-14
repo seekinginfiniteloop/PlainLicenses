@@ -34,136 +34,62 @@
   will-change: transform opacity;
 }
 
-@keyframes glow {
-  from {
-    text-shadow:
-      0.02rem 0.02rem 0 var(--oxford-blue),
-      0 0 0.16rem var(--emerald),
-      0.045rem 0.045rem 0 var(--ecru);
-  }
-
-  to {
-    text-shadow:
-      0.025rem 0.025rem 0 var(--oxford-blue),
-      0 0 0.5rem var(--emerald),
-      0 0 0.5rem var(--emerald),
-      0.08rem 0.08rem 0 var(--ecru);
-  }
-}
-
-/*
-Not really images, but we set colors for the call to action header/subheader by image,
-so it made sense for them to live here
-*/
-
-#CTA_header {
-  position: relative;
-  display: inline-block;
-  margin: 0.5rem;
-  font-family: Bangers, Impact, Haettenschweiler, Charcoal, "Arial Narrow Bold", Gadget, sans-serif;
-  font-size: clamp(20px, calc(100vw / 14), 16rem);
-  color: var(--h1-color);
-  text-align: left;
-  text-transform: uppercase;
-  white-space: nowrap;
-  font-display: swap;
-  visibility: hidden;
-  object-position: bottom left;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-#CTA_paragraph {
-  position: relative;
-  display: inline-block;
-  margin: 0 1rem 1rem;
-  font-family: Bangers, Impact, Haettenschweiler, Charcoal, "Arial Narrow Bold", Gadget, sans-serif;
-  font-size: clamp(14px, calc(100vw / 19), 12rem);
-  color: var(--p-color);
-  text-align: left;
-  text-shadow:
-    0.01rem 0.01rem 0 var(--oxford-blue),
-    0.05rem 0.05rem 0 var(--turkey-red);
-  text-transform: uppercase;
-  white-space: nowrap;
-  font-display: swap;
-  visibility: hidden;
-  object-position: bottom left;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-@media screen and (width <= 416px) {
-  #CTA_header {
-    font-size: clamp(15px, calc(100vw / 16), 10rem);
-  }
-
-  #CTA_paragraph {
-    font-size: clamp(12px, calc(100vw / 22), 6rem);
-  }
-}
-
-.special-highlight {
-  position: relative;
-  display: inline-block;
-}
-
 .hero-parallax__image--anime {
   --h1-color: var(--atomic-tangerine);
-  --p-color: var(--emerald);
+  --h2-color: var(--emerald);
 }
 
 .hero-parallax__image--artbrut {
   --h1-color: var(--atomic-tangerine);
-  --p-color: var(--aqua);
+  --h2-color: var(--aqua);
 }
 
 .hero-parallax__image--comic {
   --h1-color: var(--aquamarine);
-  --p-color: var(--white);
+  --h2-color: var(--white);
 }
 
 .hero-parallax__image--fanciful {
   --h1-color: var(--mindaro);
-  --p-color: var(--aqua);
+  --h2-color: var(--aqua);
   --perspective-origin: 30% 20%;
   --scale: 1;
 }
 
 .hero-parallax__image--fantasy {
   --h1-color: var(--white);
-  --p-color: var(--mindaro);
+  --h2-color: var(--mindaro);
   --scale: 1;
 }
 
 .hero-parallax__image--farcical {
   --h1-color: var(--atomic-tangerine);
-  --p-color: var(--aqua);
+  --h2-color: var(--aqua);
   --scale: 1;
 }
 
 .hero-parallax__image--fauvist {
   --h1-color: var(--mindaro);
-  --p-color: var(--white);
+  --h2-color: var(--white);
 }
 
 .hero-parallax__image--minimal {
   --h1-color: var(--atomic-tangerine);
-  --p-color: var(--white);
+  --h2-color: var(--white);
   --scale: 1;
   --perspective: 50rem;
 }
 
 .hero-parallax__image--mystical {
   --h1-color: var(--blue-blue);
-  --p-color: var(--white);
+  --h2-color: var(--white);
   --scale: 1;
   --perspective: 40rem;
 }
 
 .hero-parallax__image--surreal {
   --h1-color: var(--white);
-  --p-color: var(--atomic-tangerine);
+  --h2-color: var(--atomic-tangerine);
   --scale: 1;
 }
 
@@ -176,131 +102,54 @@ so it made sense for them to live here
 
   .hero-parallax__image--anime {
     --h1-color: var(--atomic-tangerine);
-    --p-color: var(--white);
+    --h2-color: var(--white);
     --perspective: -50rem;
     --scale: 1.8;
   }
 
   .hero-parallax__image--artbrut {
     --h1-color: var(--atomic-tangerine);
-    --p-color: var(--aqua);
+    --h2-color: var(--aqua);
   }
 
   .hero-parallax__image--comic {
     --h1-color: var(--aquamarine);
-    --p-color: var(--white);
+    --h2-color: var(--white);
     --scale: 1.2;
   }
 
   .hero-parallax__image--fanciful {
     --h1-color: var(--mindaro);
-    --p-color: var(--atomic-tangerine);
+    --h2-color: var(--atomic-tangerine);
   }
 
   .hero-parallax__image--fantasy {
     --h1-color: var(--atomic-tangerine);
-    --p-color: var(--mindaro);
+    --h2-color: var(--mindaro);
   }
 
   .hero-parallax__image--farcical {
     --h1-color: var(--mindaro);
-    --p-color: var(--aqua);
+    --h2-color: var(--aqua);
   }
 
   .hero-parallax__image--fauvist {
     --h1-color: var(--mindaro);
-    --p-color: var(--white);
+    --h2-color: var(--white);
   }
 
   .hero-parallax__image--minimal {
     --h1-color: var(--atomic-tangerine);
-    --p-color: var(--white);
+    --h2-color: var(--white);
   }
 
   .hero-parallax__image--mystical {
     --h1-color: var(--white);
-    --p-color: var(--aquamarine);
+    --h2-color: var(--aquamarine);
   }
 
   .hero-parallax__image--surreal {
     --h1-color: var(--white);
-    --p-color: var(--atomic-tangerine);
+    --h2-color: var(--atomic-tangerine);
   }
-}
-
-#parallax-hero-image-layer img:not(:first-of-type) {
-  position: absolute;
-  top: 0;
-  z-index: -300;
-  visibility: hidden;
-  opacity: 0;
-}
-
-#parallax-hero-image-layer img:first-of-type {
-  top: 0;
-  visibility: visible;
-  opacity: 1;
-}
-
-/* TODO: get the overlay to actually show without messing up everything */
-.fade-overlay {
-
-  /* initial value */
-
-  top: 0;
-  left: 0;
-  z-index: 5;
-  width: var(--viewport-offset-width);
-  height: var(--parallax-height);
-  overflow: hidden clip;
-  pointer-events: none;
-  background:
-    linear-gradient(
-      to bottom,
-      rgba(var(--gunmetal-adj), 0) 70%,
-      rgba(var(--gunmetal-adj), 0.3) 85%,
-      rgba(var(--gunmetal-adj), 0.6) 90%,
-      rgba(var(--gunmetal-adj), 1) 100%
-    );
-  filter: blur(0.5rem);
-  mix-blend-mode: overlay;
-}
-
-.debris-container {
-  position: "absolute";
-  top: 0;
-  left: 0;
-  z-index: 1100;
-  width: var(--viewport-offset-width);
-  height: var(--viewport-offset-height);
-  pointer-events: "none";
-  visibility: "hidden";
-}
-
-.debris {
-  position: "absolute";
-  z-index: 3000;
-  display: "none";
-  pointer-events: "none";
-}
-
-.button-text {
-  z-index: 5000;
-  display: "inline-block";
-  color: var(--button-text-color);
-  visibility: "hidden";
-}
-
-.button-word {
-  display: "inline-block";
-  color: var(--button-text-color);
-}
-
-.button-word::after {
-  content: " ";
-}
-
-.button-char {
-  display: "inline-block";
-  color: var(--button-text-color);
 }

@@ -53,7 +53,8 @@
             </div>
         </div>
 
-        <form class="md-header__option" data-md-component="palette" style="opacity:0;visibility:hidden;" aria-hidden="true">
+        <form class="md-header__option" data-md-component="palette"
+            style="opacity:0;visibility:hidden;" aria-hidden="true">
             {% for option in config.theme.palette %}
             {% set scheme = "slate" %}
             {% set primary = "custom" %}
@@ -61,8 +62,8 @@
             <input class="md-option" data-md-color-media="dark"
                 data-md-color-scheme="{{ scheme | replace(' ', '-') }}"
                 data-md-color-primary="{{ primary | replace(' ', '-') }}"
-                data-md-color-accent="{{ accent | replace(' ', '-') }}" aria-hidden="true" type="radio"
-                name="__palette" id="__palette_{{ loop.index0 }}" />
+                data-md-color-accent="{{ accent | replace(' ', '-') }}" aria-hidden="true"
+                type="radio" name="__palette" id="__palette_{{ loop.index0 }}" />
             {% if option.toggle %}
             <label class="md-header__button md-icon" title="{{ option.toggle.name }}"
                 for="__palette_{{ loop.index % loop.length }}" hidden>

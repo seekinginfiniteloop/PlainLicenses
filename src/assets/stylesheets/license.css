@@ -1,6 +1,8 @@
 /* stylelint-disable no-duplicate-selectors */
 /* stylelint-disable declaration-no-important */
 
+/* TODO: Refactor this mess */
+
 :root,
 [data-md-color-scheme="default"] {
   --hover-color: var(--emerald);
@@ -86,7 +88,7 @@ h1.license-title {
 
 /* Styling blocks for the license header in the license reader view */
 
-.h2.license-first-header {
+.license-first-header {
   padding-left: -1rem;
   margin: 0.5rem 0 0 0.5rem;
   text-align: left;

@@ -7,11 +7,9 @@
  * @author Adam Poulemanos adam<at>plainlicense<dot>org
  */
 
-import type { CacheConfig, ObserverConfig } from "./types"
+import type { CacheConfig, FadeInConfig, ObserverConfig } from "./types"
 
 /**
- * @exports CACHE_CONFIG
- * @constant
  * @type {CacheConfig} CACHE_CONFIG
  * @description Configuration for the cache
  */
@@ -34,20 +32,55 @@ export const CACHE_CONFIG: CacheConfig = {
     script: {
       cacheable: true,
       contentType: 'application/javascript'
+    },
+    video: {
+      cacheable: true,
+      contentType: 'video'
     }
   }
 } as const
 
+const FADE_IN_CONFIG: FadeInConfig = {
+  prefersReducedMotion: {
+    from: {
+      autoAlpha: 0,
+      duration: 0.75,
+      y: 0,
+    },
+    to: {
+      autoAlpha: 1,
+      duration: 0.75,
+      y: 0,
+    }
+  },
+  normal: {
+    from: {
+      autoAlpha: 0,
+      y: 75,
+    },
+    to: {
+      autoAlpha: 1,
+      duration: 0.5,
+      y: 0,
+    }
+  },
+  defaults: {
+    autoAlpha: 0,
+    ease: 'power1.inOut',
+    repeat: 0,
+    paused: true,
+  }
+} as const
+
 /**
- * @exports OBSERVER_CONFIG
- * @constant
  * @type {ObserverConfig} OBSERVER_CONFIG
  * @description Configuration for the observer
  */
 export const OBSERVER_CONFIG: ObserverConfig = {
   fades: {
-    fadeInSections: ['.hero__parallax', '#pt2-hero-content-section', '#pt3-hero-content-section'],
-    fadeInDuration: 0.5
+    fadeInSections: Array.from(document.getElementsByTagName('section')),
+    fadeInDuration: 0.5,
+    fadeInConfig: FADE_IN_CONFIG
   },
   slides: {
     slideDuration: 1.25,
@@ -55,5 +88,5 @@ export const OBSERVER_CONFIG: ObserverConfig = {
     scrollPause: 10
   },
   clickTargets: 'hero-target-selector',
-  ignoreTargets: 'a, button, clickTargets, #the-egg, header, navigation, md-tabs'
+  ignoreTargets: 'a, button, clickTargets, header, navigation, md-tabs'
 } as const

@@ -27,7 +27,7 @@ export enum AnimationState {
  * @description Image key for the Hero feature.
  * @type {string}
  */
-type VideoKey = typeof heroVideos[number]["imageName"]
+export type VideoKey = typeof heroVideos[number]["imageName"]
 
 /**
  * @exports @type {AnimationType}
@@ -67,6 +67,10 @@ export interface TimelineData extends gsap.TimelineVars {
   video: HTMLVideoElement
 }
 
+export interface ReducedMotionCondition extends gsap.Conditions {
+  reducedMotion: boolean
+}
+
 /** ============================================
  *               Observer Types
  *=============================================**/
@@ -78,5 +82,9 @@ export interface TimelineData extends gsap.TimelineVars {
 
 export interface Section {
   readonly element: Element
+  readonly outerWrapper: Element
+  readonly innerWrapper: Element
+  readonly bg: Element
   readonly content: Element[]
+  animation?: gsap.core.Timeline
 }

@@ -16,7 +16,7 @@ also_known_as: null
 category: >
   source-available
 license_description: >
-  The Elastic License 2.0 is a source-available license that allows you to use, copy, distribute, and modify the work. However, you can't offer the work as a service to others. You must keep all copyright notices in the software. The license includes a patent grant, but you lose your patent rights if you claim the software infringes a patent.
+  The Elastic License 2.0 is a source-available license that allows you to use, copy, distribute, and modify the work. However, you can't offer the work as a service to others. You must keep all copyright notices in the work. The license includes a patent grant, but you lose your patent rights if you claim the work infringes a patent.
 note: null
 permissions:
   - distribution
@@ -78,18 +78,18 @@ reader_license_text: |
 
   ### You lose your patent rights if you claim the work infringes a patent
 
-  If you or your company claim the work infringes a patent, you lose your patent rights immediately.
+  You lose your patent rights immediately if you or your company claim the work infringes a patent.
 
-  If your company claims the work infringes a patent, you only lose your patent rights for work you do for the company. You don't lose your rights for other work (e.g. for other companies or personal use).
+  If your company claims the work infringes a patent, you only lose your patent rights for work you do for the company. You don't lose your rights for other work (e.g. work you do for other companies or as a hobby).
 
   ## Your Responsibilities
 
   - **You must give these license terms to anyone you share any part of the work with.**
-  - If you change the work, you must tell people you changed it .
+  - If you change the work, you must tell people you changed it.
 
   ## Losing Your Rights - "Two strikes, you're out"
 
-  You keep your rights under this license until you break its terms. Once you learn you broke our terms, you get your rights back if you fix the problem within 30 days.   Your rights end permanently if you break the terms a second time. We don't have to warn you before you lose your rights.
+  You keep your rights under this license until you break its terms. Once you learn you broke our terms, you get your rights back if you fix the problem within 30 days. Your rights end permanently if you break the terms a second time or you fail to fix fhe problem in 30 days. We don't have to warn you before you lose your rights.
 
   ## We Offer No Warranty and Accept No Liability
 

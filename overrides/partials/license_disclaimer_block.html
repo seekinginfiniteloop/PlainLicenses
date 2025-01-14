@@ -5,38 +5,27 @@
 <div class="result">
     <details class="warning" open="open">
         <summary><strong>Disclaimers</strong></summary>
-        <div class="tabbed-set tabbed-alternate" data-tabs="{{ tabcount }}:2"
-        role="tablist">
-            <input checked
-                id="not-advice-warning-checkbox"
-                name="__tabbed_{{ tabcount }}" type="radio"
-                aria-hidden="true">
-            <input name="__tabbed_{{ tabcount }}" type="radio"
-                id="not-official-warning-checkbox"
+        <div class="tabbed-set tabbed-alternate" data-tabs="{{ tabcount }}:2" role="tablist">
+            <input checked id="not-advice-warning-checkbox" name="__tabbed_{{ tabcount }}"
+                type="radio" aria-hidden="true">
+            <input name="__tabbed_{{ tabcount }}" type="radio" id="not-official-warning-checkbox"
                 aria-hidden="true">
             <div class="tabbed-labels tabbed-labels--linked">
                 <label for="not-advice-warning">
-                    <a href="#not-advice-warning"
-                    aria-selected="true"
-                    tabindex="0" role="tab"
-                    aria-controls="not-advice-warning"
-                    aria-selected="true"
+                    <a href="#not-advice-warning" aria-selected="true" tabindex="0" role="tab"
+                        aria-controls="not-advice-warning" aria-selected="true"
                         id="not-advice-warning-label"><strong>This is not legal advice</strong></a>
                 </label>
                 <label for="not-official-warning">
-                    <a href="#not-official-warning"
-                    aria-selected="false"
-                    role="tab"
-                    aria-controls="not-official-warning"
-                    asia-selected="false"
-                        tabindex="-1"
-                        id="not-official-warning-label"
-                        ><strong>This is not the official {{ page.meta['original_name']
+                    <a href="#not-official-warning" aria-selected="false" role="tab"
+                        aria-controls="not-official-warning" asia-selected="false" tabindex="-1"
+                        id="not-official-warning-label"><strong>This is not the official {{ page.meta['original_name']
                             | trim }}</strong></a>
                 </label>
             </div>
             <div class="tabbed-content">
-                <div class="tabbed-block" role="tabpanel" id="not-advice-warning" aria-labelledby="not-advice-warning-label">
+                <div class="tabbed-block" role="tabpanel" id="not-advice-warning"
+                    aria-labelledby="not-advice-warning-label">
                     <p>We are not lawyers. This is not legal advice. You use this license at your
                         own
                         risk. If you need
@@ -54,7 +43,8 @@
                             page</a>.
                     </p>
                 </div>
-                <div class="tabbed-block" role="tabpanel" id="not-official-warning" aria-labelledby="not-official-warning-label" hidden>
+                <div class="tabbed-block" role="tabpanel" id="not-official-warning"
+                    aria-labelledby="not-official-warning-label" hidden>
                     <p>Plain License is not affiliated with the original {{
                         page.meta['original_name'] |
                         trim }}

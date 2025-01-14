@@ -1,86 +1,96 @@
-<div class="hero" data-component="hero" contenteditable="false">
-  <div class="hero__parallax" data-mdx-component="parallax" data-md-color-scheme="slate" data-md-color-media="dark"
-        contenteditable="false">
-    <div data-md-color-scheme="slate" class="hero-parallax__layer"
-            id="parallax-hero-image-layer" contenteditable="false">
-      <noscript>
-            {{ no_script_image }}
+<section contenteditable="false" data-md-color-scheme="slate" data-md-color-media="dark"
+  class="hero first" id="parallax-hero-image-layer">
+  <div class="outer">
+    <div class="inner">
+      <div class="bg">
+        <noscript>
+          {{ no_script_image }}
 
-        <style>
+          <style>
             html {
-                scroll-behavior: smooth;
+              scroll-behavior: smooth;
             }
-            #CTA_header {
-            animation: glow 3000ms ease-in-out infinite alternate;
+
+            .section.hero .cta-container h1 {
+              animation: glow 3000ms ease-in-out infinite alternate;
             }
-            #CTA_header,
-            #CTA_paragraph {
-                opacity: 1;
-                visibility: visible;
-                  transition:
-                    background-color 350ms ease-in-out,
-                    color 300ms ease-in-out,
-                    scale 350ms ease-in;
+
+            .section.hero {
+              opacity: 1;
+              visibility: visible;
+              transition:
+                background-color 350ms ease-in-out,
+                color 300ms ease-in-out,
+                scale 350ms ease-in;
+              position: relative;
+              z-index: 1;
+              padding-bottom: 1rem;
             }
-            #pt2-hero-content-section h1 {
-                visibility: visible;
-            }
-            #pt3-hero-content-section {
-                visibility: visible;
+
+            .section.hero .md-typeset {
+              opacity: 1;
+              visibility: visible;
             }
 
             @media screen and (prefers-reduced-motion: reduce) {
-                html {
-                    scroll-behavior: instant;
-                }
+              html {
+                scroll-behavior: instant;
+              }
             }
-        </style>
+          </style>
 
-      </noscript>
-        <div class="mdx-hero__teaser">
-            <h1 contenteditable="false" id="CTA_header" class="cta-container">Join the
-                Fight</h1>
-            <p id="CTA_paragraph" contenteditable="false">To End Confusion!</p>
-            <div class="hero-cta-button">
-                <a class="hero-target-selector" href="#pt3-hero-content-section" contenteditable="false">
-                    <button contenteditable="false" id="hero-primary-button"
-                        class="md-button">Get
-                        Clear
-                        Terms
-                    </button>
-                </a>
-            </div>
-    </div>
-    </div>
-    </div>
-    <section data-md-color-scheme="slate" class="hero-content-section"
-        id="pt2-hero-content-section">
-        <div id="pt2-hero-content-section-header">
-            <h1 class="hero-content-section header-mid line hero-content-emphasis fade-in">
-                <span>licenses</span><br />
-                <span>people </span><span>can</span><br />understand</span></h1>
+        </noscript>
+        <div class="cta-container">
+          <h1 contenteditable="false" class="cta-header">Join the
+            Fight
+          </h1>
+          <h2 contenteditable="false">To End Confusion!</h2>
+          <a class="hero-target-selector" href="#pt3-hero-content-section" contenteditable="false">
+            <button contenteditable="false" class="md-button">Get
+              Clear
+              Terms
+            </button>
+          </a>
+          <a href="#pt3-hero-content-section" class="hero-target-selector">
+            <svg view-box="0 0 24 24" class="down-indicator" id="arrow-down"
+              title="scroll down for more" xmlns="http://www.w3.org/2000/svg" role="button"
+              contenteditable="false">
+              <path d="M11 4h2v12l5.5-5.5 1.42 1.42L12 19.84l-7.92-7.92L5.5 10.5 11 16z"></path>
+            </svg>
+          </a>
         </div>
-    </section>
-    <div id="pt2-3-buffer"></div>
-    <section data-md-color-scheme="slate" class="hero-content-section" id="pt3-hero-content-section">
+      </div>
+    </div>
+  </div>
+</section>
+</div>
+<section data-md-color-scheme="slate" class="hero second" id="pt2-hero-content-section">
+  <div class="outer">
+    <div class="inner">
+      <div class="bg">
+        <div class="md-typeset hero-grid middle">
+          <h1 class="impact-text" id="pt2-hero-content-section-header">
+            <span>licenses</span><br />
+            <span>people </span><span>can</span><br />understand</span>
+          </h1>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<section data-md-color-scheme="slate" class="hero third" id="pt3-hero-content-section">
+  <div class="outer">
+    <div class="inner">
+      <div class="bg">
         <div class="md-typeset hero-grid">
-
-        <h1 class="hero-content-section header" id="pt3-hero-content-section-header">
+          <h1 class="hero-content-section header" id="pt3-hero-content-section-header">
             welcome to
             the
             plain language <span class="special-highlight">revolution</span>
-        </h1>
-        {{ page.content }}
+          </h1>
+          {{ page.content }}
         </div>
-
-    </section>
-</div>
-
-
-<a href="#pt3-hero-content-section" class="hero-target-selector" >
-    <svg view-box="0 0 24 24" class="hero__scroll-down" id="arrow-down" title="scroll down for more"
-        xmlns="http://www.w3.org/2000/svg" role="button" contenteditable="false">
-        <path d="M11 4h2v12l5.5-5.5 1.42 1.42L12 19.84l-7.92-7.92L5.5 10.5 11 16z">
-        </path>
-    </svg>
-</a>
+      </div>
+    </div>
+  </div>
+</section>
