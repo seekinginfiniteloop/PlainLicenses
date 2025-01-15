@@ -51,7 +51,9 @@ show_help() {
     echo "  or encode only a specific codec \(-c flag\)."
     echo "  Test mode: \(-t\) will output 10 frame samples for each segment."
     echo
-    echo "  YOU MUST PROVIDE: INPUT, OUTPUT, and at least one segment definition."
+    echo "  YOU MUST PROVIDE: INPUT, OUTPUT. If you don\'t provide at least one segment"
+    echo "  it defaults to a single segment from start to end of the video with the"
+    echo "  static profile."
     echo
     echo "Segment definitions:"
     echo "Segment format: START\|END\|TYPE"
@@ -79,7 +81,7 @@ show_help() {
     echo "  etc..."
 }
 
-declare -g NEW_FPS=20
+declare -g NEW_FPS=24
 
 # Resolution definitions with format: "width height"
 declare -a RESOLUTIONS=(
@@ -138,7 +140,7 @@ declare -A VP9_PROFILES=(
     ["detail"]="-aq-mode 1 -arnr-maxframes 6 -arnr-strength 5 -lag-in-frames 20 -g 240 -row-mt 1"
 )
 
-declare -g INPUT OUTPUT INPUT_4k input_1080p CRF_H264 CRF_VP9 CRF_AV1 SELECTED_CODEC ONE_SEGMENT TEST_MODE SECONDS
+declare -g INPUT OUTPUT INPUT_4k input_1080p CRF_H264 CRF_VP9 CRF_AV1 SELECTED_CODEC ONE_SEGMENT TEST_MODE TEST_SECONDS
 declare -g LOGDIR MASTERLOG TEMPDIR VIDEO_FPS
 
 # Store segments
@@ -175,7 +177,7 @@ CRF_H264="${CRF_H264:-25}"
 CRF_VP9="${CRF_VP9:-35}"
 SELECTED_CODEC="${SELECTED_CODEC:-}"
 TEST_MODE="${TEST_MODE:-false}"
-SECONDS="${SECONDS:-3}"
+TEST_SECONDS="${TEST_SECONDS:-3}"
 
 # ----------- Setup tempdir and logging -----------
 
@@ -184,6 +186,11 @@ if [ -z "$INPUT" ] || [ -z "$OUTPUT" ]; then
     echo "Error: Input and output root filenames are required"
     show_help
     exit 1
+fi
+
+if [ -z "${SEGMENTS[*]}" ]; then
+    echo "No segments defined. Defaulting to full video with static profile."
+    SEGMENTS=("0|end|static")
 fi
 
 # Add temp dir
@@ -319,20 +326,14 @@ get_resolution_crf() {
             result="$(echo "$base_crf + 4" | bc)"
             ;;
         2560)
-            result="$(echo "$base_crf + 2" | bc)"
+            result="$(echo "$base_crf + 3" | bc)"
             ;;
         1920)
-            result="$base_crf"
-            ;;
-        1280)
-            result="$(echo "$base_crf - 1" | bc)"
+            result="$(echo "$base_crf + 1" | bc)"
             ;;
         *)
-            if [ "$base_crf" -gt 30 ]; then
-                result="$(echo "$base_crf - 2" | bc)"
-            else
-                result="$(echo base_crf - 1 | bc)"
-            fi
+            result="$base_crf"
+            ;;
     esac
     echo "$result"
 }
@@ -797,7 +798,7 @@ get_random_time() {
     local start_time="$1"
     local end_time="$2"
     local fps="$3"
-    local segment_length=${4:-3}  # Renamed from SECONDS to avoid builtin conflict
+    local segment_length=${4:-3}  # Renamed from TEST_SECONDS to avoid builtin conflict
 
     # Validate segment_length
     if [ -z "$segment_length" ] || [ "$(echo "$segment_length <= 0" | bc -l)" -eq 1 ]; then

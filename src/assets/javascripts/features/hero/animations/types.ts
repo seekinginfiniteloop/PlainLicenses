@@ -6,66 +6,6 @@
  */
 
 import gsap from 'gsap'
-import { HeroState } from "../../../state/types"
-import { heroVideos } from "../imageCarousel/heroVideos"
-
-/**
- * @exports @enum {AnimationState}
- * @description Animation states for the Hero feature.
- * @enum {string} AnimationState
- */
-export enum AnimationState {
-  Playing = "playing",
-  Error = "error",
-  Idle = "idle",
-  Paused = "paused",
-  Disabled = "disabled"
-}
-
-/**
- * @exports @type {VideoKey}
- * @description Image key for the Hero feature.
- * @type {string}
- */
-export type VideoKey = typeof heroVideos[number]["imageName"]
-
-/**
- * @exports @type {AnimationType}
- * @description Animation types for the Hero feature.
- * @type {string}
- */
-export type AnimationType = "video" | "scrollTrigger"
-
-/**
- * @exports @type {Animations}
- * @description Animations for the Hero feature.
- * @type {Map<symbol, gsap.core.Timeline>}
- */
-export type Animations = Map<symbol, gsap.core.Timeline>
-
-/**
- * @exports @type {HeroKey}
- * @description Hero key for the Hero feature.
- * @type {keyof HeroState}
- */
-export type HeroKey = keyof HeroState
-
-/**
- * @exports @type {HeroValue}
- * @description Hero value for the Hero feature.
- * @type {HeroState[HeroKey]}
- */
-export type HeroValue = HeroState[HeroKey]
-
-/**
- * @exports @interface TimelineData
- * @description Timeline data for the Hero feature.
- * @interface TimelineData
- */
-export interface TimelineData extends gsap.TimelineVars {
-  canPlay: boolean
-  video: HTMLVideoElement
-}
 
 export interface ReducedMotionCondition extends gsap.Conditions {
   reducedMotion: boolean
@@ -74,6 +14,17 @@ export interface ReducedMotionCondition extends gsap.Conditions {
 /** ============================================
  *               Observer Types
  *=============================================**/
+
+/**
+ * @exports @enum {Direction}
+ * @description Direction enum for the Hero Observers.
+ */
+export enum Direction {
+  // eslint-disable-next-line no-unused-vars
+  UP = -1, // toward the top of the page
+  // eslint-disable-next-line no-unused-vars
+  DOWN = 1, // toward the bottom of the page
+}
 
 /**
  * @exports @interface Section
@@ -88,3 +39,32 @@ export interface Section {
   readonly content: Element[]
   animation?: gsap.core.Timeline
 }
+
+
+export interface EmphasisConfig {
+  blinkConfig: gsap.TweenVars
+  jumpConfig: gsap.TweenVars
+  scaleUpConfig: gsap.TweenVars
+}
+
+export interface FadeEffectConfig {
+  out?: boolean
+  direction?: Direction
+  fromConfig?: gsap.TweenVars
+  toConfig?: gsap.TweenVars
+}
+
+export interface TransitionConfig {
+  direction: Direction
+  section: Section
+}
+
+export type fadeIn = (targets: gsap.TweenTarget, config: FadeEffectConfig) => gsap.core.Timeline
+
+export type fadeOut = (targets: gsap.TweenTarget, config: FadeEffectConfig) => gsap.core.Timeline
+
+export type emphasize = (targets: gsap.TweenTarget, config: EmphasisConfig) => gsap.core.Timeline
+
+export type setSection = (config: TransitionConfig) => gsap.core.Timeline
+
+export type transitionSection = (config: TransitionConfig) => gsap.core.Timeline

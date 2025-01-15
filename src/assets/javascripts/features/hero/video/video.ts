@@ -1,6 +1,5 @@
 
-type VideoWidth = 426 | 640 | 854 | 1280 | 1920 | 2560 | 3840
-
+import VideoWidth from './types'
 
 const get_av1_media_type = (width: VideoWidth) => {
     const seqlevelMap = {

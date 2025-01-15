@@ -1,9 +1,9 @@
 /**
- * @module HeroObservation
+ * @module observer
  * @description HeroObservation class for the Hero feature. Creates GSAP Observers that handle the slide-show style animations.
  *
  * @license Plain-Unlicense (Public Domain)
- * @author Adam Poulemanos adam<at>plainlicense<.>org
+ * @author Adam Poulemanos adam<at>plainlicense<dot>org
  * @see {@link https://codepen.io/GreenSock/pen/XWzRraJ} GSAP Hero Observers Example
  * @see {@link https://gsap.com/docs/v3/Plugins/Observer/} GSAP Observer Documentation
  */
@@ -14,22 +14,13 @@ import { distinctUntilChanged, filter, map } from "rxjs/operators"
 import { OBSERVER_CONFIG } from "~/config/config"
 import { ObserverConfig } from "~/config/types"
 import { HeroStore } from "../../../state/store"
-import { getContentElements, getMatchMediaInstance } from "./utils"
+import { getContentElements } from "./utils"
 import { Subscription } from "rxjs"
-import { Section } from "./types"
+import { Section, Direction } from "./types"
+import type { HeroState } from "~/state/types"
 
 gsap.registerPlugin(Observer)
 
-/**
- * @exports @enum {Direction}
- * @description Direction enum for the Hero Observers.
- */
-export enum Direction {
-  // eslint-disable-next-line no-unused-vars
-  UP = -1, // toward the top of the page
-  // eslint-disable-next-line no-unused-vars
-  DOWN = 1, // toward the bottom of the page
-}
 
 /**
  * @exports @class HeroObservation
@@ -96,8 +87,8 @@ export class HeroObservation {
   private setupSubscriptions() {
     // We're only interested in the atHome state
     const atHome$ = this.store.state$.pipe(
-      map(state => state.atHome),
-      filter(atHome => atHome),
+      map((state: HeroState) => state.atHome),
+      filter((atHome: boolean) => atHome),
       distinctUntilChanged()
     )
 
@@ -174,9 +165,6 @@ export class HeroObservation {
           const { content } = section
           requestAnimationFrame(() => {
               gsap.set(content, { autoAlpha: 0 })
-              content.forEach((el, _) => {
-                  el.classList.add("fade-in")
-              })
           })
     })
     this.sectionCount = this.sections.length
@@ -233,50 +221,14 @@ export class HeroObservation {
   }
 
   // Construct the transition timeline based on the direction and index
+  // Uses registered effects from observerEffects.ts
   private constructTransitionTimeline(direction: Direction, index: number, tl: gsap.core.Timeline) {
-    const fromTop = direction === Direction.UP
-    const dFactor = fromTop ? Direction.UP : Direction.DOWN
     const nextSection = this.sections[index]
     if (this.currentIndex >= 0) {
       // the first time this runs, currentIndex will be -1
-      tl.add(
-        gsap.set(nextSection.element, { zIndex: 0 }))
-        .add(
-          gsap.to(nextSection.bg, { yPercent: -15 * dFactor }))
-        .add(
-          gsap.set(nextSection.element, { autoAlpha: 0 }))
-        .add(
-          gsap.set(nextSection.content, { autoAlpha: 0 }))
+      tl.setSection({direction: direction, section: nextSection})
     }
-    tl.add(["wrapperTransition", gsap.fromTo([nextSection.outerWrapper,
-      nextSection.innerWrapper], {
-      yPercent: i => i ? i * -100 * dFactor : 100 * dFactor
-    }, {
-      yPercent: 0
-    })], 0)
-      .add(gsap.fromTo(
-        nextSection.bg, {
-        yPercent: 15 * dFactor
-      }, {
-        yPercent: 0
-      }), 0)
-      .add(gsap.set(nextSection.element, { zIndex: 1, autoAlpha: 1 }), 0)
-      .add(gsap.fromTo(
-        nextSection.content, {
-        autoAlpha: 0,
-        yPercent: 50 * dFactor
-      }, {
-        autoAlpha: 1,
-        yPercent: 0,
-        stagger: {
-          each: 0.1,
-          axis: "y",
-          from: direction === Direction.UP ? "start" : "end"
-        }
-      }), 0.2)
-    if (nextSection.animation && nextSection.animation.totalDuration() > 0) {
-      tl.add(nextSection.animation, ">=wrapperTransition")
-    }
+    tl.transitionSection({direction, section: nextSection})
     return tl
   }
 

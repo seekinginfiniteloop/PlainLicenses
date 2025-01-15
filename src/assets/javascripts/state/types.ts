@@ -4,8 +4,31 @@
  * @description Types for the Hero feature state management.
  */
 
+import gsap from "gsap"
 import { Header } from "~/components"
 
+/**
+ * @exports @enum {AnimationState}
+ * @description Animation states for the Hero feature.
+ * @enum {string} AnimationState
+ */
+export enum AnimationState {
+  Playing = "playing",
+  Error = "error",
+  Idle = "idle",
+  Paused = "paused",
+  Disabled = "disabled"
+}
+
+/**
+ * @exports @interface TimelineData
+ * @description Timeline data for the Hero feature.
+ * @interface TimelineData
+ */
+export interface TimelineData extends gsap.TimelineVars {
+  canPlay: boolean
+  video: HTMLVideoElement
+}
 
 export interface HeroState {
   atHome: boolean

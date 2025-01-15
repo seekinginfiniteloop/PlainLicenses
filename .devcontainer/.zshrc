@@ -11,16 +11,32 @@ HIST_STAMPS="mm/dd/yyyy"
 zstyle :omz:plugins:ssh-agent quiet yes
 zstyle :omz:plugins:ssh-agent lazy yes
 source "$ZSH/oh-my-zsh.sh"
-
+# Case-sensitive completion must be off. _ and - will be interchangeable.
+HYPHEN_INSENSITIVE="true"
 # shellcheck disable=SC2034
-DISABLE_AUTO_UPDATE=true
-DISABLE_UPDATE_PROMPT=true
+DISABLE_AUTO_UPDATE="true"
+DISABLE_UNTRACKED_FILES_DIRTY="true"
+DISABLE_UPDATE_PROMPT="true"
+DISABLE_MAGIC_FUNCTIONS="true"
+COMPLETION_WAITING_DOTS="true"
 ZSH_THEME="powerlevel10k/powerlevel10k"
 # shellcheck disable=SC2296
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
 # shellcheck disable=SC2296
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
+
+# User configuration
+export MANPATH="/usr/local/man:$MANPATH"
+export LANG=en_US.UTF-8
+
+# Preferred editor for local and remote sessions
+ if [[ -n $SSH_CONNECTION ]]; then
+   export EDITOR='micro'
+ else
+   export EDITOR='code'
+ fi
+
 
 export bash_completion="$HOME/.local/share/bash-completion/completions"
 export BUN_INSTALL="/home/vscode/.bun"
@@ -53,6 +69,7 @@ updatedb
 source "$HOME/.oh-my-zsh/oh-my-zsh.sh"
 fpath+=$HOME/.zfunc
 setopt extended_glob
+setopt NO_NOTIFY
 autoload -Uz compinit
 zstyle ':completion:*' menu select
 # shellcheck disable=SC2034

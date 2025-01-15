@@ -94,3 +94,12 @@ export function getContentElements(element: Element): Element[] {
         (el.innerHTML.trim() !== "" || el instanceof SVGElement)
   )
 }
+
+/**
+ * Retrieves the targets array from a TweenTarget.
+ * @param targets - The TweenTarget to retrieve the targets array from.
+ * @returns The targets array.
+ */
+export function getTargetsArray(targets: gsap.TweenTarget): Element[] {
+  return gsap.utils.toArray(targets).map((target: Element | string | null) => target instanceof Element ? target : (typeof target === "string" ? document.querySelector(target) : null)).filter((target: Element | null) => target !== null && target instanceof Element)
+}
