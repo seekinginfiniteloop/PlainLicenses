@@ -69,7 +69,6 @@ updatedb
 source "$HOME/.oh-my-zsh/oh-my-zsh.sh"
 fpath+=$HOME/.zfunc
 setopt extended_glob
-setopt NO_NOTIFY
 autoload -Uz compinit
 zstyle ':completion:*' menu select
 # shellcheck disable=SC2034
