@@ -29,8 +29,8 @@ jobs:
         with:
           bun-version: latest
       - run: |
-          bun install --no-interactive
-          bun install --no-interactive -g semantic-release-cli commitlint lerna
+          bun i -d --peer --optional --no-interactive
+          bun i --no-interactive -g semantic-release-cli commitlint lerna
           export NODE_ENV=production
       - name: Run Lerna Versioning
         run: npx lerna version --yes --conventional-commits

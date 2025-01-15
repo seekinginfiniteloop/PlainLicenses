@@ -30,7 +30,7 @@ jobs:
           with:
             bun-version: latest
         - run: |
-            bun install --no-interactive
+            bun i -d --peer --optional --no-interactive
             export NODE_ENV=production
             bun run build
         - name: setup UV
