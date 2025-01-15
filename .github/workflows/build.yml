@@ -32,7 +32,7 @@ jobs:
         - run: |
             bun install --no-interactive
             export NODE_ENV=production
-            bun build
+            bun run build
         - name: setup UV
           uses: astral-sh/setup-uv@v5
           with:
