@@ -29,7 +29,7 @@ jobs:
         with:
           bun-version: latest
       - run: |
-          bun install --no-interactive --frozen-lockfile
+          bun install --no-interactive
           bun install --no-interactive -g semantic-release-cli commitlint lerna
           export NODE_ENV=production
       - name: Run Lerna Versioning
