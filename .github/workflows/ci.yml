@@ -46,7 +46,7 @@ jobs:
             pyproject.toml
       - run: |
           bun install --no-interactive
-          bun install --no-interactive -g @linthtml/linthtml stylelint eslint prettier markdownlint-cli2
+          bun install --no-interactive -g @linthtml/linthtml stylelint eslint prettier typescript markdownlint-cli2
           uv python install 3.13 &&
           uv venv --allow-existing .venv &&
           source .venv/bin/activate &&

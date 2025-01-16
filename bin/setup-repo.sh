@@ -7,6 +7,7 @@ set -e
 
 # Default setup_mode is 0 (disabled)
 # Initialize flags
+declare -g hard_reset tool_setup
 hard_reset=0
 tool_setup=0
 
@@ -37,7 +38,7 @@ submodule_sparse_paths["license-list-data"]="/json/licenses.json /json/details"
 
 submodule_url["mkdocs-material"]="https://github.com/squidfunk/mkdocs-material.git"
 submodule_branch["mkdocs-material"]="master"
-submodule_sparse_paths["mkdocs-material"]="/material/templates /material/overrides /src/templates /src/overrides tsconfig.json"
+submodule_sparse_paths["mkdocs-material"]="/material/templates /material/overrides /src/templates /src/overrides tsconfig.json typings"
 
 # shellcheck disable=SC2034
 submodule_url["choosealicense"]="https://github.com/github/choosealicense.com.git"
@@ -52,6 +53,11 @@ SUBMODULE_PATH_PREFIX='external'
 error_exit() {
     echo "$1" >&2
     exit 1
+}
+
+success_exit() {
+    echo "$1"
+    exit 0
 }
 
 update_submodules() {
@@ -107,7 +113,7 @@ setup_tools() {
         echo "Installing uv..."
         if ! command -v pip >/dev/null 2>&1; then
             curl -LsSf https://astral.sh/uv/install.sh | sh || error_exit "Failed to install uv"
-            export uvloc="${HOME}/.local/bin/uv}"
+            export uvloc="${HOME}/.local/bin/uv"
         else
             pip install uv || error_exit "Failed to install uv"
         fi
@@ -127,24 +133,29 @@ setup_tools() {
     install_bun_tools || error_exit "Failed to install bun tools"
     install_uv_tools || error_exit "Failed to install uv tools"
     cd "$REPO_ROOT_ABS_PATH"
-    chmod +x bin/install-hooks.sh
-    bin/install-hooks.sh || error_exit "Failed to install hooks"
 }
 
-update_submodules || error_exit "Failed to update submodules"
-chmod +x bin/*
-chmod +x bin/hooks/*
-if [[ $tool_setup -eq 1 ]]; then
-    setup_tools || error_exit "Failed to setup tools"
-elif [[ $hard_reset -eq 1 ]]; then
-    init_hard_reset || error_exit "Failed to hard reset submodules"
-else
-    echo "Submodules updated."
-    if [[ -L .git/hooks/pre-commit && -L .git/hooks/prepare-commit-msg && -L .git/hooks/commit-msg ]]; then
-        echo "Hooks already exist."
+main() {
+    if [[ $hard_reset -eq 1 ]]; then
+        init_hard_reset || error_exit "Failed to hard reset submodules"
+        success_exit "Submodules reset."
     else
-        echo "Installing hooks..."
-        chmod +x bin/install-hooks.sh
-        bin/install-hooks.sh || error_exit "Failed to install hooks"
+        update_submodules || error_exit "Failed to update submodules"
+        if [[ $tool_setup -eq 1 ]]; then
+            setup_tools || error_exit "Failed to setup tools"
+            success_exit "Tools installed."
+        else
+            echo "Submodules updated."
+            if [[ -L .git/hooks/pre-commit && -L .git/hooks/prepare-commit-msg && -L .git/hooks/commit-msg ]]; then
+                success_exit "Hooks already exist."
+            else
+                echo "Installing hooks..."
+                chmod +x bin/install-hooks.sh
+                bin/install-hooks.sh || error_exit "Failed to install hooks"
+                success_exit "Hooks installed."
+            fi
+        fi
     fi
-fi
+}
+
+main
