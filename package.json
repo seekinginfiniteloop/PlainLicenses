@@ -64,6 +64,7 @@
     "node": ">= 20"
   },
   "devDependencies": {
+    "@asn.aeb/esbuild-css-modules-plugin": "^0.1.9",
     "@commitlint/cli": "^19.6.0",
     "@commitlint/config-conventional": "^19.6.0",
     "@commitlint/cz-commitlint": "^19.5.0",
@@ -98,6 +99,7 @@
     "semantic-release": "^24.2.0",
     "semantic-release-cli": "^5.4.6",
     "stylelint": "^16.11.0",
+    "svgo": "^3.3.2",
     "ts-node": "^10.9.2",
     "tsc": "^2.0.4",
     "typescript": "^5.7.2"
