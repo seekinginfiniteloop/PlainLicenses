@@ -50,7 +50,7 @@ jobs:
           uv python install 3.13 &&
           uv venv --allow-existing .venv &&
           source .venv/bin/activate &&
-          uv sync --all-extras &&
+          uv sync --all-extras
       - name: Run Linting
         run: |
           bun run check --no-interactive
