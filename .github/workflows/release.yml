@@ -29,8 +29,8 @@ jobs:
         with:
           bun-version: latest
       - run: |
-          bun install --no-interactive --frozen-lockfile
-          bun install --no-interactive -g semantic-release-cli commitlint lerna
+          bun i -d --peer --optional --no-interactive
+          bun i --no-interactive -g semantic-release-cli commitlint lerna
           export NODE_ENV=production
       - name: Run Lerna Versioning
         run: npx lerna version --yes --conventional-commits
@@ -50,24 +50,24 @@ jobs:
           git diff-index --quiet HEAD || git commit -m "bot(ci): update changelogs [ci]"
           git push
 
-notify:
-  needs: [build]
-  if: failure()
-  runs-on: ubuntu-latest
-  permissions:
-    contents: read
-    pull-requests: read
-    issues: write
-  steps:
-    - name: Create GitHub Issue
-      uses: actions/github-script@v7
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        script: |
-          github.rest.issues.create({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            title: 'Workflow failed: ${{ github.workflow }}',
-            body: 'Workflow ${{ github.workflow }} failed on commit ${{ github.sha }}. Check the [workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.',
-            labels: ['bug']
-          })
+  notify:
+    needs: [release]
+    if: failure()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      issues: write
+    steps:
+      - name: Create GitHub Issue
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: 'Workflow failed: ${{ github.workflow }}',
+              body: 'Workflow ${{ github.workflow }} failed on commit ${{ github.sha }}. Check the [workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.',
+              labels: ['bug']
+            })

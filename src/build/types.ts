@@ -101,8 +101,8 @@ export interface tsconfigPathsPluginInterface {
 type VideoWidth = 426 | 640 | 854 | 1280 | 1920 | 2560 | 3840
 type VideoCodec = 'av1' | 'vp9' | 'h264'
 
-export interface CodecVariants{
-  [key: VideoCodec]: { [key: VideoWidth]: string }
+export type CodecVariants = {
+  [key in VideoCodec]: { [key in VideoWidth]: string}
 }
 
 export interface VideoResolution {

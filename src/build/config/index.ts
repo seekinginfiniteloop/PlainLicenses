@@ -67,6 +67,7 @@ export function buildVideoPath(baseName: string, codec: string, width: number): 
  */
 export async function generateVideoVariants(baseName: string): Promise<HeroVideo> {
   const resKeys = Object.fromEntries(videoConfig.resolutions.map(res => [res.width, ""]))
+  //ts-ignore
   const variants: CodecVariants = Object.fromEntries(videoConfig.codecs.map(codec => [codec, resKeys]))
 
   for (const resolution of videoConfig.resolutions) {
