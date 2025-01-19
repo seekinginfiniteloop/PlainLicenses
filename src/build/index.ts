@@ -33,8 +33,8 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { from, Observable } from "rxjs";
 import { optimize } from "svgo";
-import { baseProject, generateVideoVariants, getVideoParents, heroImages, heroParents, webConfig } from "./config/index.js";
-import { buildJson, esbuildOutputs, FileHashes, HeroImage, HeroVideo, Project } from "./types.ts";
+import { baseProject, generateVideoVariants, getVideoParents, heroImages, heroParents, videoConfig, webConfig } from "./config/index.js";
+import { buildJson, CodecVariants, esbuildOutputs, FileHashes, HeroImage, HeroVideo, Project } from "./types.ts";
 
 import globby from 'globby';
 
@@ -49,6 +49,7 @@ let noScriptImage: HeroImage = {
   widths: {},
   srcset: '',
 }
+
 
 /**
  * @param {string} fullPath - the full path to the file
@@ -143,10 +144,7 @@ async function handleHeroVideos() {
     const video = await generateVideoVariants(baseName);
 
     // Hash and copy video files
-    const newVariants = {
-      av1: {},
-      vp9: {}
-    };
+    const newVariants = Object.fromEntries(videoConfig.codecs.map(codec => [codec, Object.fromEntries(videoConfig.resolutions.map(res => [res.width, ""]))])) as CodecVariants
 
     for (const [codec, paths] of Object.entries(video.variants)) {
       for (const [width, src] of Object.entries(paths as { [key: string]: string })) {
@@ -174,13 +172,16 @@ async function exportVideosToTS(videos: HeroVideo[]) {
 // Auto-generated video data
 export const heroVideos = ${JSON.stringify(videos, null, 2)} as const;
 
-export function getOptimalVideoVariant(width: number): string {
-  // Implement video selection logic based on viewport/codec support
+export function getVideoVariants(width: number): string {
+  const protocol = location.protocol === 'http:' ? 'http:' : 'https:';
+  const { host } = location;
+
+  return heroVideos
 }
 `;
 
   await fs.writeFile(
-    'src/assets/javascripts/features/hero/heroVideos.ts',
+    'src/assets/javascripts/features/hero/videos/heroVideos.ts',
     fileContent
   );
 }
@@ -206,30 +207,13 @@ async function exportImagesToTS(images: HeroImage[]) {
 */
 
 import { HeroImage, ImageFocalPoints, Point } from './types'
-
-/**
- * @param src - the source path
- * @returns the updated path
- * @description Replaces the 'docs' path with the current location
- */
-function replaceDocs(src: string): string {
-  const protocol = location.protocol === 'http:' ? 'http:' : 'https:'
-  const { host } = location
-  return src.replace(/docs/g, \`\${protocol}//\${host}\`)
-}
+import { replaceDocs } from './utils'
 
 /**
  * @constant The raw hero images data as a json string
  */
 const rawHeroImages = ${JSON.stringify(images, null, 2)} as const
 
-/**
- * @exports HeroName
- * @enum {HeroName}
- * @description The names of the hero images as enum values
- */
-export enum HeroName {
-    ${images.map(image => toEnumString(image.imageName)).join(',\n    ')}
 
 /**
  * @exports heroImages
@@ -252,7 +236,7 @@ export const heroImages = rawHeroImages.map(image => ({
 `
 
   // Write the file to the output path
-  const outputPath = path.join('src', 'assets', 'javascripts', 'features', 'hero', 'imageCarousel', 'heroImages.ts')
+  const outputPath = path.join('src', 'assets', 'javascripts', 'features', 'hero', 'videos', 'heroImages.ts')
 
   /**
    * @function runLint
@@ -261,8 +245,8 @@ export const heroImages = rawHeroImages.map(image => ({
   const runLint = async () => {
     await fs.writeFile(outputPath, fileContent)
     console.log('Hero images data exported to heroImages.ts')
-    const paths = ['src/assets/javascripts/features/hero/heroImages.ts',
-      'src/assets/javascripts/features/hero/heroVideos.ts'
+    const paths = ['src/assets/javascripts/features/hero/videos/heroImages.ts',
+      'src/assets/javascripts/features/hero/videos/heroVideos.ts'
     ]
     // Run ESLint on the generated file to strip the quotes from keys
     paths.forEach((path) => {
