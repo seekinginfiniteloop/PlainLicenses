@@ -94,6 +94,23 @@ declare -a RESOLUTIONS=(
     "426 240"
 )
 
+declare -A CODEC_LIBRARIES=(
+    ["av1"]="libsvtav1"
+    ["h264"]="libx264"
+    ["vp9"]="libvpx-vp9"
+)
+
+declare -A AV1_LEVELS=(
+    ["3840"]="5.0"
+    ["2560"]="5.0"
+    ["1920"]="4.0"
+    ["1280"]="3.1"
+    ["854"]="3.0"
+    ["640"]="2.1"
+    ["426"]="2.0"
+)
+
+# populated by the script
 declare -A CODEC_FILTERS=(
     ["av1_3840"]=""
     ["av1_2560"]=""
@@ -120,24 +137,32 @@ declare -A CODEC_FILTERS=(
 
 # Encoding profiles
 # Modify the encoding profiles sections:
+
+# Base profiles for each codec -- values shared across all segments
+declare -A BASE_PROFILES=(
+    ["h264"]="stitchable:rc-lookahead=60:scenecut=0:tune=film"
+    ["vp9"]="-row-mt 1"
+    ["av1"]="tune=1:enable-qm=1:scm=2:enable-overlays=1:lookahead=120:scd=1:enable-tf=0:fast-decode=1:rc=1:film-grain-denoise=0:lp=6"
+)
+
 declare -A H264_PROFILES=(
-    ["static"]="stitchable:aq-mode=1:aq-strength=1.5:rc-lookahead=60:merange=24:keyint=360:min-keyint=360:scenecut=0:psy-rd='0.4:0':psy-rdoq=2.0:deblock='0:0':grain=1:tune=film"
-    ["motion"]="stitchable:aq-mode=2:aq-strength=1.6:rc-lookahead=60:me=hex:merange=32:bframes=2:keyint=120:min-keyint=120:scenecut=0:psy-rd='0.6:0':deblock='-2:-1'"
-    ["detail"]="stitchable:aq-mode=2:aq-strength=1.65:rc-lookahead=60:me=hex:merange=24:bframes=2:keyint=240:min-keyint=240:no-dct-decimate:scenecut=0:psy-rd='0.7:0':deblock='-2:-1'"
+    ["static"]=":aq-mode=1:aq-strength=1.5:merange=24:keyint=360:min-keyint=360:psy-rd='0.4:0':psy-rdoq=2.0:deblock='0:0':grain=1"
+    ["motion"]=":aq-mode=2:aq-strength=1.6:me=hex:merange=32:bframes=2:keyint=120:min-keyint=120:psy-rd='0.6:0':deblock='-2:-1'"
+    ["detail"]=":aq-mode=2:aq-strength=1.65:me=hex:merange=24:bframes=2:keyint=240:min-keyint=240:no-dct-decimate:psy-rd='0.7:0':deblock='-2:-1'"
 )
 
 # Update the AV1_PROFILES array
 declare -A AV1_PROFILES=(
-    ["static"]="tune=1:enable-qm=1:scm=2:enable-overlays=1:lookahead=120:scd=1:enable-tf=0:keyint=360:qm-min=5:fast-decode=2:rc=1:film-grain=12:film-grain-denoise=0"
-    ["motion"]="tune=1:enable-qm=1:scm=2:enable-overlays=1:lookahead=120:scd=1:enable-tf=1:keyint=120:qm-min=8:fast-decode=2:rc=1:film-grain=10:film-grain-denoise=0"
-    ["detail"]="tune=1:enable-qm=1:scm=2:enable-overlays=1:lookahead=120:scd=1:enable-tf=0:keyint=240:qm-min=6:fast-decode=2:rc=1:film-grain=8:film-grain-denoise=0"
+    ["static"]=":enable-tf=0:keyint=360:qm-min=5:film-grain=12"
+    ["motion"]=":enable-tf=1:keyint=120:qm-min=8:film-grain=10"
+    ["detail"]=":enable-tf=0:keyint=240:qm-min=6:film-grain=8"
 )
 
 # Update the VP9_PROFILES array
 declare -A VP9_PROFILES=(
-    ["static"]="-aq-mode 0 -arnr-maxframes 15 -arnr-strength 6 -lag-in-frames 25 -g 360 -row-mt 1 -undershoot-pct 95 -sharpness 1"
-    ["motion"]="-aq-mode 0 -arnr-maxframes 5 -arnr-strength 3 -lag-in-frames 16 -g 120 -row-mt 1"
-    ["detail"]="-aq-mode 1 -arnr-maxframes 6 -arnr-strength 5 -lag-in-frames 20 -g 240 -row-mt 1"
+    ["static"]="-aq-mode 0 -arnr-maxframes 15 -arnr-strength 6 -lag-in-frames 25 -g 360 -undershoot-pct 95 -sharpness 1"
+    ["motion"]="-aq-mode 0 -arnr-maxframes 5 -arnr-strength 3 -lag-in-frames 16 -g 120"
+    ["detail"]="-aq-mode 1 -arnr-maxframes 6 -arnr-strength 5 -lag-in-frames 20 -g 240"
 )
 
 declare -g INPUT OUTPUT INPUT_4k input_1080p CRF_H264 CRF_VP9 CRF_AV1 SELECTED_CODEC ONE_SEGMENT TEST_MODE TEST_SECONDS
@@ -589,14 +614,14 @@ encode_video() {
     ffmpeg_cmd=(ffmpeg -y -i "$input" -ss "$start_time" -to "$end_time" -c:v "$codec" -vf "$filter_chain")
 
     # Add resolution-specific tile settings for AV1
-    if [ "$width" -ge 3840 ]; then
+    if [ "$width" -ge 1920 ]; then
         tile_columns=4
         tile_rows=2
-    elif [ "$width" -ge 1920 ]; then
-        tile_columns=3
-        tile_rows=2
-    else
-        tile_columns=2
+    elif [ "$width" -le 1280 ] && [ "$width" -ge 854 ]; then
+        tile_columns=4
+        tile_rows=1
+    else # 640x360 and below
+        tile_columns=4
         tile_rows=1
     fi
 
@@ -611,10 +636,9 @@ encode_video() {
             if [ "$max_qp" -gt 63 ]; then
                 max_qp=63
             fi
-            av1_rc_params="qp=${actual_crf}:min-qp=${min_qp}:max-qp=${max_qp}:tile-columns=${tile_columns}:tile-rows=${tile_rows}:lp=6"
+            av1_rc_params="qp=${actual_crf}:min-qp=${min_qp}:max-qp=${max_qp}:tile-columns=${tile_columns}:tile-rows=${tile_rows}"
             av1_params="${profile}:${av1_rc_params}"
-            ffmpeg_cmd+=( -pass "$pass" -profile:v 0 -preset "${perf_preset}" \
-            -svtav1-params "${av1_params}" )
+            ffmpeg_cmd+=( -pass "$pass" -profile:v 0 -preset "${perf_preset}" -level:v "${AV1_LEVELS[$width]}" -tier:v main -svtav1-params "${av1_params}" )
             log "AV1 params: ${av1_params}"
             ;;
         libx264)
@@ -622,7 +646,7 @@ encode_video() {
                          -x264-params "$profile" )
             ;;
         libvpx-vp9)
-            vp9_tile_columns=$((tile_columns - 1))  # VP9 needs fewer tiles than AV1
+            vp9_tile_columns=$((tile_columns - 2))  # VP9 needs fewer tiles than AV1
             ffmpeg_cmd+=( -pass "$pass" -crf "$actual_crf" -b:v 0 -profile:v 2 -deadline best \
                          -threads "${procs}" -auto-alt-ref 1 -cpu-used "${perf_preset}" -tune ssim -row-mt 1 \
                          -tune-content film -tile-columns "$vp9_tile_columns" -frame-parallel 1 \
@@ -640,7 +664,7 @@ encode_video() {
         output_file="/dev/null"
         extension="null"
     fi
-
+    log "Built base ffmpeg command: ${ffmpeg_cmd[*]}"
     ffmpeg_cmd+=( -f "$extension" -an "$output_file")
     log "Executing: ${ffmpeg_cmd[*]}"
     "${ffmpeg_cmd[@]}" >>"$segment_log" 2>&1
@@ -660,7 +684,7 @@ encode_segment() {
     local pass="$8"
     local codec="$9"
 
-    local start_time end_time segment_id segment_log crop_values filter_chain crf profile library output_file filter_key extension
+    local start_time end_time segment_id segment_log crop_values filter_chain crf profile library output_file filter_key extension default_profile
     # Parse segment
     IFS='|' read -r start end type <<<"$segment"
 
@@ -682,6 +706,7 @@ encode_segment() {
 
     # Check if filter chain is already cached
     # We don't want to switch filters between segments of the same resolution
+    log "Encoding $codec segment $segment_id"
     filter_key="${codec}_${width}"
     if [ "${CODEC_FILTERS[$filter_key]}" == "" ]; then
         # detect crop values
@@ -694,24 +719,25 @@ encode_segment() {
         filter_chain="${CODEC_FILTERS[$filter_key]}"
     fi
 
+    library=${CODEC_LIBRARIES[$codec]}
+    default_profile=${BASE_PROFILES[$codec]}
     case "$codec" in
         av1)
             crf="$CRF_AV1"
-            profile="${AV1_PROFILES[$type]}"
-            library="libsvtav1"
+            profile="${default_profile}${AV1_PROFILES[$type]}"
             extension="webm"
             ;;
         h264)
             crf="$CRF_H264"
-            profile="${H264_PROFILES[$type]}"
-            library="libx264"
+            profile="${default_profile}${H264_PROFILES[$type]}"
             extension="mp4"
             ;;
         vp9)
+            local profile_args default_args
             IFS=: read -r -a profile_args <<<"${VP9_PROFILES[$type]}"
+            IFS=: read -r -a default_args <<<"${default_profile}"
             crf="$CRF_VP9"
-            profile="${profile_args[*]}"
-            library="libvpx-vp9"
+            profile="${default_args[*]} ${profile_args[*]}"
             extension="webm"
             ;;
         *)
@@ -956,10 +982,12 @@ main() {
                     continue
                 fi
                 if [ "$codec" == "h264" ]; then
+                        log "Encoding H264 segment"
                         output=$(encode_segment "$input" "$OUTPUT" "$segment" \
                             "$width" "$height" "$orig_width" "$orig_height" \
                             2 "$codec" "$width")
                             h264_segments+=("$output")
+                        log "Encoded H264 segment: ${output}"
                     else
                         encode_segment "$input" "$OUTPUT" "$segment" \
                             "$width" "$height" "$orig_width" "$orig_height" \
@@ -969,8 +997,10 @@ main() {
                             "$width" "$height" "$orig_width" "$orig_height" \
                             2 "$codec" "$width")
                         if [ "$codec" == "av1" ]; then
+                            log "Encoded AV1 segment: ${output}"
                             av1_segments+=("$output")
                         else
+                            log "Encoded VP9 segment: ${output}"
                             vp9_segments+=("$output")
                         fi
                     fi

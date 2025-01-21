@@ -90,3 +90,18 @@ export const OBSERVER_CONFIG: ObserverConfig = {
   clickTargets: 'hero-target-selector',
   ignoreTargets: 'a, button, clickTargets, header, navigation, md-tabs'
 } as const
+
+/**
+ * Minimum widths for video source media queries
+ * Keys are the width of the video
+ * Values are the minimum width of the viewport
+ */
+export const MIN_WIDTHS = {
+  426: '426',
+  640: '640',
+  854: '854',
+  1280: '1280',
+  1920: '1920',
+  2560: '2560',
+  3840: '3840'
+} as const

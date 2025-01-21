@@ -1,11 +1,3 @@
-export type VideoWidth = 426 | 640 | 854 | 1280 | 1920 | 2560 | 3840
-
-/**
- * @exports @type {VideoKey}
- * @description Image key for the Hero feature.
- * @type {string}
- */
-export type VideoKey = typeof heroVideos[number]["imageName"]
 
 /**
  * @exports @type {AnimationType}
@@ -21,16 +13,32 @@ export type AnimationType = "video" | "scrollTrigger"
  */
 export type Animations = Map<symbol, gsap.core.Timeline>
 
-/**
- * @exports @type {HeroKey}
- * @description Hero key for the Hero feature.
- * @type {keyof HeroState}
- */
-export type HeroKey = keyof HeroState
+export type VideoWidth = 426 | 640 | 854 | 1280 | 1920 | 2560 | 3840
+export type VideoCodec = 'av1' | 'vp9' | 'h264'
 
-/**
- * @exports @type {HeroValue}
- * @description Hero value for the Hero feature.
- * @type {HeroState[HeroKey]}
- */
-export type HeroValue = HeroState[HeroKey]
+export type HeroPaths = {
+ [key in VideoWidth]: string
+}
+
+export interface HeroImage {
+  imageName: string
+  parent: string
+  widths: HeroPaths
+  srcset: string
+}
+
+export type CodecVariants = {
+  [key in VideoCodec]: HeroPaths
+}
+
+export interface VideoResolution {
+  width: VideoWidth
+  height: number
+}
+
+export interface HeroVideo {
+    baseName: string
+    parent: string // Path to the parent directory of the video
+  variants: CodecVariants[]
+  poster: HeroImage
+}

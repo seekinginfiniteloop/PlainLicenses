@@ -98,11 +98,15 @@ export interface tsconfigPathsPluginInterface {
  *               VIDEO CONFIG
  *=============================================**/
 
-type VideoWidth = 426 | 640 | 854 | 1280 | 1920 | 2560 | 3840
-type VideoCodec = 'av1' | 'vp9' | 'h264'
+export type HeroPaths = {
+ [key in VideoWidth]: string
+}
+
+export type VideoWidth = 426 | 640 | 854 | 1280 | 1920 | 2560 | 3840
+export type VideoCodec = 'av1' | 'vp9' | 'h264'
 
 export type CodecVariants = {
-  [key in VideoCodec]: { [key in VideoWidth]: string}
+  [key in VideoCodec]: HeroPaths
 }
 
 export interface VideoResolution {
@@ -113,13 +117,13 @@ export interface VideoResolution {
 export interface VideoVariant {
   codec: VideoCodec
   path: string
-  width: number
+  width: VideoWidth
   height: number
 }
 
 export interface HeroVideo {
   baseName: string
-  parent: string
+  parent: string // Path to the parent directory of the video
   variants: CodecVariants
   poster: HeroImage
 }

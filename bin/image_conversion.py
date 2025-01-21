@@ -24,7 +24,7 @@ class ImageConversionConfig(TypedDict):
         format (Literal["WEBP", "AVIF", "PNG"]): The desired output format for the converted image.
         quality (int): The quality of the converted image, ranging from 0 to 100.
         speed (int): The speed of the conversion process, ranging from 0 to 8.
-        bits (int): The number of bits per pixel for the converted image, can be 8, 10, or 12.
+        bits (int): The number of bits per pixel for the converted image, can be 8, 10, or 12. Generally, you can get better quality with less size by using higher bit depth (even with an 8 bit source), but it may not be supported by all browsers.
         subsample (int): The subsampling method used for the converted image, can be 444, 422, or 420.
         codec_speed (int): The speed of the codec used for the conversion process, ranging from 0 to 10.
         threads (int): The number of threads used for the conversion process, ranging from 1 to 64.
@@ -45,7 +45,7 @@ DEFAULT_AVIF_CONFIG: ImageConversionConfig = {
     "format": "AVIF",
     "quality": 64,
     "speed": 1,
-    "bits": 8,
+    "bits": 10,
     "subsample": 420,
     "codec_speed": 1,
     "threads": os.cpu_count() or 8,
@@ -55,7 +55,7 @@ RESIZE_CONFIG: dict[str, str | list[int] | list[Literal["WEBP", "AVIF", "PNG"]]]
     "input_folder": "src/images/hero",
     "output_folder": "src/images/hero",
     "widths": [3840, 2560, 1920, 1280, 854, 640, 426],
-    "formats": ["WEBP"],
+    "formats": ["AVIF", "WEBP", "PNG"],
 }
 
 
@@ -76,9 +76,9 @@ def resize_and_save(
     if format == "PNG":
         resized_image.save(output_path, "PNG", optimize=True)
     elif format == "WEBP":
-        resized_image.save(output_path, "WEBP", quality=74)
+        resized_image.save(output_path, "WEBP", quality=74, bits=10, threads=8)
     elif format == "AVIF":
-        resized_image.save(output_path, "AVIF", quality=64)
+        resized_image.save(output_path, "AVIF", quality=67, speed=1, bits=10, threads=8)
 
 
 def convert(image: ImageFile, **config_dict: ImageConversionConfig) -> None:

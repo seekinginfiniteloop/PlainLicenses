@@ -28,9 +28,10 @@ import { copy } from 'esbuild-plugin-copy'
 import globby from "globby"
 import * as fs from "fs"
 
-import type { CodecVariants, HeroImage, HeroImageBase, HeroVideo, Project, VideoConfig, WidthMap } from "../types.ts"
+import type { CodecVariants, HeroImage, HeroImageBase, HeroPaths, HeroVideo, Project, VideoConfig, VideoResolution, WidthMap } from "../types.ts"
+import { VideoCodec } from "~/features/hero/video/types.js"
 
-export const videoConfig: VideoConfig = {
+export const videoConfig = {
   resolutions: [
     { width: 3840, height: 2160 },
     { width: 2560, height: 1440 },
@@ -39,10 +40,10 @@ export const videoConfig: VideoConfig = {
     { width: 854, height: 480 },
     { width: 640, height: 360 },
     { width: 426, height: 240 },
-  ],
-  codecs: ['av1', 'vp9', 'h264'],
+  ] as VideoResolution[],
+  codecs: ['av1', 'vp9', 'h264'] as VideoCodec[],
   baseDir: 'src/assets/videos/hero'
-}
+} as VideoConfig
 
 /**
  * @returns {Promise<string[]>} Directory paths containing hero videos
@@ -66,9 +67,13 @@ export function buildVideoPath(baseName: string, codec: string, width: number): 
  * @returns {Promise<HeroVideo>} A promise that resolves to the hero video object
  */
 export async function generateVideoVariants(baseName: string): Promise<HeroVideo> {
-  const resKeys = Object.fromEntries(videoConfig.resolutions.map(res => [res.width, ""]))
+  const resKeys: HeroPaths = Object.fromEntries(videoConfig.resolutions.map(res => [res.width, ""])) as HeroPaths
   //ts-ignore
-  const variants: CodecVariants = Object.fromEntries(videoConfig.codecs.map(codec => [codec, resKeys]))
+  const variants: CodecVariants = {
+    av1: { ...resKeys },
+    vp9: { ...resKeys },
+    h264: { ...resKeys },
+  }
 
   for (const resolution of videoConfig.resolutions) {
     for (const codec of videoConfig.codecs) {
@@ -81,13 +86,11 @@ export async function generateVideoVariants(baseName: string): Promise<HeroVideo
 
   // Get matching poster image
   const images = await heroImages()
-  const posterImage = images[baseName]
-
   return {
     baseName,
     parent: `src/assets/videos/hero/${baseName}`,
     variants,
-    poster: posterImage,
+    poster: images[baseName] || { parent: "", widths: {}, srcset: "" },
   }
 }
 
