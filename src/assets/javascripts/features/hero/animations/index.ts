@@ -1,5 +1,2 @@
-import './impactText'
-import './panning'
-import './scrollTo'
-import './scrollTrigger'
-import './transforms'
+import './observerEffects'
+import './observer'
