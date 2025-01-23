@@ -3,61 +3,78 @@
   <div class="outer">
     <div class="inner">
       <div class="bg">
-        <noscript>
-          {{ no_script_image }}
+        <div class="hero__container">
+          <noscript>
+            {{ no_script_image }}
 
-          <style>
-            html {
-              scroll-behavior: smooth;
-            }
-
-            .section.hero .cta-container h1 {
-              animation: glow 3000ms ease-in-out infinite alternate;
-            }
-
-            .section.hero {
-              opacity: 1;
-              visibility: visible;
-              transition:
-                background-color 350ms ease-in-out,
-                color 300ms ease-in-out,
-                scale 350ms ease-in;
-              position: relative;
-              z-index: 1;
-              padding-bottom: 1rem;
-            }
-
-            .section.hero .md-typeset {
-              opacity: 1;
-              visibility: visible;
-            }
-
-            @media screen and (prefers-reduced-motion: reduce) {
+            <style>
               html {
-                scroll-behavior: instant;
+                scroll-behavior: smooth;
               }
-            }
-          </style>
 
-        </noscript>
-        <div class="cta-container">
-          <h1 contenteditable="false" class="cta-header">Join the
-            Fight
-          </h1>
-          <h2 contenteditable="false">To End Confusion!</h2>
-          <a class="hero-target-selector" href="#pt3-hero-content-section" contenteditable="false">
-            <button contenteditable="false" class="md-button">Get
-              Clear
-              Terms
-            </button>
-          </a>
-          <a href="#pt3-hero-content-section" class="hero-target-selector">
-            <svg view-box="0 0 24 24" class="down-indicator" id="arrow-down"
-              title="scroll down for more" xmlns="http://www.w3.org/2000/svg" role="button"
+              .section.hero .cta-container h1 {
+                animation: glow 3000ms ease-in-out infinite alternate;
+              }
+
+              .section.hero {
+                opacity: 1;
+                visibility: visible;
+                transition:
+                  background-color 350ms ease-in-out,
+                  color 300ms ease-in-out,
+                  scale 350ms ease-in;
+                position: relative;
+                z-index: 1;
+                padding-bottom: 1rem;
+              }
+
+              .section.hero .cta-container h1,
+              .section.hero .cta-container h2 {
+                visibility: visible;
+                opacity: 1;
+                display: block;
+                transition: opacity 300ms ease-in-out, visibility 300ms ease-in-out;
+                z-index: 1;
+              }
+
+              .section.hero .hero__container {
+                opacity: 1;
+                visibility: visible;
+              }
+
+              .section.hero .md-typeset {
+                opacity: 1;
+                visibility: visible;
+              }
+
+              @media screen and (prefers-reduced-motion: reduce) {
+                html {
+                  scroll-behavior: instant;
+                }
+              }
+            </style>
+
+          </noscript>
+          <div class="cta-container">
+            <h1 contenteditable="false" class="cta-header">Join the
+              Fight
+            </h1>
+            <h2 contenteditable="false">To End Confusion!</h2>
+            <a class="hero-target-selector" href="#pt3-hero-content-section"
               contenteditable="false">
-              <path d="M11 4h2v12l5.5-5.5 1.42 1.42L12 19.84l-7.92-7.92L5.5 10.5 11 16z"></path>
-            </svg>
-          </a>
+              <button contenteditable="false" class="md-button">Get
+                Clear
+                Terms
+              </button>
+            </a>
+            <a href="#pt3-hero-content-section" class="hero-target-selector">
+              <svg view-box="0 0 24 24" class="down-indicator" id="arrow-down"
+                title="scroll down for more" xmlns="http://www.w3.org/2000/svg" role="button"
+                contenteditable="false">
+                <path d="M11 4h2v12l5.5-5.5 1.42 1.42L12 19.84l-7.92-7.92L5.5 10.5 11 16z"></path>
+              </svg>
+            </a>
+          </div>
         </div>
       </div>
     </div>

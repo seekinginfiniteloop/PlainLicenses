@@ -59,6 +59,13 @@ export interface TransitionConfig {
   section: Section
 }
 
+export interface AnimateMessageConfig extends gsap.TweenVars {
+  message?: string
+  entranceFromVars?: gsap.TweenVars
+  entranceToVars?: gsap.TweenVars
+  exitVars?: gsap.TweenVars
+}
+
 export type fadeIn = (targets: gsap.TweenTarget, config: FadeEffectConfig) => gsap.core.Timeline
 
 export type fadeOut = (targets: gsap.TweenTarget, config: FadeEffectConfig) => gsap.core.Timeline

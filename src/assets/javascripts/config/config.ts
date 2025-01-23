@@ -96,7 +96,7 @@ export const OBSERVER_CONFIG: ObserverConfig = {
  * Keys are the width of the video
  * Values are the minimum width of the viewport
  */
-export const MIN_WIDTHS = {
+export const MAX_WIDTHS = {
   426: '426',
   640: '640',
   854: '854',

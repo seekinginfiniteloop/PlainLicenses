@@ -7,6 +7,8 @@
  * For example, for the 'fadeIn' effect: gsap.fadeIn(targets, config)
  *
  ** Effects:
+ **  - setSection: Sets the specified section up for a transition.
+ **  - transitionSection: Transitions the specified section.
  **  - fadeIn: Fades in the specified targets with a y-axis movement.
  **  - fadeOut: Fades out the specified targets with a y-axis movement.
  **  - emphasize: Blinks, jumps, and scales up the specified targets.
@@ -18,8 +20,8 @@
  */
 
 import gsap from 'gsap'
-import { getDistanceToViewport, getMatchMediaInstance } from './utils'
-import { Direction, EmphasisConfig, FadeEffectConfig, ReducedMotionCondition, TransitionConfig } from './types'
+import { modifyDurationForReducedMotion, getDistanceToViewport, getMatchMediaInstance, wordsToLetterDivs } from './utils'
+import { AnimateMessageConfig, Direction, EmphasisConfig, FadeEffectConfig, ReducedMotionCondition, TransitionConfig } from './types'
 
 /**
  * Retrieves the fade variables for autoAlpha and yPercent.
@@ -41,7 +43,9 @@ function getDFactor(direction: Direction) {
     return direction === Direction.UP ? Direction.UP : Direction.DOWN
 }
 
-//! WARNING: gsap warns about nesting effects in an effect. Don't know what happens if you do...implosion of the multiverse?  We avoid that be creating tweens/timelines and then creating effects from those tweens/timelines.
+//! WARNING: gsap warns about nesting effects within an effect.
+//! I Don't know what happens if you do...implosion of the multiverse?
+//! We avoid that be creating tweens/timelines and then creating effects from those tweens/timelines.
 
 /**
  * Sets the specified section up for a transition.
@@ -113,21 +117,25 @@ gsap.registerEffect({
  * @param config - The fade effect configuration.
  * @returns The fade effect.
  */
-const fade = (targets: Element[],
+const fade = (targets: gsap.TweenTarget,
     config: FadeEffectConfig = { out: false, direction: 1, fromConfig: {}, toConfig: {} })  => {
     const media = getMatchMediaInstance()
     const tl = gsap.timeline()
     media.add({ reducedMotion: "(prefers-reduced-motion: reduce)" }, (context: gsap.Context) => {
         const { out, direction, fromConfig, toConfig } = config
-        const fadeVars = getFadeVars(out, fromConfig.yPercent || toConfig.yPercent || 50, direction || null)
+        if (fromConfig && toConfig) {
+        const fadeVars = getFadeVars(out, Number(fromConfig.yPercent) || Number(toConfig?.yPercent) || 50, direction || null)
         const fromVars = { ...fadeVars.from, ...fromConfig }
         const toVars = { ...fadeVars.to, ...toConfig }
         const { reducedMotion } = context.conditions as ReducedMotionCondition
         if (reducedMotion) {
             const modifiedVars = [fromVars, toVars].map((vars) => {
-                let modified = { ...vars }
-                delete modified.yPercent
-                modified.duration ? modified.duration *= 2 : null
+                let modified: Partial<typeof vars> = { ...vars }
+                if (modified.yPercent) {
+                    delete modified.yPercent
+                } else if (modified.duration) {
+                    modified.duration = modifyDurationForReducedMotion(vars.duration || 0.5)
+                }
                 return modified
             })
           tl.add(gsap.fromTo(targets, modifiedVars[0], modifiedVars[1]))
@@ -138,7 +146,7 @@ const fade = (targets: Element[],
                 ...toVars,
           }))
         }
-    })
+    }})
     return tl
 }
 
@@ -148,6 +156,7 @@ gsap.registerEffect({
     extendTimeline: true,
     effect: (targets: gsap.TweenTarget, config: FadeEffectConfig) => {
         const { direction, fromConfig, toConfig } = config
+        targets = targets instanceof Array ? targets : [targets]
         return fade(targets, { out: false, direction, fromConfig, toConfig })
     }
 })
@@ -155,9 +164,9 @@ gsap.registerEffect({
 gsap.registerEffect({
     name: "fadeOut",
     defaults: { extendTimeline: true },
-    effect: (targets: Element[], config: FadeEffectConfig) => {
+    effect: (targets: gsap.TweenTarget, config: FadeEffectConfig) => {
         const { direction, fromConfig, toConfig } = config
-        return fade(targets, { out: true, direction, fromConfig, toConfig })
+            return fade(targets, { out: true, direction, fromConfig, toConfig })
     }
 })
 
@@ -168,10 +177,11 @@ gsap.registerEffect({
  * @returns The blink effect.
  */
 const blink = (
-    targets: Element[],
+    targets: gsap.TweenTarget,
     config: gsap.TweenVars = {},
 ) => {
-    return gsap.to(targets, { autoAlpha: 0, duration: 0.5, ease: "power4.in", ...config})
+    const duration = modifyDurationForReducedMotion(config.duration || 0.5)
+    return gsap.to(targets, { autoAlpha: 0, ease: "power4.in", ...config, duration})
 }
 
 /**
@@ -181,19 +191,21 @@ const blink = (
  * @returns The jump effect.
  */
 const jump = (
-    targets: Element[],
+    targets: gsap.TweenTarget,
     config: gsap.TweenVars = {},
 ) => {
     config.y ? config.delete("y") : null
+    const duration = modifyDurationForReducedMotion(config.duration || 0.5)
     return gsap.to(targets, {
         y: (_index: number, target: Element, _targets: Element[]) => {
-              const distance = Math.abs(getDistanceToViewport(target))
+            const distance = Math.abs(getDistanceToViewport(target))
+            // Note the negative sign to invert the direction of the jump.
             return -(gsap.utils.clamp(distance > 10 ? 10 : distance, distance, 25) as number)
         },
-        duration: 0.5,
         yoyoEase: "bounce",
         ease: "elastic",
-        ...config
+        ...config,
+        duration
     }
     )}
 
@@ -204,10 +216,11 @@ const jump = (
  * @returns The scale up effect.
  */
 const scaleUp = (
-    targets: Element[],
+    targets: gsap.TweenTarget,
     config: gsap.TweenVars = {},
 ) => {
-    return gsap.to(targets, { scale: 1.5, duration: 0.5, ease: "elastic", ...config })
+    const duration = modifyDurationForReducedMotion(config.duration || 0.5)
+    return gsap.to(targets, { scale: 1.5, ease: "elastic", ...config, duration })
 }
 
 /**
@@ -220,16 +233,16 @@ gsap.registerEffect({
     name: "emphasize",
     defaults: { repeat: - 1, yoyo: true, extendTimeline: true },
     effect: (targets: gsap.TweenTarget, config: EmphasisConfig) => {
+        if (!targets) {
+            return null
+        }
         const { blinkConfig, jumpConfig, scaleUpConfig } = config
         const emphasisTimeline = gsap.timeline()
         getMatchMediaInstance().add({ reducedMotion: "(prefers-reduced-motion: reduce)" }, (context: gsap.Context) => {
             const { reducedMotion } = context.conditions as ReducedMotionCondition
             if (reducedMotion) {
-                const doubleDuration = (config: gsap.TweenVars) => {
-                    return { ...config, duration: config.duration ? config.duration * 2 : 1 }
-                }
-                emphasisTimeline.add(blink(targets, { ...doubleDuration(blinkConfig), ease: "power1.inOut" }))
-                emphasisTimeline.add(scaleUp(targets, { ...doubleDuration(scaleUpConfig) }))
+                emphasisTimeline.add(blink(targets, { ...blinkConfig, ease: "power1.inOut" }))
+                emphasisTimeline.add(scaleUp(targets, { ...scaleUpConfig }))
             }
             else {
                 emphasisTimeline.add(blink(targets, blinkConfig))
@@ -242,3 +255,71 @@ gsap.registerEffect({
     }
 }
 )
+
+/**
+ * Animates a message.
+ * Note: The message will be animated by drawing text from the target element(s) if
+ * you don't provide a message in the config.
+ * If a message is provided in the config, it will only animate
+ * in the first target element (if there are multiple)
+ * ... I assume you don't want the same message animated over and over again.
+ * @param target - The target element(s) to animate the message in.
+ * @param config - The animate message configuration.
+ */
+gsap.registerEffect({
+    name: "animateMessage",
+    defaults: { extendTimeline: true, repeat: 0 },
+    effect: (target: gsap.TweenTarget, config: AnimateMessageConfig) => {
+        target = target instanceof Array ? target : gsap.utils.toArray(target)
+        if (!target || !(target instanceof Array)) {
+            return gsap.timeline()
+        }
+        target = gsap.utils.toArray(target).filter((el) => el !== null && el instanceof HTMLElement)
+        let msgFrag = document.createDocumentFragment()
+        let animationElements: HTMLElement[] = []
+        if (config.message) {
+            msgFrag = wordsToLetterDivs(config.message)
+            target = (target as []).slice(0, 1)
+            if (target instanceof Array && target.length > 0 && target[0] && target[0] instanceof HTMLElement) {
+                requestAnimationFrame(() => {
+                    // @ts-ignore - seriously... can't TS see the type guard RIGHT THERE? ^^
+                    const element = target[0] as HTMLElement
+                    element.append(msgFrag)
+                    animationElements = gsap.utils.toArray(element.querySelectorAll('div')).filter((el) => el !== null && el instanceof HTMLElement && el.innerText !== '') as HTMLElement[]
+                })
+            } else { return gsap.timeline() }
+        } else {
+            gsap.utils.toArray(target).forEach((el) => {
+                if (el instanceof HTMLElement) {
+                    const text = wordsToLetterDivs(el)
+                    requestAnimationFrame(() => {
+                        el.append(text)
+                    })
+                    animationElements.push(el)
+                }
+            })
+        }
+        const messageTimeline = gsap.timeline()
+        messageTimeline.add(["setState", gsap.set(animationElements, { autoAlpha: 0 })], 0)
+        let fromVars = config.entranceFromVars || {}
+        let toVars = config.entranceToVars || {}
+        let exitVars = config.exitVars || {}
+        gsap.matchMedia().add({ reducedMotion: "(prefers-reduced-motion: reduce)" }, (context: gsap.Context) => {
+            const { reducedMotion } = context.conditions as ReducedMotionCondition
+            if (reducedMotion) {
+                fromVars.yPercent = 50
+                toVars.ease = "power1.inOut"
+                toVars.stagger = { each: 0.04, from: "start" }
+                toVars.duration = modifyDurationForReducedMotion(toVars.duration || 1)
+                exitVars.duration = modifyDurationForReducedMotion(exitVars.duration || 0.5)
+                exitVars.yPercent = -50
+                exitVars.ease = "power1.inOut"
+                exitVars.stagger = { each: 0.04, from: "end" }
+            }
+        }
+        )
+        messageTimeline.add(["randomEntrance", gsap.fromTo(animationElements, { autoAlpha: 0, yPercent: 150, ...fromVars}, { autoAlpha: 1, yPercent: 0, stagger: { each: 0.03, from: "random" }, duration: 1.2, ...toVars})], 0.02)
+        messageTimeline.add(["randomExit", gsap.to(animationElements, { autoAlpha: 0, duration: 0.5, yPercent: gsap.utils.random(-150, 150, 10), stagger: { each: 0.03, from: "random"}, ...exitVars})], 4.5)
+        return messageTimeline
+    }
+})

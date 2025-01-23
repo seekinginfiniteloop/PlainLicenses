@@ -68,27 +68,46 @@ quote-style = "double"
 [lint]
 
 fixable = ["ALL"]
+# Almost all rules; but not all https://docs.astral.sh/ruff/rules/
 select = [
+    "A",
+    "ASYNC",
     "B",
     "C",
     "D",
     "E",
     "F",
+    "FAST",
+    "FLY",
+    "FURB",
     "G",
     "I",
+    "ICN",
+    "INT",
+    "N",
     "LOG",
     "PD",
+    "PERF",
+    "PIE",
+    "PT",
+    "PTH",
+    "PYI",
+    "Q",
+    "RSE",
+    "RET",
     "S",
+    "SLF",
+    "SLOT",
     "SIM",
+    "TC",
+    "TRY",
+    "RUF",
     "UP",
     "YTT",
     "W",
 ]
 extend-select = [
     "A003",
-    "ASYNC100",
-    "ASYNC101",
-    "ASYNC102",
     "ANN201",
     "ANN002",
     "COM818",
@@ -96,6 +115,9 @@ extend-select = [
     "DTZ005",
     "DTZ007",
     "FBT001",
+    "ISC003",
+    "TID252",
+    "TID253",
 ]
 ignore = [
     # https://docs.astral.sh/ruff/formatter/#conflicting-lint-rules
@@ -131,6 +153,6 @@ convention = "google"
 [lint.isort]
 force-single-line = false
 force-wrap-aliases = false
-lines-after-imports = false
-lines-between-types = false
+lines-after-imports = 2
+lines-between-types = 1
 split-on-trailing-comma = false

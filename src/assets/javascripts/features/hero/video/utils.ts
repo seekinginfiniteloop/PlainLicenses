@@ -29,15 +29,21 @@ function mapCodecUrls(variant: CodecVariants, codec: VideoCodec): HeroPaths {
  * @returns The mapped image
  */
 function mapImage(image: HeroImage): HeroImage {
-    const { imageName, parent, widths, srcset } = image
+    const { imageName, parent, images } = image
+    for (const key in images) {
+        if (key === 'avif' || key === 'webp' || key === 'png') {
+        images[key].srcset = replaceDocs(images[key].srcset)
+        images[key].widths = VIDEO_WIDTHS.reduce((acc, width: VideoWidth) => ({
+        ...acc,
+        [width]: replaceDocs(images[key].widths[width] || '')
+    }), {}) as { [key in VideoWidth]: string },
+        images[key].srcset = replaceDocs(images[key].srcset)
+        }
+    }
     return {
         imageName,
         parent: replaceDocs(parent),
-        widths: VIDEO_WIDTHS.reduce((acc, width: VideoWidth) => ({
-        ...acc,
-        [width]: replaceDocs(widths[width] || '')
-    }), {}) as { [key in VideoWidth]: string },
-        srcset: replaceDocs(srcset)
+        images
     }
 }
 

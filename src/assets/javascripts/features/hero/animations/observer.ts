@@ -19,6 +19,10 @@ import { Subscription } from "rxjs"
 import { Section, Direction } from "./types"
 import type { HeroState } from "~/state/types"
 
+// Make sure we have the effects registered
+import './effects'
+import { logger } from "~/utils/log"
+
 gsap.registerPlugin(Observer)
 
 
@@ -73,6 +77,7 @@ export class HeroObservation {
     }
     this.transitionTl = gsap.timeline(this.defaultTimelineVars)
     this.setupSubscriptions()
+    logger.info("HeroObservation initialized")
   }
 
 /**
@@ -238,6 +243,7 @@ export class HeroObservation {
       return
     }
     this.animating = true
+    logger.info(`Going to section ${index} in direction ${direction}`)
     let tl = gsap.timeline({
       defaults: {
         duration: this.config.slides.slideDuration, ease: "power2.inOut", onComplete: (() => { this.animating = false }),

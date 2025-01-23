@@ -15,16 +15,20 @@ export type Animations = Map<symbol, gsap.core.Timeline>
 
 export type VideoWidth = 426 | 640 | 854 | 1280 | 1920 | 2560 | 3840
 export type VideoCodec = 'av1' | 'vp9' | 'h264'
+export type ImageType = 'avif' | 'webp' | 'png'
 
 export type HeroPaths = {
  [key in VideoWidth]: string
 }
 
+export type ImageIndex = {
+  [key in ImageType]: { widths: HeroPaths, srcset: string }
+}
+
 export interface HeroImage {
   imageName: string
   parent: string
-  widths: HeroPaths
-  srcset: string
+  images: ImageIndex
 }
 
 export type CodecVariants = {
@@ -39,6 +43,9 @@ export interface VideoResolution {
 export interface HeroVideo {
     baseName: string
     parent: string // Path to the parent directory of the video
-  variants: CodecVariants[]
-  poster: HeroImage
+    variants: CodecVariants[]
+    poster: HeroImage
+    message?: string
 }
+
+export type VideoStatus = 'not_initialized' | 'loading' | 'loaded' | 'playing' | 'paused' | 'on_delay'

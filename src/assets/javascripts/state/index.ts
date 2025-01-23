@@ -1,3 +1,3 @@
-import './store'
 import './types'
+import './store'
 import './predicates'

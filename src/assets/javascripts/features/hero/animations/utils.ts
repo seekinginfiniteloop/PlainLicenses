@@ -9,6 +9,7 @@
 
 import gsap from 'gsap'
 import { HeroStore } from '../../../state/store'
+import { ReducedMotionCondition } from './types'
 
 const store = HeroStore.getInstance()
 
@@ -95,11 +96,104 @@ export function getContentElements(element: Element): Element[] {
   )
 }
 
+
+/**
+ * Attempts to retrieve an object's values as elements.
+ * @param obj - The object to retrieve values from.
+ * @returns The object's values as elements.
+ */
+function tryObject(obj: any) {
+  if (obj === null || typeof obj !== 'object') {
+    return null
+  }
+  const values = Object.values(obj)
+  const newValues = []
+    for (const value of values) {
+      if (value === null || value === undefined) {
+        newValues.push(null)
+      } else if (value instanceof Element) {
+        newValues.push(value)
+      } else if (typeof value === 'string') {
+        newValues.push(document.querySelector(value))
+      }
+    return newValues
+  }
+  return null
+}
+
 /**
  * Retrieves the targets array from a TweenTarget.
  * @param targets - The TweenTarget to retrieve the targets array from.
  * @returns The targets array.
  */
 export function getTargetsArray(targets: gsap.TweenTarget): Element[] {
-  return gsap.utils.toArray(targets).map((target: Element | string | null) => target instanceof Element ? target : (typeof target === "string" ? document.querySelector(target) : null)).filter((target: Element | null) => target !== null && target instanceof Element)
+  return gsap.utils.toArray(targets)
+    .map(
+    (target) => target instanceof Element ? target :
+      (typeof target === "string" ? document.querySelector(target) : tryObject(target)))
+    .map((target) => { return target instanceof Element ? target : null })
+    .filter((target) => target !== null)
+  }
+
+/**
+ * Modifies the duration of a tween for reduced motion.
+ * @param duration - The duration to modify.
+ * @returns The modified duration.
+ */
+export function modifyDurationForReducedMotion(duration: gsap.TweenValue): number | gsap.TweenValue {
+  let newDuration: number | gsap.TweenValue = duration
+  getMatchMediaInstance().add({ reducedMotion: "(prefers-reduced-motion: reduce)" }, (context: gsap.Context) => {
+    const { reducedMotion } = context.conditions as ReducedMotionCondition
+    if (reducedMotion) {
+      switch (typeof duration) {
+        case 'number':
+          newDuration = duration * 2
+          break
+        case 'string':
+          newDuration = parseFloat(duration) * 2
+          break
+        default:
+          newDuration = duration
+      }
+    } else {
+      newDuration = duration
+    }
+  })
+  return newDuration
+}
+
+/**
+ * Splits text or text within an element into divs for individual letter animations.
+ * Appends the divs to a document fragment.
+ * @param el - The element or text to split into divs.
+ * @returns A document fragment containing the divs.
+ */
+export function wordsToLetterDivs(el: HTMLElement | string): DocumentFragment {
+  const docFragment = document.createDocumentFragment()
+  let text = ''
+  if (typeof el === 'string') {
+    text = el
+  } else {
+    text = el.innerText
+  }
+  const letters = text.trim().split('')
+  letters.forEach((letter, idx) => {
+    if (idx === 0 && (letter === ' ' || letter === '\n')) {
+      return
+    }
+    const textNode = document.createTextNode(letter)
+    if (letter === ' ' || letter === '\n') {
+      const lastEl = docFragment.lastChild
+      lastEl?.appendChild(textNode)
+    }
+    const newDiv = document.createElement('div')
+    newDiv.appendChild(textNode)
+    newDiv.classList.add('hero__letter')
+    docFragment.appendChild(newDiv)
+  })
+  if (el instanceof HTMLElement) {
+    gsap.set(el, { innerText: '' })
+  }
+  gsap.set(docFragment.querySelectorAll('div'), { display: 'inline-block', autoAlpha: 0 })
+  return docFragment
 }
