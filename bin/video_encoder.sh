@@ -101,13 +101,13 @@ declare -A CODEC_LIBRARIES=(
 )
 
 declare -A AV1_LEVELS=(
-    ["3840"]="5.0"
-    ["2560"]="5.0"
-    ["1920"]="4.0"
+    ["3840"]="5.1"
+    ["2560"]="5.1"
+    ["1920"]="4.1"
     ["1280"]="3.1"
-    ["854"]="3.0"
+    ["854"]="3.1"
     ["640"]="2.1"
-    ["426"]="2.0"
+    ["426"]="2.1"
 )
 
 # populated by the script
@@ -140,13 +140,13 @@ declare -A CODEC_FILTERS=(
 
 # Base profiles for each codec -- values shared across all segments
 declare -A BASE_PROFILES=(
-    ["h264"]="stitchable:rc-lookahead=60:scenecut=0:tune=film"
+    ["h264"]="stitchable:scenecut=0:tune=film"
     ["vp9"]="-row-mt 1"
     ["av1"]="tune=1:enable-qm=1:scm=2:enable-overlays=1:lookahead=120:scd=1:enable-tf=0:fast-decode=1:rc=1:film-grain-denoise=0:lp=6"
 )
 
 declare -A H264_PROFILES=(
-    ["static"]=":aq-mode=1:aq-strength=1.5:merange=24:keyint=360:min-keyint=360:psy-rd='0.4:0':psy-rdoq=2.0:deblock='0:0':grain=1"
+    ["static"]=":aq-mode=1:aq-strength=1.5:merange=24:keyint=360:min-keyint=360:psy-rd='0.4:0':deblock='0:0'"
     ["motion"]=":aq-mode=2:aq-strength=1.6:me=hex:merange=32:bframes=2:keyint=120:min-keyint=120:psy-rd='0.6:0':deblock='-2:-1'"
     ["detail"]=":aq-mode=2:aq-strength=1.65:me=hex:merange=24:bframes=2:keyint=240:min-keyint=240:no-dct-decimate:psy-rd='0.7:0':deblock='-2:-1'"
 )
@@ -193,10 +193,10 @@ while getopts "i:o:s:2:9:a:c:th" opt; do  # Added 't' for test mode
     esac
 done
 
-# 2. Add to help text
-
 # Set default CRF values
 
+INPUT="${INPUT:-}"
+OUTPUT="${OUTPUT:-}"
 CRF_AV1="${CRF_AV1:-37}"
 CRF_H264="${CRF_H264:-25}"
 CRF_VP9="${CRF_VP9:-35}"
@@ -251,7 +251,7 @@ log() {
 
 get_filename() {
     local root_name=$1
-    local filename extension
+    local filename
     filename=$(find . -maxdepth 1 -type f -name "${root_name}.*" 2>/dev/null | head -n1)
     if [ -z "$filename" ]; then
         log "Error: Source file not found for ${root_name}"

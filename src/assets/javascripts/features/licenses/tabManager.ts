@@ -10,8 +10,7 @@
 
 import { Observable, Subscription, debounceTime, filter, fromEvent, map, merge, share, tap } from 'rxjs'
 import { TabElement, TabState, TabStateType } from './types'
-import { logger } from '../../utils/log'
-import { preventDefault } from '~/utils/eventHandlers'
+import { logger, preventDefault } from '~/utils'
 
 /**
  * @description
@@ -84,6 +83,7 @@ export class TabManager {
     // Update colors
     iconSVG.style.fill = isSelected ? selectedColor : fillColor
     label.style.color = isSelected ? selectedColor : fillColor
+    // TODO: Add ARIA roles and states
   }
 
   /**

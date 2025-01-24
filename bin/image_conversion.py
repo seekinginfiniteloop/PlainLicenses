@@ -4,13 +4,16 @@ Converts images to different formats and sizes.
 
 import itertools
 import os
+
 from pathlib import Path
 from typing import Literal, TypedDict
 
 import pillow_avif  # type: ignore # noqa: F401
+
 from PIL import Image
 from PIL.Image import Resampling
 from PIL.ImageFile import ImageFile
+
 
 MODE: Literal["convert", "resize"] = "convert"
 
@@ -24,7 +27,9 @@ class ImageConversionConfig(TypedDict):
         format (Literal["WEBP", "AVIF", "PNG"]): The desired output format for the converted image.
         quality (int): The quality of the converted image, ranging from 0 to 100.
         speed (int): The speed of the conversion process, ranging from 0 to 8.
-        bits (int): The number of bits per pixel for the converted image, can be 8, 10, or 12. Generally, you can get better quality with less size by using higher bit depth (even with an 8 bit source), but it may not be supported by all browsers.
+        bits (int): The number of bits per pixel for the converted image, can be 8, 10,
+        or 12. Generally, you can get better quality with less size by using higher bit
+        depth (even with an 8 bit source), but it may not be supported by all browsers.
         subsample (int): The subsampling method used for the converted image, can be 444, 422, or 420.
         codec_speed (int): The speed of the codec used for the conversion process, ranging from 0 to 10.
         threads (int): The number of threads used for the conversion process, ranging from 1 to 64.
@@ -98,7 +103,7 @@ def convert(image: ImageFile, **config_dict: ImageConversionConfig) -> None:
 
 
 def main() -> None:
-    """Main function to convert images to WebP"""
+    """Main function to convert images."""
     input_folder: str = str(RESIZE_CONFIG["input_folder"])
     output_folder: str = str(RESIZE_CONFIG["output_folder"])
     widths: list[int] = [int(item) for item in RESIZE_CONFIG["widths"]]
@@ -122,7 +127,8 @@ def main() -> None:
     for filename in base_images:
         if MODE == "convert":
             with Image.open(filename) as img:
-                # we save the new file in a directory that's the same relative path as the original file with the new extension
+                # we save the new file in a directory that's the same relative path as
+                # the original file with the new extension
                 new_folder = Path(output_folder) / filename.parent.relative_to(input_folder)
                 new_folder.mkdir(parents=True, exist_ok=True)
                 output_path = new_folder / f"{filename.stem}.avif"
@@ -131,18 +137,18 @@ def main() -> None:
                 convert(img, **settings)
                 print(f"Conversion complete. Image saved at {output_path}")
         else:
-            img = Image.open(os.path.join(input_folder, filename))
-            base_name = os.path.splitext(filename)[0]
-            new_folder = os.path.join(output_folder, base_name)
-            if os.path.exists(new_folder):
-                new_folder = os.path.join(output_folder, f"{base_name}_1")
-            os.makedirs(new_folder, exist_ok=True)
-            for width, format in itertools.product(widths, formats):
+            img = Image.open(Path(input_folder) / filename)
+            base_name = filename.stem
+            new_folder = Path(output_folder) / base_name
+            if new_folder.exists():
+                new_folder = Path(output_folder) / f"{base_name}_1"
+            Path(new_folder).mkdir(parents=True, exist_ok=True)
+            for width, fmt in itertools.product(widths, formats):
                 resize_and_save(
                     img,
                     width,
-                    os.path.join(new_folder, f"{base_name}_{width}.{format.lower()}"),
-                    format,
+                    str(new_folder / f"{base_name}_{width}.{fmt.lower()}"),
+                    fmt,
                 )
 
 

@@ -3,6 +3,7 @@
 import logging
 import re
 import urllib.parse
+
 from textwrap import dedent
 
 from hook_logger import get_logger
@@ -10,6 +11,7 @@ from mkdocs.config.defaults import MkDocsConfig
 from mkdocs.plugins import event_priority
 from mkdocs.structure.files import Files
 from mkdocs.structure.pages import Page
+
 
 if not hasattr("SOCIAL", "social_logger"):
     social_logger = get_logger("SOCIAL", logging.WARNING)
@@ -27,7 +29,6 @@ def on_page_markdown(
     include = re.compile(
         r"blog/[1-9].*|licenses/.+/index.+|licenses/.+/index.+|licenses/.+/.+/index.+|helping/.+|faq/.+|about/.+"
     )
-    social_logger.info
     if not include.match(page.url) or "index" in page.url:
         return markdown
     base_url: str = config.get("site_url", "https://plainlicense.org")

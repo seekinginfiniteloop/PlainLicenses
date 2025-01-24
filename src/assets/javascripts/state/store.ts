@@ -16,8 +16,9 @@
 import { BehaviorSubject, Observable, Observer, Subscription, combineLatest, debounceTime, distinctUntilChanged, distinctUntilKeyChanged, filter, map, merge, shareReplay, startWith, switchMap, tap } from 'rxjs'
 import { AnimationComponent, ComponentStateUpdateFunction, HeroState, StatePredicate, VideoState } from './types'
 
-import { isPageVisible$, isPartiallyInViewport, navigationEvents$, prefersReducedMotion$, setCssVariable, watchMediaQuery } from '~/utils/eventHandlers'
+import { isPageVisible$, isPartiallyInViewport, navigationEvents$, prefersReducedMotion$, watchMediaQuery } from '~/utils/eventHandlers'
 import { isDev, isHome } from '~/utils/conditionChecks'
+import { setCssVariable } from '~/utils/helpers'
 import { logger } from '~/utils/log'
 import * as predicates from './predicates'
 import { getViewportOffset, getViewportSize } from '~/browser'
@@ -29,11 +30,7 @@ const { viewport$ } = customWindow
 const initialUrl = new URL(customWindow.location.href)
 
 /**
- * @exports HeroStore
  * @class HeroStore
- * @singleton
- * @preserves {HeroState} Reactive state across application
- * @uses {BehaviorSubject} For state management
  *
  * @description Centralized state management for hero section with reactive state updates
  *

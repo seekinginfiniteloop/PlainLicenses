@@ -1,7 +1,7 @@
 import { combineLatest, distinctUntilKeyChanged, filter, fromEvent, map, merge, Subscription, switchMap, tap } from "rxjs"
 import gsap from "gsap"
 import { VideoElement } from "./videoElement"
-import { HeroStore } from "~/state/store";
+import { HeroStore } from "~/state";
 import { HeroVideo, VideoStatus } from "./types"
 import { getHeroVideos } from "./utils"
 

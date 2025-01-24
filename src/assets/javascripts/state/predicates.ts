@@ -1,18 +1,17 @@
 /**
  * @module predicates
- * @description A collection of state predicates for HeroState and its sub-states
+ * @description A collection of state predicates for HeroState and its sub-states. This
+ * probably looks sad; it's a remnant of a much more complicated state system. Here
+ * until the next refactor.
  *
  * @license Plain-Unlicense
  * @author Adam Poulemanos adam<at>plainlicense<dot>org
  * @copyright No rights reserved
  */
 
-
 import { HeroState } from './types'
 
 /**
- * @exports isFullyVisible
- * @function isFullyVisible
  * @param {HeroState} state - Hero state
  * @returns {boolean} Whether the hero is fully visible
  * @description Checks if the hero is fully visible

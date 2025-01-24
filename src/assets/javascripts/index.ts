@@ -15,17 +15,21 @@
  */
 
 import "@/bundle"
+import './config'
+import './state'
+import './features'
 import { EMPTY, catchError, filter, from, map, merge, of, share, switchMap, tap } from "rxjs"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { ScrollToPlugin } from "gsap/ScrollToPlugin"
 
-import { feedback } from "~/features/feedback/feedback"
-import { TabManager } from "~/features/licenses/tabManager"
-import { logger } from "~/utils/log"
-import { isHelpingIndex, isHome, isLicense, isOnSite } from "~/utils/conditionChecks"
-import { license$, navigationEvents$ } from "./utils/eventHandlers"
-import { createScript } from "./utils/helpers"
+import { feedback } from "~/features/feedback"
+import { initLicenseFeature } from "~/features/licenses"
+import { logger } from "~/utils"
+import { createScript, license$, navigationEvents$, windowEvents, isHelpingIndex, isHome, isLicense, isOnSite } from "~/utils"
+import { HeroStore } from "./state"
+import { HeroObservation, VideoManager } from "./features/hero"
+
 
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin)
 
@@ -37,13 +41,15 @@ document.documentElement.classList.add("js")
 let customWindow: CustomWindow = window as unknown as CustomWindow
 const { document$ } = customWindow
 
+// get the cache worker registered
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('workers/cache-worker.js')
     .then(() => logger.info('SW registered!'))
     .catch(err => logger.error('SW registration failed:', err));
 }
 
-
+// get the hero store registered
+HeroStore.getInstance()
 
 // add analytics to each page (a simple tracking pixel)
 const insertAnalytics = () => createScript("https://app.tinyanalytics.io/pixel/ei74pg7dZSNOtFvI", false, true)
@@ -51,11 +57,10 @@ const insertAnalytics = () => createScript("https://app.tinyanalytics.io/pixel/e
 const insertButtonScript = () => createScript("https://buttons.github.io/buttons.js", true, true)
 
 const analytic$ = of(insertAnalytics())
-const animate$ = document$.pipe(switchMap(() => subscribeToAnimation$()))
 const feedback$ = of(feedback())
 const buttonScript$ = of(insertButtonScript())
 const color$ = of(document.body.setAttribute("data-md-color-scheme", "slate"))
-const licenseSub$ = license$.pipe(switchMap(() => of(new TabManager())))
+const licenseSub$ = license$.pipe(switchMap(() => of(initLicenseFeature())))
 const windowEvents$ = from(windowEvents())
 
 // Define page configurations
@@ -64,8 +69,9 @@ const pageConfigs: PageConfig[] = [
     matcher: isHome,
     location: "home",
     observables: [
-      animate$,
       color$,
+      of(HeroObservation.getInstance()),
+      of(VideoManager.getInstance()),
     ]
   },
   {

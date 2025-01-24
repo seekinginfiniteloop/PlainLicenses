@@ -10,6 +10,7 @@ Also, it's getting a bit unwieldy, so we should probably break this up into smal
 import json
 import logging
 import re
+
 from copy import copy
 from datetime import datetime, timezone
 from functools import cached_property
@@ -19,12 +20,14 @@ from textwrap import dedent, indent
 from typing import Any, ClassVar, Literal
 
 import ez_yaml
+
 from _utils import Status, find_repo_root, wrap_text
 from hook_logger import get_logger
 from jinja2 import Template, TemplateError
 from mkdocs.config.defaults import MkDocsConfig
 from mkdocs.structure.files import File, Files, InclusionLevel
 from mkdocs.structure.pages import Page
+
 
 # Change logging level here
 _assembly_log_level = logging.WARNING
@@ -54,14 +57,11 @@ def clean_content(content: dict[str, Any]) -> dict[str, Any] | None:
         """Strips whitespace from a string."""
         if isinstance(value, dict):
             return {k: cleaner(v) for k, v in value.items()}
-        elif isinstance(value, list):
+        if isinstance(value, list):
             return [cleaner(item) for item in value]
-        elif isinstance(value, str):
-            return value.strip()
-        return value
+        return value.strip() if isinstance(value, str) else value
 
-    cleaned_content = {k: cleaner(v) if v else "" for k, v in content.items()}
-    return cleaned_content
+    return {k: cleaner(v) if v else "" for k, v in content.items()}
 
 
 def get_extra_meta(spdx_id: str) -> dict[str, Any]:
@@ -103,7 +103,7 @@ def render_mapping(mapping: dict[str, Any], context: dict) -> dict[str, Any]:
             try:
                 return Template(value).render(**context)
             except (TypeError, TemplateError) as e:
-                assembly_logger.error("Error rendering mapping: %s", e)
+                assembly_logger.exception("Error rendering mapping: %s", e)
                 return value
         elif isinstance(value, dict):
             return render_mapping(value, context)
@@ -125,13 +125,13 @@ def assemble_license_page(config: MkDocsConfig, page: Page, file: File) -> Page:
 
     boilerplate: dict[str, str] = config["extra"]["boilerplate"]
     boilerplate["year"] = boilerplate.get(
-        "year", datetime.now(timezone.utc).strftime("%Y")
+        "year", datetime.now(datetime.utc).strftime("%Y")
     ).strip()
     boilerplate = clean_content(boilerplate) or {}
     page.meta = meta | boilerplate  # type: ignore
-    license = LicenseContent(page)
+    p_license = LicenseContent(page)
     if meta:
-        meta |= license.attributes
+        meta |= p_license.attributes
         extra_meta = get_extra_meta(page.meta["spdx_id"])
         meta |= extra_meta
     assembly_logger.debug("Rendering boilerplate for %s", page.title)
@@ -139,7 +139,7 @@ def assemble_license_page(config: MkDocsConfig, page: Page, file: File) -> Page:
         meta = {}
     rendered_boilerplate = render_mapping(boilerplate, meta)
     meta |= rendered_boilerplate
-    markdown = (page.markdown or "") + license.license_content
+    markdown = (page.markdown or "") + p_license.license_content
     markdown = Template(markdown).render(**meta)
     page.meta = meta
     page.markdown = markdown
@@ -171,28 +171,24 @@ def create_new_file(page: Page, file: File, config: MkDocsConfig) -> File:
 
 def get_category(uri: str) -> str | None:
     """Returns the category of the license."""
-    if split := uri.split("/"):
-        if len(split) == 4 and split[1] in [
-            "proprietary",
-            "public-domain",
-            "copyleft",
-            "permissive",
-            "source-available",
-        ]:
-            return split[1]
+    if (split := uri.split("/")) and len(split) == 4 and split[1] in [
+        "proprietary",
+        "public-domain",
+        "copyleft",
+        "permissive",
+        "source-available",
+    ]:
+        return split[1]
     return None
 
 
 def filter_license_files(files: Files) -> Files:
     """Creates a new files object from the license files."""
-    license_files = []
-    for uri in files.src_uris:
-        if (
-            (file := files.src_uris[uri])
-            and get_category(uri)
-            and uri.strip().lower().endswith("index.md")
-        ):
-            license_files.append(file)
+    license_files = [
+        files.src_uris[uri]
+        for uri in files.src_uris
+        if (files.src_uris[uri] and get_category(uri) and uri.strip().lower().endswith("index.md"))
+    ]
     return Files(license_files)
 
 
@@ -207,7 +203,7 @@ def replace_files(files: Files, new_files: Files) -> Files:
 
 def create_license_embed_file(page: Page, config: MkDocsConfig) -> File:
     """Creates an embedded license file."""
-    content = f"""---\ntemplate: embedded_license.html\ntitle: {page.title} (embedded)\ndescription: {page.meta['description']}\nhide: [toc, nav, header, consent, dialog, announce, search, sidebar, source, tabs, skip, ]\n---\n\n{page.meta['embed_file_markdown']}"""
+    content = f"""---\ntemplate: embedded_license.html\ntitle: {page.title} (embedded)\ndescription: {page.meta['description']}\nhide: [toc, nav, header, consent, dialog, announce, search, sidebar, source, tabs, skip, ]\n---\n\n{page.meta['embed_file_markdown']}"""  # noqa: E501
     stem = page.meta["spdx_id"].lower()
     assembly_logger.debug("Creating embed file for %s", stem)
     return File.generated(
@@ -220,7 +216,10 @@ def create_license_embed_file(page: Page, config: MkDocsConfig) -> File:
 
 def on_files(files: Files, config: MkDocsConfig) -> Files:
     """
-    Replaces license files with generated versions. I was doing this after Page creation but it was problematic. It's more involved, but the output fits better with MkDocs' expectations. We're also less prone to changes in MkDocs' internals.
+    Replaces license files with generated versions.
+
+    I was doing this after Page creation but it was problematic.
+    It's more involved, but the output fits better with MkDocs' expectations. We're also less prone to changes in MkDocs' internals.
 
     Args:
         files (Files): The files objects to process.
@@ -235,7 +234,7 @@ def on_files(files: Files, config: MkDocsConfig) -> Files:
     license_files = filter_license_files(copy(files))
     if not license_files:
         assembly_logger.error("No license files found. Files: %s", files)
-        raise FileNotFoundError("No license files found.")
+        raise FileNotFoundError("No license files found.")  # noqa: TRY003
     new_license_files = []
     for file in license_files:
         page = Page(None, file, config)
@@ -256,12 +255,12 @@ def on_files(files: Files, config: MkDocsConfig) -> Files:
 
 
 def load_json(path: Path) -> dict[str, Any]:
-    """Loads a JSON"""
+    """Loads a JSON."""
     return json.loads(path.read_text())
 
 
 def write_json(path: Path, data: dict[str, Any]) -> None:
-    """Writes a JSON"""
+    """Writes a JSON."""
     if path.exists():
         path.unlink()
     path.write_text(json.dumps(data, indent=2))
@@ -269,7 +268,8 @@ def write_json(path: Path, data: dict[str, Any]) -> None:
 
 class LicenseContent:
     """
-    Represents a license's content and metadata, including the license text and associated attributes. All license text processing happens here.
+    Represents a license's content and metadata, including the license text and associated attributes.
+    All license text processing happens here.
 
     TODO: Break this monster class up into smaller classes... it's unwieldy and messy... but functional
     """
@@ -303,7 +303,8 @@ class LicenseContent:
     def __init__(self, page: Page) -> None:
         """
         Initializes a new instance of the class with the provided page object.
-        This constructor sets up various attributes related to the page's metadata, including tags, license type, and processed license texts, ensuring that the object is ready for further operations.
+        This constructor sets up various attributes related to the page's metadata, including tags,license type, and
+        processed license texts, ensuring that the object is ready for further operations.
 
         Args:
             page (Page): The page object containing metadata and content related to the license.
@@ -311,7 +312,6 @@ class LicenseContent:
         Examples:
             license_instance = LicenseClass(page)
         """
-
         self.page = page
         self.meta = page.meta
         self.license_type = self.get_license_type()
@@ -365,13 +365,12 @@ class LicenseContent:
         if headers := self._header_pattern.finditer(text):
             for header in headers:
                 text = text.replace(header.group(0), f"{header.group(1).upper()}\n")
-        text = type(self)._markdown_pattern.sub(
+        text = type(self)._markdown_pattern.sub(  # noqa: SLF001
             r"\2", text
         )  # Remove headers, bold, italic, inline code
-        text = type(self)._link_pattern.sub(r"\1 (\2)", text)  # Handle links
-        text = type(self)._image_pattern.sub(r"\1 (\2)", text)  # Handle images
-        text = type(self)._code_pattern.sub(r"===\1===", text)  # Remove code blocks
-        return text
+        text = type(self)._link_pattern.sub(r"\1 (\2)", text)  # Handle links  # noqa: SLF001
+        text = type(self)._image_pattern.sub(r"\1 (\2)", text)  # Handle images  # noqa: SLF001
+        return type(self)._code_pattern.sub(r"===\1===", text)  # Remove code blocks  # noqa: SLF001
 
     @staticmethod
     def process_definitions(text: str, plaintext: bool = False) -> str:
@@ -380,13 +379,13 @@ class LicenseContent:
 
         Args:
             text (str): The input text containing definitions to be processed.
-            plaintext (bool, optional): A flag indicating whether to return definitions in plaintext format.
+            plaintext (bool, optional): A flag indicating whether to
+            return definitions in plaintext format.
                 Defaults to False.
 
         Returns:
             str: The processed text with definitions formatted appropriately.
         """
-
         definition_pattern = LicenseContent._definition_pattern
         if matches := definition_pattern.finditer(text):
             for match in matches:
@@ -439,7 +438,6 @@ class LicenseContent:
         Returns:
             The transformed text with annotations replaced by footnotes and footnote references added at the end.
         """
-
         footnotes = []
 
         def replacement(match: Match[str]) -> str:
@@ -457,7 +455,7 @@ class LicenseContent:
             footnotes.append(match.group("annotation").strip())
             return f"[^{footnote_num}]"
 
-        transformed_text = type(self)._annotation_pattern.sub(replacement, text)
+        transformed_text = type(self)._annotation_pattern.sub(replacement, text)  # noqa: SLF001
         if footnotes:
             transformed_text += "\n\n"
             for i, footnote in enumerate(footnotes, 1):
@@ -474,7 +472,7 @@ class LicenseContent:
         Returns:
             str: The text with the year placeholder replaced by the current year.
         """
-        return type(self)._year_pattern.sub(self.year, text)
+        return type(self)._year_pattern.sub(self.year, text)  # noqa: SLF001
 
     def replace_code_blocks(self, text: str) -> str:
         """
@@ -486,7 +484,7 @@ class LicenseContent:
         Returns:
             str: The text with code blocks replaced by a placeholder.
         """
-        return type(self)._code_pattern.sub(r"===\1===", text)
+        return type(self)._code_pattern.sub(r"===\1===", text)  # noqa: SLF001
 
     def process_mkdocs_to_markdown(self) -> str:
         """
@@ -942,10 +940,8 @@ class LicenseContent:
 
     @property
     def license_content(self) -> str:
-        """Returns the content for a license page"""
-        tabs = "\n".join(
-            [self.reader, self.embed, self.markdown, self.plaintext, self.changelog]
-        )
+        """Returns the content for a license page."""
+        tabs = f"{self.reader}\n{self.embed}\n{self.markdown}\n{self.plaintext}\n{self.changelog}"
         if self.has_official:
             tabs += f"\n{self.official}"
         outro = (

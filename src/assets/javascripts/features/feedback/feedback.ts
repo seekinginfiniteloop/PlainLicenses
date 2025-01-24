@@ -6,8 +6,7 @@
  */
 import { Observable, filter, fromEvent, map, of, tap, throttleTime } from "rxjs"
 import { logger } from "~/utils/log"
-import { isValidEvent } from "~/utils/conditionChecks"
-import { preventDefault } from "~/utils/eventHandlers"
+import { isValidEvent, preventDefault } from "~/utils"
 
 /**
  * @exports feedback

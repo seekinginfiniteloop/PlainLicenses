@@ -20,28 +20,28 @@
  * @see {@link https://esbuild.github.io/} esbuild Documentation
  */
 
+export type VideoWidth = 426 | 640 | 854 | 1280 | 1920 | 2560 | 3840
+
+export type HeroPaths = Record<VideoWidth, string>
+
 /** ============================================
  *               Hero Images
  *=============================================**/
 
-export interface WidthMap {
-  [key: string]: string
-  [key: number]: string
+export interface ImageFormatData {
+  widths: HeroPaths
+  srcset: string
+  parent?: string
 }
+
+export type ImageIndex = Record<ImageType, ImageFormatData>
+
+export type ImageType = 'avif' | 'webp' | 'png'
+
 export interface HeroImage {
   imageName: string
   parent: string
-  widths: {
-    [key: number]: string
-  }
-  srcset: string
-}
-
-export interface HeroImageBase {
-  parent: string
-  widths: {
-    [key: number]: string
-  }
+  images: ImageIndex
 }
 
 /** ============================================
@@ -98,11 +98,6 @@ export interface tsconfigPathsPluginInterface {
  *               VIDEO CONFIG
  *=============================================**/
 
-export type HeroPaths = {
- [key in VideoWidth]: string
-}
-
-export type VideoWidth = 426 | 640 | 854 | 1280 | 1920 | 2560 | 3840
 export type VideoCodec = 'av1' | 'vp9' | 'h264'
 
 export type CodecVariants = {
@@ -114,18 +109,12 @@ export interface VideoResolution {
   height: number
 }
 
-export interface VideoVariant {
-  codec: VideoCodec
-  path: string
-  width: VideoWidth
-  height: number
-}
-
 export interface HeroVideo {
-  baseName: string
-  parent: string // Path to the parent directory of the video
-  variants: CodecVariants
-  poster: HeroImage
+    baseName: string
+    parent: string // Path to the parent directory of the video
+    variants: CodecVariants
+    poster: HeroImage
+    message?: string
 }
 
 export interface VideoConfig {

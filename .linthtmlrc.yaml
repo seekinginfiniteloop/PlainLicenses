@@ -36,7 +36,6 @@ attr-req-value: true
 attr-new-line: false
 attr-validate: true
 id-no-dup: true
-id-style: bem
 class-style: bem
 class-no-dup: true
 id-class-ignore-regex: false

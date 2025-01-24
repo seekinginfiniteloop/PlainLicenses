@@ -6,9 +6,9 @@
  * @copyright No rights reserved
  */
 
-import { logger } from '~/utils/log'
+import { logger } from '~/utils'
 import { CodecVariants, HeroImage, HeroVideo, VideoWidth } from './types'
-import { MAX_WIDTHS } from '~/config/config'
+import { MAX_WIDTHS } from '~/config'
 import { get_media_type, srcToAttributes } from './utils'
 
 

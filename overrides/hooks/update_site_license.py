@@ -3,6 +3,7 @@ Hook that updates the site license to match the current version of the Plain Unl
 """
 
 import logging
+
 from pathlib import Path
 
 from _utils import is_license_page, wrap_text
@@ -11,6 +12,7 @@ from mkdocs.config.defaults import MkDocsConfig
 from mkdocs.structure.nav import Navigation
 from mkdocs.structure.pages import Page
 from mkdocs.utils.templates import TemplateContext
+
 
 _site_license_log_level = logging.WARNING
 

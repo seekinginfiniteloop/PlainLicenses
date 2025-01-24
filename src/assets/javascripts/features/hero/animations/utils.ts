@@ -8,7 +8,7 @@
  */
 
 import gsap from 'gsap'
-import { HeroStore } from '../../../state/store'
+import { HeroStore } from '~/state'
 import { ReducedMotionCondition } from './types'
 
 const store = HeroStore.getInstance()

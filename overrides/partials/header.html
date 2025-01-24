@@ -30,70 +30,70 @@
 
 <!-- Header -->
 <header class="{{ class }}" data-md-component="header">
-    <nav class="md-header__inner md-grid" aria-label="{{ lang.t('header') }}">
-        <!-- Link to home -->
-        <a href="{{ config.extra.homepage | d(nav.homepage.url, true) | url }}"
+  <nav class="md-header__inner md-grid" aria-label="{{ lang.t('header') }}">
+    <!-- Link to home -->
+    <a href="{{ config.extra.homepage | d(nav.homepage.url, true) | url }}"
             title="{{ config.site_name | e }}" class="md-header__button md-logo"
             aria-label="{{ config.site_name }}" data-md-component="logo">
             {% include "partials/logo.html" %}
-        </a>
+    </a>
 
-        <!-- Button to open drawer -->
-        <label class="md-header__button md-icon" for="__drawer">
-            {% set icon = config.theme.icon.menu or "material/menu" %}
-            {% include ".icons/" ~ icon ~ ".svg" %}
-        </label>
-        <!-- Header title -->
-        <div class="md-header__title" data-md-component="header-title">
-            <div class="md-header__ellipsis">
-                <div class="md-header__topic">
-                    <span class="md-ellipsis">
-                    </span>
-                </div>
-            </div>
+    <!-- Button to open drawer -->
+    <label class="md-header__button md-icon" for="__drawer">
+    {% set icon = config.theme.icon.menu or "material/menu" %}
+    {% include ".icons/" ~ icon ~ ".svg" %}
+    </label>
+    <!-- Header title -->
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+          </span>
         </div>
+      </div>
+    </div>
 
-        <!-- Color palette toggle -->
-        {% if config.theme.palette %}
-        {% if not config.theme.palette is mapping %}
-        {% include "partials/palette.html" %}
-        {% endif %}
-        {% endif %}
-
-        <!-- User preference: color palette -->
-        {% if not config.theme.palette is mapping %}
-        {% include "partials/javascripts/palette.html" %}
-        {% endif %}
-
-        <!-- Site language selector -->
-        {% if config.extra.alternate %}
-        {% include "partials/alternate.html" %}
-        {% endif %}
-
-        <!-- Button to open search modal -->
-        {% if "material/search" in config.plugins %}
-        <label class="md-header__button md-icon" for="__search">
-            {% set icon = config.theme.icon.search or "material/magnify" %}
-            {% include ".icons/" ~ icon ~ ".svg" %}
-        </label>
-
-        <!-- Search interface -->
-        {% include "partials/search.html" %}
-        {% endif %}
-
-        <!-- Repository information -->
-        {% if config.repo_url | trim | url %}
-        <div class="md-header__source">
-            {% include "partials/source.html" %}
-        </div>
-        {% endif %}
-    </nav>
-
-    <!-- Navigation tabs (sticky) -->
-    {% if "navigation.tabs.sticky" in features %}
-    {% if "navigation.tabs" in features %}
-    {% include "partials/hero_tabs.html" %}
+    <!-- Color palette toggle -->
+    {% if config.theme.palette %}
+    {% if not config.theme.palette is mapping %}
+    {% include "partials/palette.html" %}
     {% endif %}
     {% endif %}
+
+    <!-- User preference: color palette -->
+    {% if not config.theme.palette is mapping %}
+    {% include "partials/javascripts/palette.html" %}
+    {% endif %}
+
+    <!-- Site language selector -->
+    {% if config.extra.alternate %}
+    {% include "partials/alternate.html" %}
+    {% endif %}
+
+    <!-- Button to open search modal -->
+    {% if "material/search" in config.plugins %}
+    <label class="md-header__button md-icon" for="__search">
+    {% set icon = config.theme.icon.search or "material/magnify" %}
+    {% include ".icons/" ~ icon ~ ".svg" %}
+    </label>
+
+    <!-- Search interface -->
+    {% include "partials/search.html" %}
+    {% endif %}
+
+    <!-- Repository information -->
+    {% if config.repo_url | trim | url %}
+    <div class="md-header__source">
+        {% include "partials/source.html" %}
+    </div>
+    {% endif %}
+  </nav>
+
+  <!-- Navigation tabs (sticky) -->
+  {% if "navigation.tabs.sticky" in features %}
+  {% if "navigation.tabs" in features %}
+  {% include "partials/hero_tabs.html" %}
+  {% endif %}
+  {% endif %}
 
 </header>

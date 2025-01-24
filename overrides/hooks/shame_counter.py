@@ -6,6 +6,7 @@ We haven't implemented the template changes to display the shame counts, but we 
 
 import logging
 import re
+
 from collections import Counter
 from functools import cached_property
 from typing import ClassVar, Self
@@ -15,6 +16,7 @@ from hook_logger import get_logger
 from mkdocs.config.defaults import MkDocsConfig
 from mkdocs.structure.files import Files
 from mkdocs.structure.pages import Page
+
 
 # Change logging level here
 _shame_log_level = logging.WARNING
@@ -232,12 +234,12 @@ class ShameCounter:
         if not self.shame_map:
             shame_logger.warning("No shame words found in configuration.")
         else:
-            shame_logger.debug(f"Shame words loaded: {self.shame_map}")
+            shame_logger.debug(f"Shame words loaded: {self.shame_map}")  # noqa: G004
         self.shame_counts: dict[str, Counter] = {}
         self.total_counts = Counter()
         self.ratios: dict[str, float] = {}
         self.totals: dict[str, int] = {}
-        type(self)._instantiated = True
+        type(self)._instantiated = True  # noqa: SLF001
 
     @classmethod
     def instance(cls) -> Self | None:
@@ -293,7 +295,7 @@ class ShameCounter:
     @cached_property
     def stopwords(self) -> set[str]:
         """Returns the stopwords set."""
-        return {word for word in STOPWORDS if word not in self.shame_map.keys()}
+        return {word for word in STOPWORDS if word not in self.shame_map}
 
 
 def on_page_markdown(
@@ -321,7 +323,7 @@ def on_page_markdown(
         if not license_name or not license_text:
             return markdown
 
-        logger.debug(f"Found license text for {license_name}, counting shame words.")
+        logger.debug("Found license text for %s, counting shame words.", license_name)
         license_text = strip_markdown(license_text).lower().replace("\n", " ")
 
         words = re.findall(r"\b\w+\b", license_text)
@@ -331,7 +333,10 @@ def on_page_markdown(
             word for word in filtered_words if word in shamer.shame_map
         ):
             logger.debug(
-                f"Found {len(filtered_words)} words in license text for {license_name}. Words: {filtered_words}"
+                "Found %d words in license text for %s. Words: %s",
+                len(filtered_words),
+                license_name,
+                filtered_words,
             )
             shamer.shame_counts[license_name] = word_count
             shamer.total_counts.update(word_count)
@@ -351,7 +356,7 @@ def on_page_markdown(
         )
         shamer.sort_all()
         logger.debug(
-            f"Shame counts for {license_name}: {shamer.shame_counts[license_name]}"
+            "Shame counts for %s: %d}", license_name, shamer.shame_counts[license_name]
         )
     return markdown
 

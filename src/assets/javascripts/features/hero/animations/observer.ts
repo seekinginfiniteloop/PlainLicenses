@@ -11,13 +11,12 @@
 import gsap from "gsap"
 import { Observer } from "gsap/Observer"
 import { distinctUntilChanged, filter, map } from "rxjs/operators"
-import { OBSERVER_CONFIG } from "~/config/config"
-import { ObserverConfig } from "~/config/types"
-import { HeroStore } from "../../../state/store"
+import { OBSERVER_CONFIG, ObserverConfig } from "~/config"
+import { HeroStore } from "~/state"
 import { getContentElements } from "./utils"
 import { Subscription } from "rxjs"
 import { Section, Direction } from "./types"
-import type { HeroState } from "~/state/types"
+import type { HeroState } from "~/state"
 
 // Make sure we have the effects registered
 import './effects'
@@ -233,7 +232,7 @@ export class HeroObservation {
       // the first time this runs, currentIndex will be -1
       tl.setSection({direction: direction, section: nextSection})
     }
-    tl.transitionSection({direction, section: nextSection})
+    tl.transitionSection({ direction, section: nextSection })
     return tl
   }
 

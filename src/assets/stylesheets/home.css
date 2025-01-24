@@ -121,6 +121,18 @@ section.hero {
     background-position: center;
     background-size: cover;
   }
+
+  .hero__backup {
+    display: None;
+    opacity: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero__backup {
+      display: block;
+      opacity: 1;
+    }
+  }
 }
 
 /* End of section.hero */

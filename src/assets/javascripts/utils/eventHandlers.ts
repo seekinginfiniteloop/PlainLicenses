@@ -22,14 +22,13 @@
 
 import * as bundle from "@/bundle"
 
-import { Observable, debounceTime, defer, distinctUntilChanged, filter, from, fromEvent, fromEventPattern, map, merge, mergeMap, of, share, shareReplay, startWith, switchMap, tap, throttleTime, toArray } from "rxjs"
+import { Observable, debounceTime, distinctUntilChanged, filter, from, fromEvent, fromEventPattern, map, merge, mergeMap, of, share, shareReplay, startWith, switchMap, tap, throttleTime, toArray } from "rxjs"
 import Tablesort from "tablesort"
 
-import { isEggBoxOpen, isLicense, isValidEvent } from "./conditionChecks"
+import { isLicense, isValidEvent } from "./conditionChecks"
 import { getLocation, watchViewportAt } from "~/browser"
 import { getComponentElement, watchHeader } from "~/components"
 
-import { logger } from "~/utils/log"
 
 const LICENSE_HASHES = ["#reader", "#html", "#markdown", "#plaintext", "#changelog", "#official"]
 export const NAV_EXIT_DELAY = 60000
@@ -52,8 +51,10 @@ export const preventDefault = (ev: Event) => { ev.preventDefault(); return ev }
  */
 export const watchMediaQuery = (query: string): Observable<boolean> => {
   const mql = customWindow.matchMedia(query)
-  const listener = mql.addEventListener || customWindow.matchMedia(query).addListener  // @ts-ignore: "addListener" is deprecated -- kept for compatibility
-  const remover = mql.removeEventListener || customWindow.matchMedia(query).removeListener  // @ts-ignore: "removeListener" is deprecated -- kept for compatibility
+  // @ts-ignore: "addListener" is deprecated -- kept for compatibility
+  const listener = mql.addEventListener || customWindow.matchMedia(query).addListener
+  // @ts-ignore: "removeListener" is deprecated -- kept for compatibility
+  const remover = mql.removeEventListener || customWindow.matchMedia(query).removeListener
    return merge(fromEventPattern<boolean>(
      handler => listener("change", () => handler(mql.matches)),
      handler => remover("change", () => handler(mql.matches))

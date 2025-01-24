@@ -10,7 +10,10 @@
 
 import { Observable, Subscription, map, tap } from 'rxjs'
 import { TabManager } from './tabManager'
-import { logger } from '~/utils/log'
+import { logger } from '~/utils'
+
+export * from './types'
+export * from './tabManager'
 
 let customWindow = window as any as CustomWindow
 const { document$ } = customWindow

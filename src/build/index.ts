@@ -31,25 +31,22 @@ import * as crypto from "crypto";
 import * as esbuild from "esbuild";
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { from, ObjectUnsubscribedError, Observable } from "rxjs";
+import { from, Observable } from "rxjs";
 import { optimize } from "svgo";
-import { baseProject, generateVideoVariants, getVideoParents, heroImages, heroParents, videoConfig, webConfig } from "./config/index.js";
+import { backupImage, baseProject, cssSrc, generateVideoVariants, getVideoParents, heroImages, heroParents, resKeys, videoConfig, webConfig } from "./config";
 import { buildJson, CodecVariants, esbuildOutputs, FileHashes, HeroImage, HeroVideo, Project } from "./types.ts";
 
 import globby from 'globby';
 
-const cssSrc = "src/assets/stylesheets/bundle.css";
-
 // TODO: Refactor to use esbuild's transform API and reduce the number of file reads and writes
 
-// template for the noScriptImage, which is inserted into the build output and later added to the main.html template
+// template for the noScriptImage, which is inserted into the build output and later added to the main.html template for the <noscript> tag or used as a fallback image
+const baseObj = { widths: { ...resKeys }, srcset: '' }
 let noScriptImage: HeroImage = {
   imageName: '',
   parent: '',
-  widths: {},
-  srcset: '',
+  images: { avif: baseObj, webp: baseObj, png: baseObj },
 }
-
 
 /**
  * @param {string} fullPath - the full path to the file
@@ -133,7 +130,6 @@ function toEnumString(str: string): string {
 }
 
   /**
-   * @function handleHeroImages
    * @returns {Promise<HeroImage[]>} the hero images
    * @description Processes the hero images for the landing page. Hashes, copies the images.
    */
@@ -150,18 +146,26 @@ function toEnumString(str: string): string {
       const newWidths: { [key: number]: string } = {}
       // Process each width
       let newSrcSet: string[] = []
-      for (const [width, src] of Object.entries(image.widths)) {
-        const newPath = (await getmd5Hash(src)).replace('src', 'docs')
-        newWidths[Number(width)] = newPath
-        newSrcSet.push(`${newPath} ${width}w`)
-        await fs.copyFile(src, newPath)
+      for (const ext of Object.keys(image.images)) {
+        const newIndex = image.images[ext]
+        for (const [width, src] of Object.entries(image.images[ext].widths)) {
+          const newPath = (await getmd5Hash(src as string)).replace('src', 'docs')
+          newWidths[Number(width)] = newPath
+          newSrcSet.push(`${newPath} ${width}w`)
+          await fs.copyFile(src as string, newPath)
+        }
+        const srcset = newSrcSet.join(', ')
+        newIndex.srcset = srcset
+        newIndex.parent = parent
+        newIndex.widths = newWidths
       }
-      const srcset = newSrcSet.join(', ')
-      images.push({ imageName, parent, widths: newWidths, srcset })
+      images.push({ imageName, parent, images: image.images })
     }
-    noScriptImage = images.find((image) => image.parent.includes('minimal')) || images.find((image) => image.widths[1280].includes('minimal')) || images[8]
+    noScriptImage = images.find((image) => image.parent.includes(backupImage)) || images[0]
     return images
   }
+
+  const images = await handleHeroImages()
 
   /**
  * Processes the hero videos for the landing page. Hashes, copies, and exports the videos to a TypeScript file.
@@ -170,7 +174,6 @@ function toEnumString(str: string): string {
 async function handleHeroVideos() {
   const videoParents = await getVideoParents();
   const videos: HeroVideo[] = [];
-  const images = await handleHeroImages();
 
   for (const parent of videoParents) {
     const baseName = path.basename(parent);
@@ -178,30 +181,22 @@ async function handleHeroVideos() {
 
     // Hash and copy video files
     const newVariants = Object.fromEntries(videoConfig.codecs.map(codec => [codec, Object.fromEntries(videoConfig.resolutions.map(res => [res.width, ""]))])) as CodecVariants
-
-    for (const [codec, paths] of Object.entries(video.variants)) {
-      for (const [width, src] of Object.entries(paths as { [key: string]: string })) {
-        const newPath = (await getmd5Hash(src)).replace('src', 'docs');
-        newVariants[codec][width] = newPath;
-        await fs.copyFile(src, newPath);
+    for (const [_, variants] of Object.entries(video.variants)) {
+      for (const [codec, paths] of Object.entries(variants)) {
+        for (const [width, src] of Object.entries(paths)) {
+          const newPath = (await getmd5Hash(src)).replace('src', 'docs')
+          newVariants[codec][width] = newPath
+          await fs.copyFile(src, newPath)
+        }
       }
     }
 
-    const newImage = images.find((image) => image.imageName === baseName) || { imageName: '', parent: '', widths: {}, srcset: '' };
-    const imageWidths = Array.from(Object.keys(newImage.widths));
-    let poster = { imageName: '', parent: '', widths: {}, srcset: '' };
-    if (imageWidths.length > 0) {
-      poster = {
-        ...newImage,
-        parent: newImage.parent.replace('src', 'docs'),
-        widths: Object.fromEntries(imageWidths.map(width => newImage.widths[width] = newImage.widths[width].replace('src', 'docs'))),
-        srcset: newImage.srcset.replace('src', 'docs')
-      }
-    }
+    const newImage = images.find((image) => image.imageName === baseName) || { imageName: '', parent: '', images: {} } as HeroImage;
+    const poster = newImage
 
     videos.push({
       ...video,
-      parent: parent.replace('src', 'docs'),
+      parent,
       variants: newVariants,
       poster
     });
@@ -209,7 +204,7 @@ async function handleHeroVideos() {
   return videos
 }
 
-  // Write the file to the output path
+  // Write the file to the output pathnoScriptImageParent
   const outputPath = path.join('src', 'assets', 'javascripts', 'features', 'hero', 'videos', 'data.ts')
 
 /**
@@ -218,8 +213,9 @@ async function handleHeroVideos() {
 async function exportVideosToTS(videos: HeroVideo[]) {
   const fileContent = `
 /**
- *! NOTE: This file is auto-generated by the build script.
+ *! NOTE: The build process generates this file.
  *! DO NOT EDIT THIS FILE DIRECTLY.
+ * Edit the build script instead (src/build/index.ts).
  *
  * @module data
  * @description A collection of hero videos for the landing page.
@@ -229,12 +225,15 @@ export const rawHeroVideos = ${JSON.stringify(videos, null, 2)} as const;
 
 export enum HeroName {
     ${videos.map(video => toEnumString(video.baseName)).join(',\n    ')}
+    }
+
+export backupImage = "${noScriptImage}";
+
 `;
 
   await fs.writeFile(outputPath, fileContent);
 
   /**
-   * @function runLint
    * @description Runs ESLint on the generated file to strip the quotes from keys
    */
   const runLint = async () => {
@@ -260,7 +259,6 @@ export enum HeroName {
 }
 
   /**
-   * @function build
    * @param {Project} project - the project to build
    * @returns {Observable<Promise<void>>} an observable
    */
@@ -285,7 +283,6 @@ export enum HeroName {
   }
 
   /**
-   * @function removeHashedFilesInSrc
    * @description Removes hashed files in the src directory
    */
   async function removeHashedFilesInSrc() {
@@ -465,6 +462,30 @@ const cacheMeta = async (output: esbuildOutputs) => {
   await fs.writeFile(path, cacheJson)
 }
 
+/**
+ * Generates a picture element for the hero image
+ * @param image - the hero image
+ * @param className - the class name
+ * @returns {string} the picture element
+ */
+const generatePictureElement = (image: HeroImage, className: string = "hero__poster"): string => {
+  const { images } = image
+  const { avif, webp, png } = images
+  const alt = "hero image"
+  const sortedImages = { avif, webp, png }
+  image.images = sortedImages
+  const sources = Object.entries(sortedImages).map(([ext, { srcset }]) => `<source type="image/${ext}" srcset="${srcset}">`).join('\n')
+  const sizes = Object.keys(png.widths).map((width) => {
+    if (width !== '3840') {
+      return `(max-width: ${width}px) ${width}px`
+    } else {
+      return `${width}px`
+    }
+}).join(', ')
+  const img = `<img src="${png.widths[1280]}" alt="${alt}" class="${className}--image" draggable="false", fetchpriority="high", loading="eager", sizes="${sizes}">`
+  return `<picture class="nojs ${className}">${sources}${img}</picture>`
+}
+
   /**
    * @param {esbuildOutputs} output - the esbuild outputs
    * @returns {Promise<buildJson>} the mapping object
@@ -474,11 +495,8 @@ const cacheMeta = async (output: esbuildOutputs) => {
     const keys = Object.keys(output)
     const jsSrcKey = keys.find((key) => key.endsWith('.js'))
     const cssSrcKey = keys.find((key) => key.endsWith('.css') && key.includes("bundle") && !key.includes("javascripts"))
-    let noScriptImageContent = `
-  <img srcset="${noScriptImage.srcset}" alt="hero image" class="hero-parallax__image hero-parallax__image--minimal" src="${noScriptImage.widths[1280]}" alt="hero image"
-  sizes="(max-width: 1280px) 1280px, (max-width: 1920px) 1920px, (max-width: 2560px) 2560px, 3840px" loading="eager" fetchpriority="high" draggable="false"
-  style="align-content:flex-start;align-self:flex-start">
-  `
+    const noScriptImageContent = generatePictureElement(noScriptImage)
+
 
     const mapping = {
       noScriptImage: noScriptImageContent,

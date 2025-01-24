@@ -3,7 +3,7 @@
 <html lang="{{ lang.t('language') }}" class="no-js">
 
 <head>
-
+    <title>{{ page.meta.title }}</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     {% if page.meta and page.meta.description %}
@@ -42,7 +42,7 @@
     {% include "partials/javascripts/base.html" %}
     {% if page.meta and page.meta.meta %}
     {% for tag in page.meta.meta %}
-    <meta {% for key, value in tag.items() %} {{ key }}="{{value}}" {% endfor %}>
+    <meta {% for key, value in tag.items() %} {{ key }}="{{ value }}" {% endfor %}>
     {% endfor %}
     {% endif %}
 </head>
@@ -60,6 +60,7 @@
     data-md-color-primary="{{ primary | replace(' ', '-') }}"
     data-md-color-accent="{{ accent | replace(' ', '-') }}">
     {% else %}
+
     <body dir="{{ direction }}">
         {% endif %}
 
@@ -78,7 +79,6 @@
         </div>
         {% set features = ["content.code.annotate", "content.code.copy", "content.code.select",
         "content.tooltips", "content.footnote.tooltips"]%}
-
         {%- set app = {
         "base": base_url,
         "features": features,
@@ -96,10 +96,9 @@
         {%- set _ = translations.update({ key: lang.t(key) }) -%}
         {%- endfor -%}
         <script id="__config" type="application/json">
-            {{- app | tojson -}}
+        {{- app | tojson -}}
         </script>
         <script async>
-
             const theme = (value) => {
                 const scheme = value === 'dark' ? 'slate' : 'default';
                 document.body.setAttribute('data-md-color-scheme', scheme);
@@ -122,4 +121,5 @@
         </script>
         <script async fetchpriority="low" defer src="{{ js_bundle | url }}"></script>
     </body>
+
 </html>

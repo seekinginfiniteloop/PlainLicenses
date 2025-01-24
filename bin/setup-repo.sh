@@ -126,7 +126,10 @@ setup_tools() {
     else
         cargo install typos-cli || error_exit "Failed to install typos-cli"
     fi
-    source "$HOME/.zshrc" || source "$HOME/.bashrc" || source "$HOME/.bash_profile" || source "$HOME/.profile"
+    source "$HOME/.profile"
+    source "$HOME/.bash_profile"
+    source "$HOME/.bashrc"
+    source "$HOME/.zshrc"
 
     uvloc=$(which uv 2>/dev/null || command -v uv 2>/dev/null || echo "$HOME/.local/bin/uv")
     echo "Tools installed."

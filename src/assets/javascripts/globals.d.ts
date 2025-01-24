@@ -15,12 +15,6 @@ declare global {
    * Types
    * ------------------------------------------------------------------------- */
 
-  type PageConfig = {
-    matcher: (url: URL) => boolean
-    location: PageLocation
-    observables: Observable<any>[]
-  }
-
   type T = Type["T"]
   type R = Type["R"]
 
@@ -37,29 +31,6 @@ declare global {
   /* ----------------------------------------------------------------------------
    * Interfaces
    * ------------------------------------------------------------------------- */
-
-  interface ScrollTargets {
-    target: Element
-    wayPoint: Element
-    wayPointPause: number
-    duration: number
-  }
-
-  interface ImageMetadata {
-    readonly loadTime: number
-    displayCount: number
-    readonly width: number
-    readonly actualWidth: number
-  }
-
-  interface ImageCycler {
-    loadImages$?: Observable<void>
-    cycle$: Observable<void>
-    heroState: HeroStateManager
-    start: () => Subscription
-    stop: () => void
-  }
-
 
   interface Keyboard {
     mode: KeyboardMode
@@ -81,11 +52,6 @@ declare global {
     y: number
   }
 
-  interface ImageSize {
-    width: number
-    height: number
-  }
-
   interface ViewportOffset {
     x: number
     y: number
@@ -94,12 +60,6 @@ declare global {
   interface ViewportSize {
     width: number
     height: number
-  }
-
-  interface SafeZone {
-    x: { min: number, max: number }
-    y: { min: number, max: number }
-    scale?: number
   }
 
   interface Viewport {
