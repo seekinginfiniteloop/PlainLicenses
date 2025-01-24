@@ -10,7 +10,7 @@ provides information on the license #}
   <div class="quick_links" title="license views" data-md-scrollfix>
     <a href="#reader" class="quicklink_group"
             aria-label="jump to {{ page.meta['plain_name'] }} reader"
-            title="reader tab: {{ page.meta['plain_name'] }}" id="icon-reader" data-iden="reader">
+            title="reader tab: {{ page.meta['plain_name'] }}" id="icon-reader" data-iden="reader" aria-controls="reader">
       <span class="tab_quick_link">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" role="button">
           <path
@@ -20,7 +20,7 @@ provides information on the license #}
     </a>
     <a href="#html" class="quicklink_group"
         aria-label="jump to {{ page.meta['plain_name'] }} html embedding code"
-        title="html tab: {{ page.meta['plain_name'] }}" id="icon-html" data-iden="html">
+        title="html tab: {{ page.meta['plain_name'] }}" id="icon-html" data-iden="html" aria-controls="html">
       <span class="tab_quick_link">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
           <path
@@ -31,7 +31,7 @@ provides information on the license #}
     <a href="#markdown" class="quicklink_group"
         aria-label="jump to {{ page.meta['plain_name'] }} markdown code"
         title="markdown tab: {{ page.meta['plain_name'] }}" id="icon-markdown"
-        data-iden="markdown">
+        data-iden="markdown" aria-controls="markdown">
       <span class="tab_quick_link">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
           <path
@@ -42,7 +42,7 @@ provides information on the license #}
     <a href="#plaintext" class="quicklink_group"
         aria-label="jump to {{ page.meta['plain_name'] }} plaintext"
         title="plaintext tab: {{ page.meta['plain_name'] }}" id="icon-plaintext"
-        data-iden="plaintext">
+        data-iden="plaintext" aria-controls="plaintext">
       <span class="tab_quick_link">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200">
           <path
@@ -53,7 +53,7 @@ provides information on the license #}
     <a href="#changelog" id="icon-changelog" class="quicklink_group"
         aria-label="jump to the changelog for the {{ page.meta['plain_name'] }}"
         title="changelog: {{ page.meta['plain_name'] }}" id="icon-changelog"
-        data-iden="changelog">
+        data-iden="changelog" aria-controls="changelog">
       <span class="tab_quick_link">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
           <path
@@ -65,7 +65,7 @@ provides information on the license #}
     <a href="#official" class="quicklink_group"
       aria-label="jump to official {{ page.meta['original_name'] }}"
       title="official: {{ page.meta['original_name'] }}" id="icon-official"
-      data-iden="official">
+      data-iden="official" aria-controls="official" aria-selected="false">
       <span class="tab_quick_link">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
           <path

@@ -12,12 +12,12 @@
       <div class="tabbed-labels tabbed-labels--linked">
         <label for="not-advice-warning">
           <a href="#not-advice-warning" aria-selected="true" tabindex="0" role="tab"
-                        aria-controls="not-advice-warning" aria-selected="true"
+                        aria-controls="not-advice-warning"
                         id="not-advice-warning-label"><strong>This is not legal advice</strong></a>
         </label>
         <label for="not-official-warning">
-          <a href="#not-official-warning" aria-selected="false"     role="tab"
-            aria-controls="not-official-warning" asia-selected="false" tabindex="-1"
+          <a href="#not-official-warning" aria-selected="false" role="tab"
+            aria-controls="not-official-warning" tabindex="-1"
             id="not-official-warning-label">
             <strong>This is not the official{{ page.meta['original_name'] | trim }}
             </strong>
@@ -38,6 +38,8 @@
         </div>
         <div class="tabbed-block" role="tabpanel" id="not-official-warning" aria-labelledby="not-official-warning-label" hidden>
           <p>Plain License is not affiliated with the original {{ page.meta['original_name'] | trim }} authors or {{ page.meta['original_organization'] | trim }}. <strong>Our plain language versions are not official</strong> and are not endorsed by the original authors. Our licenses may also include different terms or additional information. We try to capture the <em>legal meaning</em> of the original license, but we can't guarantee our license provides the same legal protections.
+            <small>(...they can't guarantee that either.)
+            </small>
           </p>
           <p>If you want to use the {{ page.meta['plain_name'] | trim }}, you should refer to the original license text to make sure you understand how it might be different. You can find the official {{ page.meta['original_name'] | trim }} <a href="{{ page.meta['original_url'] | trim }}">here</a>.
           </p>

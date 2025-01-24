@@ -9,7 +9,7 @@
  */
 
 import { Observable, Subscription, debounceTime, filter, fromEvent, map, merge, share, tap } from 'rxjs'
-import { TabElement, TabState, TabStateType } from './types'
+import { ChildTabs, TabElement, TabState, TabStateType } from './types'
 import { logger, preventDefault } from '~/utils'
 
 /**
@@ -30,9 +30,16 @@ import { logger, preventDefault } from '~/utils'
 export class TabManager {
   private readonly tabs: TabElement[]
 
+  private readonly childTabs: ChildTabs[]
+
   private readonly selectors = {
     inputs: '.tabbed-set input[type="radio"]',
     iconPrefix: '#icon-',
+  }
+
+  private readonly disclaimerTabSelectors = {
+    inputs: '#not-advice-warning-checkbox #not-official-warning-checkbox',
+    labelAnchors: '#not-advice-warning-label #not-official-warning-label',
   }
 
   public subscription: Subscription = new Subscription()
@@ -42,6 +49,7 @@ export class TabManager {
    */
   public constructor() {
     this.tabs = this.initializeTabs()
+    this.childTabs = this.initializeChildTabs()
     this.init()
   }
 
@@ -55,11 +63,15 @@ export class TabManager {
     return inputs
       .map(input => {
         const { id } = input
+        const label = document.querySelector(`label[for="${id}"]`) as HTMLLabelElement
         const elements = {
           input: input as HTMLInputElement,
-          label: document.querySelector(`label[for="${id}"]`) as HTMLLabelElement,
+          label: label,
+          labelAnchor: label.querySelector('a') as HTMLAnchorElement,
           iconAnchor: document.querySelector(`${this.selectors.iconPrefix}${id}`) as HTMLAnchorElement,
-          iconSVG: document.querySelector(`${this.selectors.iconPrefix}${id}`)?.querySelector('svg') as SVGElement
+          iconSVG: document.querySelector(`${this.selectors.iconPrefix}${id}`)?.querySelector('svg') as SVGElement,
+          contentElement: document.querySelector(`#${id}`) as HTMLDivElement,
+          tablistElement: document.querySelector('.tabbed-set') as HTMLDivElement
         }
 
         // Only include if all elements are found
@@ -67,6 +79,58 @@ export class TabManager {
       })
       .filter((tab): tab is TabElement => tab !== null)
   }
+
+  private initializeChildTabs(): ChildTabs[] {
+    const inputs = Array.from(document.querySelectorAll(this.disclaimerTabSelectors.inputs))
+    const labels = Array.from(document.querySelectorAll(this.disclaimerTabSelectors.labelAnchors))
+
+    return inputs.map((input) => {
+      const { id } = input
+      const idPrefix = id.split('-')[1] // either 'advice' or 'official'
+      const label = labels.find(label => label.id.includes(idPrefix)) as HTMLAnchorElement
+      const elements = {
+        labelAnchor: label,
+        input: input as HTMLInputElement
+      }
+
+      return Object.values(elements).every(el => el) ? elements : null
+    })
+    .filter((tab): tab is ChildTabs => tab !== null)
+  }
+
+  private setAria() {
+    this.tabs.forEach(tab => {
+      const { contentElement, input, labelAnchor, label, iconAnchor, iconSVG, tablistElement } = tab
+      tablistElement.setAttribute('role', 'tablist')
+      contentElement.setAttribute('role', 'tabpanel')
+      contentElement.setAttribute('aria-labelledby', `${label.id || labelAnchor.id} ${iconAnchor.id}`)
+      input.setAttribute('aria-hidden', 'true')
+      labelAnchor.setAttribute('role', 'tab')
+      labelAnchor.setAttribute('aria-selected', input.checked ? 'true' : 'false')
+      labelAnchor.setAttribute('aria-controls', contentElement.id)
+      labelAnchor.setAttribute('tabindex', labelAnchor.href === '#reader' ? '0' : '-1')
+      iconSVG.setAttribute('role', 'button')
+      iconAnchor.setAttribute('role', 'tab')
+      iconAnchor.setAttribute('aria-selected', input.checked ? 'true' : 'false')
+      iconAnchor.setAttribute('aria-controls', contentElement.id)
+    })
+  }
+
+  private toggleAriaSelected(tabEls: TabElement[] | ChildTabs[]) {
+    const checkedState = tabEls.map(tab => tab.input.checked)
+    const anchors = tabEls.map(tab => {
+      if ('iconAnchor' in tab) {
+        return [tab.labelAnchor, tab.iconAnchor]
+      }
+      return [tab.labelAnchor]
+    })
+    checkedState.forEach((checked, index) => {
+      anchors[index].forEach(anchor => {
+        anchor.setAttribute('aria-selected', checked ? 'true' : 'false')
+      })
+    })
+  }
+
 
   /**
    * @param {TabElement} tab - Tab element to style
@@ -83,7 +147,6 @@ export class TabManager {
     // Update colors
     iconSVG.style.fill = isSelected ? selectedColor : fillColor
     label.style.color = isSelected ? selectedColor : fillColor
-    // TODO: Add ARIA roles and states
   }
 
   /**
@@ -114,17 +177,34 @@ export class TabManager {
     const interactionStreams = events.map(event => createEventStream(this.tabs, event))
 
   // Handle icon clicks
-    const iconClicks = this.tabs.map(({ iconAnchor, input }) =>
-    fromEvent(iconAnchor, 'click').pipe(
+    const iconClicks = this.tabs.map(({ iconAnchor, input, labelAnchor }) =>
+    merge(
+    fromEvent(labelAnchor, 'click'),
+    fromEvent(iconAnchor, 'click')).pipe(
       tap(() => {
         preventDefault
         if (!input.checked) {
           input.checked = true
+          this.toggleAriaSelected(this.tabs)
+
           input.dispatchEvent(new Event('change'))
         }
       }),
       map(() => ({ id: input.id, event: 'click' }))
     )
+    )
+
+    const childClicks = this.childTabs.map(({ input, labelAnchor }) =>
+      fromEvent(labelAnchor, 'click').pipe(
+        tap(() => {
+          preventDefault
+          if (!input.checked) {
+            input.checked = true
+            this.toggleAriaSelected(this.childTabs)
+            input.dispatchEvent(new Event('change'))
+          }
+        }),
+        map(() => ({ id: input.id, event: 'click' })))
     )
 
     // Handle tab selection
@@ -139,6 +219,7 @@ export class TabManager {
     return merge(
       ...interactionStreams,
       ...iconClicks,
+      ...childClicks,
       ...selections
     ).pipe(
       filter((event): event is { id: string, event: string } => typeof event === 'object' && 'id' in event && 'event' in event),
@@ -162,14 +243,24 @@ export class TabManager {
    */
   private init() {
     logger.info('Initializing license tabs')
-
+    this.setAria()
     // Set initial styles
     this.tabs.forEach(tab => {
       this.styleTab(tab, { isSelected: tab.input.checked, state: 'normal' })
     })
     this.subscription = this.setupInteractions().subscribe(
-      {error: (err) => logger.error('Error setting up license tabs:', err)}
+      { error: (err) => logger.error('Error setting up license tabs:', err) }
     )
+    const allAnchors: HTMLAnchorElement[] = []
+    this.tabs.forEach(tab => {
+      allAnchors.push(tab.labelAnchor, tab.iconAnchor)
+    })
+    this.childTabs.forEach(tab => {
+      allAnchors.push(tab.labelAnchor)
+    })
+    allAnchors.forEach(anchor => {
+      anchor.addEventListener('click', preventDefault)
+    })
   }
 
   /**

@@ -26,9 +26,10 @@ import { ScrollToPlugin } from "gsap/ScrollToPlugin"
 import { feedback } from "~/features/feedback"
 import { initLicenseFeature } from "~/features/licenses"
 import { logger } from "~/utils"
-import { createScript, license$, navigationEvents$, windowEvents, isHelpingIndex, isHome, isLicense, isOnSite } from "~/utils"
+import { createScript, watchLicenseHash, navigationEvents$, windowEvents, isHelpingIndex, isHome, isLicense, isOnSite } from "~/utils"
 import { HeroStore } from "./state"
 import { HeroObservation, VideoManager } from "./features/hero"
+import type { PageConfig } from "./types"
 
 
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin)
@@ -60,7 +61,8 @@ const analytic$ = of(insertAnalytics())
 const feedback$ = of(feedback())
 const buttonScript$ = of(insertButtonScript())
 const color$ = of(document.body.setAttribute("data-md-color-scheme", "slate"))
-const licenseSub$ = license$.pipe(switchMap(() => of(initLicenseFeature())))
+const licenseHashHandler$ = watchLicenseHash()
+const license$ = navigationEvents$.pipe(filter(isLicense), switchMap(() => initLicenseFeature()))
 const windowEvents$ = from(windowEvents())
 
 // Define page configurations
@@ -77,7 +79,7 @@ const pageConfigs: PageConfig[] = [
   {
     matcher: isLicense,
     location: "licenses",
-    observables: [licenseSub$]
+    observables: [license$]
   },
   {
     matcher: isHelpingIndex,
@@ -90,6 +92,7 @@ const pageConfigs: PageConfig[] = [
     observables: [
       analytic$,
       feedback$,
+      licenseHashHandler$,
       windowEvents$
     ]
   }

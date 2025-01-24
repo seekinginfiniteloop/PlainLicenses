@@ -22,15 +22,15 @@
 
 import * as bundle from "@/bundle"
 
-import { Observable, debounceTime, distinctUntilChanged, filter, from, fromEvent, fromEventPattern, map, merge, mergeMap, of, share, shareReplay, startWith, switchMap, tap, throttleTime, toArray } from "rxjs"
+import { Observable, combineLatest, debounceTime, distinctUntilChanged, filter, from, fromEvent, fromEventPattern, map, merge, mergeMap, of, share, shareReplay, skip, startWith, switchMap, take, takeUntil, tap, throttleTime, toArray } from "rxjs"
 import Tablesort from "tablesort"
 
-import { isLicense, isValidEvent } from "./conditionChecks"
+import { isLicense, isLicenseHash, isValidEvent } from "./conditionChecks"
 import { getLocation, watchViewportAt } from "~/browser"
 import { getComponentElement, watchHeader } from "~/components"
 
 
-const LICENSE_HASHES = ["#reader", "#html", "#markdown", "#plaintext", "#changelog", "#official"]
+
 export const NAV_EXIT_DELAY = 60000
 export const PAGE_CLEANUP_DELAY = 20000
 
@@ -220,75 +220,59 @@ export async function windowEvents() {
   }
 }
 
-const isLicenseLink = (link: HTMLAnchorElement) =>
-  link.href.includes("licenses") &&
-  isLicense(new URL(link.href)) &&
-  !new URL(link.href).hash
-
-const isHashedLink = (link: HTMLAnchorElement) =>
-  LICENSE_HASHES.some(hash => link.href.includes(hash))
-
-export const license$ = navigationEvents$.pipe(
-  filter(url => isLicense(url)),
-  shareReplay(1)
-)
+/**
+ * Handles license hash changes; receives input from watchLicenseHash
+ * At this point, watchLicenseHash has determined that the hash is a valid license hash
+ */
+const handleLicenseHash = (url: URL) => {
+  if (url.pathname !== new URL(customWindow.location.href).pathname) {
+    const newUrl = new URL(customWindow.location.href)
+    newUrl.hash = ''
+    customWindow.history.replaceState({}, '', newUrl.toString())
+    customWindow.location.href = newUrl.toString()
+  }
+  const hash = url.hash.slice(1)
+  const input = document.getElementById(hash)
+  if (input) {
+    (input as HTMLInputElement).checked = true
+    input.dispatchEvent(new Event("change"))
+  }
+}
 
 /**
- * Uses the navigationEvents$ observable to watch for license hash changes and
- * navigate to the appropriate license section. The license hashes are really
- * just the IDs of the license sections.
- *
- * @returns {Observable} An observable stream handling license link navigation events
+ * Adds a hash change listener to the window to prevent default behavior on license hash changes
  */
-export const watchLicenseHashChange = () => {
-  const allLinks = Array.from(document.getElementsByTagName("a"))
+function addLicenseHashListener() {
+  customWindow.addEventListener("hashchange", (ev) => {
+    const url = new URL(customWindow.location.href)
+    if (isLicenseHash(url)) {
+      preventDefault(ev)
+    }
+  })
+}
 
-  const unhashedLicenseLinks = allLinks.filter(isLicenseLink)
-  const hashedLinks = allLinks.filter(isHashedLink)
-
-  unhashedLicenseLinks.forEach(link =>
-    link.addEventListener("click", () => {
-      document$.subscribe(() => {
-        const readerElement = document.getElementById("reader") as HTMLInputElement
-        if (readerElement) {
-          readerElement.checked = true
-        }
-      })
-    })
-  )
-
-  hashedLinks.forEach(link =>
-    link.addEventListener("click", preventDefault)
-  )
-
-  const navigationWatcher$ = navigationEvents$.pipe(
-    filter(url => LICENSE_HASHES.includes(url.hash)),
-    shareReplay(1)
-  )
-
-  const linkWatcher$ = fromEventPattern<Event>(
-    handler => hashedLinks.forEach(link => link.addEventListener("click", handler)),
-    handler => hashedLinks.forEach(link => link.removeEventListener("click", handler))
+export function watchLicenseHash() {
+  // combine the initial navigation value (the URL on subscription)
+  // with subsequent navigation events
+  // will only emit once there has been a navigation event after subscription
+  return combineLatest([navigationEvents$.pipe(
+    take(1),
+    tap(() => addLicenseHashListener())),
+    navigationEvents$.pipe(
+    // skip the first value, as we've already handled it
+      skip(1),
+    // only emit while the pathname remains the same (i.e., we're watching the same page for hash changes)
+    takeUntil(
+      navigationEvents$.pipe(
+        distinctUntilChanged(
+          (prev, curr) => prev.pathname === curr.pathname))),
+    )
+  ]
   ).pipe(
-    map(ev => new URL((ev.target as HTMLAnchorElement).href)),
-    filter(url => LICENSE_HASHES.includes(url.hash)),
-    shareReplay(1)
-  )
-
-  const handleHashChange = (url: URL) => {
-    if (getLocation().pathname !== url.pathname) {
-      customWindow.location.href = url.href.replace(url.hash, "")
-    }
-
-    const inputElement = document.getElementById(url.hash.slice(1))
-    if (inputElement instanceof HTMLInputElement) {
-      inputElement.checked = true
-      inputElement.dispatchEvent(new Event("change"))
-      inputElement.parentElement?.querySelector(".tabbed-content")?.scrollIntoView({ behavior: "smooth" })
-    }
-  }
-
-  return merge(navigationWatcher$, linkWatcher$).pipe(
-    mergeMap(url => of(handleHashChange(url)))
+    filter(
+      ([first, second]) => first.pathname === second.pathname),
+    map(([_, second]) => second),
+    filter((url) => isLicenseHash(url)),
+    tap(handleLicenseHash),
   )
 }

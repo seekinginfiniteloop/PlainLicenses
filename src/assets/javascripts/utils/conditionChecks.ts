@@ -6,19 +6,36 @@
  * @copyright No rights reserved.
  */
 
+const LICENSE_HASHES = ["#reader", "#html", "#markdown", "#plaintext", "#changelog", "#official"]
+
+const isProd = (url: URL) => { return url.hostname === "plainlicense.org" && url.protocol === "https:" }
+
+// tests if the site is in a development environment
+export const isDev = (url: URL) => { return (url.hostname === "localhost" && url.port === "8000") || (url.hostname === "127.0.0.1" && url.port === "8000") }
+
+// tests if the URL is on the site
+export const isOnSite = (url: URL) => { return isProd(url) || isDev(url) }
+
 
 // tests if the URL is the home page
-export const isHome = (url: URL) => { return url.pathname === "/" || url.pathname === "/index.html" }
+export const isHome = (url: URL) => { return url.pathname === "/" || url.pathname === "/index.html" && isOnSite(url) }
+
+const isMainSiteLicensePage = (url: URL) => { return (url.pathname.endsWith("index.html") && url.pathname.split("/").length === 5) || (url.pathname.endsWith("/") && url.pathname.split("/").length === 4) }
 
 // tests if the URL is a license page
-const isLicensePage = (url: URL) => { return (url.pathname.endsWith("index.html") && url.pathname.split("/").length === 5) || (url.pathname.endsWith("/") && url.pathname.split("/").length === 4) }
+const isEmbeddedLicensePage = (url: URL) => {
+  const path = url.pathname.split("/")
+  return path[1] === "embed" && !path[path.length - 1].includes("index.html")
+}
 
 /**
  * Tests if the URL is a license page
  * @param url the url to test
  * @returns boolean true if the URL is a license page
  */
-export const isLicense = (url: URL) => { return url.pathname.includes("licenses") && isLicensePage(url) }
+export const isLicense = (url: URL) => { return isMainSiteLicensePage(url) || isEmbeddedLicensePage(url) }
+
+export const isLicenseHash = (url: URL) => { return url.hash.length > 1 && isLicense(url) && LICENSE_HASHES.includes(url.hash) }
 
 /**
  * Tests if the URL is the helping index page
@@ -35,21 +52,9 @@ export const isHelpingIndex = (url: URL) => { return url.pathname.includes("help
  * @param url the url to test
  * @returns boolean true if the site is in production
  */
-const isProd = (url: URL) => { return url.hostname === "plainlicense.org" && url.protocol === "https:" }
-
-// tests if the site is in a development environment
-export const isDev = (url: URL) => { return (url.hostname === "localhost" && url.port === "8000") || (url.hostname === "127.0.0.1" && url.port === "8000") }
-
-// tests if the URL is on the site
-export const isOnSite = (url: URL) => { return isProd(url) || isDev(url) }
 
 // Tests if the event is a valid event (that it isn't null and is an instance of Event)
 export const isValidEvent = (value: Event | null) => { return value !== null && value instanceof Event }
-
-const eggInfoBox = document.getElementById("egg-box") as HTMLDialogElement
-
-// Tests if the egg box is open
-export const isEggBoxOpen = () => { if (eggInfoBox) { return eggInfoBox.open } else { return false } }
 
 
 /**

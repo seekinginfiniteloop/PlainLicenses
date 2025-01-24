@@ -1,18 +1,22 @@
 # sourcery skip: avoid-global-variables, do-not-use-staticmethod, no-complex-if-expressions
 """
 Assembles license content for all license pages.
-
-TODO: We can probably make more use of pyMarkdown to handle the processing of the license text; need to investigate further. We can also make much better use of mkdocs-macros to handle the processing of the license text.
-
-Also, it's getting a bit unwieldy, so we should probably break this up into smaller pieces.
 """
+#===========================================================================
+#  todo                             TODO
+#
+# We should:
+# - [ ] Break this monster class up into smaller classes... it's unwieldy and messy... but functional
+# - [ ] See if we can use pyMarkdown to take more of the license text processing off our hands
+# - [ ] Use mkdocs-macros plugin to simplify content generation
+#===========================================================================
 
 import json
 import logging
 import re
 
 from copy import copy
-from datetime import datetime, timezone
+from datetime import datetime
 from functools import cached_property
 from pathlib import Path
 from re import Match, Pattern
@@ -218,8 +222,10 @@ def on_files(files: Files, config: MkDocsConfig) -> Files:
     """
     Replaces license files with generated versions.
 
-    I was doing this after Page creation but it was problematic.
-    It's more involved, but the output fits better with MkDocs' expectations. We're also less prone to changes in MkDocs' internals.
+    Note: I was doing this after Page creation but it was
+    problematic. This is more involved, but the output aligns
+    with mkdocs' expectations better. It also makes us less
+    vulnerable to changes in mkdocs' internals.
 
     Args:
         files (Files): The files objects to process.
@@ -271,7 +277,7 @@ class LicenseContent:
     Represents a license's content and metadata, including the license text and associated attributes.
     All license text processing happens here.
 
-    TODO: Break this monster class up into smaller classes... it's unwieldy and messy... but functional
+    TODO: Break this monster class up into smaller classes...
     """
 
     _year_pattern: ClassVar[Pattern[str]] = re.compile(r"\{\{\s{1,2}year\s{1,2}\}\}")
@@ -316,7 +322,7 @@ class LicenseContent:
         self.meta = page.meta
         self.license_type = self.get_license_type()
         self.title = f"The {self.meta['plain_name']}"
-        self.year = str(datetime.now().strftime("%Y"))
+        self.year = str(datetime.now(tz=datetime.utc).strftime("%Y"))
         self.reader_license_text: str = self.replace_year(
             self.meta["reader_license_text"]
         )
@@ -331,12 +337,16 @@ class LicenseContent:
 
         self.has_official = bool(self.official_license_text)
 
+        self.embed_url = f"https://plainlicense.org/embed/{self.meta['spdx_id'].lower()}.html"
+
         assembly_logger.debug("License content: \n\n%s\n", self.license_content)
 
     def get_license_type(self) -> Literal["dedication", "license"]:
         """
         Returns the license type based on the license metadata.
-        This might seem like overkill, but it was giving me a lot of trouble with a single check.
+        This might seem like overkill, but it was giving me a lot of
+        trouble with a single check. I'm probably missing something
+        in the order of operations, but this works for now.
         """
         if (
             (
@@ -373,7 +383,7 @@ class LicenseContent:
         return type(self)._code_pattern.sub(r"===\1===", text)  # Remove code blocks  # noqa: SLF001
 
     @staticmethod
-    def process_definitions(text: str, plaintext: bool = False) -> str:
+    def process_definitions(text: str, *, plaintext: bool = False) -> str:
         """
         Identifies and processes definitions in the input text, formatting them appropriately.
 
@@ -488,12 +498,20 @@ class LicenseContent:
 
     def process_mkdocs_to_markdown(self) -> str:
         """
-        Processes MkDocs content and transforms it into standard Markdown (i.e. not markdown with extensions). This function converts the text to footnotes, applies a header transformation, and processes any definitions present in the text to produce a final Markdown string.
+        Processes MkDocs content and transforms it into standard
+        Markdown (i.e. not markdown with extensions). This function
+        converts the text to footnotes, applies a header
+        transformation, and processes any definitions present in
+        the text to produce a final Markdown string.
 
-        Note: Footnotes aren't *strictly* standard markdown, but they still look fine if you're not using a markdown processor that supports them. GitHub is the primary use case here, and it renders footnotes.
+        Note: Footnotes aren't *strictly* standard markdown, but
+        they still look fine if you're not using a markdown
+        processor that supports them. GitHub is the primary use case
+        here, and it renders footnotes.
 
         Returns:
-            str: The processed Markdown text after transformations and definitions have been applied.
+            str: The processed Markdown text after transformations
+            and definitions have been applied.
         """
         assembly_logger.debug(
             "Processing mkdocs-style markdown to regular markdown for %s",
@@ -503,15 +521,17 @@ class LicenseContent:
         text = self.reader_license_text
         text = self.replace_code_blocks(text)
         text = self.transform_text_to_footnotes(text)
-        text = type(self)._reader_header_pattern.sub(r"## \1", text)
-        return self.process_definitions(text)
+        text = type(self)._reader_header_pattern.sub(r"## \1", text)  # noqa: SLF001
+        return self.process_definitions(text, plaintext=False)
 
     def get_tags(self) -> list[str] | None:
         """
         Retrieves a list of tags from the provided frontmatter data dictionary.
 
         Args:
-            frontmatter (dict[str, Any]): A dictionary containing frontmatter data that may include tags, conditions, permissions, and limitations.
+            frontmatter (dict[str, Any]): A dictionary containing
+            frontmatter data that may include tags, conditions,
+            permissions, and limitations.
 
         Returns:
             list[str] | None: A list of mapped tags if found, or None if no valid tags are present.
@@ -617,7 +637,6 @@ class LicenseContent:
 
     def get_header_block(self, kind: Literal["reader", "markdown", "plaintext"]) -> str:
         """Returns the version block for the license."""
-
         original_version: str = self.meta.get("original_version", "")
         plain_version: str = self.plain_version
 
@@ -655,14 +674,14 @@ class LicenseContent:
     def attributes(self) -> dict[str, Any | int | str]:
         """
         Retrieves a dictionary of attributes related to the license.
-        This property consolidates various license-related information into a single dictionary,
+        This property consolidates various license-related
+        information into a single dictionary,
         making it easier to access and manage the relevant data.
 
         Returns:
             dict[str, Any | int | str]: A dictionary containing attributes such as year,
             markdown and plaintext license texts, plain version, and license type.
         """
-
         return {
             "title": self.title,
             "year": self.year,
@@ -817,7 +836,7 @@ class LicenseContent:
 
             ```html title="add this to your site's html"
 
-            <iframe src="https://plainlicense.org/embed/{self.meta['spdx_id']}.html"
+            <iframe src="{self.embed_url}"
             style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             border: 1px solid #E4C580; border-radius: 8px; overflow: hidden auto;"
             title="{self.title}" loading="lazy" sandbox="allow-scripts"
@@ -876,8 +895,8 @@ class LicenseContent:
 
             To force a specific theme, add `?theme=` to the URL, along with `light` or `dark`:
 
-            - For light theme: `src="https://plainlicense.org/embed/{self.meta['spdx_id'].lower()}.html?theme=light"`
-            - For dark theme: `src="https://plainlicense.org/embed/{self.meta['spdx_id'].lower()}.html?theme=dark"`
+            - For light theme: `src="{self.embed_url}?theme=light"`
+            - For dark theme: `src="{self.embed_url}?theme=dark"`
 
             ### Syncing the License Theme with Your Site (more advanced)
 
