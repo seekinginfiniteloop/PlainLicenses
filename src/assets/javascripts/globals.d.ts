@@ -5,6 +5,7 @@
  * @license Plain Unlicense (Public Domain)
  */
 
+import gsap from "gsap"
 import type { Observable, Subject } from "rxjs"
 import { ImageTransformCalculator, ScaleCalculator } from "./vectorcalc"
 import { extend } from "tablesort"
@@ -122,4 +123,5 @@ declare global {
     toc: HTMLElement /* Table of contents */
     top: HTMLAnchorElement /* Back-to-top button */
   }
+
 }

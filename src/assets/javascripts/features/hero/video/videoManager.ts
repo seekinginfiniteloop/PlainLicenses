@@ -33,7 +33,11 @@ export class VideoManager {
     // @ts-ignore - we delay initialization for home arrival
     private poster: HTMLPictureElement
 
-    private container: HTMLDivElement = document.querySelector('.hero__content') as HTMLDivElement || document.createElement('div')
+    private container: HTMLDivElement = document.querySelector('.hero__container') as HTMLDivElement || document.createElement('div')
+
+    private ctaContainer: HTMLDivElement = document.querySelector('.cta__container') as HTMLDivElement || document.createElement('div')
+
+    private ctaText: HTMLElement[] = gsap.utils.toArray('h1, h2')
 
     public timeline: gsap.core.Timeline = gsap.timeline()
 
@@ -48,8 +52,8 @@ export class VideoManager {
     private videoDuration: number = 0
 
     private titleStart: number = 0
-
-    private backupPicture: HTMLPictureElement = document.createElement('picture')
+    // @ts-ignore - we delay initialization for home arrival
+    private backupPicture: HTMLPictureElement
 
     private message: string = ''
 
@@ -95,7 +99,7 @@ export class VideoManager {
                 }))
 
         this.subscriptions.add(video$.subscribe())
-        this.subscriptions.add(motionSub$.subscribe(() => this.onlyLoadPoster()))
+        this.subscriptions.add(motionSub$.subscribe(() => this.initiateFallback()))
         this.subscriptions.add(stallHandler$.subscribe())
     }
 
@@ -107,7 +111,9 @@ export class VideoManager {
     }
 
     private initVideo(): void {
+        this.backupPicture = document.querySelector('.hero__backup') as HTMLPictureElement || document.createElement('picture')
         if (this.videoStore.length === 0) {
+            this.initiateFallback()
             throw new Error('No videos found')
         } else if (this.videoStore.length === 1) {
             this.video = new VideoElement(this.videoStore[0])
@@ -201,7 +207,7 @@ export class VideoManager {
                 }], "<")
                 if (this.video.message) {
                     this.timeline.add(["fadeOutVideo", gsap.to(this.element, { autoAlpha: 0, duration: 0.5 })], this.titleStart)
-                    // @ts-ignore - animateMessage is a registered effect
+
                     this.timeline.add(["message", gsap.animateMessage(this.container, { message: this.message, repeat: 0 })
                     ], this.titleStart)
                     this.timeline.add(["resetVideo", () => {
@@ -217,32 +223,47 @@ export class VideoManager {
         gsap.set(this.poster, { autoAlpha: 0 })
         this.container.append(this.poster)
         const img = this.poster.querySelector('img')
+        const transition = () => gsap.to(this.poster, { autoAlpha: 1, duration: 0.5 })
         if (img && img instanceof HTMLImageElement) {
             if (img.complete) {
                 // Image already loaded
-                gsap.to(this.poster, { autoAlpha: 1, duration: 0.5 })
-                }
-             else {
-                // Wait for load
-                fromEvent(img, 'load').subscribe(() => {
-                    gsap.to(this.poster, { autoAlpha: 1, duration: 0.5 })
-                })
+                transition()
             }
+            else {
+                // Wait for load
+                fromEvent(img, 'load').subscribe(transition)
+            }
+        } else {
+            // No image found
+            this.loadBackup()
         }
     }
 
-    private onlyLoadPoster(): void {
+    private loadBackup(): void {
+        const backup = this.backupPicture || this.poster
+        if (!Array.from(this.container.children).includes(backup)) {
+            requestAnimationFrame(() => {
+                this.container.append(backup)
+            })
+        }
+        gsap.to(backup, { autoAlpha: 1, duration: 1 })
+    }
+
+    private initiateFallback(): void {
         if (this.container.querySelector('video')) {
             gsap.to(this.element, { autoAlpha: 0, duration: 0.5 })
             this.container.removeChild(this.element)
         }
-        this.loadPoster()
         this.status = 'loaded'
-        // @ts-ignore - animateMessage is a registered effect
-        gsap.animateMessage(this.container, { message: this.message, repeat: 0 })
+        // prefersReducedMotion's fallback is handled by CSS
+        if (!this.store.getStateValue('prefersReducedMotion')) {
+            this.loadBackup()
+        }
+        gsap.set(this.ctaContainer, { autoAlpha: 1 })
+
+        gsap.animateMessage(this.container, { message: this.ctaText || this.message, repeat: 0, autoRemoveChildren: true })
         this.timeline.kill()
         this.subscriptions.unsubscribe()
-
     }
 
     public play(): void {

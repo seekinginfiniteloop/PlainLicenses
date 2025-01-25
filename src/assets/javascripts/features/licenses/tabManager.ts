@@ -38,8 +38,8 @@ export class TabManager {
   }
 
   private readonly disclaimerTabSelectors = {
-    inputs: '#not-advice-warning-checkbox #not-official-warning-checkbox',
-    labelAnchors: '#not-advice-warning-label #not-official-warning-label',
+    inputs: '#not-advice-warning-checkbox, #not-official-warning-checkbox',
+    labelAnchors: '#not-advice-warning-label, #not-official-warning-label',
   }
 
   public subscription: Subscription = new Subscription()

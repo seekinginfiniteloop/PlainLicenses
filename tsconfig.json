@@ -16,7 +16,7 @@
       "es2020",
       "es2018"
     ],
-    "module": "esnext",
+    "module": "ESNext",
     "moduleResolution": "Bundler",
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": true,
@@ -48,13 +48,11 @@
     "strictPropertyInitialization": true,
     "stripInternal": true,
     "target": "es2020",
-    "typeRoots": [
-      "./node_modules/@types"
-    ]
   },
   "include": [
     "src/**/*.ts",
-    "./external/mkdocs-material/typings/*.d.ts"
+    "./external/mkdocs-material/typings",
+    "src/assets/javascripts/@types/*.d.ts"
   ],
   "exclude": [
     "src/build/*.ts"

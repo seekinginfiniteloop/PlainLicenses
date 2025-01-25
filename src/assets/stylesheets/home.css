@@ -17,10 +17,10 @@ These are basic customizations for the home page.
     linear-gradient(180deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.3) 100%);
   --h1-color: var(--atomic-tangerine);
   --h2-color: var(--aqua);
-;
+  ;
 }
 
-@media screen and (min-width <= 600px) {
+@media screen and (min-width <=600px) {
   :root {
     --gap: 2vh;
     --min-width: 80vw;
@@ -46,9 +46,9 @@ These are basic customizations for the home page.
   }
 }
 
-@media screen and (width <= 416px),
-  screen and (orientation: portrait),
-  screen and (orientation: portrait) and (min-width: 416px) {
+@media screen and (width <=416px),
+screen and (orientation: portrait),
+screen and (orientation: portrait) and (min-width: 416px) {
   #hero-tabs {
     display: none !important;
     background: none;
@@ -131,6 +131,7 @@ section.hero {
     .hero__backup {
       display: block;
       opacity: 1;
+      transition: opacity 1000ms ease-in-out;
     }
   }
 }
@@ -173,7 +174,7 @@ section.hero .hero__container {
 
 
 @media screen and (orientation: portrait) {
-  section.hero .cta-container {
+  section.hero .cta__container {
     position: absolute;
     bottom: calc((100vh * 0.7) - var(--header-height));
     width: 90%;
@@ -181,7 +182,7 @@ section.hero .hero__container {
   }
 }
 
-section.hero .cta-container {
+section.hero .cta__container {
   position: absolute;
   top: calc((100vh * 0.6) - var(--header-height));
   z-index: 40;
@@ -192,6 +193,8 @@ section.hero .cta-container {
   justify-content: center;
   width: 80%;
   padding-bottom: 1rem;
+  visibility: hidden;
+  opacity: 0;
 
   a .md-button,
   a:visited .md-button {
@@ -282,14 +285,14 @@ section.hero .cta-container {
   }
 }
 
-/* End of section.hero .cta-container */
+/* End of section.hero .cta__container */
 
-@media screen and (width <= 416px) {
-  section.hero .cta-container h1 {
+@media screen and (width <=416px) {
+  section.hero .cta__container h1 {
     font-size: clamp(15px, calc(100vw / 16), 10rem);
   }
 
-  section.hero .cta-container h2 {
+  section.hero .cta__container h2 {
     font-size: clamp(12px, calc(100vw / 22), 6rem);
   }
 }

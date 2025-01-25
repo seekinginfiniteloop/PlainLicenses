@@ -88,25 +88,28 @@ h1.license-title {
 
 /* Styling blocks for the license header in the license reader view */
 
-.license-first-header {
-  padding-left: -1rem;
-  margin: 0.5rem 0 0 0.5rem;
-  text-align: left;
-}
+.md-typeset .tabbed-set:has(input#reader:checked) {
 
 .license-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0;
-  margin: 0.1rem 0.938rem 0 0;
-}
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0;
+    margin: 0.1rem 0.938rem 0 0;
+  }
 
-.license-title {
-  justify-self: left;
-  margin: 0;
-  line-height: 0;
-  text-align: left;
+  h1:first-of-type {
+    justify-self: left;
+    margin: 0;
+    line-height: 0;
+    text-align: left;
+  }
+
+  h2:first-of-type {
+    padding-left: -1rem;
+    margin: 0.5rem 0 0 0.5rem;
+    text-align: left;
+  }
 }
 
 .version-info {

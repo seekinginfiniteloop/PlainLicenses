@@ -1,6 +1,6 @@
 
 /**
- * @exports @type {AnimationType}
+ * @module @types video
  * @description Animation types for the Hero feature.
  * @type {string}
  */

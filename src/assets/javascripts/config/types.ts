@@ -50,6 +50,7 @@ export interface FadeConfig {
   fadeInSections: HTMLElement[]
   fadeInDuration: number
   fadeInConfig: FadeInConfig
+  fadeInIgnore: string // selectorAll query
 }
 
 /**
@@ -76,4 +77,8 @@ export interface ObserverConfig {
   slides: SlideConfig
   clickTargets: string
   ignoreTargets: string
+  emphasisTargets: {
+    subtle: string
+    strong: string
+  }
 }

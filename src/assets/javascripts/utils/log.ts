@@ -3,10 +3,7 @@
  * @description A simple logger for development purposes.
  * Only logs to the console in development.
  *
- * @requires none
- * @exports logger
-
-* @copyright No rights reserved. Created by and for Plain License www.plainlicense.org
+ * @copyright No rights reserved. Created by and for Plain License www.plainlicense.org
  * @license Plain Unlicense (Public Domain)
  */
 /* eslint-disable no-console */

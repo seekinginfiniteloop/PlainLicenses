@@ -7,6 +7,7 @@
  * @author Adam Poulemanos adam<at>plainlicense<dot>org
  */
 
+import { EmphasisConfig } from "~/features"
 import type { CacheConfig, FadeInConfig, ObserverConfig } from "./types"
 
 /**
@@ -80,15 +81,20 @@ export const OBSERVER_CONFIG: ObserverConfig = {
   fades: {
     fadeInSections: Array.from(document.getElementsByTagName('section')),
     fadeInDuration: 0.5,
-    fadeInConfig: FADE_IN_CONFIG
+    fadeInConfig: FADE_IN_CONFIG,
+    fadeInIgnore: '.cta__container--header, .cta__container--subtitle'
   },
   slides: {
     slideDuration: 1.25,
     clickPause: 5,
     scrollPause: 10
   },
-  clickTargets: 'hero-target-selector',
-  ignoreTargets: 'a, button, clickTargets, header, navigation, md-tabs'
+  clickTargets: '.cta__container--target-selector',
+  ignoreTargets: 'a, button, header, navigation, .md-tabs',
+  emphasisTargets: {
+    subtle: '.cta__container--target-selector>button',
+    strong: '.cta__container--down-indicator'
+  }
 } as const
 
 /**
@@ -105,3 +111,10 @@ export const MAX_WIDTHS = {
   2560: '2560',
   3840: '3840'
 } as const
+
+
+export const subtleEmphasisConfig: EmphasisConfig {
+  blinkConfig: { },
+  jumpConfig: { },
+  scaleUpConfig: { }
+}

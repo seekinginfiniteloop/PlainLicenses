@@ -12,7 +12,7 @@
                 scroll-behavior: smooth;
               }
 
-              .section.hero .cta-container h1 {
+              .section.hero .cta__container h1 {
                 animation: glow 3000ms ease-in-out infinite alternate;
               }
 
@@ -28,8 +28,8 @@
                 padding-bottom: 1rem;
               }
 
-              .section.hero .cta-container h1,
-              .section.hero .cta-container h2 {
+              .section.hero .cta__container h1,
+              .section.hero .cta__container h2 {
                 visibility: visible;
                 opacity: 1;
                 display: block;
@@ -56,20 +56,21 @@
 
           </noscript>
           {{ backup_image }}
-          <div class="cta-container">
-            <h1 contenteditable="false" class="cta-header">Join the
+          <div class="cta__container">
+            <h1 contenteditable="false" class="cta__container--header">Join the
               Fight
             </h1>
-            <h2 contenteditable="false">To End Confusion!</h2>
-            <a class="hero-target-selector" href="#pt3-hero-content-section"
+            <h2 contenteditable="false"
+            class="cta__container--subtitle">To End Confusion!</h2>
+            <a class="cta__container--target-selector" href="#pt3-hero-content-section"
               contenteditable="false">
               <button contenteditable="false" class="md-button">Get
                 Clear
                 Terms
               </button>
             </a>
-            <a href="#pt3-hero-content-section" class="hero-target-selector">
-              <svg viewBox="0 0 24 24" class="down-indicator" id="arrow-down"
+            <a href="#pt3-hero-content-section" class="cta__container--target-selector">
+              <svg viewBox="0 0 24 24" class="cta__container--down-indicator" id="arrow-down"
                 title="scroll down for more" xmlns="http://www.w3.org/2000/svg" role="button"
                 contenteditable="false">
                 <path d="M11 4h2v12l5.5-5.5 1.42 1.42L12 19.84l-7.92-7.92L5.5 10.5 11 16z"></path>

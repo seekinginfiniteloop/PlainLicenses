@@ -8,7 +8,7 @@
  * @see {@link https://gsap.com/docs/v3/Plugins/Observer/} GSAP Observer Documentation
  */
 
-import gsap from "gsap"
+import { gsap } from "gsap"
 import { Observer } from "gsap/Observer"
 import { distinctUntilChanged, filter, map } from "rxjs/operators"
 import { OBSERVER_CONFIG, ObserverConfig } from "~/config"
@@ -23,7 +23,6 @@ import './effects'
 import { logger } from "~/utils/log"
 
 gsap.registerPlugin(Observer)
-
 
 /**
  * @exports @class HeroObservation
@@ -52,6 +51,8 @@ export class HeroObservation {
   public animating: boolean = false
 
   private transitionTl: gsap.core.Timeline
+  // @ts-ignore - initialized in onLoad
+  private wrapper: (index: number) => number
 
   private sectionCount: number = 0
 
@@ -60,6 +61,8 @@ export class HeroObservation {
   private defaultTimelineVars: gsap.TimelineVars = {}
 
   private initialized: boolean = false
+
+  private firstLoad: boolean = true
 
   private constructor() {
     this.defaultTimelineVars = {
@@ -117,6 +120,8 @@ export class HeroObservation {
 
     if (!this.initialized) {
       this.setupSections()
+      this.wrapper = gsap.utils.wrap([...Array(this.sectionCount).keys()])
+      this.setupFirstLoad()
       this.setupObserver()
     }
     const { hash } = window.location
@@ -127,12 +132,26 @@ export class HeroObservation {
       if (target) {
         const sectionTarget = this.sections.find(section => section.content.includes(target))
         if (sectionTarget) {
+          this.firstLoad = false
           const index = this.sections.indexOf(sectionTarget)
           this.goToSection(index, index === this.sectionIndexLength ? Direction.UP : Direction.DOWN)
         }
       }
       this.initialized = true
     }
+  }
+
+  private setupFirstLoad() {
+    const firstSection = this.sections[0]
+    const { content } = firstSection
+    const { subtle, strong } = this.config.emphasisTargets
+    const subtleTargets = gsap.utils.toArray(firstSection.element.querySelectorAll(subtle))
+    const strongTargets = gsap.utils.toArray(document.querySelectorAll(strong))
+    const emphasisTargets = [...subtleTargets, ...strongTargets]
+    const filteredContent = content.filter(content => !emphasisTargets.includes(content))
+    gsap.fadeIn(filteredContent, {})
+    gsap.emphasize(strongTargets, {})
+    gsap.emphasize(subtleTargets, {})
   }
 
   /**
@@ -165,6 +184,8 @@ export class HeroObservation {
           }).addLabel("start")
             }
     }) as Section[]
+    const ignores = gsap.utils.toArray(this.config.fades.fadeInIgnore)
+    this.sections[0].content.filter(content => !ignores.includes(content))
     this.sections.forEach((section, _) => {
           const { content } = section
           requestAnimationFrame(() => {
@@ -185,7 +206,7 @@ export class HeroObservation {
     let index = this.getNextIndex(direction)
     if (!this.animating && !scenicRoute) {
       this.goToSection(index, direction)
-    } else if (!this.animating && scenicRoute) {
+    } else if (!this.animating && scenicRoute && direction === Direction.DOWN) {
       this.goToSection(index, direction)
       let remainingSections = this.sectionIndexLength - index
 
@@ -193,7 +214,7 @@ export class HeroObservation {
         await new Promise(resolve => setTimeout(resolve, 5000))
 
         if (this.currentIndex !== this.sectionIndexLength && this.currentIndex === index) {
-          this.goToSection(index + 1, direction)
+          this.goToSection(index + Direction.DOWN, direction)
           index++
           remainingSections--
         } else {
@@ -201,28 +222,21 @@ export class HeroObservation {
         }
       }
     }
-    return false
+    return
   }
 
   // Get the next index based on the direction
   private getNextIndex(direction: Direction): number {
-    switch (direction) {
-      case Direction.UP:
-        if (this.currentIndex === 0 || this.currentIndex === -1) {
-          return 0
-        }
-        return this.currentIndex - 1
-      case Direction.DOWN:
-        if (this.currentIndex === this.sectionIndexLength) {
-          return this.currentIndex
-        } else if (this.currentIndex === -1) {
-          return this.currentIndex + 2
-        }
-        return this.currentIndex + 1
-      default:
-        return this.currentIndex
+    if (
+      (this.currentIndex === 0 || this.currentIndex === -1)
+      && this.firstLoad
+      && direction === Direction.UP
+    ) {
+            return 0
     }
-  }
+    this.firstLoad = false
+    return (this.wrapper(this.currentIndex + direction))
+    }
 
   // Construct the transition timeline based on the direction and index
   // Uses registered effects from observerEffects.ts
@@ -238,7 +252,7 @@ export class HeroObservation {
 
   // Go to the next section based on the index and direction
   private goToSection(index: number, direction: Direction) {
-    if (this.animating) {
+    if (this.animating || index === this.currentIndex) {
       return
     }
     this.animating = true
@@ -264,15 +278,16 @@ export class HeroObservation {
    * 2. The clickObserver handles the click-driven "guided tour" of the sections.
    */
   private setupObserver() {
-    const ignoreTargets = gsap.utils.toArray(document.querySelectorAll(this.config.ignoreTargets))
     const clickTargets = gsap.utils.toArray(document.querySelectorAll(this.config.clickTargets))
+    const ignoreTargets = gsap.utils.toArray(document.querySelectorAll(this.config.ignoreTargets))
     this.transitionObserver = Observer.create({
       type: "wheel,touch,pointer,scroll",
       wheelSpeed: -1,
-      onDown: () => { this.transition(Direction.DOWN) },
-      onUp: () => { this.transition(Direction.UP) },
+      onDown: () => { this.transition(Direction.DOWN, false) },
+      onUp: () => { this.transition(Direction.UP, false) },
       preventDefault: true,
       tolerance: 15,
+      ignore: clickTargets as Element[],
     })
     this.transitionObserver.enable()
     this.clickObserver = Observer.create({

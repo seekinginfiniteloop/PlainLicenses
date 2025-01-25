@@ -18,7 +18,7 @@ import "@/bundle"
 import './config'
 import './state'
 import './features'
-import { EMPTY, catchError, filter, from, map, merge, of, share, switchMap, tap } from "rxjs"
+import { EMPTY, Observable, catchError, filter, from, map, merge, of, share, switchMap, tap } from "rxjs"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { ScrollToPlugin } from "gsap/ScrollToPlugin"
@@ -57,11 +57,17 @@ const insertAnalytics = () => createScript("https://app.tinyanalytics.io/pixel/e
 
 const insertButtonScript = () => createScript("https://buttons.github.io/buttons.js", true, true)
 
-const analytic$ = of(insertAnalytics())
-const feedback$ = of(feedback())
-const buttonScript$ = of(insertButtonScript())
+const onDom$ = (obs: Observable<T>) => {
+  return document$.pipe(switchMap(() => obs))
+}
+
+const analytic$ = onDom$(of(insertAnalytics()))
+const feedback$ = onDom$(of(feedback()))
+const buttonScript$ = onDom$(of(insertButtonScript()))
 const color$ = of(document.body.setAttribute("data-md-color-scheme", "slate"))
-const licenseHashHandler$ = watchLicenseHash()
+const observer$ = of(HeroObservation.getInstance())
+const videoManager$ = of(VideoManager.getInstance())
+const licenseHashHandler$ = onDom$(watchLicenseHash())
 const license$ = navigationEvents$.pipe(filter(isLicense), switchMap(() => initLicenseFeature()))
 const windowEvents$ = from(windowEvents())
 
@@ -72,8 +78,8 @@ const pageConfigs: PageConfig[] = [
     location: "home",
     observables: [
       color$,
-      of(HeroObservation.getInstance()),
-      of(VideoManager.getInstance()),
+      observer$,
+      videoManager$,
     ]
   },
   {

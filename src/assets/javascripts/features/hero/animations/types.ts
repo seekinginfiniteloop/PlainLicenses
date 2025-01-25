@@ -40,21 +40,20 @@ export interface Section {
   animation?: gsap.core.Timeline
 }
 
-
-export interface EmphasisConfig {
+export interface EmphasisConfig extends gsap.TweenVars {
   blinkConfig: gsap.TweenVars
   jumpConfig: gsap.TweenVars
   scaleUpConfig: gsap.TweenVars
 }
 
-export interface FadeEffectConfig {
+export interface FadeEffectConfig extends gsap.TweenVars {
   out?: boolean
   direction?: Direction
   fromConfig?: gsap.TweenVars
   toConfig?: gsap.TweenVars
 }
 
-export interface TransitionConfig {
+export interface TransitionConfig extends gsap.TweenVars {
   direction: Direction
   section: Section
 }
@@ -65,13 +64,3 @@ export interface AnimateMessageConfig extends gsap.TweenVars {
   entranceToVars?: gsap.TweenVars
   exitVars?: gsap.TweenVars
 }
-
-export type fadeIn = (targets: gsap.TweenTarget, config: FadeEffectConfig) => gsap.core.Timeline
-
-export type fadeOut = (targets: gsap.TweenTarget, config: FadeEffectConfig) => gsap.core.Timeline
-
-export type emphasize = (targets: gsap.TweenTarget, config: EmphasisConfig) => gsap.core.Timeline
-
-export type setSection = (config: TransitionConfig) => gsap.core.Timeline
-
-export type transitionSection = (config: TransitionConfig) => gsap.core.Timeline

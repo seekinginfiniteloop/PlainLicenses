@@ -21,7 +21,8 @@
 
 import gsap from 'gsap'
 import { modifyDurationForReducedMotion, getDistanceToViewport, getMatchMediaInstance, wordsToLetterDivs } from './utils'
-import { AnimateMessageConfig, Direction, EmphasisConfig, FadeEffectConfig, ReducedMotionCondition, TransitionConfig } from './types'
+import { AnimateMessageConfig, Direction, EmphasisConfig, FadeEffectConfig, ReducedMotionCondition, TransitionConfig} from './types'
+
 
 /**
  * Retrieves the fade variables for autoAlpha and yPercent.
@@ -52,6 +53,7 @@ function getDFactor(direction: Direction) {
  */
 gsap.registerEffect({
     name: "setSection",
+    extendTimeline: true,
     defaults: { extendTimeline: true },
     effect: (config: TransitionConfig) => {
         const { direction, section } = config
@@ -73,6 +75,7 @@ gsap.registerEffect({
  */
 gsap.registerEffect({
     name: "transitionSection",
+    extendTimeline: true,
     defaults: { extendTimeline: true },
     effect: (config: TransitionConfig) => {
         const { direction, section } = config
@@ -163,6 +166,7 @@ gsap.registerEffect({
 
 gsap.registerEffect({
     name: "fadeOut",
+    extendTimeline: true,
     defaults: { extendTimeline: true },
     effect: (targets: gsap.TweenTarget, config: FadeEffectConfig) => {
         const { direction, fromConfig, toConfig } = config
@@ -231,6 +235,7 @@ const scaleUp = (
  */
 gsap.registerEffect({
     name: "emphasize",
+    extendTimeline: true,
     defaults: { repeat: - 1, yoyo: true, extendTimeline: true },
     effect: (targets: gsap.TweenTarget, config: EmphasisConfig) => {
         if (!targets) {
@@ -268,6 +273,7 @@ gsap.registerEffect({
  */
 gsap.registerEffect({
     name: "animateMessage",
+    extendTimeline: true,
     defaults: { extendTimeline: true, repeat: 0 },
     effect: (target: gsap.TweenTarget, config: AnimateMessageConfig) => {
         target = target instanceof Array ? target : gsap.utils.toArray(target)
