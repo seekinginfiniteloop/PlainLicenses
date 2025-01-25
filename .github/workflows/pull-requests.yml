@@ -1,4 +1,4 @@
-name: Check links with Linkspector
+name: PR Lint
 on:
   pull_request:
     branches: [main]
@@ -8,7 +8,7 @@ on:
 
 jobs:
   pr-check:
-    name: runner / linkspector
+    name: PR Lint Checks
     runs-on: ubuntu-latest
     permissions:
       contents: write

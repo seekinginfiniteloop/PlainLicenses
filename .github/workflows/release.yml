@@ -28,10 +28,26 @@ jobs:
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
-      - run: |
-          bun i -d --peer --optional --no-interactive
+      - name: cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+      - name: install dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          bun i -d --peer --optional --no-interactive &&
           bun i --no-interactive -g semantic-release-cli commitlint lerna
           export NODE_ENV=production
+      - name: cache lerna
+        uses: actions/cache@v2
+        with:
+          path: |
+            **/node_modules
+          key: ${{ runner.os }}-lerna-${{ hashFiles('**/bun.lockb') }}
       - name: Run Lerna Versioning
         run: npx lerna version --yes --conventional-commits
       - name: Release project

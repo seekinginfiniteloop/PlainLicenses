@@ -25,14 +25,23 @@ jobs:
             submodules: recursive
         - name: Setup Bun
           uses: oven-sh/setup-bun@v2
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           with:
             bun-version: latest
-        - run: |
-            bun i -d --peer --optional --no-interactive
-            export NODE_ENV=production
+        - name: cache
+          uses: actions/cache@v4
+          with:
+            path: |
+              ~/.bun/install/cache
+            key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+            restore-keys: |
+              ${{ runner.os }}-bun-
+        - name: install dependencies
+          if: steps.cache.outputs.cache-hit != 'true'
+          run: |
+            bun i -d --peer --optional --no-interactive &&
+            export NODE_ENV=production &&
             bun run build
+
         - name: setup UV
           uses: astral-sh/setup-uv@v5
           with:

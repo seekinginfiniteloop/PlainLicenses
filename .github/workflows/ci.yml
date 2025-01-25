@@ -15,6 +15,9 @@ permissions:
   contents: write
   pull-requests: read
 
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 jobs:
   ci:
     name: CI
@@ -33,10 +36,22 @@ jobs:
           submodules: recursive
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           bun-version: latest
+      - name: cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+      - name: install dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          bun i -d --peer --optional --no-interactive &&
+          bun i --no-interactive @linthtml/linthtml stylelint eslint prettier typescript markdownlint-cli2
+          export NODE_ENV=production
       - name: setup UV
         uses: astral-sh/setup-uv@v5
         with:
@@ -45,8 +60,6 @@ jobs:
           cache-dependency-glob: |
             pyproject.toml
       - run: |
-          bun install --no-interactive
-          bun install --no-interactive -g @linthtml/linthtml stylelint eslint prettier typescript markdownlint-cli2
           uv python install 3.13 &&
           uv venv --allow-existing .venv &&
           source .venv/bin/activate &&
