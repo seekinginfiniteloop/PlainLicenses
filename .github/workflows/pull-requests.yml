@@ -45,3 +45,8 @@ jobs:
           git add .
           git diff-index --quiet HEAD || git commit -m "bot(ci): PR lint [ci]"
           git push
+
+  notify:
+      needs: [pr-check]
+      if: failure()
+      uses: ./.github/workflows/notify.yml

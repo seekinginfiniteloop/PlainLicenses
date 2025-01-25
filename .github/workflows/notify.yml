@@ -1,0 +1,65 @@
+name: Notify
+
+on: workflow_call
+
+permissions:
+  contents: read
+  pull-requests: read
+  issues: write
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      issues: write
+    steps:
+      - name: Check if issue already exists
+        id: check_issue
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'bug'
+            });
+            const issue = issues.find(issue => issue.title === `Workflow failed: ${github.workflow}` && issue.state === 'open');
+            const issueExists = issue ? true : false;
+            if (issueExists) {
+              console.log(`${issue.title} already exists`);
+            }
+            return { issueExists: issueExists.toString() || 'false', issue: issue || null };
+
+      - name: Create GitHub Issue
+        if: steps.check_issue.outputs.issueExists == 'false'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Workflow failed: ${github.workflow}`,
+              body: `Workflow ${github.workflow} failed on commit ${github.sha}. Check the [workflow run](https://github.com/${github.repository}/actions/runs/${github.run_id}) for details.`,
+              labels: ['bug']
+            })
+      - name: Comment on existing GitHub Issue
+        if: steps.check_issue.outputs.issueExists == 'true'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `Another workflow run failed on commit ${github.sha} on branch ${github.ref}. Check the [workflow run](https://github.com/${github.repository}/actions/runs/${github.run_id}) for details.
+
+              Run ID: ${github.run_id}
+              Run Time: ${github.run_started_at}
+              Workflow: ${github.workflow}
+              `

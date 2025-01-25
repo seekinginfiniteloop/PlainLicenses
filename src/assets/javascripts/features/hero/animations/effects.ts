@@ -185,7 +185,7 @@ const blink = (
     config: gsap.TweenVars = {},
 ) => {
     const duration = modifyDurationForReducedMotion(config.duration || 0.5)
-    return gsap.to(targets, { autoAlpha: 0, ease: "power4.in", ...config, duration})
+    return gsap.to(targets, { autoAlpha: 0, , ease: "power4.in", ...config, duration})
 }
 
 /**

@@ -52,3 +52,7 @@ jobs:
           git config user.name github-actions[bot]
           git config user.email "actions@github.com"
           mkdocs gh-deploy --force -m "bot(site): deploy site"
+  notify:
+      needs: [deploy]
+      if: failure()
+      uses: ./.github/workflows/notify.yml

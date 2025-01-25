@@ -113,8 +113,8 @@ export const MAX_WIDTHS = {
 } as const
 
 
-export const subtleEmphasisConfig: EmphasisConfig {
-  blinkConfig: { },
+export const SUBTLE_EMPHASIS_CONFIG: EmphasisConfig = {
+  blinkConfig: { startAt: { autoAlpha: 0.4 } },
   jumpConfig: { },
   scaleUpConfig: { }
-}
+} as const
