@@ -54,3 +54,8 @@ jobs:
       needs: [release]
       if: failure()
       uses: ./.github/workflows/notify.yml
+      permissions:
+        contents: read
+        pull-requests: read
+        statuses: write
+        issues: write
