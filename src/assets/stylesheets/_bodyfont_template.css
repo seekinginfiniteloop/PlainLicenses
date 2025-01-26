@@ -1,0 +1,57 @@
+/* stylelint-disable at-rule-descriptor-value-no-unknown */
+@font-face {
+  font-family: Inter, "Noto Sans", "Open Sans", Lato, Helvetica, Arial, system-ui, sans-serif;
+  font-style: normal;
+  font-weight: 500;
+  src:
+    local("Inter"),
+    local("inter-regular")
+    local("inter-v"),
+    local("interv"),
+    local("inter-regular"),
+    local("inter_v"),
+    url("{{ inter-v.woff2 }}") format("woff2"),
+    url("{{ inter-v.woff }}") format("woff");
+}
+
+@font-face {
+  font-family: Bangers, Impact, Haettenschweiler, Charcoal, "Arial Narrow Bold", Gadget, sans-serif;
+  font-style: normal;
+  font-weight: 500;
+  src:
+    local("Bangers"),
+    local("Bangers Regular"),
+    local("Bangers-Regular"),
+    url("{{ bangers-regular.woff2 }}") format("woff2"),
+    url("{{ bangers-regular.woff }}") format("woff");
+  /* stylelint-disable-next-line @stylistic/max-line-length */
+  unicode-range: U+000D, U+0020-002F, U+003A-0040, U+005B-007E, U+0131, U+0300, U+2013-2014, U+2018-2019, U+201C-201D, U+2026, U+25FC;
+}
+
+@font-face {
+  font-family: "Source Code Pro", "Fira Code", Inconsolata, Monaco, Consolas, "Courier New", monospace;
+  font-style: normal;
+  font-weight: 500;
+  src:
+    local("sourcecodepro-regular"),
+    local("sourcecodepro"),
+    local("source-code-pro"),
+    local("source-code-pro-regular"),
+    local("Source Code Pro"),
+    local("SourceCodePro-Regular"),
+    url("{{  sourcodepro-regular.woff2 }}") format("woff2"),
+    url("{{ sourcecodepro-regular.woff }}") format("woff");
+}
+
+@font-face {
+  font-family: Raleway, Montserrat, "Noto Sans", "Open Sans", Lato, Helvetica, Arial, system-ui, sans-serif;
+  src:
+    local("Raleway"),
+    local("raleway-regular"),
+    local("raleway"),
+    local("raleway_v"),
+    local("raleway-regular"),
+    local("raleway_v"),
+    url("{{ raleway.woff2 }}") format("woff2"),
+    url("{{ raleway.woff }}") format("woff");
+}

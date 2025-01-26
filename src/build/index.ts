@@ -34,7 +34,7 @@ import * as fs from 'fs/promises'
 import * as path from 'path'
 import { Observable, from } from "rxjs"
 import { optimize } from "svgo"
-import { backupImage, baseProject, cssSrc, generateVideoVariants, getHeroParents, getVideoParents, heroImages, resKeys, videoConfig, webConfig } from "./config/"
+import { backupImage, baseProject, cssSrc, generateVideoVariants, getHeroParents, heroImages, resKeys, resolveGlob, videoConfig, webConfig } from "./config/"
 import { CodecVariants, FileHashes, HeroImage, HeroPaths, HeroVideo, ImageFormatData, ImageType, Project, VideoCodec, VideoWidth, buildJson, esbuildOutputs } from "./types"
 
 import globby from 'globby'
@@ -121,6 +121,7 @@ async function getmd5Hash(filePath: string): Promise<string> {
  * @param {string} str - the string to convert
  * @returns {string} the title-cased string
  */
+// eslint-disable-next-line no-unused-vars -- saving in case I change my mind
 function toTitleCase(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1)
 }
@@ -130,7 +131,7 @@ function toTitleCase(str: string): string {
  * @returns {string} the enum string
  */
 function toEnumString(str: string): string {
-  return `${toTitleCase(str)} = "${str.toUpperCase()}"`
+  return `${str.toUpperCase()} = "${str}"`
 }
 
   /**
@@ -148,13 +149,11 @@ async function handleHeroImages(): Promise<HeroImage[]> {
     }
     const newWidths: { [key: number]: string } = {}
       // Process each width
-    let newSrcSet: string[] = []
     for (const ext of Object.keys(image.images)) {
       const newIndex = image.images[ext as ImageType] as ImageFormatData
       for (const [width, src] of Object.entries(image.images[ext as ImageType].widths)) {
         const newPath = (await getmd5Hash(src as string)).replace('src', 'docs')
         newWidths[Number(width)] = newPath
-        newSrcSet.push(`${newPath} ${width}w`)
         await fs.copyFile(src as string, newPath)
       }
       const srcset = newSrcSet.join(', ')
@@ -168,7 +167,6 @@ async function handleHeroImages(): Promise<HeroImage[]> {
   return images
 }
 
-
   /**
  * Processes the hero videos for the landing page. Hashes, copies, and exports the videos to a TypeScript file.
  * @returns {Promise<HeroVideo[]>} the hero videos
@@ -179,7 +177,7 @@ async function handleHeroVideos(): Promise<HeroVideo[]> {
 
   for (const parent of vidParents) {
     const baseName = path.basename(parent)
-    const video = await generateVideoVariants(baseName)
+    const video = await generateVideoVariants(baseName, images)
 
     // Hash and copy video files
     const newVariants = Object.fromEntries(videoConfig.codecs.map(codec => [codec, Object.fromEntries(videoConfig.resolutions.map(res => [res.width, ""]))])) as CodecVariants
@@ -248,7 +246,7 @@ export backupImage = "${noScriptImage}";
     const paths = [outputPath]
     // Run ESLint on the generated file to strip the quotes from keys
     paths.forEach((path) => {
-      exec(`eslint --cache ${path} --fix`, (error, stdout, stderr) => {
+      exec(`bunx --bun eslint --cache ${path} --fix`, (error, stdout, stderr) => {
         if (error) {
           console.error(`Error running ESLint: ${error.message}`)
           return
@@ -292,8 +290,20 @@ async function build(project: Project): Promise<Observable<unknown>> {
    * @description Removes hashed files in the src directory
    */
 async function removeHashedFilesInSrc() {
-  const hashedFiles = await globby('src/**/*.{js,css,avif,webp,png,mp4,webm}', { onlyFiles: true, unique: true })
-  const hashRegex = new RegExp(/^.+(\.[a-fA-F0-9]{8})\.(avif|js|css|webp|mp4|webm|png)/)
+  const hashedFiles = await resolveGlob('src/assets/*', {
+    onlyFiles: true, unique: true, expandDirectories: {
+      extensions: [
+        'avif',
+        'css',
+        'js',
+        'mp4',
+        'png',
+        'webm',
+        'webp'
+      ]
+    }
+  })
+  const hashRegex = new RegExp(/^.+(\.[a-fA-F0-9]{8})\.[a-z24]{2,5}/)
   for (const file of hashedFiles) {
     if (hashRegex.test(file)) {
       try {

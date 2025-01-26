@@ -35,9 +35,9 @@ export interface ImageFormatData {
   parent?: string
 }
 
-export type ImageIndex = Record<ImageType, ImageFormatData>
-
 export type ImageType = 'avif' | 'webp' | 'png'
+
+export type ImageIndex = Record<ImageType, ImageFormatData>
 
 export interface HeroImage {
   imageName: string
@@ -122,4 +122,21 @@ export interface VideoConfig {
   resolutions: VideoResolution[]
   codecs: VideoCodec[]
   baseDir: string
+}
+
+export interface HeroFiles {
+  images: HeroFile[]
+  videos: HeroFile[]
+}
+
+export interface HeroFile {
+  type: "image" | "video"
+  codec: VideoCodec | ""
+  baseName: string
+  extension: ImageType | "mp4" | "webm"
+  filename: string
+  hash: string | ""
+  parentPath: string
+  width: VideoWidth
+
 }

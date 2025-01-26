@@ -13,7 +13,7 @@
  * - Subscriptions to page-specific observables
  *========================================================================*
  */
-
+// @ts-ignore - TODO: figure out how to fix this annoying error
 import "@/bundle"
 import './config'
 import './features'
@@ -42,7 +42,7 @@ const { document$ } = customWindow
 
 // get the cache worker registered
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('workers/cache-worker.js')
+  navigator.serviceWorker.register('workers/cache-worker.js', { scope: '/' })
     .then(() => logger.info('SW registered!'))
     .catch(err => logger.error('SW registration failed:', err))
 }

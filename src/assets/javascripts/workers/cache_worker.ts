@@ -8,8 +8,10 @@
  * @author Adam Poulemanos <adam<at>plainlicense<dot>org>
  * @copyright No rights reserved.
  */
-export {}
-declare let self: ServiceWorkerGlobalScope
+
+export type { }
+
+declare const self: ServiceWorkerGlobalScope
 
 // Configuration types
 interface CacheConfig {
@@ -69,6 +71,26 @@ const DEFAULT_CONFIG: CacheConfig = {
 }
 
 /**
+ * Get the hash from a file path
+ * @param s string - file path
+ * @returns string | null
+ */
+const get_hash = (s: string): string | null => {
+  try {
+    const split = s.split('/')[s.split('/').length - 1].split('.')
+    if (split.length >= 3) {
+      return split[split.length - 2]
+    } else {
+      return null
+    }
+  } catch (_error) {
+    logger.error('Failed to get hash from string:', _error as Error)
+    return null
+  }
+}
+
+
+/**
  * Check if we're in development mode
  * @returns boolean
  */
@@ -80,7 +102,8 @@ const isDev = (): boolean => {
         || origin.includes('localhost')
 }
 
-// Logger utility
+
+// simple logger utility; only logs in development
 const logger = {
   error: (message: string, error?: Error) => {
         if (isDev()) {
@@ -140,9 +163,19 @@ async function retrieveCacheConfig(): Promise<CacheConfig> {
 class CacheManager {
   private config: CacheConfig = DEFAULT_CONFIG
 
+  constructor() {
+    this.init()
+  }
+
   // gets the cache configuration
   async init(): Promise<void> {
-    this.config = await retrieveCacheConfig()
+    try {
+      this.config = await retrieveCacheConfig()
+      logger.info('Cache configuration retrieved')
+    } catch (error) {
+      logger.error('Failed to retrieve cache configuration:', error as Error)
+      this.config = DEFAULT_CONFIG
+    }
   }
 
   /**
@@ -174,7 +207,61 @@ class CacheManager {
       throw new CacheError('Failed to precache urls', error as Error)
     }
   }
+
+  /**
+   * Attempt to fetch a resource
+   * @param request Request | string | URL - request to fetch
+   * @param init RequestInit - request options
+   * @returns Promise<Response> - response
+   */
+  private async tryFetch(request: Request | string | URL, init?: RequestInit): Promise<Response> {
+    try {
+      const response = await fetch(request, init)
+      if (!response.ok) {
+        throw new NetworkError('Network response was not ok', response.status)
+      }
+      return response
+    } catch (error) {
+      logger.error('Failed to fetch:', error as Error)
+      throw new NetworkError(`Failed to fetch request for ${request.toString()}`, 500)
+    }
+  }
+
+  /**
+   * Fallback fetch for failed fetches. Attempts to remove the hash from the url and fetch again
+   * @param request Request | string | URL - request to fetch
+   * @param init RequestInit - request options
+   * @returns Promise<Response> - response
+   */
+  async fallbackFetch (request: Request | string | URL, init?: RequestInit): Promise<Response> {
+    const response = await fetch(request, init)
+    if (response.ok) {
+      return response
+    } else {
+      const errorMessage = response instanceof Response ? await response.json() : "No response"
+      logger.error('Failed to fetch:', new Error(errorMessage))
+      logger.error('Attempting fallback fetch')
+      const url = request instanceof URL ? request : (request instanceof Request ? new URL(request.url) : new URL(request))
+      const hash = get_hash(url.pathname)
+      if (!hash) {
+        const file = url.pathname.split('/')[-1]
+        const parts = file.split('.')
+        const name = parts[0]
+        const ext = parts[parts.length - 1]
+        const hashlessUrl = new RegExp(`${name}\.[a-fA-F0-9]{8}\.${ext}`)
+        const inConfig = this.config.urls.find(u => hashlessUrl.test(u))
+        if (inConfig) {
+          return this.tryFetch(inConfig, init)
+        }
+      }
+      return this.tryFetch(url.pathname.replace(`.${hash}`, ''), init)
+    }
+  }
 }
+
+
+// Initialize cache manager
+const cacheManager = new CacheManager()
 
 /**
  * Cache strategies for fetching resources
@@ -195,7 +282,7 @@ class CacheStrategies {
     }
 
     try {
-      const response = await fetch(request)
+      const response = await cacheManager.fallbackFetch(request)
       if (!response.ok) {
         throw new NetworkError('Network response was not ok', response.status)
       }
@@ -218,7 +305,7 @@ class CacheStrategies {
     const cache = await caches.open(DEFAULT_CONFIG.cacheName)
     const cached = await cache.match(request)
 
-    const networkPromise = fetch(request)
+    const networkPromise = await cacheManager.fallbackFetch(request)
             .then(response => {
                 if (!response.ok) {
                   throw new NetworkError('Network response was not ok', response.status)
@@ -234,9 +321,6 @@ class CacheStrategies {
     return cached ?? networkPromise
   }
 }
-
-// Initialize cache manager
-const cacheManager = new CacheManager()
 
 // install the service worker
 self.addEventListener('install', (event: ExtendableEvent) => {

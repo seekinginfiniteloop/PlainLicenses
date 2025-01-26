@@ -7,16 +7,15 @@
     "esModuleInterop": true,
     "isolatedModules": true,
     "allowSyntheticDefaultImports": true,
-
     "jsx": "react",
     "jsxFactory": "h",
     "lib": [
       "DOM",
       "DOM.Iterable",
-      "esnext",
       "WebWorker",
+      "es2018",
       "es2020",
-      "es2018"
+      "esnext"
     ],
     "module": "ESNext",
     "moduleResolution": "Bundler",
@@ -58,7 +57,8 @@
   "include": [
     "src/**/*.ts",
     "./external/mkdocs-material/typings",
-    "src/assets/javascripts/@types/*.d.ts"
+    "./external/mkdocs-material/material/src/templates/assets/javascripts/**/*.ts",
+    "./external/mkdocs-material/material/src/overrides/assets/javascripts/**/*.ts"
   ],
   "exclude": [
     "src/build/*.ts",
