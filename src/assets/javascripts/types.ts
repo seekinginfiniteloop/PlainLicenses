@@ -9,7 +9,8 @@ export interface ImageOptions {
 }
 
 export type PageConfig = {
-    matcher: (url: URL) => boolean
-    location: PageLocation
-    observables: Observable<any>[]
-  }
+  // eslint-disable-next-line no-unused-vars
+  matcher: (url: URL) => boolean
+  location: PageLocation
+  observables: Observable<any>[]
+}

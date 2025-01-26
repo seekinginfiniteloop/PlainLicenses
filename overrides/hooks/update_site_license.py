@@ -35,7 +35,7 @@ def on_page_context(
         TemplateContext: The updated template context after processing the page.
     """
     logger = get_logger("SITE_LICENSE", _site_license_log_level)
-    if not (license := is_license_page(page)):
+    if not (lcnse := is_license_page(page)):
         return context
     logger.debug("site license checking license %s if it's an unlicense", license)
     meta = page.meta
@@ -46,12 +46,14 @@ def on_page_context(
     ):
         logger.info("found unlicense")
         logger.debug("PATH: %s", Path.cwd())
-        license = SiteLicense(context, page)
-        license.check_for_updates()
-        logger.debug("license: %s", license.full_text)
+        lcnse = SiteLicense(context, page)
+        lcnse.check_for_updates()
+        logger.debug("license: %s", lcnse.full_text)
     return context
 
+
 # TODO: We can probably replace most of this by pulling from license_factory.py
+
 
 class SiteLicense:
     """

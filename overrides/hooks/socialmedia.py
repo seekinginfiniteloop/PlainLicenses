@@ -18,9 +18,7 @@ if not hasattr("SOCIAL", "social_logger"):
 
 
 @event_priority(-100)  # run last
-def on_page_markdown(
-    markdown: str, page: Page, config: MkDocsConfig, files: Files
-) -> str:
+def on_page_markdown(markdown: str, page: Page, config: MkDocsConfig, files: Files) -> str:
     """
     Adds social media buttons to the bottom of each blog and license page.
     """
@@ -33,9 +31,7 @@ def on_page_markdown(
         return markdown
     base_url: str = config.get("site_url", "https://plainlicense.org")
     page_url: str = (
-        f"{base_url}{page.url}"
-        if page.url.startswith("/")
-        else f"{base_url}/{page.url}"
+        f"{base_url}{page.url}" if page.url.startswith("/") else f"{base_url}/{page.url}"
     )
     page_title: str = urllib.parse.quote(f"{page.title or 'Plain License'}\n")
     social_logger.info("Adding social media buttons to %s", page.url)

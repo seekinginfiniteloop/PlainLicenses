@@ -15,9 +15,8 @@ import { OBSERVER_CONFIG, ObserverConfig } from "~/config"
 import { HeroStore } from "~/state"
 import { getContentElements } from "./utils"
 import { Subscription } from "rxjs"
-import { Section, Direction } from "./types"
-import type { HeroState } from "~/state"
-
+import { Direction, Section } from "./types"
+import type { HeroState } from "~/state/types"
 // Make sure we have the effects registered
 import './effects'
 import { logger } from "~/utils/log"
@@ -51,8 +50,9 @@ export class HeroObservation {
   public animating: boolean = false
 
   private transitionTl: gsap.core.Timeline
+
   // @ts-ignore - initialized in onLoad
-  private wrapper: (index: number) => number
+  private wrapper
 
   private sectionCount: number = 0
 
@@ -236,11 +236,11 @@ export class HeroObservation {
       && this.firstLoad
       && direction === Direction.UP
     ) {
-            return 0
+      return 0
     }
     this.firstLoad = false
     return (this.wrapper(this.currentIndex + direction))
-    }
+  }
 
   // Construct the transition timeline based on the direction and index
   // Uses registered effects from observerEffects.ts
@@ -248,7 +248,7 @@ export class HeroObservation {
     const nextSection = this.sections[index]
     if (this.currentIndex >= 0) {
       // the first time this runs, currentIndex will be -1
-      tl.setSection({direction: direction, section: nextSection})
+      tl.setSection({direction, section: nextSection})
     }
     tl.transitionSection({ direction, section: nextSection })
     return tl

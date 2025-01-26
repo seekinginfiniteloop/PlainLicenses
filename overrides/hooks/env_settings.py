@@ -53,7 +53,7 @@ def get_build_meta_values() -> dict[str, str]:
 def on_env(env: Environment, config: MkDocsConfig, files: Files) -> Environment:
     """
     Adds markdown filter to Jinja2 environment using markdown extensions and configurations from the mkdocs.yml file.
-    Also adds Jinja2 extensions: do, loopcontrols
+    Also adds Jinja2 extensions: do, loopcontrols.
     """
     config_exts = config["markdown_extensions"]
     extension_tuples = [

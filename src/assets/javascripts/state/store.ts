@@ -13,7 +13,7 @@
  * @copyright No rights reserved
  */
 
-import { BehaviorSubject, Observable, Observer, Subscription, combineLatest, debounceTime, distinctUntilChanged, distinctUntilKeyChanged, filter, map, merge, shareReplay, startWith, switchMap, tap } from 'rxjs'
+import { BehaviorSubject, Observable, Observer, Subscription, combineLatest, debounceTime, distinctUntilChanged, distinctUntilKeyChanged, filter, map, shareReplay, startWith, switchMap, tap } from 'rxjs'
 import { AnimationComponent, ComponentStateUpdateFunction, HeroState, StatePredicate, VideoState } from './types'
 
 import { isPageVisible$, isPartiallyInViewport, navigationEvents$, prefersReducedMotion$, watchMediaQuery } from '~/utils/eventHandlers'

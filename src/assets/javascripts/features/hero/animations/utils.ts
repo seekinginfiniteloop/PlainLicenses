@@ -108,14 +108,14 @@ function tryObject(obj: any) {
   }
   const values = Object.values(obj)
   const newValues = []
-    for (const value of values) {
-      if (value === null || value === undefined) {
-        newValues.push(null)
-      } else if (value instanceof Element) {
-        newValues.push(value)
-      } else if (typeof value === 'string') {
-        newValues.push(document.querySelector(value))
-      }
+  for (const value of values) {
+    if (value === null || value === undefined) {
+      newValues.push(null)
+    } else if (value instanceof Element) {
+      newValues.push(value)
+    } else if (typeof value === 'string') {
+      newValues.push(document.querySelector(value))
+    }
     return newValues
   }
   return null
@@ -129,11 +129,11 @@ function tryObject(obj: any) {
 export function getTargetsArray(targets: gsap.TweenTarget): Element[] {
   return gsap.utils.toArray(targets)
     .map(
-    (target) => target instanceof Element ? target :
+      (target) => target instanceof Element ? target :
       (typeof target === "string" ? document.querySelector(target) : tryObject(target)))
     .map((target) => { return target instanceof Element ? target : null })
     .filter((target) => target !== null)
-  }
+}
 
 /**
  * Modifies the duration of a tween for reduced motion.

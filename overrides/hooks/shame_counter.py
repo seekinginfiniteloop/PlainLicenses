@@ -22,10 +22,7 @@ from mkdocs.structure.pages import Page
 _shame_log_level = logging.WARNING
 
 if not hasattr(__name__, "shame_logger"):
-    shame_logger = get_logger(
-        "SHAMER",
-        _shame_log_level,
-    )
+    shame_logger = get_logger("SHAMER", _shame_log_level)
 
 STOPWORDS = [
     "i",
@@ -249,40 +246,16 @@ class ShameCounter:
     def sort_all(self) -> None:
         """Sorts all computer attributes."""
         self.total_counts = Counter(
-            dict(
-                sorted(
-                    self.total_counts.items(),
-                    key=lambda item: item[1],
-                    reverse=True,
-                )
-            )
+            dict(sorted(self.total_counts.items(), key=lambda item: item[1], reverse=True))
         )
         self.shame_counts = {
             license_name: Counter(
-                dict(
-                    sorted(
-                        counts.items(),
-                        key=lambda item: item[1],
-                        reverse=True,
-                    )
-                )
+                dict(sorted(counts.items(), key=lambda item: item[1], reverse=True))
             )
             for license_name, counts in self.shame_counts.items()
         }
-        self.ratios = dict(
-            sorted(
-                self.ratios.items(),
-                key=lambda item: item[1],
-                reverse=True,
-            )
-        )
-        self.totals = dict(
-            sorted(
-                self.totals.items(),
-                key=lambda item: item[1],
-                reverse=True,
-            )
-        )
+        self.ratios = dict(sorted(self.ratios.items(), key=lambda item: item[1], reverse=True))
+        self.totals = dict(sorted(self.totals.items(), key=lambda item: item[1], reverse=True))
 
     def shame_count(self, license_name: str) -> dict[str, dict[str, int | str]]:
         """Returns the shame counts for a specific license."""
@@ -298,9 +271,7 @@ class ShameCounter:
         return {word for word in STOPWORDS if word not in self.shame_map}
 
 
-def on_page_markdown(
-    markdown: str, page: Page, config: MkDocsConfig, files: Files
-) -> str:
+def on_page_markdown(markdown: str, page: Page, config: MkDocsConfig, files: Files) -> str:
     """Processes the markdown content of a page to count shame words in license texts.
 
     Args:
@@ -329,9 +300,7 @@ def on_page_markdown(
         words = re.findall(r"\b\w+\b", license_text)
         filtered_words = [word for word in words if word not in shamer.stopwords]
 
-        if word_count := Counter(
-            word for word in filtered_words if word in shamer.shame_map
-        ):
+        if word_count := Counter(word for word in filtered_words if word in shamer.shame_map):
             logger.debug(
                 "Found %d words in license text for %s. Words: %s",
                 len(filtered_words),
@@ -347,17 +316,13 @@ def on_page_markdown(
             )
             shamer.totals[license_name] = sum(word_count.values())
 
-        page.meta.update(
-            {
-                "shame_counts": shamer.shame_count(license_name),
-                "shame_total": shamer.totals[license_name],
-                "shame_ratio": shamer.ratios[license_name],
-            }
-        )
+        page.meta.update({
+            "shame_counts": shamer.shame_count(license_name),
+            "shame_total": shamer.totals[license_name],
+            "shame_ratio": shamer.ratios[license_name],
+        })
         shamer.sort_all()
-        logger.debug(
-            "Shame counts for %s: %d}", license_name, shamer.shame_counts[license_name]
-        )
+        logger.debug("Shame counts for %s: %d}", license_name, shamer.shame_counts[license_name])
     return markdown
 
 
@@ -368,8 +333,7 @@ def on_config(config: MkDocsConfig) -> MkDocsConfig:
         shamer = ShameCounter(config)
     if not shamer:
         logger.debug(
-            "ShameCounter still not found. Shame words: %s",
-            config["extra"]["shame_words"],
+            "ShameCounter still not found. Shame words: %s", config["extra"]["shame_words"]
         )
         logger.error("ShameCounter instance not found.")
     elif not shamer.shame_map:

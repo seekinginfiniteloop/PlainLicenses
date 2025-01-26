@@ -1,0 +1,9 @@
+{"extends": "./tsconfig.json",
+"files": ["commitlint.config.ts"],
+
+"compilerOptions": {
+  "noEmit": false,
+  "skipLibCheck": true,
+  "composite": true
+}
+}

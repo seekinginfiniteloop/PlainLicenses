@@ -20,7 +20,7 @@
  */
 
 import gsap from 'gsap'
-import { modifyDurationForReducedMotion, getDistanceToViewport, getMatchMediaInstance, wordsToLetterDivs } from './utils'
+import { getDistanceToViewport, getMatchMediaInstance, modifyDurationForReducedMotion, wordsToLetterDivs } from './utils'
 import { AnimateMessageConfig, Direction, EmphasisConfig, FadeEffectConfig, ReducedMotionCondition, TransitionConfig} from './types'
 
 
@@ -32,21 +32,21 @@ import { AnimateMessageConfig, Direction, EmphasisConfig, FadeEffectConfig, Redu
  * @returns The fade variables for the fade effect's from and to states.
  */
 function getFadeVars(out: boolean = false, yPercent: number, direction?: Direction |null) {
-    const defaultDirection = out ? Direction.UP : Direction.DOWN
-    const pathDirection = direction || defaultDirection
-    return {
-        from: { autoAlpha: out ? 1 : 0, yPercent: out ? 0 : pathDirection * yPercent },
-        to: { autoAlpha: out ? 0 : 1, yPercent: out ? pathDirection * yPercent : 0 },
-    }
+  const defaultDirection = out ? Direction.UP : Direction.DOWN
+  const pathDirection = direction || defaultDirection
+  return {
+    from: { autoAlpha: out ? 1 : 0, yPercent: out ? 0 : pathDirection * yPercent },
+    to: { autoAlpha: out ? 0 : 1, yPercent: out ? pathDirection * yPercent : 0 },
+  }
 }
 
 function getDFactor(direction: Direction) {
-    return direction === Direction.UP ? Direction.UP : Direction.DOWN
+  return direction === Direction.UP ? Direction.UP : Direction.DOWN
 }
 
-//! WARNING: gsap warns about nesting effects within an effect.
-//! I Don't know what happens if you do...implosion of the multiverse?
-//! We avoid that be creating tweens/timelines and then creating effects from those tweens/timelines.
+// ! WARNING: gsap warns about nesting effects within an effect.
+// ! I Don't know what happens if you do...implosion of the multiverse?
+// ! We avoid that be creating tweens/timelines and then creating effects from those tweens/timelines.
 
 /**
  * Sets the specified section up for a transition.
@@ -60,13 +60,13 @@ gsap.registerEffect({
         const dFactor = getDFactor(direction)
         const tl = gsap.timeline()
             tl.add(
-                gsap.set(section.element, { zIndex: 0 }))
+              gsap.set(section.element, { zIndex: 0 }))
                 .add(
-                gsap.to(section.bg, { yPercent: -15 * dFactor }))
+                  gsap.to(section.bg, { yPercent: -15 * dFactor }))
                 .add(
-                gsap.set(section.element, { autoAlpha: 0 }))
+                  gsap.set(section.element, { autoAlpha: 0 }))
                 .add(
-                gsap.set(section.content, { autoAlpha: 0 }))
+                  gsap.set(section.content, { autoAlpha: 0 }))
             }
 })
 
@@ -82,33 +82,33 @@ gsap.registerEffect({
         const dFactor = getDFactor(direction)
         const tl = gsap.timeline()
         tl.fromTo([section.outerWrapper,
-            section.innerWrapper], {
+          section.innerWrapper], {
             yPercent: (i: number) => i ? i * -100 * dFactor : 100 * dFactor
         }, {
             yPercent: 0
         }, 0)
             .fromTo(
-            section.bg, {
+              section.bg, {
             yPercent: 15 * dFactor
             }, {
             yPercent: 0
             }, 0)
             .set(section.element, { zIndex: 1, autoAlpha: 1 })
             .fromTo(
-            section.content, {
+              section.content, {
             autoAlpha: 0,
             yPercent: 50 * dFactor
             }, {
             autoAlpha: 1,
             yPercent: 0,
             stagger: {
-                each: 0.1,
-                axis: "y",
-                from: direction === Direction.UP ? "start" : "end"
+              each: 0.1,
+              axis: "y",
+              from: direction === Direction.UP ? "start" : "end"
             }
             }, 0.2)
         if (section.animation) {
-            tl.add(section.animation, ">=wrapperTransition")
+          tl.add(section.animation, ">=wrapperTransition")
         }
         return tl
     }
@@ -127,29 +127,29 @@ const fade = (targets: gsap.TweenTarget,
     media.add({ reducedMotion: "(prefers-reduced-motion: reduce)" }, (context: gsap.Context) => {
         const { out, direction, fromConfig, toConfig } = config
         if (fromConfig && toConfig) {
-        const fadeVars = getFadeVars(out, Number(fromConfig.yPercent) || Number(toConfig?.yPercent) || 50, direction || null)
-        const fromVars = { ...fadeVars.from, ...fromConfig }
-        const toVars = { ...fadeVars.to, ...toConfig }
-        const { reducedMotion } = context.conditions as ReducedMotionCondition
-        if (reducedMotion) {
+          const fadeVars = getFadeVars(out, Number(fromConfig.yPercent) || Number(toConfig?.yPercent) || 50, direction || null)
+          const fromVars = { ...fadeVars.from, ...fromConfig }
+          const toVars = { ...fadeVars.to, ...toConfig }
+          const { reducedMotion } = context.conditions as ReducedMotionCondition
+          if (reducedMotion) {
             const modifiedVars = [fromVars, toVars].map((vars) => {
                 let modified: Partial<typeof vars> = { ...vars }
                 if (modified.yPercent) {
-                    delete modified.yPercent
+                  delete modified.yPercent
                 } else if (modified.duration) {
-                    modified.duration = modifyDurationForReducedMotion(vars.duration || 0.5)
+                  modified.duration = modifyDurationForReducedMotion(vars.duration || 0.5)
                 }
                 return modified
             })
-          tl.add(gsap.fromTo(targets, modifiedVars[0], modifiedVars[1]))
-        } else {
-          tl.add(gsap.fromTo(targets, {
+            tl.add(gsap.fromTo(targets, modifiedVars[0], modifiedVars[1]))
+          } else {
+            tl.add(gsap.fromTo(targets, {
                 ...fromVars
                 }, {
                 ...toVars,
           }))
-        }
-    }})
+          }
+        }})
     return tl
 }
 
@@ -240,20 +240,20 @@ gsap.registerEffect({
     defaults: { repeat: - 1, yoyo: true, extendTimeline: true },
     effect: (targets: gsap.TweenTarget, config: EmphasisConfig) => {
         if (!targets) {
-            return null
+          return null
         }
         const { blinkConfig, jumpConfig, scaleUpConfig } = config
         const emphasisTimeline = gsap.timeline()
         getMatchMediaInstance().add({ reducedMotion: "(prefers-reduced-motion: reduce)" }, (context: gsap.Context) => {
             const { reducedMotion } = context.conditions as ReducedMotionCondition
             if (reducedMotion) {
-                emphasisTimeline.add(blink(targets, { ...blinkConfig, ease: "power1.inOut" }))
-                emphasisTimeline.add(scaleUp(targets, { ...scaleUpConfig }))
+              emphasisTimeline.add(blink(targets, { ...blinkConfig, ease: "power1.inOut" }))
+              emphasisTimeline.add(scaleUp(targets, { ...scaleUpConfig }))
             }
             else {
-                emphasisTimeline.add(blink(targets, blinkConfig))
-                emphasisTimeline.add(jump(targets, jumpConfig))
-                emphasisTimeline.add(scaleUp(targets, scaleUpConfig))
+              emphasisTimeline.add(blink(targets, blinkConfig))
+              emphasisTimeline.add(jump(targets, jumpConfig))
+              emphasisTimeline.add(scaleUp(targets, scaleUpConfig))
             }
         }
         )
@@ -279,30 +279,30 @@ gsap.registerEffect({
     effect: (target: gsap.TweenTarget, config: AnimateMessageConfig) => {
         target = target instanceof Array ? target : gsap.utils.toArray(target)
         if (!target || !(target instanceof Array)) {
-            return gsap.timeline()
+          return gsap.timeline()
         }
         target = gsap.utils.toArray(target).filter((el) => el !== null && el instanceof HTMLElement)
         let msgFrag = document.createDocumentFragment()
         let animationElements: HTMLElement[] = []
         if (config.message) {
-            msgFrag = wordsToLetterDivs(config.message)
-            target = (target as []).slice(0, 1)
-            if (target instanceof Array && target.length > 0 && target[0] && target[0] instanceof HTMLElement) {
-                requestAnimationFrame(() => {
+          msgFrag = wordsToLetterDivs(config.message)
+          target = (target as []).slice(0, 1)
+          if (target instanceof Array && target.length > 0 && target[0] && target[0] instanceof HTMLElement) {
+            requestAnimationFrame(() => {
                     // @ts-ignore - seriously... can't TS see the type guard RIGHT THERE? ^^
                     const element = target[0] as HTMLElement
                     element.append(msgFrag)
                     animationElements = gsap.utils.toArray(element.querySelectorAll('div')).filter((el) => el !== null && el instanceof HTMLElement && el.innerText !== '') as HTMLElement[]
                 })
-            } else { return gsap.timeline() }
+          } else { return gsap.timeline() }
         } else {
-            gsap.utils.toArray(target).forEach((el) => {
+          gsap.utils.toArray(target).forEach((el) => {
                 if (el instanceof HTMLElement) {
-                    const text = wordsToLetterDivs(el)
-                    requestAnimationFrame(() => {
+                  const text = wordsToLetterDivs(el)
+                  requestAnimationFrame(() => {
                         el.append(text)
                     })
-                    animationElements.push(el)
+                  animationElements.push(el)
                 }
             })
         }
@@ -314,14 +314,14 @@ gsap.registerEffect({
         gsap.matchMedia().add({ reducedMotion: "(prefers-reduced-motion: reduce)" }, (context: gsap.Context) => {
             const { reducedMotion } = context.conditions as ReducedMotionCondition
             if (reducedMotion) {
-                fromVars.yPercent = 50
-                toVars.ease = "power1.inOut"
-                toVars.stagger = { each: 0.04, from: "start" }
-                toVars.duration = modifyDurationForReducedMotion(toVars.duration || 1)
-                exitVars.duration = modifyDurationForReducedMotion(exitVars.duration || 0.5)
-                exitVars.yPercent = -50
-                exitVars.ease = "power1.inOut"
-                exitVars.stagger = { each: 0.04, from: "end" }
+              fromVars.yPercent = 50
+              toVars.ease = "power1.inOut"
+              toVars.stagger = { each: 0.04, from: "start" }
+              toVars.duration = modifyDurationForReducedMotion(toVars.duration || 1)
+              exitVars.duration = modifyDurationForReducedMotion(exitVars.duration || 0.5)
+              exitVars.yPercent = -50
+              exitVars.ease = "power1.inOut"
+              exitVars.stagger = { each: 0.04, from: "end" }
             }
         }
         )

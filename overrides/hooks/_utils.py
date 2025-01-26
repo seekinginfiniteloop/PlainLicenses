@@ -1,15 +1,19 @@
 """
 Utility functions for hooks.
 """
+
 import os
+
 from pathlib import Path
 from textwrap import wrap
-from typing import Literal, ClassVar, Self
+from typing import ClassVar, Literal, Self
 
 from funcy import rpartial
 from mkdocs.structure.pages import Page
 
-type MkDocsCommand = Literal['gh-deploy', 'serve', 'build']
+
+type MkDocsCommand = Literal["gh-deploy", "serve", "build"]
+
 
 def wrap_text(text: str) -> str:
     """
@@ -38,14 +42,12 @@ def wrap_text(text: str) -> str:
         for i, paragraph in enumerate(paragraphs)
         if i not in [i for i, _ in bullet_paragraphs]
     ]
-    wrapped_paragraphs = [
-        "\n".join(wrapper(paragraph))
-        for paragraph in paragraphs
-    ]
+    wrapped_paragraphs = ["\n".join(wrapper(paragraph)) for paragraph in paragraphs]
     for i, bullets in bullet_paragraphs:
         bullets = ["\n".join(bullet) for bullet in bullets if bullet]
         wrapped_paragraphs.insert(i, "\n".join(bullets))
     return "\n\n".join(wrapped_paragraphs)
+
 
 def strip_markdown(text: str) -> str:
     """
@@ -59,6 +61,7 @@ def strip_markdown(text: str) -> str:
     """
     return text.replace("**", "").replace("*", "").replace("`", "").replace("#", "")
 
+
 def find_repo_root() -> Path:
     """
     Find the repository's root directory by looking for the .git directory.
@@ -71,38 +74,32 @@ def find_repo_root() -> Path:
     """
     current_path = Path.cwd()
     while not (current_path / ".git").exists():
-        if (
-            current_path.parent == current_path
-            and current_path.stem != "PlainLicense"
-        ):
-            raise FileNotFoundError("Could not find the repository root directory.")
-        elif current_path.stem == "PlainLicense":
+        if current_path.parent == current_path and current_path.stem != "PlainLicense":
+            raise FileNotFoundError("Could not find the repository root directory.")  # noqa: TRY003
+        if current_path.stem == "PlainLicense":
             return current_path
         current_path = current_path.parent
     return current_path
+
 
 def _is_production(command: MkDocsCommand) -> bool:
     """
     Returns True if the environment is production.
     """
-    return (
-            command in {"build", "gh-deploy"} or os.getenv("GITHUB_ACTIONS") == "true"
-        )
+    return command in {"build", "gh-deploy"} or os.getenv("GITHUB_ACTIONS") == "true"
+
 
 def is_license_page(page: Page) -> bool:
     """
     Returns True if the page is a license page.
     """
     _status = Status.status()
-    page_name = (
-        page.url.split("/")[-2]
-        if len(page.url.split("/")) > 2
-        else ""
-    )
+    page_name = page.url.split("/")[-2] if len(page.url.split("/")) > 2 else ""
     try:
-        return bool(page_name and page_name in _status.expected_licenses) # type: ignore
+        return bool(page_name and page_name in _status.expected_licenses)  # type: ignore
     except AttributeError as e:
-        raise e
+        raise AttributeError("Status not initialized.") from e  # noqa: TRY003
+
 
 class Status:
     """
@@ -119,13 +116,12 @@ class Status:
 
     def __init__(self, cmd: MkDocsCommand) -> None:
         """Get this party started."""
-        if type(self)._initialized:
+        if type(self)._initialized:  # noqa: SLF001
             return
         self.command: MkDocsCommand = cmd
         self._production: bool = _is_production(cmd)
         self._expected_licenses: tuple[str, ...] | None = None
-
-        type(self)._initialized = True
+        type(self)._initialized = True  # noqa: SLF001
 
     @property
     def expected_licenses(self) -> tuple[str, ...]:
@@ -152,14 +148,14 @@ class Status:
     @property
     def production(self) -> bool:
         """
-        Returns the production flag
+        Returns the production flag.
         """
         return self._production
 
     @classmethod
     def status(cls) -> "Status | None":
         """
-        Returns the instance
+        Returns the instance.
         """
         return cls._instance
 

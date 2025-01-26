@@ -5,9 +5,13 @@
 	"image": "mcr.microsoft.com/devcontainers/base:ubuntu",
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	"forwardPorts": [
+		6499,
 		8000
 	],
 	"portsAttributes": {
+		"6499": {
+			"label": "Bun debug"
+		},
 		"8000": {
 			"label": "MKDocs dev server"
 		}

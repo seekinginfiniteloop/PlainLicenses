@@ -3,15 +3,15 @@ Extract a high quality AVIF frame from a video.
 
 
 """
+
 from pathlib import Path
 from subprocess import run
-from typing import Optional
 
 
 def extract_frame_avif(
     video_path: Path | str,
     timestamp: str = "00:00:10",
-    output_path: Optional[Path | str] = None,
+    output_path: Path | str | None = None,
     crf: int = 20,  # AVIF quality (0-63, lower is better)
     speed: int = 4,  # Encoding speed (0-8, higher is faster)
 ) -> Path:
@@ -51,6 +51,5 @@ def extract_frame_avif(
         "2x2",  # Tile configuration
         str(output_path),
     ]
-
-    run(cmd, capture_output=True, check=True)
+    run(cmd, capture_output=True, check=True)  # noqa: S603
     return Path(output_path)

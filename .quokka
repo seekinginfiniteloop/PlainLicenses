@@ -1,0 +1,13 @@
+{
+  "bun": {
+    "usageMode": "alwaysUse"
+  },
+  "autoLog": true,
+  "showValueOnSelection": true,
+  "showSingleInlineValue": false,
+  "delay": 1500,
+  "plugins": [
+    "jsdom-quokka-plugin"
+  ],
+  "autoDetect": false
+}

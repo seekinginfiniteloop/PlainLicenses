@@ -65,10 +65,7 @@ RESIZE_CONFIG: dict[str, str | list[int] | list[Literal["WEBP", "AVIF", "PNG"]]]
 
 
 def resize_and_save(
-    image: ImageFile,
-    width: int,
-    output_path: str,
-    format: Literal["WEBP", "AVIF", "PNG"],
+    image: ImageFile, width: int, output_path: str, fmt: Literal["WEBP", "AVIF", "PNG"]
 ) -> None:
     """
     Resize an image to the specified width and save it in the desired format.
@@ -78,11 +75,11 @@ def resize_and_save(
 
     resized_image = image.resize((width, new_height), Resampling.LANCZOS)
 
-    if format == "PNG":
+    if fmt == "PNG":
         resized_image.save(output_path, "PNG", optimize=True)
-    elif format == "WEBP":
+    elif fmt == "WEBP":
         resized_image.save(output_path, "WEBP", quality=74, bits=10, threads=8)
-    elif format == "AVIF":
+    elif fmt == "AVIF":
         resized_image.save(output_path, "AVIF", quality=67, speed=1, bits=10, threads=8)
 
 
@@ -108,9 +105,7 @@ def main() -> None:
     output_folder: str = str(RESIZE_CONFIG["output_folder"])
     widths: list[int] = [int(item) for item in RESIZE_CONFIG["widths"]]
     formats: list[Literal["WEBP", "AVIF", "PNG"]] = [
-        str(item)
-        for item in RESIZE_CONFIG["formats"]
-        if item in ["WEBP", "AVIF", "PNG"]
+        str(item) for item in RESIZE_CONFIG["formats"] if item in ["WEBP", "AVIF", "PNG"]
     ]  # type: ignore
 
     base_images = [
@@ -145,10 +140,7 @@ def main() -> None:
             Path(new_folder).mkdir(parents=True, exist_ok=True)
             for width, fmt in itertools.product(widths, formats):
                 resize_and_save(
-                    img,
-                    width,
-                    str(new_folder / f"{base_name}_{width}.{fmt.lower()}"),
-                    fmt,
+                    img, width, str(new_folder / f"{base_name}_{width}.{fmt.lower()}"), fmt
                 )
 
 

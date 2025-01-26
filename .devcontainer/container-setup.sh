@@ -81,7 +81,7 @@ function initial_installs() {
 function setup_node() {
     local fnmloc=/home/vscode/.fnm/fnm
     echo "setting up node environment"
-    $fnmloc install --lts || $fnmloc install 23 &&
+    $fnmloc install --lts || $fnmloc install 23
 }
 
 function set_configs() {

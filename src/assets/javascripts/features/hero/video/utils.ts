@@ -1,11 +1,11 @@
-import { HeroVideo, HeroImage, HeroPaths, CodecVariants, VideoCodec, VideoWidth } from './types'
+import { CodecVariants, HeroImage, HeroPaths, HeroVideo, VideoCodec, VideoWidth } from './types'
 import { rawHeroVideos } from './data'
 import { basename, parse } from 'path'
 
 function replaceDocs(src: string): string {
   const protocol = location.protocol === 'http:' ? 'http:' : 'https:'
   const { host } = location
-    return src.replace(/docs/g, `${protocol}//${host}`)
+  return src.replace(/docs/g, `${protocol}//${host}`)
 }
 
 const VIDEO_WIDTHS = [426, 640, 854, 1280, 1920, 2560, 3840] as VideoWidth[]
@@ -17,10 +17,10 @@ const VIDEO_WIDTHS = [426, 640, 854, 1280, 1920, 2560, 3840] as VideoWidth[]
  * @returns The mapped codec URLs
  */
 function mapCodecUrls(variant: CodecVariants, codec: VideoCodec): HeroPaths {
-    return VIDEO_WIDTHS.reduce((acc, width) => ({
+  return VIDEO_WIDTHS.reduce((acc, width) => ({
         ...acc,
         [width]: replaceDocs(variant[codec][width])
-    }), {}) as { [key in VideoWidth]: string };
+    }), {}) as { [_key in VideoWidth]: string }
 }
 
 /**
@@ -29,22 +29,22 @@ function mapCodecUrls(variant: CodecVariants, codec: VideoCodec): HeroPaths {
  * @returns The mapped image
  */
 function mapImage(image: HeroImage): HeroImage {
-    const { imageName, parent, images } = image
-    for (const key in images) {
-        if (key === 'avif' || key === 'webp' || key === 'png') {
-        images[key].srcset = replaceDocs(images[key].srcset)
-        images[key].widths = VIDEO_WIDTHS.reduce((acc, width: VideoWidth) => ({
+  const { imageName, parent, images } = image
+  for (const key in images) {
+    if (key === 'avif' || key === 'webp' || key === 'png') {
+      images[key].srcset = replaceDocs(images[key].srcset)
+      images[key].widths = VIDEO_WIDTHS.reduce((acc, width: VideoWidth) => ({
         ...acc,
         [width]: replaceDocs(images[key].widths[width] || '')
-    }), {}) as { [key in VideoWidth]: string },
-        images[key].srcset = replaceDocs(images[key].srcset)
-        }
+    }), {}) as { [_key in VideoWidth]: string }
+      images[key].srcset = replaceDocs(images[key].srcset)
     }
-    return {
-        imageName,
-        parent: replaceDocs(parent),
-        images
-    }
+  }
+  return {
+    imageName,
+    parent: replaceDocs(parent),
+    images
+  }
 }
 
 /**
@@ -52,7 +52,7 @@ function mapImage(image: HeroImage): HeroImage {
  * @returns The hero videos
  */
 export function getHeroVideos(): HeroVideo[] {
-    return rawHeroVideos.map((video: HeroVideo) => ({
+  return rawHeroVideos.map((video: HeroVideo) => ({
         basename,
         variants: video.variants.map((variant: CodecVariants) => ({
             av1: mapCodecUrls(variant, 'av1'),
@@ -61,7 +61,7 @@ export function getHeroVideos(): HeroVideo[] {
         })),
         parent: replaceDocs(video.parent),
         poster: mapImage(video.poster),
-    }));
+    }))
 }
 
 /**
@@ -81,20 +81,20 @@ const getAv1MediaType = (width: VideoWidth) => {
       3840: '16'
     } as const
     const seqlevel = seqlevelMap[width]
-    // eslint-disable-next-line prefer-template
+
     return `video/webm;codecs=av01.0.${seqlevel}M.10.0.110.01.01.01.0`
 }
 
 const getH264MediaType = (width: VideoWidth) => {
     const baseString = "avc1.6E00"
     const levelMap = {
-        426: "16",
-        640: "1F",
-        854: "28",
-        1280: "32",
-        1920: "33",
-        2560: "3C",
-        3840: "3C",
+      426: "16",
+      640: "1F",
+      854: "28",
+      1280: "32",
+      1920: "33",
+      2560: "3C",
+      3840: "3C",
     }
     const level = levelMap[width]
     return `video/mp4;codecs=${baseString}${level}`
@@ -102,13 +102,13 @@ const getH264MediaType = (width: VideoWidth) => {
 
 const getVp9MediaType = (width: VideoWidth) => {
     const levelMap = {
-        486: 20,
-        640: 21,
-        854: 30,
-        1280: 31,
-        1920: 40,
-        2560: 50,
-        3840: 51,
+      486: 20,
+      640: 21,
+      854: 30,
+      1280: 31,
+      1920: 40,
+      2560: 50,
+      3840: 51,
     } as const
     // @ts-ignore
     const level = levelMap[width]
@@ -125,14 +125,14 @@ const getVp9MediaType = (width: VideoWidth) => {
  * @returns The media type parameter
  */
 export function get_media_type(type: VideoCodec, width: VideoWidth): string {
-    switch (type) {
-        case 'av1':
-            return getAv1MediaType(width)
-        case 'vp9':
-            return getVp9MediaType(width)
-        case 'h264':
-            return getH264MediaType(width)
-    }
+  switch (type) {
+    case 'av1':
+      return getAv1MediaType(width)
+    case 'vp9':
+      return getVp9MediaType(width)
+    case 'h264':
+      return getH264MediaType(width)
+  }
 }
 
 /**
@@ -141,8 +141,8 @@ export function get_media_type(type: VideoCodec, width: VideoWidth): string {
  * @returns A tuple with the codec and width of the video
  */
 export function srcToAttributes(src: string): [VideoCodec, VideoWidth] {
-    const values = parse(src).name.split('_')
-    const width = parseInt(values[values.length - 1])
-    const codec = values[values.length - 2] as VideoCodec
-    return [codec as VideoCodec, width as VideoWidth]
+  const values = parse(src).name.split('_')
+  const width = parseInt(values[values.length - 1], 10) as VideoWidth
+  const codec = values[values.length - 2] as VideoCodec
+  return [codec as VideoCodec, width as VideoWidth]
 }

@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * @module BuildProcess
  * @description Comprehensive build and asset management system for Plain License
@@ -27,16 +28,16 @@
 
 
 import { exec } from 'child_process'
-import * as crypto from "crypto";
-import * as esbuild from "esbuild";
-import * as fs from 'fs/promises';
-import * as path from 'path';
-import { from, Observable } from "rxjs";
-import { optimize } from "svgo";
-import { backupImage, baseProject, cssSrc, generateVideoVariants, getVideoParents, heroImages, heroParents, resKeys, videoConfig, webConfig } from "./config/";
-import { buildJson, CodecVariants, esbuildOutputs, FileHashes, HeroImage, HeroPaths, HeroVideo, ImageFormatData, ImageType, Project, VideoCodec, VideoWidth } from "./types";
+import * as crypto from "crypto"
+import * as esbuild from "esbuild"
+import * as fs from 'fs/promises'
+import * as path from 'path'
+import { Observable, from } from "rxjs"
+import { optimize } from "svgo"
+import { backupImage, baseProject, cssSrc, generateVideoVariants, getHeroParents, getVideoParents, heroImages, resKeys, videoConfig, webConfig } from "./config/"
+import { CodecVariants, FileHashes, HeroImage, HeroPaths, HeroVideo, ImageFormatData, ImageType, Project, VideoCodec, VideoWidth, buildJson, esbuildOutputs } from "./types"
 
-import globby from 'globby';
+import globby from 'globby'
 
 // TODO: Refactor to use esbuild's transform API and reduce the number of file reads and writes
 
@@ -49,6 +50,7 @@ let noScriptImage: HeroImage = {
 }
 
 let images: HeroImage[] = []
+let vidParents: string[] = []
 
 /**
  * @param {string} fullPath - the full path to the file
@@ -57,20 +59,20 @@ let images: HeroImage[] = []
  */
 async function getFileHash(fullPath: string): Promise<string> {
   if (!fullPath || typeof fullPath !== 'string' || !fullPath.includes('.')) {
-    return '';
+    return ''
   }
 
-  const parts = fullPath.split('/');
-  const fileName = parts[parts.length - 1];
-  const fileNameParts = fileName.split('.');
+  const parts = fullPath.split('/')
+  const fileName = parts[parts.length - 1]
+  const fileNameParts = fileName.split('.')
 
   if (fileNameParts.length < 3) {
-    return '';
+    return ''
   }
 
   return fileNameParts[fileNameParts.length - 2] === 'min'
     ? fileNameParts[fileNameParts.length - 3]
-    : fileNameParts[fileNameParts.length - 2];
+    : fileNameParts[fileNameParts.length - 2]
 }
 
 /**
@@ -80,7 +82,7 @@ async function getFileHash(fullPath: string): Promise<string> {
  */
 function minsvg(data: string): string {
   if (!data.startsWith("<")) {
-    return data;
+    return data
   }
 
   const result = optimize(data, {
@@ -97,9 +99,9 @@ function minsvg(data: string): string {
         name: "removeDimensions"
       }
     ]
-  });
+  })
 
-  return result.data;
+  return result.data
 }
 
 /**
@@ -108,11 +110,11 @@ function minsvg(data: string): string {
  * @description Generates an MD5 hash for a file
  */
 async function getmd5Hash(filePath: string): Promise<string> {
-  const content = await fs.readFile(filePath, 'utf8');
-  const hash = crypto.createHash('md5').update(content).digest('hex').slice(0, 8);
-  const parts = filePath.split('.');
-  const ext = parts.pop();
-  return parts.join('.') + '.' + hash + '.' + ext;
+  const content = await fs.readFile(filePath, 'utf8')
+  const hash = crypto.createHash('md5').update(content).digest('hex').slice(0, 8)
+  const parts = filePath.split('.')
+  const ext = parts.pop()
+  return `${parts.join('.')  }.${  hash  }.${  ext}`
 }
 
 /**
@@ -120,7 +122,7 @@ async function getmd5Hash(filePath: string): Promise<string> {
  * @returns {string} the title-cased string
  */
 function toTitleCase(str: string): string {
-  return str.charAt(0).toUpperCase() + str.slice(1);
+  return str.charAt(0).toUpperCase() + str.slice(1)
 }
 
 /**
@@ -128,7 +130,7 @@ function toTitleCase(str: string): string {
  * @returns {string} the enum string
  */
 function toEnumString(str: string): string {
-  return `${toTitleCase(str)} = "${str.toUpperCase()}"`;
+  return `${toTitleCase(str)} = "${str.toUpperCase()}"`
 }
 
   /**
@@ -136,35 +138,35 @@ function toEnumString(str: string): string {
    * @description Processes the hero images for the landing page. Hashes, copies the images.
    */
 async function handleHeroImages(): Promise<HeroImage[]> {
-    const heroes: HeroImage[] = await heroImages()
-    for (const [parentName, image] of Object.entries<HeroImage>(heroes)) {
+  const heroes: HeroImage[] = await heroImages()
+  for (const [parentName, image] of Object.entries<HeroImage>(heroes)) {
       // Update the parent path
-      const imageName = parentName
-      const parent = image.parent.replace('src', 'docs')
-      if (!(await fs.access(parent).catch(() => false))) {
-        await fs.mkdir(parent, { recursive: true })
-      }
-      const newWidths: { [key: number]: string } = {}
-      // Process each width
-      let newSrcSet: string[] = []
-      for (const ext of Object.keys(image.images)) {
-        const newIndex = image.images[ext as ImageType] as ImageFormatData
-        for (const [width, src] of Object.entries(image.images[ext as ImageType].widths)) {
-          const newPath = (await getmd5Hash(src as string)).replace('src', 'docs')
-          newWidths[Number(width)] = newPath
-          newSrcSet.push(`${newPath} ${width}w`)
-          await fs.copyFile(src as string, newPath)
-        }
-        const srcset = newSrcSet.join(', ')
-        newIndex.srcset = srcset
-        newIndex.parent = parent
-        newIndex.widths = newWidths as HeroPaths
-      }
-      images.push({ imageName, parent, images: image.images })
+    const imageName = parentName
+    const parent = image.parent.replace('src', 'docs')
+    if (!(await fs.access(parent).catch(() => false))) {
+      await fs.mkdir(parent, { recursive: true })
     }
-    noScriptImage = images.find((image) => image.parent.includes(backupImage)) || images[0]
-    return images
+    const newWidths: { [key: number]: string } = {}
+      // Process each width
+    let newSrcSet: string[] = []
+    for (const ext of Object.keys(image.images)) {
+      const newIndex = image.images[ext as ImageType] as ImageFormatData
+      for (const [width, src] of Object.entries(image.images[ext as ImageType].widths)) {
+        const newPath = (await getmd5Hash(src as string)).replace('src', 'docs')
+        newWidths[Number(width)] = newPath
+        newSrcSet.push(`${newPath} ${width}w`)
+        await fs.copyFile(src as string, newPath)
+      }
+      const srcset = newSrcSet.join(', ')
+      newIndex.srcset = srcset
+      newIndex.parent = parent
+      newIndex.widths = newWidths as HeroPaths
+    }
+    images.push({ imageName, parent, images: image.images })
   }
+  noScriptImage = images.find((image) => image.parent.includes(backupImage)) || images[0]
+  return images
+}
 
 
   /**
@@ -173,12 +175,11 @@ async function handleHeroImages(): Promise<HeroImage[]> {
  */
 async function handleHeroVideos(): Promise<HeroVideo[]> {
   await handleHeroImages()
-  const videoParents = await getVideoParents();
-  const videos: HeroVideo[] = [];
+  const videos: HeroVideo[] = []
 
-  for (const parent of videoParents) {
-    const baseName = path.basename(parent);
-    const video = await generateVideoVariants(baseName);
+  for (const parent of vidParents) {
+    const baseName = path.basename(parent)
+    const video = await generateVideoVariants(baseName)
 
     // Hash and copy video files
     const newVariants = Object.fromEntries(videoConfig.codecs.map(codec => [codec, Object.fromEntries(videoConfig.resolutions.map(res => [res.width, ""]))])) as CodecVariants
@@ -186,13 +187,13 @@ async function handleHeroVideos(): Promise<HeroVideo[]> {
       for (const [codec, paths] of Object.entries(variants)) {
         for (const [width, src] of Object.entries(paths)) {
           const newPath = (await getmd5Hash(src)).replace('src', 'docs')
-          newVariants[codec as VideoCodec][parseInt(width) as VideoWidth] = newPath
+          newVariants[codec as VideoCodec][parseInt(width, 10) as VideoWidth] = newPath
           await fs.copyFile(src, newPath)
         }
       }
     }
 
-    const newImage = images.find((image) => image.imageName === baseName) || { imageName: '', parent: '', images: {} } as HeroImage;
+    const newImage = images.find((image) => image.imageName === baseName) || { imageName: '', parent: '', images: {} } as HeroImage
     const poster = newImage
 
     videos.push({
@@ -200,13 +201,13 @@ async function handleHeroVideos(): Promise<HeroVideo[]> {
       parent,
       variants: newVariants,
       poster
-    });
+    })
   }
   return videos
 }
 
   // Write the file to the output pathnoScriptImageParent
-  const outputPath = path.join('src', 'assets', 'javascripts', 'features', 'hero', 'videos', 'data.ts')
+const outputPath = path.join('src', 'assets', 'javascripts', 'features', 'hero', 'videos', 'data.ts')
 
 /**
  * Exports the hero videos to a TypeScript file
@@ -230,9 +231,9 @@ export enum HeroName {
 
 export backupImage = "${noScriptImage}";
 
-`;
+`
 
-  await fs.writeFile(outputPath, fileContent);
+  await fs.writeFile(outputPath, fileContent)
 
   /**
    * @description Runs ESLint on the generated file to strip the quotes from keys
@@ -240,6 +241,10 @@ export backupImage = "${noScriptImage}";
   const runLint = async () => {
     await fs.writeFile(outputPath, fileContent)
     console.log('Hero images data exported to heroImages.ts')
+    if (!outputPath) {
+      console.error('No output path provided')
+      return
+    }
     const paths = [outputPath]
     // Run ESLint on the generated file to strip the quotes from keys
     paths.forEach((path) => {
@@ -256,17 +261,17 @@ export backupImage = "${noScriptImage}";
       })
     })
   }
-    await runLint()
+  await runLint()
 }
 
   /**
    * @param {Project} project - the project to build
    * @returns {Observable<Promise<void>>} an observable
    */
-  async function build(project: Project): Promise<Observable<unknown>> {
-    console.log(`Building ${project.platform}...`)
-    const config = webConfig
-    const buildPromise = esbuild.build({
+async function build(project: Project): Promise<Observable<unknown>> {
+  console.log(`Building ${project.platform}...`)
+  const config = webConfig
+  const buildPromise = esbuild.build({
       ...config,
       ...project
     }).then(async (result) => {
@@ -280,111 +285,112 @@ export backupImage = "${noScriptImage}";
       }
     })
 
-    return from(buildPromise)
-  }
+  return from(buildPromise)
+}
 
   /**
    * @description Removes hashed files in the src directory
    */
-  async function removeHashedFilesInSrc() {
-    const hashedFiles = await globby('src/**/*.{js,css,avif,webp,png,mp4,webm}', { onlyFiles: true, unique: true })
-    const hashRegex = new RegExp(/^.+(\.[a-fA-F0-9]{8})\.(avif|js|css)/)
-    for (const file of hashedFiles) {
-      if (hashRegex.test(file)) {
+async function removeHashedFilesInSrc() {
+  const hashedFiles = await globby('src/**/*.{js,css,avif,webp,png,mp4,webm}', { onlyFiles: true, unique: true })
+  const hashRegex = new RegExp(/^.+(\.[a-fA-F0-9]{8})\.(avif|js|css|webp|mp4|webm|png)/)
+  for (const file of hashedFiles) {
+    if (hashRegex.test(file)) {
+      try {
+        await fs.rm(file)
+      } catch (err) {
+        console.error(err)
+      }
+    }
+  }
+}
+
+  /**
+   * @function clearDirs
+   * @description Clears the directories in the docs folder
+   */
+async function clearDirs() {
+  const parents = await getHeroParents()
+  vidParents = parents
+  await removeHashedFilesInSrc()
+  const destParents = parents.map((parent) => parent.replace('src/assets/', 'docs/assets/'))
+  const dirs = ['docs/assets/stylesheets', 'docs/assets/javascripts', 'docs/assets/images', 'docs/assets/fonts', 'docs/assets/videos', ...(destParents)]
+  for (const dir of dirs) {
+    if (!((await fs.stat(dir).catch(() => false)))) {
+      continue
+    }
+    for (const file of (await fs.readdir(dir))) {
+      const filePath = path.join(dir, file)
+      if ((await fs.stat(filePath)).isFile()) {
         try {
-          await fs.rm(file)
+          await fs.rm(filePath)
         } catch (err) {
           console.error(err)
         }
       }
     }
   }
-
-  /**
-   * @function clearDirs
-   * @description Clears the directories in the docs folder
-   */
-  async function clearDirs() {
-    const parents = await heroParents
-    await removeHashedFilesInSrc()
-    const destParents = parents.map((parent) => parent.replace('src/assets/', 'docs/assets/'))
-    const dirs = ['docs/assets/stylesheets', 'docs/assets/javascripts', 'docs/assets/images', 'docs/assets/fonts', 'docs/assets/videos', ...(destParents)]
-    for (const dir of dirs) {
-      if (!((await fs.stat(dir).catch(() => false)))) {
-        continue
-      }
-      for (const file of (await fs.readdir(dir))) {
-        const filePath = path.join(dir, file)
-        if ((await fs.stat(filePath)).isFile()) {
-          try {
-            await fs.rm(filePath)
-          } catch (err) {
-            console.error(err)
-          }
-        }
-      }
-    }
-  }
+}
 
   /**
    * @function transformSvg
    * @returns {Promise<void>}
    * @description Transforms SVG files, minifying and writing them back to the source directory
    */
-  async function transformSvg(): Promise<void> {
-    const svgFiles = await globby('src/assets/images/*.svg', { onlyFiles: true, unique: true })
-    for (const file of svgFiles) {
-      const content = await fs.readFile(file, 'utf8')
-      const minified = minsvg(content)
-      await fs.writeFile(file, minified)
-    }
+async function transformSvg(): Promise<void> {
+  const svgFiles = await globby('src/assets/images/*.svg', { onlyFiles: true, unique: true })
+  for (const file of svgFiles) {
+    const content = await fs.readFile(file, 'utf8')
+    const minified = minsvg(content)
+    await fs.writeFile(file, minified)
   }
+}
 
   /**
    * @function getFileHashes
    * @returns {FileHashes} the file hashes for palette and main CSS files
    * @description Gets the file hashes for palette and main CSS files
    */
-  async function getFileHashes(): Promise<FileHashes> {
-    const fastGlobSettings = { onlyFiles: true, unique: true }
-    const paletteCSS = await globby('external/mkdocs-material/material/templates/assets/stylesheets/palette.*.min.css', fastGlobSettings)
-    const mainCSS = await globby('external/mkdocs-material/material/templates/assets/stylesheets/main.*.min.css', fastGlobSettings)
-    const paletteHash = await getFileHash(paletteCSS[0])
-    const mainHash = await getFileHash(mainCSS[0])
-    return { palette: paletteHash || '', main: mainHash || '' }
-  }
+async function getFileHashes(): Promise<FileHashes> {
+  const fastGlobSettings = { onlyFiles: true, unique: true }
+  const paletteCSS = await globby('external/mkdocs-material/material/templates/assets/stylesheets/palette.*.min.css', fastGlobSettings)
+  const mainCSS = await globby('external/mkdocs-material/material/templates/assets/stylesheets/main.*.min.css', fastGlobSettings)
+  const paletteHash = await getFileHash(paletteCSS[0])
+  const mainHash = await getFileHash(mainCSS[0])
+  return { palette: paletteHash || '', main: mainHash || '' }
+}
 
   /**
    * @function replacePlaceholders
    * @returns {Promise<void>}
    * @description Replaces the CSS placeholders
    */
-  async function replacePlaceholders(): Promise<void> {
-    const { palette, main } = await getFileHashes()
-    if (!palette || !main) {
-      throw new Error('Palette or main CSS file hash not found')
-    }
-    try {
-      if (await fs.access(cssSrc).catch(() => false)) {
-        const cssContent = await fs.readFile(cssSrc, 'utf8')
-        if (cssContent.includes(palette) && cssContent.includes(main)) {
-          return
-        }
-      }
-      let bundleCssContent = await fs.readFile('src/assets/stylesheets/_bundle_template.css', 'utf8')
-      bundleCssContent = bundleCssContent.replace('{{ palette-hash }}', palette).replace("{{ main-hash }}", main)
-      await fs.writeFile(cssSrc, bundleCssContent)
-    } catch (error) {
-      console.error('Error replacing CSS placeholders:', error)
-    }
+async function replacePlaceholders(): Promise<void> {
+  const { palette, main } = await getFileHashes()
+  if (!palette || !main) {
+    throw new Error('Palette or main CSS file hash not found')
   }
+  try {
+    if (await fs.access(cssSrc).catch(() => false)) {
+      const cssContent = await fs.readFile(cssSrc, 'utf8')
+      if (cssContent.includes(palette) && cssContent.includes(main)) {
+        return
+      }
+    }
+    let bundleCssContent = await fs.readFile('src/assets/stylesheets/_bundle_template.css', 'utf8')
+    bundleCssContent = bundleCssContent.replace('{{ palette-hash }}', palette).replace("{{ main-hash }}", main)
+    await fs.writeFile(cssSrc, bundleCssContent)
+  } catch (error) {
+    console.error('Error replacing CSS placeholders:', error)
+  }
+}
 
   /**
    * @param {esbuild.BuildResult} result - the esbuild build result
    * @returns {esbuild.BuildResult.esbuildOutputs} the 'outputs' section of the esbuild metafile
    * @description Gets the 'outputs' section of the esbuild metafile
    */
-  const metaOutput = async (result: esbuild.BuildResult): Promise<esbuildOutputs> => {
+const metaOutput = async (result: esbuild.BuildResult): Promise<esbuildOutputs> => {
     if (!result.metafile) {
       return {}
     }
@@ -432,7 +438,7 @@ const cacheMeta = async (output: esbuildOutputs) => {
   const keys = Object.keys(output)
   const precache_urls = keys.filter((key) => key.endsWith('.js') || key.endsWith('.css') || key.endsWith('.woff2')).map((key) => key.replace('docs/', ''))
   const cacheName = 'plain-license-v1'
-  const cacheJson = JSON.stringify({ cacheName: cacheName, urls: precache_urls, version: getCacheVersion(output)}, null, 2)
+  const cacheJson = JSON.stringify({ cacheName, urls: precache_urls, version: getCacheVersion(output)}, null, 2)
   const path = 'docs/assets/javascripts/workers/meta.json'
   await fs.writeFile(path, cacheJson)
 }
@@ -444,6 +450,7 @@ const cacheMeta = async (output: esbuildOutputs) => {
  * @returns {string} the picture element
  */
 const generatePictureElement = (image: HeroImage, className: string = "hero__poster"): string => {
+  console.log('Generating picture element')
   const { images } = image
   const { avif, webp, png } = images
   const alt = "hero image"
@@ -466,7 +473,7 @@ const generatePictureElement = (image: HeroImage, className: string = "hero__pos
    * @returns {Promise<buildJson>} the mapping object
    * @description Maps the metafile outputs
    */
-  const metaOutputMap = async (output: esbuildOutputs): Promise<buildJson> => {
+const metaOutputMap = async (output: esbuildOutputs): Promise<buildJson> => {
     const keys = Object.keys(output)
     const jsSrcKey = keys.find((key) => key.endsWith('.js'))
     const cssSrcKey = keys.find((key) => key.endsWith('.css') && key.includes("bundle") && !key.includes("javascripts"))
@@ -488,7 +495,7 @@ const generatePictureElement = (image: HeroImage, className: string = "hero__pos
    * @param {Object} metaOutput - the meta output
    * @description Writes the meta output to a file
    */
-  const writeMeta = async (metaOutput: {}) => {
+const writeMeta = async (metaOutput: {}) => {
     const metaJson = JSON.stringify({ metaOutput }, null, 2)
     await fs.writeFile(path.join('docs', 'meta.json'), metaJson)
   }
@@ -497,33 +504,33 @@ const generatePictureElement = (image: HeroImage, className: string = "hero__pos
    * @description Builds all projects
    * @returns {Promise<void>}
   */
-  async function buildAll(): Promise<void> {
-    const handleSubscription = async (project: any) => {
+async function buildAll(): Promise<void> {
+  const handleSubscription = async (project: any) => {
       (await build(project)).subscribe({
         next: () => console.log(`Build for ${project.platform} completed successfully`),
         error: (error) => console.error(`Error building ${project.platform}:`, error),
         complete: () => console.log(`Build for ${project.platform} completed`)
       })
     }
-    console.log('Building all projects...')
-    await clearDirs()
-    console.log('Directories cleared')
-    console.log('retrieving hero videos')
-    const videos = await handleHeroVideos()
-    console.log('hero videos retrieved')
-    console.log('exporting hero videos to typescript file')
-    await exportVideosToTS(videos)
-    console.log('hero videos exported')
-    await transformSvg()
-    await replacePlaceholders()
-    console.log('CSS placeholders replaced; SVGS minified')
-    try {
-      console.log('Building base project...')
-      await handleSubscription(baseProject)
-    } catch (error) {
-      console.error('Error building base project:', error)
-    }
+  console.log('Building all projects...')
+  await clearDirs()
+  console.log('Directories cleared')
+  console.log('retrieving hero videos')
+  const videos = await handleHeroVideos()
+  console.log('hero videos retrieved')
+  console.log('exporting hero videos to typescript file')
+  await exportVideosToTS(videos)
+  console.log('hero videos exported')
+  await transformSvg()
+  await replacePlaceholders()
+  console.log('CSS placeholders replaced; SVGS minified')
+  try {
+    console.log('Building base project...')
+    await handleSubscription(baseProject)
+  } catch (error) {
+    console.error('Error building base project:', error)
   }
+}
 
 async function main() {
   console.log('Building Plain License...')

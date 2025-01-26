@@ -89,8 +89,7 @@ h1.license-title {
 /* Styling blocks for the license header in the license reader view */
 
 .md-typeset .tabbed-set:has(input#reader:checked) {
-
-.license-header {
+  .license-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -148,9 +147,9 @@ h1.license-title {
   height: 0.15rem;
   content: "";
   background: var(--selected-color);
+  transform: translateX(var(--md-indicator-x));
   transition: width 225ms, background-color 250ms, transform 250ms;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transform: translateX(var(--md-indicator-x));
 }
 
 .js .md-typeset .tabbed-labels--linked> label> a {
@@ -264,11 +263,11 @@ p.md-nav__description.license {
   min-height: 3rem;
   padding-top: 1.5rem;
   margin-top: 1rem;
-  font-weight: 700;
   font-size-adjust: calc(1rem + 1vw);
+  font-weight: 700;
+  vertical-align: bottom;
   color: var(--md-default-fg-color--light);
   text-align: center;
-  vertical-align: bottom;
   border-bottom: 0.125rem solid var(--md-accent-fg-color);
 }
 
@@ -307,8 +306,8 @@ p.md-nav__description.license {
   pointer-events: none;
   content: attr(data-iden) " view";
   opacity: 0;
-  transition: opacity 125ms;
   transform: translateX(-50%);
+  transition: opacity 125ms;
 }
 
 .md-nav.md-nav--secondary .quick_links .quicklink_group:hover::after,
@@ -375,10 +374,10 @@ p.md-nav__description.license {
   padding: 0.02rem;
   margin: 0.02rem;
   cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  background-color: transparent;
   outline: none;
+  background-color: transparent;
   transition: background-color 125ms;
+  -webkit-tap-highlight-color: transparent;
 }
 
 #license-sidebar-inner .md-tag-icon[href]:focus::before,
@@ -416,8 +415,8 @@ p.md-nav__description.license {
   pointer-events: none;
   content: attr(id);
   opacity: 0;
-  transition: opacity 125ms;
   transform: translateX(-50%);
+  transition: opacity 125ms;
 }
 
 #license-sidebar-inner .md-tag-icon[href]:hover::after,
@@ -511,8 +510,8 @@ p.md-nav__description.license {
   mask-repeat: no-repeat;
   mask-position: center;
   mask-size: contain;
-  transition: transform 250ms;
   transform: rotate(0deg);
+  transition: transform 250ms;
 }
 
 .md-nav--secondary> details.question> summary::not([open]) {

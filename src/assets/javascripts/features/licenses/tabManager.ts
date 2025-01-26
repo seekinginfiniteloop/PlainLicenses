@@ -66,7 +66,7 @@ export class TabManager {
         const label = document.querySelector(`label[for="${id}"]`) as HTMLLabelElement
         const elements = {
           input: input as HTMLInputElement,
-          label: label,
+          label,
           labelAnchor: label.querySelector('a') as HTMLAnchorElement,
           iconAnchor: document.querySelector(`${this.selectors.iconPrefix}${id}`) as HTMLAnchorElement,
           iconSVG: document.querySelector(`${this.selectors.iconPrefix}${id}`)?.querySelector('svg') as SVGElement,
@@ -179,8 +179,8 @@ export class TabManager {
   // Handle icon clicks
     const iconClicks = this.tabs.map(({ iconAnchor, input, labelAnchor }) =>
     merge(
-    fromEvent(labelAnchor, 'click'),
-    fromEvent(iconAnchor, 'click')).pipe(
+      fromEvent(labelAnchor, 'click'),
+      fromEvent(iconAnchor, 'click')).pipe(
       tap(() => {
         preventDefault
         if (!input.checked) {

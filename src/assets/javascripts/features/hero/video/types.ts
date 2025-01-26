@@ -18,11 +18,11 @@ export type VideoCodec = 'av1' | 'vp9' | 'h264'
 export type ImageType = 'avif' | 'webp' | 'png'
 
 export type HeroPaths = {
- [key in VideoWidth]: string
+  [_key in VideoWidth]: string
 }
 
 export type ImageIndex = {
-  [key in ImageType]: { widths: HeroPaths, srcset: string }
+  [_key in ImageType]: { widths: HeroPaths, srcset: string }
 }
 
 export interface HeroImage {
@@ -32,7 +32,7 @@ export interface HeroImage {
 }
 
 export type CodecVariants = {
-  [key in VideoCodec]: HeroPaths
+  [_key in VideoCodec]: HeroPaths
 }
 
 export interface VideoResolution {
@@ -41,11 +41,11 @@ export interface VideoResolution {
 }
 
 export interface HeroVideo {
-    baseName: string
-    parent: string // Path to the parent directory of the video
-    variants: CodecVariants[]
-    poster: HeroImage
-    message?: string
+  baseName: string
+  parent: string // Path to the parent directory of the video
+  variants: CodecVariants[]
+  poster: HeroImage
+  message?: string
 }
 
 export type VideoStatus = 'not_initialized' | 'loading' | 'loaded' | 'playing' | 'paused' | 'on_delay'

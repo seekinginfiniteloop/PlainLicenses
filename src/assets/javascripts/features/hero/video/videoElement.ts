@@ -19,17 +19,29 @@ import { get_media_type, srcToAttributes } from './utils'
  */
 export class VideoElement {
   public video: HTMLVideoElement = document.createElement('video')
+
   private sources: HTMLSourceElement[]
+
   private heroVideo: HeroVideo
+
   private disablePictureInPicture: "true" | "false" = "true"
+
   private playsinline: "true" | "false" = "true"
+
   private preload: string = 'metadata'
+
   private muted: "true" | "false" = "true"
+
   private loop: "true" | "false" = "true"
+
   private autoplay: "true" | "false" = "true"
+
   private poster: HeroImage
+
   public picture = document.createElement('picture')
+
   private properties: { [key: string]: string } = {}
+
   public message: string = ''
 
   constructor(heroVideo: HeroVideo, properties?: { [key: string]: string }) {
@@ -38,7 +50,7 @@ export class VideoElement {
     this.poster = heroVideo.poster
     this.message = heroVideo.message || ''
     let props = properties ? Object.fromEntries(Object.entries(properties).map(([key, value]) => [key, (value === "true" || value === "false") ? value : this[key as keyof this] || "true"])) : {}
-    props = this.assignProperties(props as { [key: string]: string })
+    this.assignProperties(props as { [key: string]: string })
     this.video = this.constructVideoElement()
     this.sources = this.constructSources()
     this.video.append(...this.sources)
@@ -61,14 +73,14 @@ export class VideoElement {
 
   // construct the video element
   private constructVideoElement() {
-  const {video} = this
+    const {video} = this
     for (const prop in this.properties) {
       const key = typeof prop === "string" ? prop : `${prop}`
-    try {
-      video.setAttribute(prop, this.properties[key])
-    } catch (e) {
-      logger.error(`Error setting property ${key} on video element: ${e}`)
-  }
+      try {
+        video.setAttribute(prop, this.properties[key])
+      } catch (e) {
+        logger.error(`Error setting property ${key} on video element: ${e}`)
+      }
     } return video
   }
 
@@ -81,7 +93,7 @@ export class VideoElement {
       for (const codec in variant as CodecVariants) {
         if (codec === 'av1' || codec === 'vp9' || codec === 'h264') {
           for (const width in widths) {
-            const w = parseInt(width) as VideoWidth
+            const w = parseInt(width, 10) as VideoWidth
             const src = document.createElement('source')
             src.src = variant[codec][w]
             src.type = get_media_type(codec, w)
@@ -122,7 +134,7 @@ export class VideoElement {
     const { widths } = png
     let sizes = ''
     for (const width in widths) {
-      const w = parseInt(width) as VideoWidth
+      const w = parseInt(width, 10) as VideoWidth
       if (Array.from(Object.keys(MAX_WIDTHS)).includes(width)) {
         // @ts-ignore
         sizes += w !== 3840 ? `(max-width: ${MAX_WIDTHS[width]}px) ${width}px, ` : `${width}px`

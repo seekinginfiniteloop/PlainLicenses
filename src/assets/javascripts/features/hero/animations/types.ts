@@ -20,9 +20,9 @@ export interface ReducedMotionCondition extends gsap.Conditions {
  * @description Direction enum for the Hero Observers.
  */
 export enum Direction {
-  // eslint-disable-next-line no-unused-vars
+   
   UP = -1, // toward the top of the page
-  // eslint-disable-next-line no-unused-vars
+   
   DOWN = 1, // toward the bottom of the page
 }
 

@@ -4,21 +4,29 @@
     "rootDir": "./tools"
   },
   "compilerOptions": {
+    "rootDir": "./src/build",
     "esModuleInterop": true,
     "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "moduleResolution": "nodenext",
+    "moduleDetection": "force",
+    "lib": [
+      "ESNext"
+    ],
     "outDir": "./tools/build",
     "pretty": true,
-    "target": "ESNext"
+    "target": "ESNext",
+    "composite": true,
+    "disableSolutionSearching": true
   },
   "exclude": [
     "./node_modules"
   ],
-  "extends": "./tsconfig.json",
   "files": [
     "src/build/index.ts"
   ],
   "include": [
-    "./node_modules/sass/types/*.ts"
+    "src/build/index.ts",
+    "src/build/**/*.ts",
+    "./node_modules/sass/types/*.ts",
   ]
 }

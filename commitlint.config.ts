@@ -1,12 +1,33 @@
 import * as fs from "fs"
 import * as path from "path"
-import { RuleConfigSeverity } from '@commitlint/types';
-import globby from "globby";
-// ts-ignore
-import selectiveScope from 'commitlint-plugin-selective-scope';
+import { RuleConfigSeverity, UserConfig } from '@commitlint/types'
+import globby from "globby"
+// @ts-ignore - selectiveScope is used in the rules (as a string)
+// eslint-disable-next-line no-unused-vars
+import selectiveScope from 'commitlint-plugin-selective-scope'
 
-import type { UserConfig } from '@commitlint/types';
-import { spdxLicense, LicenseTypeT, DevTypeT, DevScopeT } from "./typings/commit";
+interface spdxLicense {
+  reference: URL
+  isDeprecatedLicenseId: boolean
+  detailsUrl: URL
+  referenceNumber: number
+  name: string // full name
+  licenseId: string // SPDX ID
+  seeAlso: URL[]
+  isOsiApproved: boolean
+}
+
+export interface CommitMessage {
+  type: string
+  scope: string
+  description: string
+  body: string
+  footer: string
+}
+
+type LicenseTypeT = "new" | "subs" | "admin" | "bot" | "stable"
+type DevTypeT = "fix" | "new" | "refactor" | "chore" | "bot"
+type DevScopeT = "content" | "ui" | "infra" | "deps" | "scripts" | "blog"
 
 const spdxFilename = "licenses.json"
 const spdxJsonPath = path.join("external", "license-list-data", "json", spdxFilename)
@@ -31,38 +52,38 @@ async function getExistingLicenses(): Promise<(string | undefined)[]>{
 
 const getExistingLicenseScopes = async () => {
   try {
-    const licenses = await getExistingLicenses();
-    return licenses.map(license => license?.toLowerCase().trim());
+    const licenses = await getExistingLicenses()
+    return licenses.map(license => license?.toLowerCase().trim())
   } catch (error) {
-    throw error;
+    throw error
   }
-};
+}
 
-const existingLicenseScopes = Promise.resolve(getExistingLicenseScopes()).then(scopes => scopes);
+const existingLicenseScopes = Promise.resolve(getExistingLicenseScopes()).then(scopes => scopes)
 
 const possibleLicenseScopes = async () => {
-  const scopes = [readSpdxLicenseList(), /plain-[-.a-z0-9]+/];
-  const existingScopes = await existingLicenseScopes;
+  const scopes = [readSpdxLicenseList(), /plain-[-.a-z0-9]+/]
+  const existingScopes = await existingLicenseScopes
   return scopes.filter(scope => {
     if (typeof scope === 'string' && scope !== "" && !existingScopes.includes(scope)) {
-      return true;
+      return true
     } else if (scope instanceof RegExp) {
-      return true;
+      return true
     }
-    return false;
-  });
-};
+    return false
+  })
+}
 
-const licenseTypes = ["new", "subs", "admin", "bot", "stable"];
-const devTypes = ["fix", "new", "refactor", "chore", "bot"];
-const devScopes = ["content", "ui", "infra", "deps", "scripts", "blog"];
+const licenseTypes: LicenseTypeT[] = ["new", "subs", "admin", "bot", "stable"]
+const devTypes: DevTypeT[] = ["fix", "new", "refactor", "chore", "bot"]
+const devScopes: DevScopeT[] = ["content", "ui", "infra", "deps", "scripts", "blog"]
 
 const licenseTypedScopes = licenseTypes.map(type =>
   type !== "new" ? { type: existingLicenseScopes.then(scopes => scopes) } : { type: possibleLicenseScopes }
-);
-const devTypedScopes = devTypes.map(type => ({ type: devScopes }));
+)
+const devTypedScopes = devTypes.map(() => ({ type: devScopes }))
 
-const allTypedScopes = [...licenseTypedScopes, ...devTypedScopes] as const;
+const allTypedScopes = [...licenseTypedScopes, ...devTypedScopes] as const
 
 const Configuration: UserConfig = {
   extends: ['@commitlint/config-conventional'],
@@ -153,6 +174,6 @@ const Configuration: UserConfig = {
       }
     }
   }
-};
+}
 
-export default Configuration;
+export default Configuration

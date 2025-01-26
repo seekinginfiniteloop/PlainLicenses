@@ -1,15 +1,16 @@
 default: false
 line-length: false
 gitignore: true
-globs:
-  - "*.md"
-  - "**/*.md"
+glasts:
+  include:
+    - "*.md"
+    - "**/*.md"
 ignores:
-  - "!node_modules/**"
-  - "!**/node_modules/**"
-  - "!.venv/**"
-  - "!.vscode/**"
-
+  include:
+    - "!node_modules/**"
+    - "!**/node_modules/**"
+    - "!.venv/**"
+    - "!.vscode/**"
 
 # MD001/heading-increment : Heading levels should only increment by one level at a time : https://github.com/DavidAnson/markdownlint/blob/v0.33.0/doc/md001.md
 MD001: false
@@ -152,7 +153,7 @@ MD054: true
 
 # MD055/table-pipe-style : Table pipe style : https://github.com/DavidAnson/markdownlint/blob/v0.33.0/doc/md055.md
 MD055:
-  style: "no_leading_or_trailing"
+  style: "consistent"
 
 # MD056/table-column-count : Table column count : https://github.com/DavidAnson/markdownlint/blob/v0.33.0/doc/md056.md
 MD056: true

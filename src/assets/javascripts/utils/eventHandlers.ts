@@ -25,7 +25,7 @@ import * as bundle from "@/bundle"
 import { Observable, combineLatest, debounceTime, distinctUntilChanged, filter, from, fromEvent, fromEventPattern, map, merge, mergeMap, of, share, shareReplay, skip, startWith, switchMap, take, takeUntil, tap, throttleTime, toArray } from "rxjs"
 import Tablesort from "tablesort"
 
-import { isLicense, isLicenseHash, isValidEvent } from "./conditionChecks"
+import { isLicenseHash, isValidEvent } from "./conditionChecks"
 import { getLocation, watchViewportAt } from "~/browser"
 import { getComponentElement, watchHeader } from "~/components"
 
@@ -36,7 +36,7 @@ export const PAGE_CLEANUP_DELAY = 20000
 
 let customWindow: CustomWindow = window as unknown as CustomWindow
 
-const { document$, location$, viewport$ } = customWindow
+const { location$, viewport$ } = customWindow
 
 export const preventDefault = (ev: Event) => { ev.preventDefault(); return ev }
 
@@ -150,33 +150,33 @@ const mapLocation = (ev: Event) => {
 export const navigationEvents$ = 'navigation' in customWindow ?
   // If the browser supports the navigation event, we use it
 
-  fromEventPattern<NavigateEvent>(
+    fromEventPattern<NavigateEvent>(
     handler => customWindow.navigation.addEventListener('navigate', handler),
     handler => customWindow.navigation.removeEventListener('navigate', handler)
-  ).pipe(
-    filter((event) => event !== null && event instanceof NavigateEvent),
-    map((event) => { return new URL((event as NavigateEvent).destination.url) }),
-    startWith(getLocation()),
-    shareReplay(1),
-    share()
-  )
+    ).pipe(
+      filter((event) => event !== null && event instanceof NavigateEvent),
+      map((event) => { return new URL((event as NavigateEvent).destination.url) }),
+      startWith(getLocation()),
+      shareReplay(1),
+      share()
+    )
   : // otherwise we use the browser's built-in events
-  merge(merge(
-    fromEvent(customWindow, 'popstate'),
-    fromEvent(customWindow, 'hashchange'),
-    fromEvent(customWindow, 'pageshow'),
-    fromEvent(customWindow, 'beforeunload'),
-  ).pipe(
-    filter(event => isValidEvent(event as Event)),
-    map((event) => { return mapLocation(event as Event) }),
-  ),
-  location$.pipe(
-    distinctUntilChanged(),
-  )
-  ).pipe(
-    startWith(getLocation()),
-    shareReplay(1),
-    share())
+    merge(merge(
+      fromEvent(customWindow, 'popstate'),
+      fromEvent(customWindow, 'hashchange'),
+      fromEvent(customWindow, 'pageshow'),
+      fromEvent(customWindow, 'beforeunload'),
+    ).pipe(
+      filter(event => isValidEvent(event as Event)),
+      map((event) => { return mapLocation(event as Event) }),
+    ),
+    location$.pipe(
+      distinctUntilChanged(),
+    )
+    ).pipe(
+      startWith(getLocation()),
+      shareReplay(1),
+      share())
 
 /**
  * Observes changes to the location pathname.
@@ -258,15 +258,15 @@ export function watchLicenseHash() {
   return combineLatest([navigationEvents$.pipe(
     take(1),
     tap(() => addLicenseHashListener())),
-    navigationEvents$.pipe(
+  navigationEvents$.pipe(
     // skip the first value, as we've already handled it
-      skip(1),
+    skip(1),
     // only emit while the pathname remains the same (i.e., we're watching the same page for hash changes)
     takeUntil(
       navigationEvents$.pipe(
         distinctUntilChanged(
           (prev, curr) => prev.pathname === curr.pathname))),
-    )
+  )
   ]
   ).pipe(
     filter(

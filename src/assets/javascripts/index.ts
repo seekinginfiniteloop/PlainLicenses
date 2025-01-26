@@ -16,7 +16,6 @@
 
 import "@/bundle"
 import './config'
-import './state'
 import './features'
 import { EMPTY, Observable, catchError, filter, from, map, merge, of, share, switchMap, tap } from "rxjs"
 import gsap from "gsap"
@@ -25,8 +24,7 @@ import { ScrollToPlugin } from "gsap/ScrollToPlugin"
 
 import { feedback } from "~/features/feedback"
 import { initLicenseFeature } from "~/features/licenses"
-import { logger } from "~/utils"
-import { createScript, watchLicenseHash, navigationEvents$, windowEvents, isHelpingIndex, isHome, isLicense, isOnSite } from "~/utils"
+import { createScript, isHelpingIndex, isHome, isLicense, isOnSite, logger, navigationEvents$, watchLicenseHash, windowEvents } from "~/utils"
 import { HeroStore } from "./state"
 import { HeroObservation, VideoManager } from "./features/hero"
 import type { PageConfig } from "./types"
@@ -46,7 +44,7 @@ const { document$ } = customWindow
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('workers/cache-worker.js')
     .then(() => logger.info('SW registered!'))
-    .catch(err => logger.error('SW registration failed:', err));
+    .catch(err => logger.error('SW registration failed:', err))
 }
 
 // get the hero store registered

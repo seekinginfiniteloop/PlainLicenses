@@ -217,9 +217,9 @@ a.md-nav__link--active {
   line-height: 1.4rem;
   color: var(--md-text-color);
   text-align: center;
+  white-space: nowrap;
   /* stylelint-disable-next-line @stylistic/max-line-length */
   text-shadow: -0.0625rem -0.0625rem 0.375rem var(--md-default-bg-color--light), 0.0625rem \-0.0625rem 0.375rem var(--md-default-bg-color--light), -0.0625rem 0.0625rem 0.375rem var(--md-default-bg-color--light), 0.0625rem 0.0625rem 0.375rem var(--md-default-bg-color--light);
-  white-space: nowrap;
 }
 
 .md-typeset .progress {
