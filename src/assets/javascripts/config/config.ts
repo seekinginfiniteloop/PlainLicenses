@@ -114,7 +114,13 @@ export const MAX_WIDTHS = {
 
 
 export const SUBTLE_EMPHASIS_CONFIG: EmphasisConfig = {
-  blinkConfig: { startAt: { autoAlpha: 0.4 } },
-  jumpConfig: { },
-  scaleUpConfig: { }
+  blinkConfig: { startAt: { filter: "brightness(1.1)" }, autoAlpha: 0.4, duration: 1, ease: 'power1.inOut', repeat: -1, yoyo: true, repeatDelay: 0.5, filter: 'brightness(1.1)' },
+  jumpConfig: { y: -2, duration: 0.5, ease: "elastic", repeatDelay: 4, repeat: -1, yoyoEase: "elastic" },
+  scaleUpConfig: { scale: 1.1, duration: 1, repeatDelay: 4, repeat: -1, ease: 'power1.inOut' },
+} as const
+
+export const STRONG_EMPHASIS_CONFIG: EmphasisConfig = {
+  blinkConfig: { yoyoEase: 'power1.in', repeat: -1, repeatDelay: 0.5, autoAlpha: 0.4 },
+  jumpConfig: {  },
+  scaleUpConfig: { duration: 1 },
 } as const

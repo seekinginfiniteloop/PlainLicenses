@@ -141,17 +141,21 @@ export class HeroObservation {
     }
   }
 
+  /**
+   * @description Set up the first load of the Hero feature.
+   * Filters out the emphasis targets and fades in the content.
+   * Emphasis animations are handled in videoManager.ts.
+   */
   private setupFirstLoad() {
     const firstSection = this.sections[0]
     const { content } = firstSection
     const { subtle, strong } = this.config.emphasisTargets
-    const subtleTargets = gsap.utils.toArray(firstSection.element.querySelectorAll(subtle))
+    const subtleTargets = gsap.utils.toArray(document.querySelectorAll(subtle))
     const strongTargets = gsap.utils.toArray(document.querySelectorAll(strong))
     const emphasisTargets = [...subtleTargets, ...strongTargets]
     const filteredContent = content.filter(content => !emphasisTargets.includes(content))
-    gsap.fadeIn(filteredContent, {})
-    gsap.emphasize(strongTargets, {})
-    gsap.emphasize(subtleTargets, {})
+    gsap.to(filteredContent, { autoAlpha: 1, duration: 0.75 })
+    gsap.to(subtleTargets, { autoAlpha: 0.7, duration: 1 })
   }
 
   /**

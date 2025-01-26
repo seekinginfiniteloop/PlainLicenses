@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /**
  * @module BuildTypes
  * @description Type definitions for build process and asset management
@@ -110,11 +111,11 @@ export interface VideoResolution {
 }
 
 export interface HeroVideo {
-    baseName: string
-    parent: string // Path to the parent directory of the video
-    variants: CodecVariants
-    poster: HeroImage
-    message?: string
+  baseName: string
+  parent: string // Path to the parent directory of the video
+  variants: CodecVariants
+  poster: HeroImage
+  message?: string
 }
 
 export interface VideoConfig {

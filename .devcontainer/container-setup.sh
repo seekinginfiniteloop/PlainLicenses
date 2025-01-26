@@ -40,7 +40,6 @@ libz-dev \
 nano \
 ncurses-base \
 ncurses-bin \
-nodejs \
 openssl \
 pngquant \
 python3 \
@@ -62,6 +61,8 @@ function initial_installs() {
     export BUN_INSTALL="/home/vscode/.bun"
     export UV_PYTHON_DOWNLOADS="automatic"
     # sync and install tools
+    echo "installing fnm"
+    curl -fsSL https://fnm.vercel.app/install | bash &&
     curl -LsSf https://astral.sh/uv/install.sh | sh &&
     echo "installing bun"
     curl -fsSL https://bun.sh/install | bash &&
@@ -75,6 +76,12 @@ function initial_installs() {
     cp -r /workspaces/PlainLicense/.devcontainer/.fonts "$HOME" &&
     fc-cache -vf "$HOME/.fonts" &&
     cd /workspaces/PlainLicense || return
+}
+
+function setup_node() {
+    local fnmloc=/home/vscode/.fnm/fnm
+    echo "setting up node environment"
+    $fnmloc install --lts || $fnmloc install 23 &&
 }
 
 function set_configs() {
@@ -145,7 +152,7 @@ function bun_install() {
     local bunloc=/home/vscode/.bun/bin/bun
     echo "setting up TS environment"
     $bunloc install "${BUNOPTS}" &&
-    $bunloc install -g "${BUNOPTS}" @linthtml/linthtml stylelint eslint prettier semantic-release-cli markdownlint-cli2 commitizen commitlint node
+    $bunloc install -g "${BUNOPTS}" @linthtml/linthtml stylelint eslint prettier semantic-release-cli markdownlint-cli2 commitizen commitlint node typescript npm ts-node
 }
 
 function set_completions() {
@@ -159,6 +166,7 @@ function set_completions() {
 }
 
 initial_installs &&
+setup_node &&
 setup_rust_helpers &&
 set_configs &&
 set_completions &&

@@ -33,8 +33,8 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { from, Observable } from "rxjs";
 import { optimize } from "svgo";
-import { backupImage, baseProject, cssSrc, generateVideoVariants, getVideoParents, heroImages, heroParents, resKeys, videoConfig, webConfig } from "./config";
-import { buildJson, CodecVariants, esbuildOutputs, FileHashes, HeroImage, HeroVideo, Project } from "./types.ts";
+import { backupImage, baseProject, cssSrc, generateVideoVariants, getVideoParents, heroImages, heroParents, resKeys, videoConfig, webConfig } from "./config/";
+import { buildJson, CodecVariants, esbuildOutputs, FileHashes, HeroImage, HeroPaths, HeroVideo, ImageFormatData, ImageType, Project, VideoCodec, VideoWidth } from "./types";
 
 import globby from 'globby';
 
@@ -47,6 +47,8 @@ let noScriptImage: HeroImage = {
   parent: '',
   images: { avif: baseObj, webp: baseObj, png: baseObj },
 }
+
+let images: HeroImage[] = []
 
 /**
  * @param {string} fullPath - the full path to the file
@@ -133,9 +135,8 @@ function toEnumString(str: string): string {
    * @returns {Promise<HeroImage[]>} the hero images
    * @description Processes the hero images for the landing page. Hashes, copies the images.
    */
-  async function handleHeroImages(): Promise<HeroImage[]> {
-    const images: HeroImage[] = []
-    const heroes = await heroImages()
+async function handleHeroImages(): Promise<HeroImage[]> {
+    const heroes: HeroImage[] = await heroImages()
     for (const [parentName, image] of Object.entries<HeroImage>(heroes)) {
       // Update the parent path
       const imageName = parentName
@@ -147,8 +148,8 @@ function toEnumString(str: string): string {
       // Process each width
       let newSrcSet: string[] = []
       for (const ext of Object.keys(image.images)) {
-        const newIndex = image.images[ext]
-        for (const [width, src] of Object.entries(image.images[ext].widths)) {
+        const newIndex = image.images[ext as ImageType] as ImageFormatData
+        for (const [width, src] of Object.entries(image.images[ext as ImageType].widths)) {
           const newPath = (await getmd5Hash(src as string)).replace('src', 'docs')
           newWidths[Number(width)] = newPath
           newSrcSet.push(`${newPath} ${width}w`)
@@ -157,7 +158,7 @@ function toEnumString(str: string): string {
         const srcset = newSrcSet.join(', ')
         newIndex.srcset = srcset
         newIndex.parent = parent
-        newIndex.widths = newWidths
+        newIndex.widths = newWidths as HeroPaths
       }
       images.push({ imageName, parent, images: image.images })
     }
@@ -165,13 +166,13 @@ function toEnumString(str: string): string {
     return images
   }
 
-  const images = await handleHeroImages()
 
   /**
  * Processes the hero videos for the landing page. Hashes, copies, and exports the videos to a TypeScript file.
  * @returns {Promise<HeroVideo[]>} the hero videos
  */
-async function handleHeroVideos() {
+async function handleHeroVideos(): Promise<HeroVideo[]> {
+  await handleHeroImages()
   const videoParents = await getVideoParents();
   const videos: HeroVideo[] = [];
 
@@ -185,7 +186,7 @@ async function handleHeroVideos() {
       for (const [codec, paths] of Object.entries(variants)) {
         for (const [width, src] of Object.entries(paths)) {
           const newPath = (await getmd5Hash(src)).replace('src', 'docs')
-          newVariants[codec][width] = newPath
+          newVariants[codec as VideoCodec][parseInt(width) as VideoWidth] = newPath
           await fs.copyFile(src, newPath)
         }
       }
@@ -286,7 +287,7 @@ export backupImage = "${noScriptImage}";
    * @description Removes hashed files in the src directory
    */
   async function removeHashedFilesInSrc() {
-    const hashedFiles = await globby('src/**/*.{js,css,avif}', { onlyFiles: true, unique: true })
+    const hashedFiles = await globby('src/**/*.{js,css,avif,webp,png,mp4,webm}', { onlyFiles: true, unique: true })
     const hashRegex = new RegExp(/^.+(\.[a-fA-F0-9]{8})\.(avif|js|css)/)
     for (const file of hashedFiles) {
       if (hashRegex.test(file)) {
@@ -375,32 +376,6 @@ export backupImage = "${noScriptImage}";
       await fs.writeFile(cssSrc, bundleCssContent)
     } catch (error) {
       console.error('Error replacing CSS placeholders:', error)
-    }
-  }
-
-  /**
-   * @description Builds all projects
-   * @returns {Promise<void>}
-  */
-  async function buildAll(): Promise<void> {
-    const handleSubscription = async (project: any) => {
-      (await build(project)).subscribe({
-        next: () => console.log(`Build for ${project.platform} completed successfully`),
-        error: (error) => console.error(`Error building ${project.platform}:`, error),
-        complete: () => console.log(`Build for ${project.platform} completed`)
-      })
-    }
-
-    await clearDirs()
-    console.log('Directories cleared')
-    const videos = await handleHeroVideos()
-    await exportVideosToTS(videos)
-    await transformSvg()
-    await replacePlaceholders()
-    try {
-      await handleSubscription(baseProject)
-    } catch (error) {
-      console.error('Error building base project:', error)
     }
   }
 
@@ -518,14 +493,49 @@ const generatePictureElement = (image: HeroImage, className: string = "hero__pos
     await fs.writeFile(path.join('docs', 'meta.json'), metaJson)
   }
 
-  buildAll().then(() => console.log('Build completed')).catch((error) => console.error('Error building:', error))
+  /**
+   * @description Builds all projects
+   * @returns {Promise<void>}
+  */
+  async function buildAll(): Promise<void> {
+    const handleSubscription = async (project: any) => {
+      (await build(project)).subscribe({
+        next: () => console.log(`Build for ${project.platform} completed successfully`),
+        error: (error) => console.error(`Error building ${project.platform}:`, error),
+        complete: () => console.log(`Build for ${project.platform} completed`)
+      })
+    }
+    console.log('Building all projects...')
+    await clearDirs()
+    console.log('Directories cleared')
+    console.log('retrieving hero videos')
+    const videos = await handleHeroVideos()
+    console.log('hero videos retrieved')
+    console.log('exporting hero videos to typescript file')
+    await exportVideosToTS(videos)
+    console.log('hero videos exported')
+    await transformSvg()
+    await replacePlaceholders()
+    console.log('CSS placeholders replaced; SVGS minified')
+    try {
+      console.log('Building base project...')
+      await handleSubscription(baseProject)
+    } catch (error) {
+      console.error('Error building base project:', error)
+    }
+  }
 
+async function main() {
+  console.log('Building Plain License...')
+  await buildAll().then(() => console.log('Build completed')).catch((error) => console.error('Error building:', error))
   try {
     fs.rm(cssSrc).then(() => console.log('Temporary bundle.css removed')).catch((err) => console.error(`Error removing temporary bundle.css: ${err}`))
   } catch (err) {
     console.error(`Error removing temporary bundle.css: ${err}`)
   }
+}
 
+main()
 
 /** For MinSVG function:
  *

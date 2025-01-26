@@ -1,6 +1,7 @@
 import { combineLatest, distinctUntilKeyChanged, filter, fromEvent, map, merge, Subscription, switchMap, tap } from "rxjs"
 import gsap from "gsap"
 import { VideoElement } from "./videoElement"
+import { SUBTLE_EMPHASIS_CONFIG, STRONG_EMPHASIS_CONFIG, OBSERVER_CONFIG } from "~/config";
 import { HeroStore } from "~/state";
 import { HeroVideo, VideoStatus } from "./types"
 import { getHeroVideos } from "./utils"
@@ -182,6 +183,17 @@ export class VideoManager {
         })
     }
 
+    private setEmphasisAnimations(): void {
+        const { subtle, strong } = OBSERVER_CONFIG.emphasisTargets
+        const subtleTargets = gsap.utils.toArray(document.querySelectorAll(subtle))
+        const strongTargets = gsap.utils.toArray(document.querySelectorAll(strong))
+        this.timeline.add(["subtleEmphasis", gsap.emphasize(subtleTargets, SUBTLE_EMPHASIS_CONFIG)], ">")
+        this.timeline.add(["strongEmphasis", gsap.emphasize(strongTargets, STRONG_EMPHASIS_CONFIG)], ">=0.5")
+        gsap.to(strongTargets, STRONG_EMPHASIS_CONFIG)
+
+
+    }
+
     private loadVideo(): void {
         if (!this.container.querySelector('picture')) {
             this.loadPoster()
@@ -210,10 +222,11 @@ export class VideoManager {
 
                     this.timeline.add(["message", gsap.animateMessage(this.container, { message: this.message, repeat: 0 })
                     ], this.titleStart)
+                    this.setEmphasisAnimations()
                     this.timeline.add(["resetVideo", () => {
                         this.stop()
                         this.play()
-                     }, ">"])
+                    }, ">"])
                 }
             })
         })

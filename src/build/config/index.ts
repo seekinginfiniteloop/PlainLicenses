@@ -28,7 +28,7 @@ import { copy } from 'esbuild-plugin-copy'
 import globby from "globby"
 import * as fs from "fs"
 
-import type { CodecVariants, HeroImage, HeroPaths, HeroVideo, ImageType, Project, VideoCodec, VideoConfig, VideoResolution, VideoWidth, ImageIndex } from "../types.ts"
+import type { CodecVariants, HeroImage, HeroPaths, HeroVideo, ImageIndex, ImageType, Project, VideoCodec, VideoConfig, VideoResolution, VideoWidth } from "../types.ts"
 
 export const videoMessages = {
   "tokyo_shuffle": "Stop the Nonsense",
@@ -36,7 +36,7 @@ export const videoMessages = {
 } as Record<string, string>
 
 export const backupImage = 'break_free'
-export const cssSrc = "src/assets/stylesheets/bundle.css";
+export const cssSrc = "src/assets/stylesheets/bundle.css"
 
 
 export const videoConfig = {
@@ -78,11 +78,16 @@ export function buildVideoPath(baseName: string, codec: string, width: number): 
  * @returns {Promise<HeroVideo>} A promise that resolves to the hero video object
  */
 export async function generateVideoVariants(baseName: string): Promise<HeroVideo> {
-  //ts-ignore
+  // @ts-ignore
   const variants: CodecVariants = {
     av1: { ...resKeys },
     vp9: { ...resKeys },
     h264: { ...resKeys },
+  }
+  const imageVariants = {
+    avif: { widths: { ...resKeys }, srcset: "", parent: "" },
+    webp: { widths: { ...resKeys }, srcset: "", parent: "" },
+    png: { widths: { ...resKeys }, srcset: "", parent: "" },
   }
 
   for (const resolution of videoConfig.resolutions) {
@@ -96,11 +101,12 @@ export async function generateVideoVariants(baseName: string): Promise<HeroVideo
 
   // Get matching poster image
   const images = await heroImages()
+  const poster = images.find((image) => image.imageName === baseName)
   return {
     baseName,
     parent: `src/assets/videos/hero/${baseName}`,
     variants,
-    poster: images[baseName] || { parent: "", widths: {}, srcset: "" },
+    poster: poster || { parent: "", imageName: "", images: imageVariants },
   }
 }
 
@@ -253,7 +259,7 @@ const filterForExtension = (children: string[], extension: string) => {
  * @returns {Promise<Record<string, HeroImage>>} A promise that resolves to a map of hero images.
  * @description Generates a map of hero images with their respective widths and Srcsets.
  */
-export const heroImages = async (): Promise<Record<string, HeroImage>> => {
+export const heroImages = async (): Promise<HeroImage[]> => {
   const parents = await resolveGlob("src/assets/videos/hero/*", { onlyDirectories: true })
   const retrieveKey = (filePath: string) => filePath.split("/").pop()
   const getWidthMaps = async () => {
@@ -291,12 +297,18 @@ export const heroImages = async (): Promise<Record<string, HeroImage>> => {
           imageBaseIndex[ext as ImageType] = { widths: flattenedWidths, srcset, parent }
         }
           return [key, {imageName: key, parent, images: imageBaseIndex} as HeroImage]
-        }))
-    return Object.fromEntries(
-      results
-        .filter((result): result is PromiseFulfilledResult<[string, HeroImage]> => result.status === "fulfilled")
-        .map(result => result.value)
-    )
+      }))
+    return Array.from(results).map(result => {
+      if (result.status === "fulfilled" && result.value) {
+        return result.value
+      }
+      else if (result.status === "rejected") {
+        throw new Error(`Error: ${result.reason}`)
+      }
+      else {
+        throw new Error("Error: Unknown error")
+      }
+        }).flat().filter((image) => image !== undefined && image !== null && typeof image === 'object')
   }
   return getWidthMaps()
 }
