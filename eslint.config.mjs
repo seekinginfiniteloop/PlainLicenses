@@ -1,225 +1,122 @@
-import eslint from "@eslint/js"
-import stylisticTs from "@stylistic/eslint-plugin-ts"
-import jsdoc from "eslint-plugin-jsdoc"
-import { parser } from "typescript-eslint"
-import esLintConfigPrettier from "eslint-config-prettier"
+import eslint from "@eslint/js";
+import tseslint from "@typescript-eslint/eslint-plugin";
+import stylisticTs from "@stylistic/eslint-plugin-ts";
+import prettierPlugin from "eslint-plugin-prettier";
+import unicorn from "eslint-plugin-unicorn";
+import sonarjs from "eslint-plugin-sonarjs";
+import etc from "eslint-plugin-etc";
+import esLintConfigPrettier from "eslint-config-prettier";
+import jsdoc from "eslint-plugin-jsdoc";
+import { parser } from "typescript-eslint";
 
-// General rules
 const defaultConfig = {
-    name: "defaultConfig",
-    languageOptions: {
-      parser,
-      ecmaVersion: "latest",
-      sourceType: "module",
-    },
-    ...eslint.configs.recommended,
-    files: ["**/*.ts", "eslint.config.mjs", "commitlint.config.ts"],
-    rules: {
-      "array-bracket-spacing": "warn",
-      "arrow-parens": ["warn", "as-needed"],
-      "block-spacing": "warn",
+  name: "defaultConfig",
+  languageOptions: {
+    parser,
+    ecmaVersion: "latest",
+    sourceType: "module",
+  },
+  ...eslint.configs.recommended,
+  files: ["**/*.ts", "eslint.config.mjs", "commitlint.config.ts"],
+  plugins: {
+    prettier: prettierPlugin,
+    unicorn,
+    sonarjs,
+    etc,
+  },
+  rules: {
+    // Prettier rules
+    "prettier/prettier": "error",
 
-      "brace-style": ["warn", "1tbs", {
-        allowSingleLine: true
-      }],
+    // Opinionated rules
+    "unicorn/prevent-abbreviations": "off", // Avoid overly strict abbreviation rules
+    "unicorn/no-array-reduce": "warn",
+    "unicorn/no-null": "warn",
+    "sonarjs/cognitive-complexity": ["warn", 15], // Highlights overly complex functions
+    "sonarjs/no-duplicate-string": "warn",
+    "sonarjs/prefer-immediate-return": "warn",
+    "etc/no-deprecated": "warn",
+    "etc/no-misused-generics": "warn",
 
-      "comma-dangle": ["error", "never"],
-      "comma-spacing": "warn",
-      "comma-style": "error",
-      "computed-property-spacing": "warn",
-      "curly": "off",
-      "eqeqeq": ["error", "smart"],
-      "func-call-spacing": "warn",
-      "keyword-spacing": "warn",
+    // Stylistic rules
+    "array-bracket-spacing": "warn",
+    "arrow-parens": ["warn", "as-needed"],
+    "block-spacing": "warn",
+    "brace-style": ["warn", "1tbs", { allowSingleLine: true }],
+    "comma-dangle": ["error", "never"],
+    "comma-spacing": "warn",
+    "func-call-spacing": "warn",
+    "lines-between-class-members": "warn",
+    "no-console": "error",
+    "no-duplicate-imports": "error",
+    "no-unused-vars": [
+      "error",
+      { varsIgnorePattern: "^_", argsIgnorePattern: "^_" },
+    ],
+    "object-shorthand": "error",
+    "prefer-template": "error",
+    "space-before-function-paren": [
+      "warn",
+      { anonymous: "always", named: "never", asyncArrow: "always" },
+    ],
+  },
+  ignores: [
+    "*.d.ts",
+    "external/**",
+    "mkdocs-material/**",
+    "**/node_modules",
+    "**/__pycache__",
+    "**/venv",
+    "**/.venv",
+    "**/.vscode",
+    "**/docs",
+    "**/build",
+    "**/dist",
+    "**/*.log",
+  ],
+};
 
-      "lines-around-comment": ["error", {
-        allowBlockStart: true,
-        allowBlockEnd: true,
-        beforeBlockComment: true,
-        ignorePattern: "@ts-ignore"
-      }],
-
-      "lines-between-class-members": "warn",
-      "max-classes-per-file": "error",
-      "new-parens": "error",
-      "no-caller": "error",
-      "no-case-declarations": "off",
-      "no-console": "error",
-      "no-duplicate-imports": "error",
-      "no-eval": "error",
-      "no-extra-bind": "error",
-
-      "no-multiple-empty-lines": ["error", {
-        max: 1
-      }],
-
-      "no-new-func": "error",
-      "no-new-wrappers": "error",
-
-      "no-restricted-globals": ["error", {
-        name: "fdescribe",
-        message: "Did you mean 'describe'?"
-      }, {
-        name: "xdescribe",
-        message: "Did you mean 'describe'?"
-      }, {
-        name: "fit",
-        message: "Did you mean 'it'?"
-      }, {
-        name: "xit",
-        message: "Did you mean 'xit'?"
-      }],
-      "no-unused-vars": [
-        "error",
-        {
-          varsIgnorePattern: "^_", argsIgnorePattern: "^_"        },
-      ],
-      "no-return-await": "error",
-      "no-sequences": "error",
-      "no-shadow": "off",
-      "no-tabs": "error",
-      "no-template-curly-in-string": "error",
-      "no-throw-literal": "off",
-      "no-trailing-spaces": "warn",
-      "no-undef-init": "error",
-      "no-undef": "off",
-      "no-underscore-dangle": "error",
-      "no-var": "error",
-      "no-whitespace-before-property": "warn",
-      "object-shorthand": "error",
-      "one-var": ["error", "never"],
-      "prefer-exponentiation-operator": "error",
-      "prefer-object-spread": "error",
-      "prefer-template": "error",
-      "quote-props": ["error", "consistent-as-needed"],
-
-      "quotes": ["error", "double", {
-        avoidEscape: true
-      }],
-
-      "radix": "error",
-      "semi": "off",
-
-      "sort-imports": ["error", {
-        ignoreDeclarationSort: true
-      }],
-
-      "space-before-blocks": "warn",
-
-      "space-before-function-paren": ["warn", {
-        anonymous: "always",
-        named: "never",
-        asyncArrow: "always"
-      }],
-
-      "space-in-parens": "warn",
-      "space-infix-ops": "warn",
-      "space-unary-ops": "warn",
-      "spaced-comment": "warn",
-      "switch-colon-spacing": "warn",
-      "template-tag-spacing": "warn",
-    },
-    ignores:
-      [
-        "*.d.ts",
-        "external/**",
-        "mkdocs-material/**",
-        "**/node_modules",
-        "**/__pycache__",
-        "**/venv",
-        "**/.venv",
-        "**/.vscode",
-        "**/docs",
-        "**/build",
-        "**/MANIFEST",
-        "**/manifest.json",
-        "**/site",
-        "**/typings",
-        "**/webpack.config.ts",
-        "**/dist",
-        "**/mkdocs_material.egg-info",
-        "**/*.cpuprofile",
-        "**/*.log",
-        "**/*.tsbuildinfo",
-        "**/.eslintcache",
-        "**/tmp",
-        "**/.testbuild",
-        "**/.workbench",
-        "**/.cache"
-      ]
-  }
-
-// Typescript rules
 const tsConfig = {
   name: "tsConfig",
   languageOptions: {
     parser,
     ecmaVersion: "latest",
     sourceType: "module",
-
     parserOptions: {
-      project: [
-        "tsconfig.json", "tsconfig.build.json"
-      ],
-      projectService: true,
+      project: ["tsconfig.json", "tsconfig.build.json"],
       tsconfigRootDir: import.meta.dirname,
     },
   },
-  files: ['commitlint.config.ts', 'src/**/*.ts'],
+  files: ["commitlint.config.ts", "src/**/*.ts"],
+  ...tseslint.configs.recommended,
+  ...tseslint.configs.strict,
+  ...tseslint.configs.stylistic,
   ...jsdoc.configs["flat/recommended-typescript"],
-  ...jsdoc.configs["flat/logical-typescript"],
-  ...jsdoc.configs["flat/requirements-typescript"],
-  ...jsdoc.configs["flat/stylistic-typescript"],
-  ...jsdoc.configs["flat/contents-typescript"],
   plugins: {
     "@stylistic/ts": stylisticTs,
-    jsdoc
+    jsdoc,
   },
   rules: {
-    "@stylistic/ts/member-delimiter-style": ["error", {
-      multiline: {
-        delimiter: "none"
+    "@stylistic/ts/member-delimiter-style": [
+      "error",
+      {
+        multiline: { delimiter: "none" },
+        singleline: { delimiter: "comma", requireLast: false },
       },
-
-      singleline: {
-        delimiter: "comma",
-        requireLast: false
-      }
-    }],
+    ],
     "@stylistic/ts/semi": ["error", "never"],
     "@stylistic/ts/type-annotation-spacing": "error",
-    "@stylistic/ts/indent": ["warn", 2, {
-        FunctionDeclaration: {
-          parameters: 1,
-          body: 1
-        },
-
-        FunctionExpression: {
-          parameters: 1,
-          body: 1
-        },
-
-        MemberExpression: "off",
+    "@stylistic/ts/indent": [
+      "warn",
+      2,
+      {
+        FunctionDeclaration: { parameters: 1, body: 1 },
+        FunctionExpression: { parameters: 1, body: 1 },
         ObjectExpression: 1,
         SwitchCase: 1,
-        ignoreComments: true,
+      },
+    ],
+  },
+};
 
-        ignoredNodes: [
-          "ArrowFunctionExpression > *",
-          "CallExpression > ObjectExpression",
-          "ConditionalExpression > ConditionalExpression",
-          "TSTypeReference > *"
-        ],
-
-        offsetTernaryExpressions: true
-      }]
-  }
-}
-
-
-// And we actually export it.
-export default [
-  defaultConfig,
-  esLintConfigPrettier,
-  tsConfig,
-]
+export default [defaultConfig, tsConfig, esLintConfigPrettier];
