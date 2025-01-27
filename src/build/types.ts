@@ -64,8 +64,7 @@ export interface esbuildOutputs {
   }
 }
 export interface FileHashes {
-  palette: string
-  main: string
+  [k: string]: string
 }
 export interface MetaFileOutputs {
   bytes: number

@@ -2,7 +2,7 @@
 import * as crypto from "crypto"
 import globby from "globby"
 import * as fs from "fs/promises"
-import { HERO_VIDEO_TEMPLATE, basePath, imageTypes, videoCodecs, videoExtensions, widthPattern } from "../config"
+import { HERO_VIDEO_TEMPLATE, basePath, cssLocs, fontLoc, imageTypes, placeholderMap, videoCodecs, videoExtensions, widthPattern } from "../config"
 import type { CodecVariants, FileHashes, HeroFile, HeroFiles, HeroImage, HeroPaths, ImageType, PlaceholderMap, VideoCodec, VideoWidth } from "../types"
 import { optimize } from "svgo"
 import path from "path"
@@ -146,15 +146,12 @@ export async function getFileHash(fullPath: string): Promise<string> {
   if (!fullPath || typeof fullPath !== 'string' || !fullPath.includes('.')) {
     return ''
   }
-
   const parts = fullPath.split('/')
   const fileName = parts[parts.length - 1]
   const fileNameParts = fileName.split('.')
-
   if (fileNameParts.length < 3) {
     return ''
   }
-
   return fileNameParts[fileNameParts.length - 2] === 'min'
     ? fileNameParts[fileNameParts.length - 3]
     : fileNameParts[fileNameParts.length - 2]
@@ -328,34 +325,88 @@ export async function removeHashedFilesInSrc() {
 }
 
 /**
- * @function getCssFileHashes
- * @returns {FileHashes} the file hashes for palette and main CSS files
- * @description Gets the file hashes for palette and main CSS files
+ * Resolves CSS files and generates a map of placeholders to their hashed filenames.
+ * Retrieves CSS files, calculates their hashes, and creates a map of placeholders to the new filenames.
+ * @returns {Promise<Partial<PlaceholderMap>>} A promise that resolves to a partial PlaceholderMap containing CSS file information.
  */
-async function getCssFileHashes(): Promise<FileHashes> {
-  const fastGlobSettings = { onlyFiles: true, unique: true }
-  const paletteCSS = await globby('external/mkdocs-material/material/templates/assets/stylesheets/palette.*.min.css', fastGlobSettings)
-  const mainCSS = await globby('external/mkdocs-material/material/templates/assets/stylesheets/main.*.min.css', fastGlobSettings)
-  const paletteHash = await getFileHash(paletteCSS[0])
-  const mainHash = await getFileHash(mainCSS[0])
-  return { palette: paletteHash || '', main: mainHash || '' }
+async function resolveCssFiles(): Promise<Partial<PlaceholderMap>> {
+  const locs = cssLocs
+  const resolvedPlaceholders: Partial<PlaceholderMap> = {}
+  Object.entries(locs).forEach(async ([template, mapping]) => {
+    Object.entries(mapping).forEach(async ([placeholder, glob]) => {
+      const file = await resolveGlob(glob, { onlyFiles: true, unique: true })
+      const hash = await getFileHash(file[0])
+      resolvedPlaceholders[template] = { ...resolvedPlaceholders[template], [placeholder]: hash }
+    })
+  })
+  return resolvedPlaceholders
 }
 
-export function replacePlaceholders(newContent: PlaceholderMap): void {
+/**
+ * Resolves font files and generates a map of placeholders to their hashed filenames.
+ * Retrieves font files, calculates their hashes, copies them to the destination directory with updated filenames, and creates a map of placeholders to the new filenames.
+ * @returns {Promise<Partial<PlaceholderMap>>} A promise that resolves to a partial PlaceholderMap containing font file information.
+ */
+async function resolveFontFiles(): Promise<Partial<PlaceholderMap>> {
+  const fontGlob = fontLoc
+  const fontkey = Object.keys(placeholderMap).find(key => key.includes('font'))
+  const resolvedPlaceholders: Partial<PlaceholderMap> = {}
+  const files = await resolveGlob(fontGlob, { onlyFiles: true, unique: true })
+  files.forEach(async (file) => {
+    const filename = path.basename(file)
+    const hash = await getmd5Hash(file)
+    const newFilename = filename.replace(/\.(woff2?)^/, `.${hash}.$1`)
+    const newPath = file.replace('src', 'docs').replace(filename, newFilename)
+    await copyFile(file, newPath)
+    const placeholder = `{{ ${filename} }}`
+    resolvedPlaceholders[fontkey][placeholder] = newFilename
+  })
+  return resolvedPlaceholders
+}
+
+
+/**
+ * Replaces placeholders in template files with their corresponding values.
+ * Reads each template file, replaces placeholders with values from the provided map, and writes the updated content to a new file. Removes "_template" from the filename.
+ * @param {PlaceholderMap} newContent A map of template file paths to placeholder names and their corresponding values.
+ * @returns {Promise<void>}
+ */
+async function replacePlaceholders(newContent: PlaceholderMap): Promise<void> {
   for (const [file, placeholders] of Object.entries(newContent)) {
     try {
-      fs.readFile(file, 'utf8').then((data) => {
+      const replacedContent = await fs.readFile(file, 'utf8').then((data) => {
         for (const [placeholder, value] of Object.entries(placeholders)) {
           data = data.replace(new RegExp(placeholder, 'g'), value)
+          return data
         }
-        const parts = file.split('/')
-        const oldFilename = parts.pop()
-        const newFilename = oldFilename.replace(/$_/, '').replace(/_template/, '')
-        const newPath = parts.includes(oldFilename) ? parts.join().replace(oldFilename, newFilename) : parts.join('/') + newFilename
-        fs.writeFile(newPath, data)
       })
+      const parts = file.split('/')
+      const oldFilename = parts.pop()
+      const newFilename = oldFilename.replace(/$_/, '').replace(/_template/, '')
+      const newPath = parts.includes(oldFilename) ? parts.join().replace(oldFilename, newFilename) : parts.join('/') + newFilename
+      await fs.writeFile(newPath, replacedContent)
     } catch (err) {
       console.error(err)
     }
   }
+}
+
+/**
+ * Generates a map of placeholder names to their corresponding file names.
+ * Resolves CSS and font files, replaces placeholders in templates, and returns a map of font file names.
+ * @returns {Promise<{[key: string]: string}>} A promise that resolves to a map of placeholder names to file names.
+ */
+export async function generatePlaceholderMap(): Promise<{[key: string]: string}> {
+  const cssHashMap = await resolveCssFiles()
+  const fontHashMap = await resolveFontFiles()
+  const newContent = { ...cssHashMap, ...fontHashMap }
+  replacePlaceholders(newContent)
+  return Array.from(Object.values(fontHashMap)).reduce((acc, val) => {
+    Object.values(val).forEach((v: string) => {
+      const keyParts = v.split('.')
+      const ext = keyParts.pop()
+      const name = keyParts[0]
+      acc[`${name}.${ext}`] = v
+    })
+  }, {})
 }

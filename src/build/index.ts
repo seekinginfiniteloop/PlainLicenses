@@ -48,6 +48,8 @@ const noScriptImage: HeroImage = {...basePosterObj, imageName: backupImage, pare
 
 const heroFiles: Promise<HeroFiles> = getHeroFiles()
 
+let newFileLocs: FileHashes = {}
+
 
 async function handleFiles() {
   const { images, videos } = await heroFiles
@@ -68,18 +70,19 @@ async function handleFiles() {
 /**
  * Calculates and appends hashes to other asset files (images, fonts).
  * Retrieves files, calculates their hashes, renames them with the hash, copies to the destination, and returns a mapping of original to hashed file paths.
- * @returns {Promise<{[key: string]: string}>} A promise that resolves to a mapping of original file paths to hashed file paths.
+ * @returns {Promise<FileHashes>} A promise that resolves to a mapping of original file paths to hashed file paths.
  */
-async function handleOtherHashes(): Promise<{ [key: string]: string }> {
-  const files = await utils.resolveGlob('src/assets/{images,fonts}/**/*.{woff,woff2,svg,png,jpg,jpeg,webp,avif}')
+async function handleImageHashes(): Promise<FileHashes> {
+  const files = await utils.resolveGlob('src/assets/{images}/**/*.{svg,png,jpg,jpeg,webp,avif}')
   const hashes = Array.from(files).map(async (file) => { return { [file]: await utils.getFileHash(file) } })
   const allHashes = Object.assign({}, ...(await Promise.all(hashes)))
   const processed = Object.entries(allHashes).map(async ([file, hash]) => {
     const hashPath = file.replace('src', 'docs')
-    const filenameParts = hashPath.split('/').pop().split('.')
-    const newFilename = `${filenameParts.slice(0, -1)}.${hash}.${filenameParts[filenameParts.length - 1]}`
-    const newPath = hashPath.replace(filenameParts.join('.'), newFilename)
-    utils.copyFile(file, newPath)
+    const filename = path.basename(file)
+    const filenameParts = filename.split('.')
+    const newFilename = `${filenameParts[0]}.${hash}.${filenameParts[1]}`
+    const newPath = hashPath.replace(filename, newFilename)
+    await utils.copyFile(file, newPath)
     return { [file]: newPath }
   })
   return Object.assign({}, ...(await Promise.all(processed)))
@@ -206,30 +209,6 @@ async function transformSvg(): Promise<void> {
   }
 }
 
-/**
- * @function replaceCssPlaceholders
- * @returns {Promise<void>}
- * @description Replaces the CSS placeholders
- */
-async function replaceCssPlaceholders(newPaths: {[file: string]: string}): Promise<void> {
-  const { palette, main } = await getCssFileHashes()
-  if (!palette || !main) {
-    throw new Error('Palette or main CSS file hash not found')
-  }
-  try {
-    if (await fs.access(cssSrc).catch(() => false)) {
-      const cssContent = await fs.readFile(cssSrc, 'utf8')
-      if (cssContent.includes(palette) && cssContent.includes(main)) {
-        return
-      }
-    }
-    let bundleCssContent = await fs.readFile('src/assets/stylesheets/_bundle_template.css', 'utf8')
-    bundleCssContent = bundleCssContent.replace('{{ palette-hash }}', palette).replace("{{ main-hash }}", main)
-    await fs.writeFile(cssSrc, bundleCssContent)
-  } catch (error) {
-    console.error('Error replacing CSS placeholders:', error)
-  }
-}
 
 /**
  * @param {esbuild.BuildResult} result - the esbuild build result
@@ -341,11 +320,12 @@ async function buildAll(): Promise<void> {
   const videos = await handleFiles()
   console.log('hero videos retrieved')
   console.log('exporting hero videos to typescript file')
-  await handleOtherHashes()
+  const imageHashes = await handleImageHashes()
   await exportVideosToTS(videos)
   console.log('hero videos exported')
   await transformSvg()
-  await replaceCssPlaceholders()
+  const newFontLocs = await utils.generatePlaceholderMap()
+  newFileLocs = { ...imageHashes, ...newFontLocs }
   console.log('CSS placeholders replaced; SVGS minified')
   try {
     console.log('Building base project...')

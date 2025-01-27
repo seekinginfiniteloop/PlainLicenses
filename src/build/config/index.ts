@@ -43,6 +43,16 @@ export const placeholderMap: PlaceholderMap = {
   }
 }
 
+export const cssLocs = {
+  "src/assets/stylesheets/_bundle_template.css":
+  {
+    "{{ palette-hash }}": "external/mkdocs-material/material/templates/assets/stylesheets/palette.*.min.css",
+    "{{ main-hash }}": "external/mkdocs-material/material/templates/assets/stylesheets/main.*.min.css"
+  },
+}
+
+export const fontLoc = "src/assets/fonts/*"
+
 export const videoConfig = {
   resolutions: [
     { width: 3840, height: 2160 },
