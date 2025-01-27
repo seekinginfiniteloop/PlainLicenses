@@ -48,6 +48,12 @@ export interface HeroImage {
 /** ============================================
  *               esbuild Outputs/Meta
  *=============================================**/
+
+export interface PlaceholderMap {
+  // template path: { placeholder: replacement }
+  [k: string]: { [k: string]: string }
+}
+
 export interface esbuildOutputs {
   [k: string]:
   {

@@ -39,7 +39,7 @@
     local("source-code-pro-regular"),
     local("Source Code Pro"),
     local("SourceCodePro-Regular"),
-    url("{{  sourcodepro-regular.woff2 }}") format("woff2"),
+    url("{{ sourcodepro-regular.woff2 }}") format("woff2"),
     url("{{ sourcecodepro-regular.woff }}") format("woff");
 }
 
