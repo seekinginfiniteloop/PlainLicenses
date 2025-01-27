@@ -132,7 +132,7 @@
     "sass": "^1.83.4",
     "semantic-release": "^24.2.1",
     "semantic-release-cli": "^5.4.6",
-    "simple-icons": "^13.21.0",
+    "simple-icons": "^14.4.0",
     "source-map": "^0.7.4",
     "stylelint": "^16.14.0",
     "stylelint-config-recess-order": "^6.0.0",
