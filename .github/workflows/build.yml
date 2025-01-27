@@ -41,38 +41,10 @@ jobs:
             export NODE_ENV=production &&
             bun run build
 
-        - name: setup UV
-          uses: astral-sh/setup-uv@v5
-          with:
-            version: "latest"
-            enable-cache: true
-            cache-dependency-glob: |
-              pyproject.toml
-        - name: Add build packages
-          run: |
-            sudo apt-get update
-            sudo apt-get install -y build-essential libcairo2 libcairo2-dev libfreetype6-dev libffi-dev libjpeg-dev libpng-dev libz-dev &&
-            chmod +x bin/*
-            bin/setup-repo.sh
         - name: Configure Git Credentials
           run: |
             git config user.name github-actions[bot]
             git config user.email "action@github.com"
-        - name: Install dependencies
-          run: |
-            uv python install 3.13
-            uv venv --allow-existing .venv
-            source .venv/bin/activate
-            uv sync --all-extras
-        - name: Build MkDocs site
-          run: |
-            rm -rf site
-            mkdocs build -d site
-        - name: Upload built site
-          uses: actions/upload-artifact@v4
-          with:
-            name: site
-            path: site
         - name: Commit build
           run: |
             git add --all
