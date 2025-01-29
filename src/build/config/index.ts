@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 /**
  * Build Configuration Module
  * @module config/index
@@ -18,18 +17,27 @@
  * @copyright No rights reserved.
  */
 
-import { cssModulesPlugin } from "@asn.aeb/esbuild-css-modules-plugin"
+import { cssModulesPlugin } from "@asn.aeb/esbuild-css-modules-plugin";
 // @ts-ignore
-import { tsconfigPathsPlugin } from "esbuild-plugin-tsconfig-paths"
-import * as esbuild from "esbuild"
+import { tsconfigPathsPlugin } from "esbuild-plugin-tsconfig-paths";
+import * as esbuild from "esbuild";
 // import { copy } from 'esbuild-plugin-copy'
 
-import type { HeroPaths, HeroVideo, ImageType, PlaceholderMap, Project, VideoCodec, VideoConfig, VideoResolution } from "../types.ts"
+import type {
+  HeroPaths,
+  HeroVideo,
+  ImageType,
+  PlaceholderMap,
+  Project,
+  VideoCodec,
+  VideoConfig,
+  VideoResolution,
+} from "../types.ts";
 
 export const placeholderMap: PlaceholderMap = {
   "src/assets/stylesheets/_bundle_template.css": {
     "{{ palette-hash }}": "",
-    "{{ main-hash }}": ""
+    "{{ main-hash }}": "",
   },
   "src/assets/stylesheets/_bodyfont_template.css": {
     "{{ inter-v.woff2 }}": "",
@@ -40,18 +48,19 @@ export const placeholderMap: PlaceholderMap = {
     "{{ sourcecodepro-regular.woff }}": "",
     "{{ raleway.woff2 }}": "",
     "{{ raleway.woff }}": "",
-  }
-}
+  },
+};
 
 export const cssLocs = {
-  "src/assets/stylesheets/_bundle_template.css":
-  {
-    "{{ palette-hash }}": "external/mkdocs-material/material/templates/assets/stylesheets/palette.*.min.css",
-    "{{ main-hash }}": "external/mkdocs-material/material/templates/assets/stylesheets/main.*.min.css"
+  "src/assets/stylesheets/_bundle_template.css": {
+    "{{ palette-hash }}":
+      "external/mkdocs-material/material/templates/assets/stylesheets/palette.*.min.css",
+    "{{ main-hash }}":
+      "external/mkdocs-material/material/templates/assets/stylesheets/main.*.min.css",
   },
-}
+};
 
-export const fontLoc = "src/assets/fonts/*"
+export const fontLoc = "src/assets/fonts/*";
 
 export const videoConfig = {
   resolutions: [
@@ -63,22 +72,28 @@ export const videoConfig = {
     { width: 640, height: 360 },
     { width: 426, height: 240 },
   ] as VideoResolution[],
-  codecs: ['av1', 'vp9', 'h264'] as VideoCodec[],
-  baseDir: 'src/assets/videos/hero'
-} as VideoConfig
+  codecs: ["av1", "vp9", "h264"] as VideoCodec[],
+  baseDir: "src/assets/videos/hero",
+} as VideoConfig;
 
-export const imageTypes = ["avif", "webp", "png"] as ImageType[]
-export const videoExtensions = ["webm", "mp4"]
-export const videoCodecs = videoConfig.codecs
+export const imageTypes = ["avif", "webp", "png"] as ImageType[];
+export const videoExtensions = ["webm", "mp4"];
+export const videoCodecs = videoConfig.codecs;
 
-export const backupImage = 'break_free'
-export const cssSrc = "src/assets/stylesheets/bundle.css"
-export const basePath = videoConfig.baseDir
+export const backupImage = "break_free";
+export const cssSrc = "src/assets/stylesheets/bundle.css";
+export const basePath = videoConfig.baseDir;
 
-export const resKeys: HeroPaths = Object.fromEntries(videoConfig.resolutions.map(res => [res.width, ""])) as HeroPaths
-const resolutionWidth = Object.keys(resKeys).map(key => { return key.toString() })
+export const resKeys: HeroPaths = Object.fromEntries(
+  videoConfig.resolutions.map((res) => [res.width, ""]),
+) as HeroPaths;
+const resolutionWidth = Object.keys(resKeys).map((key) => {
+  return key.toString();
+});
 
-const heroPathsTemplate = Object.fromEntries(videoConfig.resolutions.map(res => [res.width, ""])) as HeroPaths
+const heroPathsTemplate = Object.fromEntries(
+  videoConfig.resolutions.map((res) => [res.width, ""]),
+) as HeroPaths;
 
 export const HERO_VIDEO_TEMPLATE = {
   baseName: "",
@@ -86,29 +101,29 @@ export const HERO_VIDEO_TEMPLATE = {
   variants: {
     av1: { ...heroPathsTemplate },
     vp9: { ...heroPathsTemplate },
-    h264: { ...heroPathsTemplate }
+    h264: { ...heroPathsTemplate },
   },
   poster: {
     parent: "",
     imageName: "",
     images: {
-      avif: { widths: { ...heroPathsTemplate }, srcset: ""},
-      webp: { widths: { ...heroPathsTemplate }, srcset: ""},
-      png: { widths: { ...heroPathsTemplate }, srcset: "" }
-    }
-  }
-} as HeroVideo
+      avif: { widths: { ...heroPathsTemplate }, srcset: "" },
+      webp: { widths: { ...heroPathsTemplate }, srcset: "" },
+      png: { widths: { ...heroPathsTemplate }, srcset: "" },
+    },
+  },
+} as HeroVideo;
 
-export const basePosterObj = HERO_VIDEO_TEMPLATE.poster
+export const basePosterObj = HERO_VIDEO_TEMPLATE.poster;
 
-
-export const widthPattern = (sep: string = "|") => { return resolutionWidth.join(sep) }
+export const widthPattern = (sep: string = "|") => {
+  return resolutionWidth.join(sep);
+};
 
 export const videoMessages = {
-  "tokyo_shuffle": "Stop the Nonsense",
-  "break_free": "Understanding shouldn't require a degree.",
-} as Record<string, string>
-
+  tokyo_shuffle: "Stop the Nonsense",
+  break_free: "Understanding shouldn't require a degree.",
+} as Record<string, string>;
 
 const jsBanner = `/**
  * ---DO NOT EDIT THIS FILE---
@@ -117,7 +132,7 @@ const jsBanner = `/**
  *
  * sources are in: src/assets/javascripts directory
  */
-`
+`;
 const cssBanner = `/**
   * ---DO NOT EDIT THIS FILE---
   * The build process generates this file
@@ -126,7 +141,7 @@ const cssBanner = `/**
   * sources are in: src/assets/stylesheets directory
   *
   */
-`
+`;
 /**
  * @description esbuild configuration for the web platform.
  */
@@ -159,13 +174,13 @@ export const webConfig: esbuild.BuildOptions = {
     ".woff": "file",
     ".woff2": "file",
   },
-  outExtension: {".js": ".js", ".css": ".css"},
+  outExtension: { ".js": ".js", ".css": ".css" },
   splitting: false,
   plugins: [
     tsconfigPathsPlugin({
       cwd: process.cwd(),
       tsconfig: "tsconfig.json",
-      filter: /src\/assets\/javascripts\/index.ts/
+      filter: /src\/assets\/javascripts\/index.ts/,
     }),
     cssModulesPlugin({
       emitCssBundle: {
@@ -187,15 +202,16 @@ export const webConfig: esbuild.BuildOptions = {
     }),
       */
   ],
-}
+};
 
 export const baseProject: Project = {
-  entryPoints: ["src/assets/javascripts/index.ts",
+  entryPoints: [
+    "src/assets/javascripts/index.ts",
     "src/assets/javascripts/workers/cache_worker.ts",
-    "src/assets/stylesheets/bundle.css"
+    "src/assets/stylesheets/bundle.css",
   ],
   tsconfig: "tsconfig.json",
   entryNames: "[dir]/[name].[hash]",
   platform: "browser",
   outdir: "docs",
-}
+};
