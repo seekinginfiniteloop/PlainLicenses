@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 /**
  * @module BuildTypes
  * @description Type definitions for build process and asset management
@@ -35,7 +34,7 @@ export interface ImageFormatData {
   parent?: string
 }
 
-export type ImageType = 'avif' | 'webp' | 'png'
+export type ImageType = "avif" | "webp" | "png"
 
 export type ImageIndex = Record<ImageType, ImageFormatData>
 
@@ -55,8 +54,7 @@ export interface PlaceholderMap {
 }
 
 export interface esbuildOutputs {
-  [k: string]:
-  {
+  [k: string]: {
     bytes: number
     inputs: string[] | []
     exports: string[] | []
@@ -104,7 +102,7 @@ export interface tsconfigPathsPluginInterface {
  *               VIDEO CONFIG
  *=============================================**/
 
-export type VideoCodec = 'av1' | 'vp9' | 'h264'
+export type VideoCodec = "av1" | "vp9" | "h264"
 
 export type CodecVariants = {
   [key in VideoCodec]: HeroPaths
@@ -143,5 +141,4 @@ export interface HeroFile {
   hash: string | ""
   parentPath: string
   width: VideoWidth
-
 }

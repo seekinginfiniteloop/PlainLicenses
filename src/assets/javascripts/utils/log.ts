@@ -6,17 +6,18 @@
  * @copyright No rights reserved. Created by and for Plain License www.plainlicense.org
  * @license Plain Unlicense (Public Domain)
  */
-/* eslint-disable no-console */
 
 let isDevelopment = false
 
 if (typeof window === "undefined") {
   isDevelopment = true
-
 } else {
   let customWindow = window as any as CustomWindow
 
-  isDevelopment = (customWindow.location.hostname === "localhost" || customWindow.location.hostname === "127.0.0.1" || customWindow.location.port === "8000")
+  isDevelopment =
+    customWindow.location.hostname === "localhost" ||
+    customWindow.location.hostname === "127.0.0.1" ||
+    customWindow.location.port === "8000"
 }
 
 export const logger = {
@@ -34,5 +35,5 @@ export const logger = {
     if (isDevelopment) {
       console.info(message, ...args)
     }
-  }
+  },
 }

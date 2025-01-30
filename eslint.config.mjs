@@ -6,24 +6,63 @@ import globals from "globals"
 import eslintPluginUnicorn from "eslint-plugin-unicorn"
 import sonarjs from "eslint-plugin-sonarjs"
 import { parser } from "typescript-eslint"
-// eslint-disable-next-line no-duplicate-imports
+ 
 import tseslint from "typescript-eslint"
 
 // General rules
-
-const defaultConfig = [
-  eslintPluginUnicorn, {
-  name: "defaultConfig",
-  languageOptions: {
-    parser,
-    ecmaVersion: "latest",
-    sourceType: "module",
-    globals: { ...globals.builtin },
+const localConfig = {
+  ts: {
+    tsconfigFiles: ["tsconfig.json", "tsconfig.build.json", "tsconfig.commitlint.json"],
+    tsFiles: ["**/*.ts", "commitlint.config.ts"],
+    onlyBuildFiles: ["commitlint.config.ts", "src/build/**"],
+    nodeGlobals: { ...globals.node, ...globals.nodeBuiltin, ...globals.builtin },
+    browserGlobals: { ...globals.browser, ...globals.builtin, ...globals.serviceworker },
+    parser: parser,
   },
+  js: {
+    jsFiles: ["**/*.js"],
+  },
+  languageOptions: {
+    globals: { ...globals.builtin }
+  },
+  ignores: [
+    "*.d.ts",
+    "external/**",
+    "mkdocs-material/**",
+    "**/node_modules",
+    "**/__pycache__",
+    "**/venv",
+    "**/.venv",
+    "**/.vscode",
+    "**/docs",
+    "**/build",
+    "**/MANIFEST",
+    "**/manifest.json",
+    "**/site",
+    "**/typings",
+    "**/webpack.config.ts",
+    "**/dist",
+    "**/mkdocs_material.egg-info",
+    "**/*.cpuprofile",
+    "**/*.log",
+    "**/*.tsbuildinfo",
+    "**/.eslintcache",
+    "**/tmp",
+    "**/.testbuild",
+    "**/.workbench",
+    "**/.cache",
+  ],
+}
+
+const jsdocConfig = {  ...jsdoc.configs["flat/recommended-typescript"],
+  ...jsdoc.configs["flat/logical-typescript"],
+  ...jsdoc.configs["flat/requirements-typescript"],
+  ...jsdoc.configs["flat/stylistic-typescript"],
+  ...jsdoc.configs["flat/contents-typescript"],
+}
+
+const baseRules = {
   ...eslint.configs.recommended,
-  ...sonarjs.configs.recommended,
-  plugins: { unicorn: eslintPluginUnicorn, sonarjs },
-  files: ["**/*.ts", "eslint.config.mjs", "commitlint.config.ts"],
   rules: {
     "array-bracket-spacing": "warn",
     "arrow-parens": ["warn", "as-needed"],
@@ -149,100 +188,21 @@ const defaultConfig = [
         asyncArrow: "always",
       },
     ],
-
     "space-in-parens": "warn",
     "space-infix-ops": "warn",
     "space-unary-ops": "warn",
     "spaced-comment": "warn",
     "switch-colon-spacing": "warn",
     "template-tag-spacing": "warn",
-  },
-  ignores: [
-    "*.d.ts",
-    "external/**",
-    "mkdocs-material/**",
-    "**/node_modules",
-    "**/__pycache__",
-    "**/venv",
-    "**/.venv",
-    "**/.vscode",
-    "**/docs",
-    "**/build",
-    "**/MANIFEST",
-    "**/manifest.json",
-    "**/site",
-    "**/typings",
-    "**/webpack.config.ts",
-    "**/dist",
-    "**/mkdocs_material.egg-info",
-    "**/*.cpuprofile",
-    "**/*.log",
-    "**/*.tsbuildinfo",
-    "**/.eslintcache",
-    "**/tmp",
-    "**/.testbuild",
-    "**/.workbench",
-    "**/.cache",
-  ],
-}]
+  }
+}
 
-const tseslintConfig = tseslint.config(
-  eslint.configs.recommended,
-  tseslint.configs.recommendedTypeChecked,
-  tseslint.configs.strictTypeChecked,
-  tseslint.configs.stylisticTypeChecked,
-  {
-    languageOptions: {
-      parserOptions: {
-        projectService: true,
-        tsconfigRootDir: import.meta.dirname,
-        project: ["tsconfig.json", "tsconfig.build.json"],
-      },
-        globals: {
-      ...globals.browser,
-      ...globals.builtin,
-      ...globals.serviceworker,
-    },
-
-    },
-  },
-);
-
-// Typescript rules
-const tsConfig = tseslint.config(
-  tseslint.configs.recommended,
-  tseslint.configs.stylisticTypeChecked,
-  tseslint.configs.strictTypeChecked, {
-  name: "tsConfig",
-  languageOptions: {
-    parser,
-    ecmaVersion: "latest",
-    sourceType: "module",
-    globals: {
-      ...globals.browser,
-      ...globals.builtin,
-      ...globals.serviceworker,
-    },
-
-    parserOptions: {
-      project: ["tsconfig.json", "tsconfig.build.json"],
-      projectService: true,
-      tsconfigRootDir: "./",
-    },
-  },
-  files: ["commitlint.config.ts", "src/**/*.ts"],
-  ...jsdoc.configs["flat/recommended-typescript"],
-  ...jsdoc.configs["flat/logical-typescript"],
-  ...jsdoc.configs["flat/requirements-typescript"],
-  ...jsdoc.configs["flat/stylistic-typescript"],
-  ...jsdoc.configs["flat/contents-typescript"],
+const stylisticTsConfig = {
   plugins: {
-    "@stylistic/ts": stylisticTs,
-    tseslint,
-    jsdoc,
+    style: stylisticTs,
   },
   rules: {
-    "@stylistic/ts/member-delimiter-style": [
+    "style/member-delimiter-style": [
       "error",
       {
         multiline: {
@@ -255,9 +215,9 @@ const tsConfig = tseslint.config(
         },
       },
     ],
-    "@stylistic/ts/semi": ["error", "never"],
-    "@stylistic/ts/type-annotation-spacing": "error",
-    "@stylistic/ts/indent": [
+    "style/semi": ["error", "never"],
+    "style/type-annotation-spacing": "error",
+    "style/indent": [
       "warn",
       2,
       {
@@ -287,22 +247,22 @@ const tsConfig = tseslint.config(
       },
     ],
   },
-})
-
-const buildConfig = {
-  name: "buildConfig",
-  languageOptions: {
-    parser,
-    ecmaVersion: "latest",
-    sourceType: "module",
-    globals: { ...globals.node, ...globals.nodeBuiltin, ...globals.builtin },
-    parserOptions: {
-      project: ["tsconfig.build.json", "tsconfig.commitlint.json"],
-      tsconfigRootDir: "./",
-    },
-  },
-  files: ["commitlint.config.ts", "src/build/**"],
 }
 
-// And we actually export it.
-export default [defaultConfig, tsConfig, buildConfig, eslintPluginPrettierRecommended]
+const configsForAll = [baseRules, sonarjs.configs.recommended, eslintPluginUnicorn.recommended].map((config) => {
+  return { ...localConfig.baseOptions, ...config, files: [...localConfig.ts.tsFiles, ...localConfig.js.jsFiles], ignores: localConfig.ignores }
+})
+
+const allTs = tseslint.config(tseslint.configs.stylisticTypeChecked, tseslint.configs.strictTypeChecked, stylisticTsConfig, jsdocConfig).map((config) => {
+  return { ...localConfig.baseOptions, ...config, files: localConfig.ts.tsFiles, ignores: localConfig.ignores, languageOptions: { parser: localConfig.ts.parser } }
+})
+
+const browserTs = allTs.map((config) => {
+  return { ...config, languageOptions: { globals: localConfig.ts.browserGlobals } }
+})
+
+const buildTs = allTs.map((config) => {
+  return { ...config, files: localConfig.ts.onlyBuildFiles, languageOptions: { globals: localConfig.ts.nodeGlobals } }
+})
+
+export default [...configsForAll, ...allTs, ...browserTs, ...buildTs].map((config) => {return { ...config, ...eslintPluginPrettierRecommended}})
