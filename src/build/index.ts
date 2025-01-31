@@ -36,6 +36,7 @@ import {
   basePosterObj,
   baseProject,
   cssSrc,
+  metaPath,
   videoMessages,
   webConfig,
 } from "./config/"
@@ -48,8 +49,7 @@ import {
   buildJson,
   esbuildOutputs,
 } from "./types"
-
-import globby from "globby"
+import { createHash } from "crypto"
 
 // TODO: Refactor to use esbuild's transform API and reduce the number of file reads and writes
 
@@ -77,24 +77,22 @@ async function handleFiles(): Promise<HeroVideo[]> {
   const { images, videos } = await heroFiles
   const parentPaths = utils.getParents(videos)
   const processedVideos = Array(parentPaths.length).fill(HERO_VIDEO_TEMPLATE)
-  processedVideos.map((heroVideo, index) => {
-    const parent = Array.from(parentPaths)[index]
-    const newParent = parent.replace("src", "docs")
-    const baseName =
-      videos.find((video) => video.parentPath === parent)?.baseName || parent.split("/").pop()
-    const message = videoMessages[baseName] || ""
-    const poster = utils.constructPoster(
-      images.filter((image) => image.baseName === baseName || image.parentPath === parent),
+  const availableVideos = new Set(videos.map((vid) => vid.baseName))
+  if (Object.keys(videoMessages).length !== availableVideos.size) {
+    throw new Error(
+      "Video messages do not match available videos. Did you forget to add a message?",
     )
-    const variants = utils.constructVariants(videos.filter((video) => video.parentPath === parent))
-    processedVideos[index] = {
-      ...heroVideo,
-      baseName,
-      parent: newParent,
-      poster,
-      variants,
-      message,
-    }
+  }
+  processedVideos.map((heroVideo, index) => {
+    let { baseName, parent, message, poster, variants } = heroVideo
+    baseName = [...availableVideos][index]
+    parent = utils.srcToDocs(parentPaths[index])
+    message = videoMessages[baseName] || ""
+    const filteredImages = images.filter((image) => image.baseName === baseName)
+    poster = utils.constructPoster(filteredImages)
+    const filteredVideos = videos.filter((vid) => vid.baseName === baseName)
+    variants = utils.constructVariants(filteredVideos)
+    return { baseName, parent, message, poster, variants }
   })
   return processedVideos
 }
@@ -105,21 +103,33 @@ async function handleFiles(): Promise<HeroVideo[]> {
  * @returns {Promise<FileHashes>} A promise that resolves to a mapping of original file paths to hashed file paths.
  */
 async function handleImageHashes(): Promise<FileHashes> {
-  const files = await utils.resolveGlob("src/assets/{images}/**/*.{svg,png,jpg,jpeg,webp,avif}")
-  const hashes = Array.from(files).map(async (file) => {
-    return { [file]: await utils.getFileHash(file) }
-  })
-  const allHashes = Object.assign({}, { ...(await Promise.all(hashes)) })
-  const processed = Object.entries(allHashes).map(async ([file, hash]) => {
-    const hashPath = file.replace("src", "docs")
-    const filename = path.basename(file)
-    const filenameParts = filename.split(".")
-    const newFilename = `${filenameParts[0]}.${hash}.${filenameParts[1]}`
-    const newPath = hashPath.replace(filename, newFilename)
-    await utils.copyFile(file, newPath)
-    return { [file]: newPath }
-  })
-  return Object.assign({}, ...(await Promise.all(processed)))
+  const destPath = (parsed: path.ParsedPath, hash: string) => {
+    return `${utils.srcToDocs(parsed.dir)}/${parsed.name}.${hash}${parsed.ext}`
+  }
+  const files = await utils.resolveGlob("src/assets/images/**/*.{svg,png,jpg,jpeg,webp,avif}")
+  if (!files) {
+    return {}
+  }
+  const processed = []
+  for (const file of files) {
+    const parsed = path.parse(file)
+    const { base, dir, ext, name } = parsed
+    let hash = await utils.getmd5Hash(file)
+    let dest = destPath(parsed, hash)
+    if (ext === ".svg") {
+      const content = await fs.readFile(file, "utf8")
+      const minified = utils.minsvg(content)
+      hash = createHash("md5").update(minified).digest("hex").slice(0, 8)
+      dest = destPath(parsed, hash)
+      if (!(await utils.fileExists(dest))) {
+        await fs.writeFile(dest, minified)
+      }
+    } else if (!(await utils.fileExists(dest))) {
+      await utils.copyFile(file, dest)
+    }
+    processed.push([file, dest])
+  }
+  return Object.fromEntries(processed)
 }
 
 /**
@@ -129,23 +139,26 @@ async function handleImageHashes(): Promise<FileHashes> {
 async function build(project: Project): Promise<Observable<unknown>> {
   console.log(`Building ${project.platform}...`)
   const config = webConfig
-  const buildPromise = esbuild
-    .build({
-      ...config,
-      ...project,
-    })
-    .then(async (result) => {
-      if (result && result.metafile) {
-        const output = await metaOutput(result)
-        if (output) {
-          await cacheMeta(output)
-          await writeMeta(output)
-          await metaOutputMap(output)
+  try {
+    const buildPromise = esbuild
+      .build({
+        ...config,
+        ...project,
+      })
+      .then(async (result) => {
+        if (result && result.metafile) {
+          const output = await metaOutput(result)
+          if (output) {
+            await cacheMeta(output)
+            await writeMeta(output)
+            await metaOutputMap(output)
+          }
         }
-      }
-    })
-
-  return from(buildPromise)
+      })
+    return from(buildPromise)
+  } catch (error) {
+    console.error(`Error building ${project.platform}:`, error)
+  }
 }
 
 /**
@@ -155,7 +168,7 @@ async function build(project: Project): Promise<Observable<unknown>> {
 async function clearDirs() {
   const files = await heroFiles
   const parents = utils.getParents(files.videos)
-  const destParents = parents.map((parent) => parent.replace("src/assets/", "docs/assets/"))
+  const destParents = parents.map((parent) => utils.srcToDocs(parent))
   const dirs = [
     "docs/assets/stylesheets",
     "docs/assets/javascripts",
@@ -169,32 +182,14 @@ async function clearDirs() {
       continue
     }
     for (const file of await fs.readdir(dir)) {
-      const filePath = path.join(dir, file)
-      if ((await fs.stat(filePath)).isFile()) {
+      if ((await fs.stat(`${dir}/${file}`)).isFile()) {
         try {
-          await fs.rm(filePath)
+          await fs.rm(`${dir}/${file}`)
         } catch (err) {
           console.error(err)
         }
       }
     }
-  }
-}
-
-/**
- * @function transformSvg
- * @returns {Promise<void>}
- * @description Transforms SVG files, minifying and writing them back to the source directory
- */
-async function transformSvg(): Promise<void> {
-  const svgFiles = await globby("src/assets/images/*.svg", {
-    onlyFiles: true,
-    unique: true,
-  })
-  for (const file of svgFiles) {
-    const content = await fs.readFile(file, "utf8")
-    const minified = utils.minsvg(content)
-    await fs.writeFile(file, minified)
   }
 }
 
@@ -221,16 +216,16 @@ const metaOutput = async (result: esbuild.BuildResult): Promise<esbuildOutputs> 
 }
 
 /**
- * Checks if cached assets have changed, and returns the current cache version accordingly
- * @param output - the esbuild outputs
- * @returns {Promise<number>} the cache version
+ * Checks if cached assets have changed, and returns the current cache version accordingly.
+ * If the cached URLs are empty or different from the new URLs, it returns the current timestamp.
+ * Otherwise, it returns the cached version.
+ * @param output - The esbuild outputs containing information about generated files.
+ * @returns {Promise<number>} The cache version, either a timestamp or the cached version.
  */
-const getCacheVersion = async (output: esbuildOutputs): Promise<number> => {
-  const lastCacheMeta = await fs
-    .readFile("docs/assets/javascripts/workers/meta.json", "utf8")
-    .catch(() => {
-      return "{}"
-    })
+const checkCacheVersion = async (output: esbuildOutputs): Promise<number> => {
+  const lastCacheMeta = await fs.readFile(metaPath, "utf8").catch(() => {
+    return "{}"
+  })
   const lastCache = JSON.parse(lastCacheMeta)
   const lastUrls = lastCache.urls || []
   if (lastUrls.length === 0) {
@@ -240,12 +235,27 @@ const getCacheVersion = async (output: esbuildOutputs): Promise<number> => {
     const newUrls = keys
       .filter((key) => key.endsWith(".js") || key.endsWith(".css") || key.endsWith(".woff2"))
       .map((key) => key.replace("docs/", ""))
-    const urlsChanged = newUrls.some((url) => !lastUrls.includes(url))
+    const urlsChanged = !(
+      lastUrls.length === newUrls.length && lastUrls.every((v, i) => v === newUrls[i])
+    )
     if (urlsChanged) {
       return Date.now()
     } else {
       return lastCache.version
     }
+  }
+}
+
+/**
+ * Checks if cached assets have changed, and returns the current cache version accordingly
+ * @param output - the esbuild outputs
+ * @returns {Promise<number>} the cache version
+ */
+const getCacheVersion = async (output: esbuildOutputs): Promise<number> => {
+  if (!(await utils.fileExists(metaPath))) {
+    return await checkCacheVersion(output)
+  } else {
+    return Date.now()
   }
 }
 
@@ -264,8 +274,7 @@ const cacheMeta = async (output: esbuildOutputs) => {
     null,
     2,
   )
-  const path = "docs/assets/javascripts/workers/meta.json"
-  await fs.writeFile(path, cacheJson)
+  await fs.writeFile(metaPath, cacheJson)
 }
 
 /**
@@ -323,7 +332,6 @@ async function buildAll(): Promise<void> {
   const imageHashes = await handleImageHashes()
   await utils.exportVideosToTS(videos, noScriptImage)
   console.log("hero videos exported")
-  await transformSvg()
   const newFontLocs = await utils.generatePlaceholderMap()
   newFileLocs = { ...imageHashes, ...newFontLocs }
   console.log("CSS placeholders replaced; SVGS minified")
@@ -340,37 +348,15 @@ async function main() {
   await buildAll()
     .then(() => console.log("Build completed"))
     .catch((error) => console.error("Error building:", error))
-  try {
-    fs.rm(cssSrc)
-      .then(() => console.log("Temporary bundle.css removed"))
-      .catch((err) => console.error(`Error removing temporary bundle.css: ${err}`))
-  } catch (err) {
-    console.error(`Error removing temporary bundle.css: ${err}`)
+  if (fs.stat(cssSrc).catch(() => false)) {
+    try {
+      fs.rm(cssSrc)
+        .then(() => console.log("Temporary bundle.css removed"))
+        .catch((err) => console.error(`Error removing temporary bundle.css: ${err}`))
+    } catch (err) {
+      console.error(`Error removing temporary bundle.css: ${err}`)
+    }
   }
 }
 
 main()
-
-/** For MinSVG function:
- *
- * Copyright (c) 2016-2024 Martin Donath <martin.donath@squidfunk.com>
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to
-deal in the Software without restriction, including without limitation the
-rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
-sell copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
-IN THE SOFTWARE.
-
- */

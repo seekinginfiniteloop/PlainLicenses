@@ -1,6 +1,6 @@
 import { CodecVariants, HeroImage, HeroPaths, HeroVideo, VideoCodec, VideoWidth } from "./types"
 import { rawHeroVideos } from "./data"
-import { basename, parse } from "path"
+import { parsePath } from "~/utils"
 
 function replaceDocs(src: string): string {
   const protocol = location.protocol === "http:" ? "http:" : "https:"
@@ -146,8 +146,9 @@ export function get_media_type(type: VideoCodec, width: VideoWidth): string {
  * @returns A tuple with the codec and width of the video
  */
 export function srcToAttributes(src: string): [VideoCodec, VideoWidth] {
-  const values = parse(src).name.split("_")
-  const width = parseInt(values[values.length - 1], 10) as VideoWidth
-  const codec = values[values.length - 2] as VideoCodec
+  const splitName = (s: string) => s.split("_")
+  const { name } = parsePath(src)
+  const width = parseInt(splitName(name).slice(-1)[0].split(".")[0], 10) as VideoWidth
+  const codec = splitName(name).slice(-2)[0] as VideoCodec
   return [codec as VideoCodec, width as VideoWidth]
 }

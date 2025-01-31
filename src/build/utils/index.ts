@@ -13,6 +13,7 @@ import {
   namePattern,
   placeholderMap,
   resolutions,
+  tsTemplate,
   videoCodecs,
   videoExtensions,
 } from "../config"
@@ -35,9 +36,25 @@ import { exec } from "child_process"
 
 const basePosterObj = HERO_VIDEO_TEMPLATE.poster
 
-const getVideoPath = (file: HeroFile, replaceSrc: boolean = true): string => {
-  const parentPath = replaceSrc ? file.parentPath.replace("src", "docs") : file.parentPath
-  return `${parentPath}/${file.baseName}_${file.codec}_${file.width}.${file.hash}.${file.extension}`
+/**
+ * Replace the src path with the docs path.
+ * @param srcPath - The source path to convert.
+ * @returns {string} The corresponding docs path.
+ */
+export function srcToDocs(srcPath: string): string {
+  return srcPath.replace("src", "docs")
+}
+
+/**
+ * Checks if a file exists at the given path.
+ * @param filePath - The path to the file to check.
+ * @returns {Promise<boolean>} A promise that resolves to true if the file exists, false otherwise.
+ */
+export async function fileExists(filePath: string): Promise<boolean> {
+  return await fs
+    .access(filePath)
+    .then(() => true)
+    .catch(() => false)
 }
 
 /**
@@ -46,11 +63,11 @@ const getVideoPath = (file: HeroFile, replaceSrc: boolean = true): string => {
  * @param filename - The filename to extract the base name from.
  * @returns The base name of the file.
  */
-const getBaseName = (filename: string): string => {
-  const stem = filename.split(".")[0]
+const getBaseName = (parsedPath: path.ParsedPath): string => {
+  const { name } = parsedPath
   const nameRegex = new RegExp(namePattern)
-  const match = nameRegex.exec(stem)
-  return match ? match[0] : stem
+  const match = nameRegex.exec(name)
+  return match[0]
 }
 
 /**
@@ -93,15 +110,12 @@ const validatePathInput = (filename: string, ext: string): boolean => {
 
 /**
  * @param filePath - the path to the file
- * @returns {string} new filename with the hash appended
+ * @returns {string} new hash for the file
  * @description Generates an MD5 hash for a file
  */
 export async function getmd5Hash(filePath: string): Promise<string> {
   const content = await fs.readFile(filePath, "utf8")
-  const hash = crypto.createHash("md5").update(content).digest("hex").slice(0, 8)
-  const parts = filePath.split(".")
-  const ext = parts.pop()
-  return `${parts.join(".")}.${hash}.${ext}`
+  return crypto.createHash("md5").update(content).digest("hex").slice(0, 8)
 }
 
 /**
@@ -110,33 +124,35 @@ export async function getmd5Hash(filePath: string): Promise<string> {
  * @param pathStr - The file path string to deconstruct.
  * @returns A Promise that resolves to a HeroFile object containing the extracted information.
  */
+
 export async function deconstructPath(pathStr: string): Promise<HeroFile> {
-  const filename = pathStr.split("/").pop() || ""
-  const ext = filename.split(".").pop() || ""
-  validatePathInput(filename, ext)
+  const parsed = path.parse(pathStr)
+  const { base, ext } = parsed
+  validatePathInput(base, ext)
   return {
-    parts: pathStr.split("/"),
-    get parentPath() {
-      return this.parts.slice(0, -2).join("/")
+    parsed,
+    parentPath: path.dirname(pathStr),
+    filename: base,
+    get baseName(): string {
+      return getBaseName(this.parsed)
     },
-    filename,
-    baseName: getBaseName(filename),
-    width: getWidth(filename),
-    extension: ext.match(mediaExtensionPattern())[0] as MediaFileExtension,
+    width: getWidth(base),
+    extension: ext.slice(1) as MediaFileExtension,
     srcPath: pathStr,
-    mini: filename.includes("min") ? "min" : "",
-    hash: filename.match(hashPattern) ? filename.match(hashPattern)[0] : await getmd5Hash(pathStr),
-    codec: videoCodecs.find((c) => filename.includes(c)) || "",
-    get type() {
+    hash: base.match(hashPattern) ? base.match(hashPattern)[0] : await getmd5Hash(pathStr),
+    codec: videoCodecs.find((c) => base.includes(c)) || "",
+    get type(): "video" | "image" {
       return videoExtensions.includes(this.extension) ? "video" : "image"
     },
-    get destPath() {
-      return this.type === "video"
-        ? `${this.parentPath.replace("src", "docs")}/${this.baseName}_${this.codec}_${this.width}.${this.hash}.${this.extension}`
-        : `${this.parentPath.replace("src", "docs")}/${this.baseName}_${this.width}.${this.hash}.${this.extension}`
+    get destPath(): string {
+      const assembled =
+        this.type === "video" ?
+          `${this.baseName}_${this.codec}_${this.width}.${this.hash}.${this.extension}`
+        : `${this.baseName}_${this.width}.${this.hash}.${this.extension}`
+      return `${srcToDocs(this.parentPath)}/${assembled}`
+    },
   }
 }
-
 /**
  * @param {string} glob The glob to resolve.
  * @param {globby.GlobbyOptions} fastGlobOptions Options to pass to fast-glob.
@@ -250,14 +266,6 @@ function toTitleCase(str: string): string {
 
 /**
  * @param {string} str - the string to convert
- * @returns {string} the enum string
- */
-export function toEnumString(str: string): string {
-  return `${str.toUpperCase()} = "${str}"`
-}
-
-/**
- * @param {string} str - the string to convert
  * @returns {string} the title-cased string
  */
 export async function makeDir(dir: string): Promise<void> {
@@ -273,7 +281,7 @@ export async function makeDir(dir: string): Promise<void> {
  */
 export async function copyFile(src: string, dest: string): Promise<void> {
   await makeDir(path.dirname(dest))
-  if (!(await fs.access(dest).catch(() => false))) {
+  if (!(await fileExists(dest))) {
     await fs.copyFile(src, dest)
   }
 }
@@ -331,13 +339,12 @@ export function constructPoster(posterImages: HeroFile[]): HeroImage {
   const { imageName, parent, images } = {
     ...basePosterObj,
     imageName: posterImages[0].baseName,
-    parent: posterImages[0].parentPath.replace("src", "docs"),
+    parent: srcToDocs(posterImages[0].parentPath),
   }
   posterImages.map((image) => {
-    const { extension, baseName, filename, hash, width } = image
-    const newPath = `${parent}/${baseName}_${width}.${hash}.${extension}`
-    copyFile(filename, newPath)
-    images[extension as ImageType].widths[width] = newPath
+    const { extension, destPath, srcPath, width } = image
+    copyFile(srcPath, destPath)
+    images[extension as ImageType].widths[width] = destPath
   })
   imageTypes.forEach(async (t) => {
     images[t]["srcset"] = await generateSrcset(images[t].widths)
@@ -362,7 +369,8 @@ export function constructVariants(videoFiles: HeroFile[]): CodecVariants {
 }
 
 /**
- * @description Removes hashed files in the src directory
+ * @description Removes hashed files in the src directory. This shouldn't happen, but
+ * sometimes in dev, it does -- so this is a failsafe.
  */
 export async function removeHashedFilesInSrc() {
   const hashedFiles = await resolveGlob("src/assets/*", {
@@ -414,16 +422,24 @@ async function resolveCssFiles(): Promise<Partial<PlaceholderMap>> {
 async function resolveFontFiles(): Promise<Partial<PlaceholderMap>> {
   const fontGlob = fontLoc
   const fontkey = Object.keys(placeholderMap).find((key) => key.includes("font"))
-  const resolvedPlaceholders: Partial<PlaceholderMap> = {}
+  let resolvedPlaceholders: Partial<PlaceholderMap> = {}
   const files = await resolveGlob(fontGlob, { onlyFiles: true, unique: true })
   files.forEach(async (file) => {
-    const filename = path.basename(file)
+    const parsed = path.parse(file)
+    const key = Object.keys(placeholderMap[fontkey]).find((k) => k === file)
+    const { name, ext, dir, base } = parsed
     const hash = await getmd5Hash(file)
-    const newFilename = filename.replace(/\.(woff2?)^/, `.${hash}.$1`)
-    const newPath = file.replace("src", "docs").replace(filename, newFilename)
+    const newFilename = `${name}.${hash}${ext}`
+    const newPath = `${srcToDocs(dir)}/${newFilename}`
     await copyFile(file, newPath)
-    const placeholder = `{{ ${filename} }}`
-    resolvedPlaceholders[fontkey][placeholder] = newFilename
+    const placeholder = `{{ ${base} }}`
+    resolvedPlaceholders = {
+      ...resolvedPlaceholders,
+      [key]: {
+        ...resolvedPlaceholders[key],
+        [placeholder]: newFilename,
+      },
+    }
   })
   return resolvedPlaceholders
 }
@@ -443,13 +459,10 @@ async function replacePlaceholders(newContent: PlaceholderMap): Promise<void> {
           return data
         }
       })
-      const parts = file.split("/")
-      const oldFilename = parts.pop()
-      const newFilename = oldFilename.replace(/$_/, "").replace(/_template/, "")
-      const newPath =
-        parts.includes(oldFilename) ?
-          parts.join().replace(oldFilename, newFilename)
-        : parts.join("/") + newFilename
+      const parsedPath = path.parse(file)
+      const oldFilename = parsedPath.base
+      const newFilename = oldFilename.replace(/^_/, "").replace(/_template/, "")
+      const newPath = path.join(parsedPath.dir, newFilename)
       await fs.writeFile(newPath, replacedContent)
     } catch (err) {
       console.error(err)
@@ -470,11 +483,10 @@ export async function generatePlaceholderMap(): Promise<{
   const newContent = { ...cssHashMap, ...fontHashMap }
   replacePlaceholders(newContent)
   const mapping = {}
-  Array.from(Object.values(fontHashMap)).forEach((_key, val) => {
+  Object.values(fontHashMap).forEach((_key, val) => {
     Object.values(val).forEach((v: string) => {
-      const keyParts = v.split(".")
-      const ext = keyParts.pop()
-      const name = keyParts[0]
+      const parsedPath = path.parse(v)
+      const { name, ext } = parsedPath
       mapping[`${name}.${ext}`] = v
     })
   })
@@ -496,41 +508,17 @@ const tsFileOutputPath = path.join(
  * Exports the hero videos to a TypeScript file
  */
 export async function exportVideosToTS(videos: HeroVideo[], noScriptImage: HeroImage) {
-  const fileContent = `
-/**
- *! NOTE: The build process generates this file.
- *! DO NOT EDIT THIS FILE DIRECTLY.
- * Edit the build script instead (src/build/index.ts).
- *
- * @module data
- * @description A collection of hero videos for the landing page.
- */
+  const fileContent = tsTemplate(videos, noScriptImage)
 
-export const rawHeroVideos = ${JSON.stringify(videos, null, 2)} as const;
+  if (!(await fileExists(tsFileOutputPath))) {
+    await fs.mkdir(path.dirname(tsFileOutputPath), { recursive: true })
+  }
+  await fs.writeFile(tsFileOutputPath, fileContent, "utf8")
 
-export enum HeroName {
-    ${videos.map((video) => toEnumString(video.baseName)).join(",\n    ")}
-    }
-
-export backupImage = "${noScriptImage}";
-`
-
-  await fs.writeFile(tsFileOutputPath, fileContent)
-
-  /**
-   * @description Runs ESLint on the generated file to strip the quotes from keys
-   */
   const runLint = async () => {
-    await fs.writeFile(tsFileOutputPath, fileContent)
-    console.log("Hero images data exported to heroImages.ts")
-    if (!tsFileOutputPath) {
-      console.error("No output path provided")
-      return
-    }
-    const paths = [tsFileOutputPath]
     // Run ESLint on the generated file to strip the quotes from keys
-    paths.forEach((path) => {
-      exec(`bunx --bun eslint --cache ${path} --fix`, (error, stdout, stderr) => {
+    try {
+      exec(`bunx --bun eslint --cache --fix ${tsFileOutputPath}`, (error, stdout, stderr) => {
         if (error) {
           console.error(`Error running ESLint: ${error.message}`)
           return
@@ -541,7 +529,10 @@ export backupImage = "${noScriptImage}";
         }
         console.log(`ESLint stdout: ${stdout}`)
       })
-    })
+    } catch (err) {
+      console.error(err)
+      return
+    }
   }
   await runLint()
 }

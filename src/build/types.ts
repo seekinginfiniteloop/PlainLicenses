@@ -20,6 +20,8 @@
  * @see {@link https://esbuild.github.io/} esbuild Documentation
  */
 
+import path from "path"
+
 // regex separator ("|") or minimatch separator (",")
 export type Separator = "|" | ","
 
@@ -147,9 +149,8 @@ export interface HeroFile {
   srcPath: string
   destPath: string
   hash: string | EmptyString
-  mini: string | EmptyString
   parentPath: string
-  parts: string[]
+  parsed: path.ParsedPath
   type: "image" | "video"
   width: VideoWidth | EmptyString
 }
