@@ -29,6 +29,7 @@ import type {
   ImageType,
   PlaceholderMap,
   Project,
+  Separator,
   VideoCodec,
   VideoConfig,
   VideoResolution,
@@ -78,6 +79,8 @@ export const videoConfig = {
 
 export const imageTypes = ["avif", "webp", "png"] as ImageType[]
 export const videoExtensions = ["webm", "mp4"]
+export const otherExtensions = ["woff", "woff2", "svg", "css", "js", "jpg", "jpeg", "gif", "ico"]
+export const allExtensions = [...imageTypes, ...videoExtensions, ...otherExtensions]
 export const videoCodecs = videoConfig.codecs
 
 export const backupImage = "break_free"
@@ -87,7 +90,10 @@ export const basePath = videoConfig.baseDir
 export const resKeys: HeroPaths = Object.fromEntries(
   videoConfig.resolutions.map((res) => [res.width, ""]),
 ) as HeroPaths
-const resolutionWidth = Object.keys(resKeys).map((key) => {
+export const resolutions = Object.keys(resKeys).map((key) => {
+  return parseInt(key, 10)
+})
+const resolutionWidths = Object.keys(resKeys).map((key) => {
   return key.toString()
 })
 
@@ -116,9 +122,35 @@ export const HERO_VIDEO_TEMPLATE = {
 
 export const basePosterObj = HERO_VIDEO_TEMPLATE.poster
 
-export const widthPattern = (sep: string = "|") => {
-  return resolutionWidth.join(sep)
+/**
+ * @description Get the separator for the pattern
+ * @param {boolean} isRegex - Whether the pattern is a regex (true) or a minimatch (false)
+ * @returns {string} - The separator for the pattern
+ */
+
+const getSep = (isRegex: boolean): Separator => {
+  return isRegex ? "|" : ","
 }
+
+export const widthPattern = (isRegex: boolean = true) => {
+  return resolutionWidths.join(getSep(isRegex))
+}
+export const codecPattern = (isRegex: boolean = true) => {
+  return videoCodecs.join(getSep(isRegex))
+}
+
+export const videoExtensionPattern = (isRegex: boolean = true) => {
+  return videoExtensions.join(getSep(isRegex))
+}
+
+export const imageExtensionPattern = (isRegex: boolean = true) => {
+  return imageTypes.join(getSep(isRegex))
+}
+export const mediaExtensionPattern = (isRegex: boolean = true) => {
+  return `${videoExtensionPattern(isRegex)}|${imageExtensionPattern(isRegex)}`
+}
+export const namePattern = `^(\\w+?)(?=_(${widthPattern()}|${codecPattern()}))`
+export const hashPattern = "[A-Fa-f0-9]{8}"
 
 export const videoMessages = {
   tokyo_shuffle: "Stop the Nonsense",

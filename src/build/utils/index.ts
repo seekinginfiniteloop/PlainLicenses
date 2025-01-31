@@ -3,14 +3,18 @@ import globby from "globby"
 import * as fs from "fs/promises"
 import {
   HERO_VIDEO_TEMPLATE,
+  allExtensions,
   basePath,
   cssLocs,
   fontLoc,
+  hashPattern,
   imageTypes,
+  mediaExtensionPattern,
+  namePattern,
   placeholderMap,
+  resolutions,
   videoCodecs,
   videoExtensions,
-  widthPattern,
 } from "../config"
 import type {
   CodecVariants,
@@ -20,6 +24,7 @@ import type {
   HeroPaths,
   HeroVideo,
   ImageType,
+  MediaFileExtension,
   PlaceholderMap,
   VideoCodec,
   VideoWidth,
@@ -30,72 +35,60 @@ import { exec } from "child_process"
 
 const basePosterObj = HERO_VIDEO_TEMPLATE.poster
 
-/**
- * Generates a regular expression pattern for matching hero file names.
- * Matches hero image or video filenames, optionally including a hash.
- * @param {boolean} isVideo Whether to generate a pattern for video files. Defaults to false.
- * @param {sep} sep The separator to use. Defaults to "|". Can be set to "," for globby bash-style patterns.
- * @returns {string} The generated regular expression pattern.
- */
-export const getHeroFilePattern = (isVideo: boolean = false, sep: "|" | "," = "|") => {
-  const toMatchGroup = (pattern: string, name: string, isRegex: boolean = true) => {
-    return isRegex ? `(?<${name}>${pattern})` : `\{${pattern}\}`
-  }
-  const isRegex = !!(sep === "|")
-  const extensionPattern = isVideo ? videoExtensions.join(sep) : imageTypes.join(sep)
-  const baseNameGroup = toMatchGroup("[A-Za-z0-9_]*?", "baseName", isRegex)
-  const widthGroup = toMatchGroup(widthPattern(sep), "width", isRegex)
-  const extensionGroup = toMatchGroup(extensionPattern, "extension", isRegex)
-  const hashGroup = toMatchGroup("[A-Fa-f0-9]{8}", "hash", isRegex)
-  const imagePattern =
-    sep === "|" ?
-      `${baseNameGroup}_${widthGroup}\.${extensionGroup}|${baseNameGroup}_${widthGroup}\.${hashGroup}\.${extensionGroup}`
-    : `${baseNameGroup}_${widthGroup}*.${extensionGroup}`
-  if (!isVideo) {
-    return imagePattern
-  }
-  const codecGroup = toMatchGroup(videoCodecs.join(sep), "codec", isRegex)
-  return isRegex ?
-      `${baseNameGroup}_${codecGroup}_${widthGroup}\.${extensionGroup}|${baseNameGroup}_${codecGroup}_${widthGroup}\.${hashGroup}\.${extensionGroup}`
-    : `${baseNameGroup}_${codecGroup}_${widthGroup}*.${extensionGroup}`
+const getVideoPath = (file: HeroFile, replaceSrc: boolean = true): string => {
+  const parentPath = replaceSrc ? file.parentPath.replace("src", "docs") : file.parentPath
+  return `${parentPath}/${file.baseName}_${file.codec}_${file.width}.${file.hash}.${file.extension}`
 }
 
 /**
- * @param {string} filename The file name to parse.
- * @returns {HeroFile} The parsed hero file object.
- * @description Parses a hero file name into its constituent parts.
+ * Extracts the base name from a filename.
+ * Splits the filename by '.', removes extensions, resolutions, and codecs, and returns the remaining base name.
+ * @param filename - The filename to extract the base name from.
+ * @returns The base name of the file.
  */
-export const parseHeroFileName = (filename: string): HeroFile => {
-  let pattern: RegExp
-  let pathname: string = ""
-  let parent: string = ""
-  const parts = filename.split("/")
-  if (videoExtensions.includes(filename.split(".").pop() || "")) {
-    pattern = new RegExp(getHeroFilePattern(true))
-    if (parts.length > 0) {
-      parent = parts[parts.length - 2]
-      pathname = parts.slice(0, -1).join("/")
-    }
-  } else {
-    pattern = new RegExp(getHeroFilePattern())
-    if (parts.length > 0) {
-      parent = parts[parts.length - 3]
-      pathname = parts.slice(0, -2).join("/")
-    }
+const getBaseName = (filename: string): string => {
+  const stem = filename.split(".")[0]
+  const nameRegex = new RegExp(namePattern)
+  const match = nameRegex.exec(stem)
+  return match ? match[0] : stem
+}
+
+/**
+ * Extracts the video width from a filename.
+ * Parses the filename to find a number matching the video resolutions and returns it as a VideoWidth.
+ * @param filename - The filename to extract the width from.
+ * @returns The width of the video, or an empty string if not found.
+ */
+const getWidth = (filename: string): VideoWidth => {
+  const widthValue = parseInt(
+    filename.split("_").find((name) => {
+      return !!name.match(/\d{3,4}/)
+    }),
+    10,
+  )
+  return (widthValue && resolutions.includes(widthValue) ? widthValue : "") as VideoWidth
+}
+
+/**
+ * Validates the input filename and extension.
+ * Checks if the filename and extension are valid and if the extension matches the media extension pattern.
+ * Throws an error if the input is invalid.
+ * @param filename - The filename to validate.
+ * @param ext - The extension to validate.
+ * @returns True if the input is valid, otherwise throws an error.
+ */
+const validatePathInput = (filename: string, ext: string): boolean => {
+  const isEmpty = (s: string) => s === "" || s === undefined || s === null
+  const isValid =
+    !isEmpty(filename) &&
+    !isEmpty(ext) &&
+    filename.includes(ext) &&
+    new RegExp(mediaExtensionPattern()).test(ext)
+  if (!isValid) {
+    console.error(`Invalid input: ${filename} or ${ext}`)
+    throw new Error("Invalid input")
   }
-  const match = pattern.exec(filename)
-  if (match && match.groups) {
-    return {
-      codec: (match.groups.codec as VideoCodec) ?? ("" as ""),
-      extension: match.groups.extension as ImageType | "mp4" | "webm",
-      filename,
-      hash: match.groups.hash ?? "",
-      baseName: match.groups.baseName || parent,
-      parentPath: pathname || `${basePath}/${match.groups.baseName || parent}`,
-      type: videoExtensions.includes(match.groups.extension) ? "video" : "image",
-      width: parseInt(match.groups.width, 10) as VideoWidth,
-    }
-  }
+  return isValid
 }
 
 /**
@@ -109,6 +102,39 @@ export async function getmd5Hash(filePath: string): Promise<string> {
   const parts = filePath.split(".")
   const ext = parts.pop()
   return `${parts.join(".")}.${hash}.${ext}`
+}
+
+/**
+ * Deconstructs a file path string into a HeroFile object.
+ * Parses the path to extract information such as filename, extension, width, codec, and hash, and returns a structured HeroFile object.
+ * @param pathStr - The file path string to deconstruct.
+ * @returns A Promise that resolves to a HeroFile object containing the extracted information.
+ */
+export async function deconstructPath(pathStr: string): Promise<HeroFile> {
+  const filename = pathStr.split("/").pop() || ""
+  const ext = filename.split(".").pop() || ""
+  validatePathInput(filename, ext)
+  return {
+    parts: pathStr.split("/"),
+    get parentPath() {
+      return this.parts.slice(0, -2).join("/")
+    },
+    filename,
+    baseName: getBaseName(filename),
+    width: getWidth(filename),
+    extension: ext.match(mediaExtensionPattern())[0] as MediaFileExtension,
+    srcPath: pathStr,
+    mini: filename.includes("min") ? "min" : "",
+    hash: filename.match(hashPattern) ? filename.match(hashPattern)[0] : await getmd5Hash(pathStr),
+    codec: videoCodecs.find((c) => filename.includes(c)) || "",
+    get type() {
+      return videoExtensions.includes(this.extension) ? "video" : "image"
+    },
+    get destPath() {
+      return this.type === "video"
+        ? `${this.parentPath.replace("src", "docs")}/${this.baseName}_${this.codec}_${this.width}.${this.hash}.${this.extension}`
+        : `${this.parentPath.replace("src", "docs")}/${this.baseName}_${this.width}.${this.hash}.${this.extension}`
+  }
 }
 
 /**
@@ -132,7 +158,7 @@ export async function resolveGlob(glob: string, fastGlobOptions?: {}): Promise<s
 
 /**
  * Retrieves and categorizes hero image and video files.
- * Finds all image and video files, parses their names, calculates hashes, and groups them by type.
+ * Orchestrates retrieving all hero files, deconstructing their paths, and categorizing them into image and video files.
  * @returns {Promise<HeroFiles>} A promise that resolves to an object containing arrays of image and video hero files.
  */
 export async function getHeroFiles(): Promise<HeroFiles> {
@@ -141,17 +167,12 @@ export async function getHeroFiles(): Promise<HeroFiles> {
     unique: true,
     expandDirectories: { extensions: [...imageTypes, ...videoExtensions] },
   })
-  const heroFiles = files.map(parseHeroFileName)
+  const heroFiles = await Promise.all(files.map((file) => deconstructPath(file)))
   let images: HeroFile[] = []
   let videos: HeroFile[] = []
-  heroFiles.forEach(async (file) => {
-    file.hash = await getmd5Hash(file.filename)
-    if (file.type === "image") {
-      images.push(file)
-    } else {
-      videos.push(file)
-    }
-  })
+  for (const file of heroFiles) {
+    file.type === "image" ? images.push(file) : videos.push(file)
+  }
   return { images, videos }
 }
 
@@ -235,12 +256,21 @@ export function toEnumString(str: string): string {
   return `${str.toUpperCase()} = "${str}"`
 }
 
+/**
+ * @param {string} str - the string to convert
+ * @returns {string} the title-cased string
+ */
 export async function makeDir(dir: string): Promise<void> {
   if (!(await fs.stat(dir).catch(() => false))) {
     await fs.mkdir(dir, { recursive: true })
   }
 }
 
+/**
+ * @param {string} src - the source file
+ * @param src - the source file
+ * @param dest - the destination file
+ */
 export async function copyFile(src: string, dest: string): Promise<void> {
   await makeDir(path.dirname(dest))
   if (!(await fs.access(dest).catch(() => false))) {
@@ -323,12 +353,10 @@ export function constructPoster(posterImages: HeroFile[]): HeroImage {
  */
 export function constructVariants(videoFiles: HeroFile[]): CodecVariants {
   const { variants } = HERO_VIDEO_TEMPLATE
-  const parent = videoFiles[0].parentPath.replace("src", "docs")
-  videoFiles.map((video) => {
-    const { codec, extension, filename, hash, width } = video
-    const newPath = `${parent}/${video.baseName}_${codec}_${width}.${hash}.${extension}`
-    copyFile(filename, newPath)
-    variants[codec as VideoCodec][width] = newPath
+  videoFiles.forEach((video) => {
+    const { codec, srcPath, destPath, width } = video
+    copyFile(srcPath, destPath)
+    variants[codec as VideoCodec][width] = destPath
   })
   return variants
 }
@@ -341,12 +369,13 @@ export async function removeHashedFilesInSrc() {
     onlyFiles: true,
     unique: true,
     expandDirectories: {
-      extensions: ["avif", "css", "js", "mp4", "png", "svg", "webm", "webp", "woff", "woff2"],
+      extensions: allExtensions,
     },
   })
-  const hashRegex = new RegExp(/^.+(\.[a-fA-F0-9]{8})\.[a-z24]{2,5}/)
+  const extPat = allExtensions.join("|")
+  const testPattern = new RegExp(`.+\\.${hashPattern}\\.(${extPat}|min\\.${extPat})$`)
   for (const file of hashedFiles) {
-    if (hashRegex.test(file)) {
+    if (testPattern.test(file)) {
       try {
         await fs.rm(file)
       } catch (err) {
@@ -451,7 +480,6 @@ export async function generatePlaceholderMap(): Promise<{
   })
   return mapping
 }
-
 
 // Write the file to the output ts file
 const tsFileOutputPath = path.join(

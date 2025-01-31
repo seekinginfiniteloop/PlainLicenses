@@ -16,6 +16,20 @@
       "cwd": "${workspaceFolder}"
     },
     {
+      "name": "bun build debug",
+      "type": "bun",
+      "request": "launch",
+      "runtime": "bun",
+      "runtimeArgs": [
+        "run",
+        "build",
+        "--inspect-brk"
+      ],
+      "program": "src/build/index.ts",
+      "internalConsoleOptions": "openOnSessionStart",
+      "cwd": "${workspaceFolder}"
+    },
+    {
       "name": "Python Debugger: Current File",
       "type": "debugpy",
       "request": "launch",
