@@ -1,5 +1,5 @@
-import './animations'
-import './video'
+import "./animations"
+import "./video"
 
-export * from './animations'
-export * from './video'
+export * from "./animations"
+export * from "./video"

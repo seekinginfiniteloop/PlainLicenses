@@ -13,16 +13,43 @@
  * @copyright No rights reserved
  */
 
-import { BehaviorSubject, Observable, Observer, Subscription, combineLatest, debounceTime, distinctUntilChanged, distinctUntilKeyChanged, filter, map, shareReplay, startWith, switchMap, tap } from 'rxjs'
-import { AnimationComponent, ComponentStateUpdateFunction, HeroState, StatePredicate, VideoState } from './types'
+import {
+  BehaviorSubject,
+  Observable,
+  Observer,
+  Subscription,
+  combineLatest,
+  debounceTime,
+  distinctUntilChanged,
+  distinctUntilKeyChanged,
+  filter,
+  map,
+  shareReplay,
+  startWith,
+  switchMap,
+  tap,
+} from "rxjs"
+import {
+  AnimationComponent,
+  ComponentStateUpdateFunction,
+  HeroState,
+  StatePredicate,
+  VideoState,
+} from "./types"
 
-import { isPageVisible$, isPartiallyInViewport, navigationEvents$, prefersReducedMotion$, watchMediaQuery } from '~/utils/eventHandlers'
-import { isDev, isHome } from '~/utils/conditionChecks'
-import { setCssVariable } from '~/utils/helpers'
-import { logger } from '~/utils/log'
-import * as predicates from './predicates'
-import { getViewportOffset, getViewportSize } from '~/browser'
-import { Header, getComponentElement, watchHeader } from '~/components'
+import {
+  isPageVisible$,
+  isPartiallyInViewport,
+  navigationEvents$,
+  prefersReducedMotion$,
+  watchMediaQuery,
+} from "~/utils/eventHandlers"
+import { isDev, isHome } from "~/utils/conditionChecks"
+import { setCssVariable } from "~/utils/helpers"
+import { logger } from "~/utils/log"
+import * as predicates from "./predicates"
+import { getViewportOffset, getViewportSize } from "~/browser"
+import { Header, getComponentElement, watchHeader } from "~/components"
 
 let customWindow: CustomWindow = window as unknown as CustomWindow
 const weAreDev = isDev(new URL(customWindow.location.href))
@@ -48,7 +75,6 @@ const initialUrl = new URL(customWindow.location.href)
  * @method destroy - Unsubscribes from all observables and resets the singleton instance
  */
 export class HeroStore {
-
   private static instance: HeroStore | undefined = new HeroStore()
 
   // state$ is a BehaviorSubject that holds the current state of the hero section
@@ -56,17 +82,16 @@ export class HeroStore {
     atHome: isHome(initialUrl),
     landingVisible: isHome(initialUrl),
     pageVisible: !document.hidden || document.visibilityState === "visible",
-    prefersReducedMotion: customWindow.matchMedia('(prefers-reduced-motion: reduce)').matches,
+    prefersReducedMotion: customWindow.matchMedia("(prefers-reduced-motion: reduce)").matches,
     viewport: {
       offset: getViewportOffset(),
-      size: getViewportSize()
+      size: getViewportSize(),
     },
     header: { height: 0, hidden: true },
     parallaxHeight: getViewportOffset().y * 1.4,
     location: initialUrl,
-    tearDown: false
-  }
-  )
+    tearDown: false,
+  })
 
   public videoState$ = new BehaviorSubject<VideoState>({ canPlay: false })
 
@@ -79,7 +104,7 @@ export class HeroStore {
    * @description Static singleton instance getter
    */
   static getInstance(): HeroStore {
-    return HeroStore.instance ??= new HeroStore()
+    return (HeroStore.instance ??= new HeroStore())
   }
 
   /**
@@ -115,7 +140,6 @@ export class HeroStore {
         } catch (error) {
           logger.error(`Error updating state: ${error}\nUpdate: ${update}`)
         }
-
     }
   }
 
@@ -125,7 +149,7 @@ export class HeroStore {
    * @description Updates the hero state with a partial state
    */
   public updateHeroState(updates: Partial<HeroState>, component?: AnimationComponent): void {
-    logger.info('external component updating state; updates:', updates)
+    logger.info("external component updating state; updates:", updates)
     this.updateState(updates, component)
   }
 
@@ -135,14 +159,18 @@ export class HeroStore {
    * @returns {Observer<T>} - Observer for the observable
    * @description Creates an observer for an observable
    */
-  private createObserver<T>(name: string, updateFn: (_value: T) => Partial<HeroState>, component?: AnimationComponent): Observer<T> {
+  private createObserver<T>(
+    name: string,
+    updateFn: (_value: T) => Partial<HeroState>,
+    component?: AnimationComponent,
+  ): Observer<T> {
     return {
       next: (value: T) => {
         logger.info(`${name} received:`, value)
         this.updateState(updateFn(value), component)
-    },
+      },
       error: (error: Error) => logger.error(`Error in ${name}:`, error),
-      complete: () => logger.info(`${name} completed`)
+      complete: () => logger.info(`${name} completed`),
     }
   }
 
@@ -150,53 +178,62 @@ export class HeroStore {
    * @description Initializes all observables and subscriptions
    */
   private initSubscriptions(): void {
-
     const atHome$ = navigationEvents$.pipe(
       map(isHome),
       distinctUntilChanged(),
       startWith(isHome(initialUrl)),
       shareReplay(1),
-      tap(this.createObserver('atHome$', (atHome) => ({ atHome }))))
+      tap(this.createObserver("atHome$", (atHome) => ({ atHome }))),
+    )
 
     const landing$ = isPartiallyInViewport(document.getElementById("parallax-layer") as HTMLElement)
 
     const landingVisible$ = atHome$.pipe(
       filter((atHome) => atHome),
       switchMap(() => landing$),
-      tap(this.createObserver('landingVisible$', (landingVisible) => ({ landingVisible }))))
+      tap(this.createObserver("landingVisible$", (landingVisible) => ({ landingVisible }))),
+    )
 
     const pageVisible$ = isPageVisible$.pipe(
-      tap(this.createObserver('pageVisible$', (pageVisible) => ({ pageVisible }))))
+      tap(this.createObserver("pageVisible$", (pageVisible) => ({ pageVisible }))),
+    )
 
     const motion$ = prefersReducedMotion$.pipe(
-      tap(this.createObserver('prefersReducedMotion$', (prefersReducedMotion) => ({ prefersReducedMotion }))))
+      tap(
+        this.createObserver("prefersReducedMotion$", (prefersReducedMotion) => ({
+          prefersReducedMotion,
+        })),
+      ),
+    )
 
     const view$ = viewport$.pipe(
       distinctUntilChanged(),
       debounceTime(100),
       shareReplay(1),
       tap((viewport) => {
-        setCssVariable('--viewport-offset-height', `${viewport.offset.y}px`)
-        setCssVariable('--viewport-offset-width', `${viewport.offset.x}px`)
+        setCssVariable("--viewport-offset-height", `${viewport.offset.y}px`)
+        setCssVariable("--viewport-offset-width", `${viewport.offset.x}px`)
       }),
-      tap(this.createObserver('view$', (viewport) => ({ viewport }))))
+      tap(this.createObserver("view$", (viewport) => ({ viewport }))),
+    )
 
     const header$ = watchHeader(getComponentElement("header"), { viewport$ }).pipe(
       tap((header: Header) => {
-        setCssVariable('--header-height', header.hidden ? '0' : `${header.height}px`)
+        setCssVariable("--header-height", header.hidden ? "0" : `${header.height}px`)
       }),
-      tap(this.createObserver('header$', (header) => ({ header }))))
+      tap(this.createObserver("header$", (header) => ({ header }))),
+    )
 
     const parallax$ = combineLatest([
       viewport$,
       watchHeader(getComponentElement("header"), { viewport$ }),
-      watchMediaQuery('(orientation: portrait)')]
-    ).pipe(
+      watchMediaQuery("(orientation: portrait)"),
+    ]).pipe(
       map(([viewport, header, portrait]) => {
         return {
           viewHeight: viewport.offset.y,
           headerHeight: header.height,
-          portrait
+          portrait,
         }
       }),
       map(({ viewHeight, headerHeight, portrait }) => {
@@ -206,16 +243,16 @@ export class HeroStore {
       distinctUntilChanged(),
       shareReplay(1),
       tap((parallaxHeight) => {
-        setCssVariable('--parallax-height', `${parallaxHeight}px`)
+        setCssVariable("--parallax-height", `${parallaxHeight}px`)
       }),
-      tap(this.createObserver('parallaxHeight$', (parallaxHeight) => ({ parallaxHeight })))
+      tap(this.createObserver("parallaxHeight$", (parallaxHeight) => ({ parallaxHeight }))),
     )
 
     const location$ = navigationEvents$.pipe(
-      tap(this.createObserver('location$', (location) => ({ location }))))
+      tap(this.createObserver("location$", (location) => ({ location }))),
+    )
 
     const video$ = this.getVideoState$((v) => this.videoState$.next(v as VideoState))
-
 
     this.subscriptions.add(atHome$.subscribe())
     this.subscriptions.add(landingVisible$.subscribe())
@@ -245,7 +282,6 @@ export class HeroStore {
     return this.state$.value[subject as keyof HeroState]
   }
 
-
   /**
    * @param {string} component - Name of the component
    * @returns {ComponentState} - Current state of the component
@@ -259,7 +295,6 @@ export class HeroStore {
       default:
         return this.videoState$.value
     }
-
   }
 
   /** ============================================
@@ -277,11 +312,11 @@ export class HeroStore {
       next: (value: T) => {
         logger.info(`${name} received:`, value)
         if (func) {
-          (value: T) => func(value as VideoState)
+          ;(value: T) => func(value as VideoState)
         }
       },
       error: (error: Error) => logger.error(`Error in ${name}:`, error),
-      complete: () => logger.info(`${name} completed`)
+      complete: () => logger.info(`${name} completed`),
     }
   }
 
@@ -292,16 +327,14 @@ export class HeroStore {
    */
   private getVideoState$(observerFunc: ComponentStateUpdateFunction): Observable<VideoState> {
     return this.state$.pipe(
-      map(state => ({
+      map((state) => ({
         canPlay: predicates.videoPredicate.canPlay(state),
       })),
-      distinctUntilKeyChanged('canPlay'),
+      distinctUntilKeyChanged("canPlay"),
       shareReplay(1),
-      tap(this.getComponentObserver('carouselState$', observerFunc))
+      tap(this.getComponentObserver("carouselState$", observerFunc)),
     )
   }
-
-
 
   /**
    * @param {Partial<HeroState>} updates - Partial state object to update the hero state
@@ -310,13 +343,14 @@ export class HeroStore {
   public debugStateChange(updates: Partial<HeroState>): void {
     if (weAreDev) {
       const oldState = this.state$.value
-      const changes = Object.entries(updates)
-        .filter(([key, value]) => oldState[key as keyof HeroState] !== value)
+      const changes = Object.entries(updates).filter(
+        ([key, value]) => oldState[key as keyof HeroState] !== value,
+      )
 
-      logger.info('Changes:', Object.fromEntries(changes))
-      logger.info('New State:', { ...oldState, ...updates })
+      logger.info("Changes:", Object.fromEntries(changes))
+      logger.info("New State:", { ...oldState, ...updates })
       Object.entries(predicates)
-        .filter(([_, value]) => typeof value === 'function')
+        .filter(([_, value]) => typeof value === "function")
         .forEach(([name, predicate]) => {
           logger.info(`${name}:`, (predicate as StatePredicate)({ ...oldState, ...updates }))
         })

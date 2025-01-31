@@ -1,11 +1,10 @@
-/* eslint-disable no-unused-vars */
 /**
  * @module types (animations)
  * @description Types for the Hero feature animations.
  *
  */
 
-import gsap from 'gsap'
+import gsap from "gsap"
 
 export interface ReducedMotionCondition extends gsap.Conditions {
   reducedMotion: boolean
@@ -20,9 +19,8 @@ export interface ReducedMotionCondition extends gsap.Conditions {
  * @description Direction enum for the Hero Observers.
  */
 export enum Direction {
-   
   UP = -1, // toward the top of the page
-   
+
   DOWN = 1, // toward the bottom of the page
 }
 

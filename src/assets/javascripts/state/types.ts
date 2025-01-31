@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 /**
  * @module types (state)
  * @description Types for the Hero feature state management.
@@ -17,7 +16,7 @@ export enum AnimationState {
   Error = "error",
   Idle = "idle",
   Paused = "paused",
-  Disabled = "disabled"
+  Disabled = "disabled",
 }
 
 /**

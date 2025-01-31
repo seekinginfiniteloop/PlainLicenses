@@ -8,19 +8,34 @@
 
 const LICENSE_HASHES = ["#reader", "#html", "#markdown", "#plaintext", "#changelog", "#official"]
 
-const isProd = (url: URL) => { return url.hostname === "plainlicense.org" && url.protocol === "https:" }
+const isProd = (url: URL) => {
+  return url.hostname === "plainlicense.org" && url.protocol === "https:"
+}
 
 // tests if the site is in a development environment
-export const isDev = (url: URL) => { return (url.hostname === "localhost" && url.port === "8000") || (url.hostname === "127.0.0.1" && url.port === "8000") }
+export const isDev = (url: URL) => {
+  return (
+    (url.hostname === "localhost" && url.port === "8000") ||
+    (url.hostname === "127.0.0.1" && url.port === "8000")
+  )
+}
 
 // tests if the URL is on the site
-export const isOnSite = (url: URL) => { return isProd(url) || isDev(url) }
-
+export const isOnSite = (url: URL) => {
+  return isProd(url) || isDev(url)
+}
 
 // tests if the URL is the home page
-export const isHome = (url: URL) => { return url.pathname === "/" || url.pathname === "/index.html" && isOnSite(url) }
+export const isHome = (url: URL) => {
+  return url.pathname === "/" || (url.pathname === "/index.html" && isOnSite(url))
+}
 
-const isMainSiteLicensePage = (url: URL) => { return (url.pathname.endsWith("index.html") && url.pathname.split("/").length === 5) || (url.pathname.endsWith("/") && url.pathname.split("/").length === 4) }
+const isMainSiteLicensePage = (url: URL) => {
+  return (
+    (url.pathname.endsWith("index.html") && url.pathname.split("/").length === 5) ||
+    (url.pathname.endsWith("/") && url.pathname.split("/").length === 4)
+  )
+}
 
 // tests if the URL is a license page
 const isEmbeddedLicensePage = (url: URL) => {
@@ -33,18 +48,25 @@ const isEmbeddedLicensePage = (url: URL) => {
  * @param url the url to test
  * @returns boolean true if the URL is a license page
  */
-export const isLicense = (url: URL) => { return isMainSiteLicensePage(url) || isEmbeddedLicensePage(url) }
+export const isLicense = (url: URL) => {
+  return isMainSiteLicensePage(url) || isEmbeddedLicensePage(url)
+}
 
-export const isLicenseHash = (url: URL) => { return url.hash.length > 1 && isLicense(url) && LICENSE_HASHES.includes(url.hash) }
+export const isLicenseHash = (url: URL) => {
+  return url.hash.length > 1 && isLicense(url) && LICENSE_HASHES.includes(url.hash)
+}
 
 /**
  * Tests if the URL is the helping index page
  * @param url the url to test
  * @returns boolean true if the URL is the helping index page
  */
-export const isHelpingIndex = (url: URL) => { return url.pathname.includes("helping") && (
-  (url.pathname.split("/").length === 3 && url.pathname.endsWith("index.html")) ||
-    (url.pathname.split("/").length === 2 && url.pathname.endsWith("/")))
+export const isHelpingIndex = (url: URL) => {
+  return (
+    url.pathname.includes("helping") &&
+    ((url.pathname.split("/").length === 3 && url.pathname.endsWith("index.html")) ||
+      (url.pathname.split("/").length === 2 && url.pathname.endsWith("/")))
+  )
 }
 
 /**
@@ -54,8 +76,9 @@ export const isHelpingIndex = (url: URL) => { return url.pathname.includes("help
  */
 
 // Tests if the event is a valid event (that it isn't null and is an instance of Event)
-export const isValidEvent = (value: Event | null) => { return value !== null && value instanceof Event }
-
+export const isValidEvent = (value: Event | null) => {
+  return value !== null && value instanceof Event
+}
 
 /**
  * @function elementIsVisible
@@ -82,24 +105,22 @@ export const elementIsVisible = (el: HTMLElement | null): boolean => {
     return false
   }
 
-  const hasCheckVisibility = 'checkVisibility' in el && typeof el.checkVisibility === 'function'
+  const hasCheckVisibility = "checkVisibility" in el && typeof el.checkVisibility === "function"
 
   if (hasCheckVisibility) {
     return el.checkVisibility({
       contentVisibilityAuto: true,
       opacityProperty: true,
-      visibilityProperty: true
+      visibilityProperty: true,
     })
   }
 
   const isNotHidden =
-    el.style.display !== "none" &&
-    el.style.visibility !== "hidden" &&
-    el.style.opacity !== "0"
+    el.style.display !== "none" && el.style.visibility !== "hidden" && el.style.opacity !== "0"
 
   const parentNotHidden =
     el.parentElement?.style.contentVisibility !== "hidden" &&
-    el.parentElement?.style.visibility !== 'hidden'
+    el.parentElement?.style.visibility !== "hidden"
 
   return isNotHidden && parentNotHidden
 }

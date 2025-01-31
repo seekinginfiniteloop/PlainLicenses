@@ -18,7 +18,7 @@ import { Subscription } from "rxjs"
 import { Direction, Section } from "./types"
 import type { HeroState } from "~/state/types"
 // Make sure we have the effects registered
-import './effects'
+import "./effects"
 import { logger } from "~/utils/log"
 
 gsap.registerPlugin(Observer)
@@ -29,7 +29,6 @@ gsap.registerPlugin(Observer)
  * inspired by a fine example from the GreenSock team (based on another by Brian Cross), here: https://codepen.io/GreenSock/pen/XWzRraJ
  */
 export class HeroObservation {
-
   private store = HeroStore.getInstance()
 
   private currentIndex: number = -1
@@ -70,24 +69,24 @@ export class HeroObservation {
       duration: this.config.slides.slideDuration,
       ease: "power2.inOut",
       onComplete: () => {
-          this.animating = false
+        this.animating = false
       },
       onStart: () => {
-          this.animating = true
+        this.animating = true
       },
-      callbackScope: this
+      callbackScope: this,
     }
     this.transitionTl = gsap.timeline(this.defaultTimelineVars)
     this.setupSubscriptions()
     logger.info("HeroObservation initialized")
   }
 
-/**
- * @description Get the singleton instance of the HeroObservation class.
- * @returns {HeroObservation}
- */
+  /**
+   * @description Get the singleton instance of the HeroObservation class.
+   * @returns {HeroObservation}
+   */
   public static getInstance(): HeroObservation {
-    return HeroObservation.instance ??= HeroObservation.instance = new HeroObservation()
+    return (HeroObservation.instance ??= HeroObservation.instance = new HeroObservation())
   }
 
   // Sets up RxJs subscriptions to monitor the atHome state
@@ -96,12 +95,14 @@ export class HeroObservation {
     const atHome$ = this.store.state$.pipe(
       map((state: HeroState) => state.atHome),
       filter((atHome: boolean) => atHome),
-      distinctUntilChanged()
+      distinctUntilChanged(),
     )
 
-    this.subscriptions.add(atHome$.subscribe(() => {
-      this.onLoad()
-       }))
+    this.subscriptions.add(
+      atHome$.subscribe(() => {
+        this.onLoad()
+      }),
+    )
   }
 
   // A delayed initialization function that sets up the observers
@@ -113,7 +114,10 @@ export class HeroObservation {
     requestAnimationFrame(() => {
       document.body.style.overflow = "hidden"
       document.body.style.background = "var(--ecru)"
-      gsap.set(this.sections.map(section => section.element), { autoAlpha: 0 })
+      gsap.set(
+        this.sections.map((section) => section.element),
+        { autoAlpha: 0 },
+      )
       gsap.set(outerWrappers, { yPercent: 100 })
       gsap.set(innerWrappers, { yPercent: -100 })
     })
@@ -127,10 +131,11 @@ export class HeroObservation {
     const { hash } = window.location
     if (hash !== "") {
       this.goToSection(0, 1)
-    } else { // if there's a hash we need to transition to the correct section
+    } else {
+      // if there's a hash we need to transition to the correct section
       const target = document.getElementById(hash.substring(1))
       if (target) {
-        const sectionTarget = this.sections.find(section => section.content.includes(target))
+        const sectionTarget = this.sections.find((section) => section.content.includes(target))
         if (sectionTarget) {
           this.firstLoad = false
           const index = this.sections.indexOf(sectionTarget)
@@ -153,7 +158,7 @@ export class HeroObservation {
     const subtleTargets = gsap.utils.toArray(document.querySelectorAll(subtle))
     const strongTargets = gsap.utils.toArray(document.querySelectorAll(strong))
     const emphasisTargets = [...subtleTargets, ...strongTargets]
-    const filteredContent = content.filter(content => !emphasisTargets.includes(content))
+    const filteredContent = content.filter((content) => !emphasisTargets.includes(content))
     gsap.to(filteredContent, { autoAlpha: 1, duration: 0.75 })
     gsap.to(subtleTargets, { autoAlpha: 0.7, duration: 1 })
   }
@@ -164,7 +169,7 @@ export class HeroObservation {
    * @description Register an animation with a section element.
    */
   public registerAnimation(animation: gsap.core.Timeline, key: Element) {
-    const section = this.sections.find(section => section.element === key)
+    const section = this.sections.find((section) => section.element === key)
     if (section) {
       section.animation = section.animation ? section.animation.add(animation) : animation
     }
@@ -176,25 +181,27 @@ export class HeroObservation {
   private setupSections() {
     const sectionEls = this.config.fades.fadeInSections
     this.sections = sectionEls.map((el, index) => {
-            return {
-              index,
-              element: el,
-              content: getContentElements(el),
-              outerWrapper: el.querySelector(".outer"),
-              innerWrapper: el.querySelector(".inner"),
-              bg: el.querySelector(".bg"),
-              animation: gsap.timeline({
-              paused: !(index === 0), // Only play the first section
-          }).addLabel("start")
-            }
+      return {
+        index,
+        element: el,
+        content: getContentElements(el),
+        outerWrapper: el.querySelector(".outer"),
+        innerWrapper: el.querySelector(".inner"),
+        bg: el.querySelector(".bg"),
+        animation: gsap
+          .timeline({
+            paused: !(index === 0), // Only play the first section
+          })
+          .addLabel("start"),
+      }
     }) as Section[]
     const ignores = gsap.utils.toArray(this.config.fades.fadeInIgnore)
-    this.sections[0].content.filter(content => !ignores.includes(content))
+    this.sections[0].content.filter((content) => !ignores.includes(content))
     this.sections.forEach((section, _) => {
-          const { content } = section
-          requestAnimationFrame(() => {
-              gsap.set(content, { autoAlpha: 0 })
-          })
+      const { content } = section
+      requestAnimationFrame(() => {
+        gsap.set(content, { autoAlpha: 0 })
+      })
     })
     this.sectionCount = this.sections.length
     this.sectionIndexLength = this.sectionCount - 1
@@ -215,7 +222,7 @@ export class HeroObservation {
       let remainingSections = this.sectionIndexLength - index
 
       while (remainingSections > 0) {
-        await new Promise(resolve => setTimeout(resolve, 5000))
+        await new Promise((resolve) => setTimeout(resolve, 5000))
 
         if (this.currentIndex !== this.sectionIndexLength && this.currentIndex === index) {
           this.goToSection(index + Direction.DOWN, direction)
@@ -232,14 +239,14 @@ export class HeroObservation {
   // Get the next index based on the direction
   private getNextIndex(direction: Direction): number {
     if (
-      (this.currentIndex === 0 || this.currentIndex === -1)
-      && this.firstLoad
-      && direction === Direction.UP
+      (this.currentIndex === 0 || this.currentIndex === -1) &&
+      this.firstLoad &&
+      direction === Direction.UP
     ) {
       return 0
     }
     this.firstLoad = false
-    return (this.wrapper(this.currentIndex + direction))
+    return this.wrapper(this.currentIndex + direction)
   }
 
   // Construct the transition timeline based on the direction and index
@@ -248,7 +255,7 @@ export class HeroObservation {
     const nextSection = this.sections[index]
     if (this.currentIndex >= 0) {
       // the first time this runs, currentIndex will be -1
-      tl.setSection({direction, section: nextSection})
+      tl.setSection({ direction, section: nextSection })
     }
     tl.transitionSection({ direction, section: nextSection })
     return tl
@@ -263,10 +270,16 @@ export class HeroObservation {
     logger.info(`Going to section ${index} in direction ${direction}`)
     let tl = gsap.timeline({
       defaults: {
-        duration: this.config.slides.slideDuration, ease: "power2.inOut", onComplete: (() => { this.animating = false }),
-        onStart: (() => { this.animating = true }),
+        duration: this.config.slides.slideDuration,
+        ease: "power2.inOut",
+        onComplete: () => {
+          this.animating = false
+        },
+        onStart: () => {
+          this.animating = true
+        },
         callbackScope: this,
-      }
+      },
     })
     tl = this.constructTransitionTimeline(direction, index, tl)
     this.transitionTl = tl
@@ -287,8 +300,12 @@ export class HeroObservation {
     this.transitionObserver = Observer.create({
       type: "wheel,touch,pointer,scroll",
       wheelSpeed: -1,
-      onDown: () => { this.transition(Direction.DOWN, false) },
-      onUp: () => { this.transition(Direction.UP, false) },
+      onDown: () => {
+        this.transition(Direction.DOWN, false)
+      },
+      onUp: () => {
+        this.transition(Direction.UP, false)
+      },
       preventDefault: true,
       tolerance: 15,
       ignore: clickTargets as Element[],
@@ -298,8 +315,12 @@ export class HeroObservation {
       type: "click",
       target: clickTargets as Element[],
       ignore: ignoreTargets as Element[],
-      onClick: () => { this.transition(Direction.DOWN, true) },
-      onRelease: () => { this.transition(Direction.DOWN, true) },
+      onClick: () => {
+        this.transition(Direction.DOWN, true)
+      },
+      onRelease: () => {
+        this.transition(Direction.DOWN, true)
+      },
       preventDefault: true,
     })
     this.clickObserver.enable()

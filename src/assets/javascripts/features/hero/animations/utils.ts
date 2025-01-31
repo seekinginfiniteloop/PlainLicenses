@@ -7,9 +7,9 @@
  * @copyright No rights reserved.
  */
 
-import gsap from 'gsap'
-import { HeroStore } from '~/state'
-import { ReducedMotionCondition } from './types'
+import gsap from "gsap"
+import { HeroStore } from "~/state"
+import { ReducedMotionCondition } from "./types"
 
 const store = HeroStore.getInstance()
 
@@ -26,12 +26,11 @@ const store = HeroStore.getInstance()
  * @see {@link https://greensock.com/docs/v3/GSAP/Utilities/mapRange} GSAP Normalization Utility
  */
 export function normalizeResolution(): number {
-  const viewport = store.getStateValue('viewport')
+  const viewport = store.getStateValue("viewport")
   const resolution = Math.max(viewport.offset.y, viewport.offset.x)
   const clampedResolution = gsap.utils.clamp(320, 3840, resolution)
   return gsap.utils.mapRange(320, 3840, 0, 1, clampedResolution)
 }
-
 
 /**
  * Retrieves a matchMedia instance with the specified contextFunction and optional scope.
@@ -44,9 +43,7 @@ export function normalizeResolution(): number {
  * @param scope - The scope to use (defaults to document.documentElement).
  * @returns A matchMedia instance.
  */
-export function getMatchMediaInstance(
-  scope?: Element | string | object | null,
-) {
+export function getMatchMediaInstance(scope?: Element | string | object | null) {
   return gsap.matchMedia(scope || document.documentElement)
 }
 /**
@@ -57,14 +54,15 @@ export function getMatchMediaInstance(
  */
 export function getDistanceToViewport(
   target: Element,
-  edge: 'top' | 'right' | 'bottom' | 'left' = 'bottom') {
+  edge: "top" | "right" | "bottom" | "left" = "bottom",
+) {
   const rect = target.getBoundingClientRect()
-  const {viewport} = store.state$.getValue()
+  const { viewport } = store.state$.getValue()
   const distanceMap = {
     top: rect.top,
     right: viewport.offset.x - rect.right,
     bottom: viewport.offset.y - rect.bottom,
-    left: rect.left
+    left: rect.left,
   }
   return distanceMap[edge]
 }
@@ -90,12 +88,9 @@ export function hasLabel(tl: gsap.core.Timeline, label: string): boolean {
  */
 export function getContentElements(element: Element): Element[] {
   return Array.from(element.querySelectorAll("*")).filter(
-      el =>
-        el !== element &&
-        (el.innerHTML.trim() !== "" || el instanceof SVGElement)
+    (el) => el !== element && (el.innerHTML.trim() !== "" || el instanceof SVGElement),
   )
 }
-
 
 /**
  * Attempts to retrieve an object's values as elements.
@@ -103,7 +98,7 @@ export function getContentElements(element: Element): Element[] {
  * @returns The object's values as elements.
  */
 function tryObject(obj: any) {
-  if (obj === null || typeof obj !== 'object') {
+  if (obj === null || typeof obj !== "object") {
     return null
   }
   const values = Object.values(obj)
@@ -113,7 +108,7 @@ function tryObject(obj: any) {
       newValues.push(null)
     } else if (value instanceof Element) {
       newValues.push(value)
-    } else if (typeof value === 'string') {
+    } else if (typeof value === "string") {
       newValues.push(document.querySelector(value))
     }
     return newValues
@@ -127,11 +122,16 @@ function tryObject(obj: any) {
  * @returns The targets array.
  */
 export function getTargetsArray(targets: gsap.TweenTarget): Element[] {
-  return gsap.utils.toArray(targets)
-    .map(
-      (target) => target instanceof Element ? target :
-      (typeof target === "string" ? document.querySelector(target) : tryObject(target)))
-    .map((target) => { return target instanceof Element ? target : null })
+  return gsap.utils
+    .toArray(targets)
+    .map((target) =>
+      target instanceof Element ? target
+      : typeof target === "string" ? document.querySelector(target)
+      : tryObject(target),
+    )
+    .map((target) => {
+      return target instanceof Element ? target : null
+    })
     .filter((target) => target !== null)
 }
 
@@ -140,25 +140,30 @@ export function getTargetsArray(targets: gsap.TweenTarget): Element[] {
  * @param duration - The duration to modify.
  * @returns The modified duration.
  */
-export function modifyDurationForReducedMotion(duration: gsap.TweenValue): number | gsap.TweenValue {
+export function modifyDurationForReducedMotion(
+  duration: gsap.TweenValue,
+): number | gsap.TweenValue {
   let newDuration: number | gsap.TweenValue = duration
-  getMatchMediaInstance().add({ reducedMotion: "(prefers-reduced-motion: reduce)" }, (context: gsap.Context) => {
-    const { reducedMotion } = context.conditions as ReducedMotionCondition
-    if (reducedMotion) {
-      switch (typeof duration) {
-        case 'number':
-          newDuration = duration * 2
-          break
-        case 'string':
-          newDuration = parseFloat(duration) * 2
-          break
-        default:
-          newDuration = duration
+  getMatchMediaInstance().add(
+    { reducedMotion: "(prefers-reduced-motion: reduce)" },
+    (context: gsap.Context) => {
+      const { reducedMotion } = context.conditions as ReducedMotionCondition
+      if (reducedMotion) {
+        switch (typeof duration) {
+          case "number":
+            newDuration = duration * 2
+            break
+          case "string":
+            newDuration = parseFloat(duration) * 2
+            break
+          default:
+            newDuration = duration
+        }
+      } else {
+        newDuration = duration
       }
-    } else {
-      newDuration = duration
-    }
-  })
+    },
+  )
   return newDuration
 }
 
@@ -170,30 +175,30 @@ export function modifyDurationForReducedMotion(duration: gsap.TweenValue): numbe
  */
 export function wordsToLetterDivs(el: HTMLElement | string): DocumentFragment {
   const docFragment = document.createDocumentFragment()
-  let text = ''
-  if (typeof el === 'string') {
+  let text = ""
+  if (typeof el === "string") {
     text = el
   } else {
     text = el.innerText
   }
-  const letters = text.trim().split('')
+  const letters = text.trim().split("")
   letters.forEach((letter, idx) => {
-    if (idx === 0 && (letter === ' ' || letter === '\n')) {
+    if (idx === 0 && (letter === " " || letter === "\n")) {
       return
     }
     const textNode = document.createTextNode(letter)
-    if (letter === ' ' || letter === '\n') {
+    if (letter === " " || letter === "\n") {
       const lastEl = docFragment.lastChild
       lastEl?.appendChild(textNode)
     }
-    const newDiv = document.createElement('div')
+    const newDiv = document.createElement("div")
     newDiv.appendChild(textNode)
-    newDiv.classList.add('hero__letter')
+    newDiv.classList.add("hero__letter")
     docFragment.appendChild(newDiv)
   })
   if (el instanceof HTMLElement) {
-    gsap.set(el, { innerText: '' })
+    gsap.set(el, { innerText: "" })
   }
-  gsap.set(docFragment.querySelectorAll('div'), { display: 'inline-block', autoAlpha: 0 })
+  gsap.set(docFragment.querySelectorAll("div"), { display: "inline-block", autoAlpha: 0 })
   return docFragment
 }

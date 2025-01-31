@@ -1,5 +1,3 @@
-/* eslint-disable no-unused-vars */
-
 /**
  * @module tablesort
  * @description Self-produced type definitions for the TableSort library.
@@ -27,7 +25,11 @@ declare module "tablesort" {
   class Tablesort {
     constructor(el: HTMLTableElement, options?: TablesortOptions)
 
-    static extend(name: string, pattern: (value: string) => boolean, sort: (a: string, b: string) => number): void
+    static extend(
+      name: string,
+      pattern: (value: string) => boolean,
+      sort: (a: string, b: string) => number,
+    ): void
 
     init(el: HTMLTableElement, options: TablesortOptions): void
 

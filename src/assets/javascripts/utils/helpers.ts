@@ -7,7 +7,6 @@
  * @copyright No rights reserved.
  */
 
-
 /**
  * Create a script tag with the given src, async and defer attributes
  * and appends it to the head

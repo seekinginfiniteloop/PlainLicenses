@@ -1,5 +1,3 @@
-/* eslint-disable no-unused-vars */
-
 /**
  * @copyright No rights reserved
  * @license Plain Unlicense (Public Domain)
@@ -11,7 +9,6 @@ import { ImageTransformCalculator, ScaleCalculator } from "./vectorcalc"
 import { extend } from "tablesort"
 
 declare global {
-
   /* ----------------------------------------------------------------------------
    * Types
    * ------------------------------------------------------------------------- */
@@ -21,10 +18,7 @@ declare global {
 
   type PageLocation = "all" | "home" | "licenses" | "helpingIndex"
 
-  type Component<
-    T extends {} = {},
-    U extends HTMLElement = HTMLElement
-  > = T & {
+  type Component<T extends {} = {}, U extends HTMLElement = HTMLElement> = T & {
     ref: U /* Component reference */
   }
   type KeyboardMode = "global" /* Global */ | "search" /* Search is open */
@@ -67,7 +61,6 @@ declare global {
     offset: ViewportOffset
     size: ViewportSize
   }
-
 
   /**
    *! NOTE ON COMPONENTS (Window.component$)
@@ -123,5 +116,4 @@ declare global {
     toc: HTMLElement /* Table of contents */
     top: HTMLAnchorElement /* Back-to-top button */
   }
-
 }
