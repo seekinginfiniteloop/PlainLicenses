@@ -12,7 +12,7 @@ import {
   mediaExtensionPattern,
   namePattern,
   placeholderMap,
-  resolutions,
+  resPattern,
   tsTemplate,
   videoCodecs,
   videoExtensions,
@@ -71,22 +71,6 @@ const getBaseName = (parsedPath: path.ParsedPath): string => {
 }
 
 /**
- * Extracts the video width from a filename.
- * Parses the filename to find a number matching the video resolutions and returns it as a VideoWidth.
- * @param filename - The filename to extract the width from.
- * @returns The width of the video, or an empty string if not found.
- */
-const getWidth = (filename: string): VideoWidth => {
-  const widthValue = parseInt(
-    filename.split("_").find((name) => {
-      return !!name.match(/\d{3,4}/)
-    }),
-    10,
-  )
-  return (widthValue && resolutions.includes(widthValue) ? widthValue : "") as VideoWidth
-}
-
-/**
  * Validates the input filename and extension.
  * Checks if the filename and extension are valid and if the extension matches the media extension pattern.
  * Throws an error if the input is invalid.
@@ -124,19 +108,20 @@ export async function getmd5Hash(filePath: string): Promise<string> {
  * @param pathStr - The file path string to deconstruct.
  * @returns A Promise that resolves to a HeroFile object containing the extracted information.
  */
-
 export async function deconstructPath(pathStr: string): Promise<HeroFile> {
   const parsed = path.parse(pathStr)
-  const { base, ext } = parsed
+  const { base, ext, name } = parsed
   validatePathInput(base, ext)
   return {
-    parsed,
     parentPath: path.dirname(pathStr),
     filename: base,
     get baseName(): string {
-      return getBaseName(this.parsed)
+      const matchedName = new RegExp(namePattern).exec(name)
+      return matchedName[1]
     },
-    width: getWidth(base),
+    get width(): VideoWidth {
+      return parseInt(new RegExp(resPattern).exec(base)[0], 10) as VideoWidth
+    },
     extension: ext.slice(1) as MediaFileExtension,
     srcPath: pathStr,
     hash: base.match(hashPattern) ? base.match(hashPattern)[0] : await getmd5Hash(pathStr),
@@ -150,6 +135,9 @@ export async function deconstructPath(pathStr: string): Promise<HeroFile> {
           `${this.baseName}_${this.codec}_${this.width}.${this.hash}.${this.extension}`
         : `${this.baseName}_${this.width}.${this.hash}.${this.extension}`
       return `${srcToDocs(this.parentPath)}/${assembled}`
+    },
+    get parsed(): path.ParsedPath {
+      return path.parse(this.destPath)
     },
   }
 }
@@ -453,12 +441,13 @@ async function resolveFontFiles(): Promise<Partial<PlaceholderMap>> {
 async function replacePlaceholders(newContent: PlaceholderMap): Promise<void> {
   for (const [file, placeholders] of Object.entries(newContent)) {
     try {
-      const replacedContent = await fs.readFile(file, "utf8").then((data) => {
+      const content = await fs.readFile(file, "utf8")
+      let replacedContent = content
+      if (placeholders) {
         for (const [placeholder, value] of Object.entries(placeholders)) {
-          data = data.replace(new RegExp(placeholder, "g"), value)
-          return data
+          replacedContent = replacedContent.replace(new RegExp(placeholder, "g"), value)
         }
-      })
+      }
       const parsedPath = path.parse(file)
       const oldFilename = parsedPath.base
       const newFilename = oldFilename.replace(/^_/, "").replace(/_template/, "")
@@ -500,7 +489,7 @@ const tsFileOutputPath = path.join(
   "javascripts",
   "features",
   "hero",
-  "videos",
+  "video",
   "data.ts",
 )
 

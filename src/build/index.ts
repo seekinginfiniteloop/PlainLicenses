@@ -113,7 +113,7 @@ async function handleImageHashes(): Promise<FileHashes> {
   const processed = []
   for (const file of files) {
     const parsed = path.parse(file)
-    const { base, dir, ext, name } = parsed
+    const { ext } = parsed
     let hash = await utils.getmd5Hash(file)
     let dest = destPath(parsed, hash)
     if (ext === ".svg") {
