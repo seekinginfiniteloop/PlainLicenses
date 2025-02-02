@@ -7,9 +7,10 @@
  */
 
 import { logger } from "~/utils"
-import { CodecVariants, HeroImage, HeroVideo, VideoWidth } from "./types"
+import { CodecVariants, ImageIndex, HeroVideo, VideoWidth, VideoCodec } from "./types"
 import { MAX_WIDTHS } from "~/config"
 import { get_media_type, srcToAttributes } from "./utils"
+import { videoCodecs } from "src/build/config"
 
 /**
  * @class VideoElement
@@ -35,7 +36,7 @@ export class VideoElement {
 
   private autoplay: "true" | "false" = "true"
 
-  private poster: HeroImage
+  private poster: ImageIndex
 
   public picture = document.createElement("picture")
 
@@ -97,13 +98,20 @@ export class VideoElement {
     const { heroVideo } = this
     let srcs = []
     const widths = Object.keys(MAX_WIDTHS)
-    for (const variant of heroVideo.variants) {
-      for (const codec in variant as CodecVariants) {
+    for (const [_, variant] of Object.entries(heroVideo.variants)) {
+      for (const codec in variant) {
         if (codec === "av1" || codec === "vp9" || codec === "h264") {
+          const codecKey = codec as unknown as CodecVariants
           for (const width in widths) {
             const w = parseInt(width, 10) as VideoWidth
             const src = document.createElement("source")
-            src.src = variant[codec][w]
+            // @ts-ignore
+            const codecVariant = variant[codecKey as keyof typeof variant]
+            if (typeof codecVariant === "string") {
+              src.src = codecVariant
+            } else {
+              src.src = codecVariant[w]
+            }
             src.type = get_media_type(codec, w)
             src.media = w !== 3840 ? `(max-width: ${MAX_WIDTHS[w]}px)` : ""
             srcs.push(src)

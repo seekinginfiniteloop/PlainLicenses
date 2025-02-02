@@ -1,0 +1,17 @@
+{
+  "cacheName": "plain-license-v1",
+  "urls": [
+    "assets/javascripts/index.MURGNYX7.js",
+    "assets/javascripts/index.J4AG7E6F.css",
+    "assets/javascripts/workers/cache_worker.QVT6E73E.js",
+    "assets/fonts/inter-v.5HMTI5F7.woff2",
+    "assets/fonts/bangers-regular.BIV5PPSH.woff2",
+    "assets/fonts/sourcecodepro-regular.CK7SPIOU.woff2",
+    "assets/fonts/raleway.FJCY4DUZ.woff2",
+    "assets/stylesheets/bundle.Q2SW77BY.css",
+    "assets/images/logo_named.6fe3b615.svg"
+  ],
+  "version": 1738469910807,
+  "worker": "assets/javascripts/workers/cache_worker.QVT6E73E.js",
+  "logo": "assets/images/logo_named.6fe3b615.svg"
+}

@@ -30,21 +30,12 @@ import * as fs from "fs/promises"
 import * as path from "path"
 import { Observable, from } from "rxjs"
 import * as utils from "./utils"
-import {
-  HERO_VIDEO_TEMPLATE,
-  backupImage,
-  basePosterObj,
-  baseProject,
-  cssSrc,
-  metaPath,
-  videoMessages,
-  webConfig,
-} from "./config/"
+import { basePosterObj, baseProject, metaPath, noDelete, videoMessages, webConfig } from "./config/"
 import {
   FileHashes,
   HeroFiles,
-  HeroImage,
   HeroVideo,
+  ImageIndex,
   Project,
   buildJson,
   esbuildOutputs,
@@ -57,10 +48,8 @@ import { createHash } from "crypto"
  **                            Templates and Working Data
  *========================================================================**/
 
-const noScriptImage: HeroImage = {
+const noScriptImage: ImageIndex = {
   ...basePosterObj,
-  imageName: backupImage,
-  parent: `src/assets/images/${backupImage}`,
 }
 
 const heroFiles: Promise<HeroFiles> = utils.getHeroFiles()
@@ -76,24 +65,17 @@ let newFileLocs: FileHashes = {}
 async function handleFiles(): Promise<HeroVideo[]> {
   const { images, videos } = await heroFiles
   const parentPaths = utils.getParents(videos)
-  const processedVideos = Array(parentPaths.length).fill(HERO_VIDEO_TEMPLATE)
-  const availableVideos = new Set(videos.map((vid) => vid.baseName))
-  if (Object.keys(videoMessages).length !== availableVideos.size) {
-    throw new Error(
-      "Video messages do not match available videos. Did you forget to add a message?",
-    )
+  const baseNames = parentPaths.map((parent) => utils.getBaseName(path.parse(parent)))
+  let processedVideos = []
+  for (const baseName of baseNames) {
+    const filteredVideos = videos.filter((video) => baseName === video.baseName)
+    const filteredImages = images.filter((image) => baseName === image.baseName)
+    const parentPath = `/assets/videos/hero/${baseName}`
+    const message = videoMessages[baseName]
+    const variants = utils.constructVariants(filteredVideos)
+    const poster = await utils.constructPoster(filteredImages)
+    processedVideos.push({ baseName, parentPath, variants, poster, message })
   }
-  processedVideos.map((heroVideo, index) => {
-    let { baseName, parent, message, poster, variants } = heroVideo
-    baseName = [...availableVideos][index]
-    parent = utils.srcToDocs(parentPaths[index])
-    message = videoMessages[baseName] || ""
-    const filteredImages = images.filter((image) => image.baseName === baseName)
-    poster = utils.constructPoster(filteredImages)
-    const filteredVideos = videos.filter((vid) => vid.baseName === baseName)
-    variants = utils.constructVariants(filteredVideos)
-    return { baseName, parent, message, poster, variants }
-  })
   return processedVideos
 }
 
@@ -122,12 +104,12 @@ async function handleImageHashes(): Promise<FileHashes> {
       hash = createHash("md5").update(minified).digest("hex").slice(0, 8)
       dest = destPath(parsed, hash)
       if (!(await utils.fileExists(dest))) {
-        await fs.writeFile(dest, minified)
+        await fs.writeFile(dest, minified, "utf8")
       }
     } else if (!(await utils.fileExists(dest))) {
       await utils.copyFile(file, dest)
     }
-    processed.push([file, dest])
+    processed.push([file, dest.replace("docs/", "")])
   }
   return Object.fromEntries(processed)
 }
@@ -177,17 +159,22 @@ async function clearDirs() {
     "docs/assets/videos",
     ...destParents,
   ]
+  const filesToDelete = new Set()
   for (const dir of dirs) {
-    if (!(await fs.stat(dir).catch(() => false))) {
-      continue
-    }
-    for (const file of await fs.readdir(dir)) {
-      if ((await fs.stat(`${dir}/${file}`)).isFile()) {
-        try {
-          await fs.rm(`${dir}/${file}`)
-        } catch (err) {
-          console.error(err)
-        }
+    const dirFiles = await fs.readdir(dir)
+    dirFiles
+      .filter((file) => {
+        const parsed = path.parse(file)
+        return !noDelete.includes(parsed.name)
+      })
+      .forEach((file) => filesToDelete.add(path.join(dir, file)))
+  }
+  for (const file of filesToDelete) {
+    if (typeof file === "string" && file !== "" && !(await fs.lstat(file)).isDirectory()) {
+      try {
+        await fs.rm(file)
+      } catch (err) {
+        console.error(`Error removing file ${file}: ${err}`)
       }
     }
   }
@@ -224,7 +211,8 @@ const metaOutput = async (result: esbuild.BuildResult): Promise<esbuildOutputs> 
  */
 const checkCacheVersion = async (output: esbuildOutputs): Promise<number> => {
   const lastCacheMeta = await fs.readFile(metaPath, "utf8").catch(() => {
-    return "{}"
+    console.error("Error reading cache metafile")
+    return JSON.stringify({ urls: [], version: Date.now() })
   })
   const lastCache = JSON.parse(lastCacheMeta)
   const lastUrls = lastCache.urls || []
@@ -236,7 +224,7 @@ const checkCacheVersion = async (output: esbuildOutputs): Promise<number> => {
       .filter((key) => key.endsWith(".js") || key.endsWith(".css") || key.endsWith(".woff2"))
       .map((key) => key.replace("docs/", ""))
     const urlsChanged = !(
-      lastUrls.length === newUrls.length && lastUrls.every((v, i) => v === newUrls[i])
+      lastUrls.length === newUrls.length && lastUrls.every((v: string, _i) => newUrls.includes(v))
     )
     if (urlsChanged) {
       return Date.now()
@@ -265,12 +253,15 @@ const getCacheVersion = async (output: esbuildOutputs): Promise<number> => {
  */
 const cacheMeta = async (output: esbuildOutputs) => {
   let precache_urls = Object.keys(output)
-    .filter((key) => key.endsWith(".js") || key.endsWith(".css"))
+    .filter((key) => key.endsWith(".js") || key.endsWith(".css") || key.endsWith(".woff2"))
     .map((key) => key.replace("docs/", ""))
   precache_urls.push(...Object.values(newFileLocs))
   const cacheName = "plain-license-v1"
+  const worker = precache_urls.find((url) => url.includes("cache_worker"))
+  const version = await getCacheVersion(output)
+  const logo = precache_urls.find((url) => url.includes("logo_named"))
   const cacheJson = JSON.stringify(
-    { cacheName, urls: precache_urls, version: getCacheVersion(output) },
+    { cacheName, urls: precache_urls, version, worker, logo },
     null,
     2,
   )
@@ -288,12 +279,16 @@ const metaOutputMap = async (output: esbuildOutputs): Promise<buildJson> => {
   const cssSrcKey = keys.find(
     (key) => key.endsWith(".css") && key.includes("bundle") && !key.includes("javascripts"),
   )
+  const logoKey =
+    keys.find((key) => key.includes("logo_named")) ||
+    Object.keys(newFileLocs).find((key) => key.includes("logo_named"))
   const noScriptImageContent = utils.generatePictureElement(noScriptImage)
 
   const mapping = {
     noScriptImage: noScriptImageContent,
     SCRIPTBUNDLE: jsSrcKey?.replace("docs/", "") || "",
     CSSBUNDLE: cssSrcKey?.replace("docs/", "") || "",
+    LOGONAMED: logoKey?.replace("docs/", "") || "",
   }
   const outputMetaPath = path.join("overrides", "buildmeta.json")
   await fs.writeFile(outputMetaPath, JSON.stringify(mapping, null, 2))
@@ -325,6 +320,8 @@ async function buildAll(): Promise<void> {
   console.log("Building all projects...")
   await clearDirs()
   console.log("Directories cleared")
+  console.log("generating placeholder map")
+  await utils.generatePlaceholderMap()
   console.log("retrieving hero videos")
   const videos = await handleFiles()
   console.log("hero videos retrieved")
@@ -332,9 +329,8 @@ async function buildAll(): Promise<void> {
   const imageHashes = await handleImageHashes()
   await utils.exportVideosToTS(videos, noScriptImage)
   console.log("hero videos exported")
-  const newFontLocs = await utils.generatePlaceholderMap()
-  newFileLocs = { ...imageHashes, ...newFontLocs }
-  console.log("CSS placeholders replaced; SVGS minified")
+  await utils.verifyBundleCreated()
+  newFileLocs = { ...imageHashes }
   try {
     console.log("Building base project...")
     await handleSubscription(baseProject)
@@ -343,20 +339,15 @@ async function buildAll(): Promise<void> {
   }
 }
 
-async function main() {
-  console.log("Building Plain License...")
-  await buildAll()
-    .then(() => console.log("Build completed"))
-    .catch((error) => console.error("Error building:", error))
-  if (fs.stat(cssSrc).catch(() => false)) {
-    try {
-      fs.rm(cssSrc)
-        .then(() => console.log("Temporary bundle.css removed"))
-        .catch((err) => console.error(`Error removing temporary bundle.css: ${err}`))
-    } catch (err) {
-      console.error(`Error removing temporary bundle.css: ${err}`)
-    }
+async function main(): Promise<void> {
+  const build = async () => {
+    await buildAll()
+      .then(() => console.log("Build completed"))
+      .catch((error) => console.error("Error building:", error))
   }
+  console.log("Building Plain License...")
+  await build()
+  console.log("Plain License built")
 }
 
-main()
+main().then(() => console.log("Build process completed"))

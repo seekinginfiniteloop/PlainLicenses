@@ -24,9 +24,9 @@ import * as esbuild from "esbuild"
 // import { copy } from 'esbuild-plugin-copy'
 
 import type {
-  HeroImage,
   HeroPaths,
   HeroVideo,
+  ImageIndex,
   ImageType,
   PlaceholderMap,
   Project,
@@ -41,16 +41,6 @@ export const placeholderMap: PlaceholderMap = {
     "{{ palette-hash }}": "",
     "{{ main-hash }}": "",
   },
-  "src/assets/stylesheets/_bodyfont_template.css": {
-    "{{ inter-v.woff2 }}": "",
-    "{{ inter-v.woff }}": "",
-    "{{ bangers-regular.woff2 }}": "",
-    "{{ bangers-regular.woff }}": "",
-    "{{ sourcecodepro-regular.woff2 }}": "",
-    "{{ sourcecodepro-regular.woff }}": "",
-    "{{ raleway.woff2 }}": "",
-    "{{ raleway.woff }}": "",
-  },
 }
 
 export const cssLocs = {
@@ -64,6 +54,15 @@ export const cssLocs = {
 
 export const fontLoc = "src/assets/fonts/*"
 export const metaPath = "docs/assets/javascripts/workers/meta.json"
+export const noDelete = [
+  "fonts",
+  "images",
+  "videos",
+  "javascripts",
+  "stylesheets",
+  "workers",
+  "poster",
+]
 
 export const videoConfig = {
   resolutions: [
@@ -105,23 +104,17 @@ const heroPathsTemplate = Object.fromEntries(
 ) as HeroPaths
 
 export const HERO_VIDEO_TEMPLATE = {
-  baseName: "",
-  parent: "",
   variants: {
     av1: { ...heroPathsTemplate },
     vp9: { ...heroPathsTemplate },
     h264: { ...heroPathsTemplate },
   },
   poster: {
-    parent: "",
-    imageName: "",
-    images: {
-      avif: { widths: { ...heroPathsTemplate }, srcset: "" },
-      webp: { widths: { ...heroPathsTemplate }, srcset: "" },
-      png: { widths: { ...heroPathsTemplate }, srcset: "" },
-    },
+    avif: { widths: { ...heroPathsTemplate }, srcset: "" },
+    webp: { widths: { ...heroPathsTemplate }, srcset: "" },
+    png: { widths: { ...heroPathsTemplate }, srcset: "" },
   },
-} as HeroVideo
+} as Partial<HeroVideo>
 
 export const basePosterObj = HERO_VIDEO_TEMPLATE.poster
 
@@ -152,7 +145,6 @@ export const imageExtensionPattern = (isRegex: boolean = true) => {
 export const mediaExtensionPattern = (isRegex: boolean = true) => {
   return `${videoExtensionPattern(isRegex)}|${imageExtensionPattern(isRegex)}`
 }
-export const namePattern = `^(\\w+?)(?=_(${widthPattern()}|${codecPattern()}))`
 export const hashPattern = "[A-Fa-f0-9]{8}"
 
 export const videoMessages = {
@@ -245,8 +237,8 @@ function toEnumString(str: string): string {
   return `${str.toUpperCase()} = "${str}"`
 }
 
-export const tsTemplate = (videos: HeroVideo[], noScriptImage: HeroImage) => {
-  const replacePattern = /"(\w+?)":|"[\[\](){}]|[\[\](){}]"/g
+export const tsTemplate = (videos: HeroVideo[], noScriptImage: ImageIndex) => {
+  const keyPattern = /"(\w+?)":|"[\[\](){}]|[\[\](){}]"/g
   return `
 /**
  *! NOTE: The build process generates this file.
@@ -264,10 +256,7 @@ export enum HeroName {
     }
 
 export const backupImage = "${JSON.stringify(noScriptImage, null, 2)}" as const;
-`
-    .replaceAll(replacePattern, (match) => {
-      return match.replace(/"/g, "")
-    })
-    .replaceAll(/docs/, "")
-    .replaceAll(/src/, "")
+`.replace(keyPattern, (match) => {
+    return match.replace(/"/g, "")
+  })
 }

@@ -13,6 +13,7 @@
  * - Subscriptions to page-specific observables
  *========================================================================*
  */
+import "./fetchWorker"
 // @ts-ignore - TODO: figure out how to fix this annoying error
 import "@/bundle"
 import "./config"
@@ -59,14 +60,6 @@ document.documentElement.classList.add("js")
 
 let customWindow: CustomWindow = window as unknown as CustomWindow
 const { document$ } = customWindow
-
-// get the cache worker registered
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker
-    .register("workers/cache-worker.js", { scope: "/" })
-    .then(() => logger.info("SW registered!"))
-    .catch((err) => logger.error("SW registration failed:", err))
-}
 
 // get the hero store registered
 HeroStore.getInstance()

@@ -1,73 +1,13 @@
-import { CodecVariants, HeroImage, HeroPaths, HeroVideo, VideoCodec, VideoWidth } from "./types"
+import { HeroVideo, VideoCodec, VideoWidth } from "./types"
 import { rawHeroVideos } from "./data"
 import { parsePath } from "~/utils"
-
-function replaceDocs(src: string): string {
-  const protocol = location.protocol === "http:" ? "http:" : "https:"
-  const { host } = location
-  return src.replace(/docs/g, `${protocol}//${host}`)
-}
-
-const VIDEO_WIDTHS = [426, 640, 854, 1280, 1920, 2560, 3840] as VideoWidth[]
-
-/**
- * Maps the codec URLs to the video widths
- * @param variant - The variant of the video
- * @param codec - The codec of the video
- * @returns The mapped codec URLs
- */
-function mapCodecUrls(variant: CodecVariants, codec: VideoCodec): HeroPaths {
-  return VIDEO_WIDTHS.reduce(
-    (acc, width) => ({
-      ...acc,
-      [width]: replaceDocs(variant[codec][width]),
-    }),
-    {},
-  ) as { [_key in VideoWidth]: string }
-}
-
-/**
- * Maps the image URLs to the video widths
- * @param image - The image to map
- * @returns The mapped image
- */
-function mapImage(image: HeroImage): HeroImage {
-  const { imageName, parent, images } = image
-  for (const key in images) {
-    if (key === "avif" || key === "webp" || key === "png") {
-      images[key].srcset = replaceDocs(images[key].srcset)
-      images[key].widths = VIDEO_WIDTHS.reduce(
-        (acc, width: VideoWidth) => ({
-          ...acc,
-          [width]: replaceDocs(images[key].widths[width] || ""),
-        }),
-        {},
-      ) as { [_key in VideoWidth]: string }
-      images[key].srcset = replaceDocs(images[key].srcset)
-    }
-  }
-  return {
-    imageName,
-    parent: replaceDocs(parent),
-    images,
-  }
-}
 
 /**
  * Gets the hero videos
  * @returns The hero videos
  */
 export function getHeroVideos(): HeroVideo[] {
-  return rawHeroVideos.map((video: HeroVideo) => ({
-    basename,
-    variants: video.variants.map((variant: CodecVariants) => ({
-      av1: mapCodecUrls(variant, "av1"),
-      vp9: mapCodecUrls(variant, "vp9"),
-      h264: mapCodecUrls(variant, "h264"),
-    })),
-    parent: replaceDocs(video.parent),
-    poster: mapImage(video.poster),
-  }))
+  return [...rawHeroVideos]
 }
 
 /**

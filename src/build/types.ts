@@ -47,12 +47,6 @@ export type MediaFileExtension = ImageType | "mp4" | "webm"
 
 export type ImageIndex = Record<ImageType, ImageFormatData>
 
-export interface HeroImage {
-  imageName: string
-  parent: string
-  images: ImageIndex
-}
-
 /** ============================================
  *               esbuild Outputs/Meta
  *=============================================**/
@@ -113,9 +107,7 @@ export interface tsconfigPathsPluginInterface {
 
 export type VideoCodec = "av1" | "vp9" | "h264"
 
-export type CodecVariants = {
-  [key in VideoCodec]: HeroPaths
-}
+export type CodecVariants = Record<VideoCodec, HeroPaths>
 
 export interface VideoResolution {
   width: VideoWidth
@@ -124,9 +116,9 @@ export interface VideoResolution {
 
 export interface HeroVideo {
   baseName: string
-  parent: string // Path to the parent directory of the video
+  parentPath: string // Path to the parent directory of the video
   variants: CodecVariants
-  poster: HeroImage
+  poster: ImageIndex
   message?: string
 }
 
@@ -143,7 +135,7 @@ export interface HeroFiles {
 
 export interface HeroFile {
   baseName: string
-  codec: VideoCodec | ""
+  codec?: VideoCodec
   extension: MediaFileExtension
   filename: string
   srcPath: string

@@ -18,7 +18,7 @@
  * @license Plain-Unlicense (Public Domain)
  * @copyright No rights reserved.
  */
-
+// @ts-ignore: yes, I know it's not in the project json...
 import * as bundle from "@/bundle"
 
 import {
@@ -340,4 +340,12 @@ export function watchLicenseHash() {
     filter((url) => isLicenseHash(url)),
     tap(handleLicenseHash),
   )
+}
+
+/**
+ * Posts a message to the cache worker to cache a list of URLs.
+ * @param urls array of URLs to cache
+ */
+export function postUrlsForWorker(urls: string[]) {
+  customWindow.postMessage({ type: "CACHE_URLS", payload: urls })
 }

@@ -15,13 +15,24 @@ declare const self: ServiceWorkerGlobalScope
 interface CacheConfig {
   cacheName: string
   urls: string[]
-  version: string
+  version: number
+  worker: string
+  logo: string
 }
 
-interface CacheMetadata {
-  cacheName: string
-  version: string
-  [key: string]: string
+type CacheUrls = { urls: string[] }
+
+interface Payload {
+  type: "CACHE_CONFIG" | "CACHE_URLS"
+  payload: CacheConfig | CacheUrls
+}
+
+let CONFIG: CacheConfig = {
+  cacheName: "plain-license-v1",
+  urls: [],
+  version: Date.now(),
+  worker: "",
+  logo: "",
 }
 
 /** ======================
@@ -65,12 +76,16 @@ class NetworkError extends Error {
   }
 }
 
-// Cache configuration with versioning
-const DEFAULT_CONFIG: CacheConfig = {
-  cacheName: "plain-license-v1",
-  urls: [],
-  version: "1.0.0",
-}
+self.addEventListener("message", (event: ExtendableMessageEvent) => {
+  const payload = event.data as Payload
+  if (
+    payload.type === "CACHE_CONFIG" &&
+    payload.payload &&
+    Object.keys(payload.payload).length > 1
+  ) {
+    CONFIG = { ...CONFIG, ...payload.payload } as CacheConfig
+  }
+})
 
 /**
  * Get the hash from a file path
@@ -135,23 +150,29 @@ const logger = {
  * @returns Promise<CacheConfig>
  */
 async function retrieveCacheConfig(): Promise<CacheConfig> {
-  try {
-    const response = await fetch("meta.json")
-    if (!response.ok) {
-      throw new NetworkError("Failed to fetch meta.json", response.status)
-    }
+  if (CONFIG.urls.length > 0) {
+    return CONFIG
+  } else {
+    try {
+      const response = await fetch("meta.json")
+      if (!response.ok) {
+        throw new NetworkError("Failed to fetch meta.json", response.status)
+      }
 
-    const meta: CacheMetadata = await response.json()
-    return {
-      cacheName: meta.cacheName ?? DEFAULT_CONFIG.cacheName,
-      version: meta.version ?? DEFAULT_CONFIG.version,
-      urls: Object.entries(meta)
-        .filter(([key]) => !["cacheName", "version"].includes(key))
-        .map(([, value]) => value as string),
+      const meta: CacheConfig = await response.json()
+      return {
+        cacheName: meta.cacheName ?? CONFIG.cacheName,
+        version: meta.version ?? CONFIG.version,
+        urls: Object.entries(meta)
+          .filter(([key]) => !["cacheName", "version"].includes(key))
+          .map(([, value]) => value as string),
+        worker: meta["worker"] ?? "",
+        logo: meta["logo"] ?? "",
+      }
+    } catch (error) {
+      logger.error("Failed to retrieve cache config:", error as Error)
+      return CONFIG
     }
-  } catch (error) {
-    logger.error("Failed to retrieve cache config:", error as Error)
-    return DEFAULT_CONFIG
   }
 }
 
@@ -163,7 +184,7 @@ async function retrieveCacheConfig(): Promise<CacheConfig> {
  * @method precache - Precache all the urls in the cache configuration
  */
 class CacheManager {
-  private config: CacheConfig = DEFAULT_CONFIG
+  private config: CacheConfig = CONFIG
 
   constructor() {
     this.init()
@@ -172,11 +193,11 @@ class CacheManager {
   // gets the cache configuration
   async init(): Promise<void> {
     try {
-      this.config = await retrieveCacheConfig()
+      CONFIG = await retrieveCacheConfig()
       logger.info("Cache configuration retrieved")
     } catch (error) {
       logger.error("Failed to retrieve cache configuration:", error as Error)
-      this.config = DEFAULT_CONFIG
+      this.config = CONFIG
     }
   }
 
@@ -249,10 +270,10 @@ class CacheManager {
         : new URL(request)
       const hash = get_hash(url.pathname)
       if (!hash) {
-        const file = url.pathname.split("/")[-1]
-        const parts = file.split(".")
-        const name = parts[0]
-        const ext = parts[parts.length - 1]
+        const file = url.pathname.split("/")?.pop()
+        const parts = file?.split(".")
+        const name = parts?.slice(0, -1).join(".")
+        const ext = parts?.slice(-1)[0]
         const hashlessUrl = new RegExp(`${name}\.[a-fA-F0-9]{8}\.${ext}`)
         const inConfig = this.config.urls.find((u) => hashlessUrl.test(u))
         if (inConfig) {
@@ -290,7 +311,7 @@ class CacheStrategies {
         throw new NetworkError("Network response was not ok", response.status)
       }
 
-      const cache = await caches.open(DEFAULT_CONFIG.cacheName)
+      const cache = await caches.open(CONFIG.cacheName)
       await cache.put(request, response.clone())
       return response
     } catch (error) {
@@ -305,7 +326,7 @@ class CacheStrategies {
    * @returns Promise<Response>
    */
   static async staleWhileRevalidate(request: Request): Promise<Response> {
-    const cache = await caches.open(DEFAULT_CONFIG.cacheName)
+    const cache = await caches.open(CONFIG.cacheName)
     const cached = await cache.match(request)
 
     const networkPromise = await cacheManager
@@ -382,4 +403,14 @@ self.addEventListener("fetch", (event: FetchEvent) => {
       CacheStrategies.staleWhileRevalidate(event.request)
     : CacheStrategies.cacheFirst(event.request),
   )
+})
+
+self.addEventListener("message", (event: ExtendableMessageEvent) => {
+  const payload = event.data as Payload
+  if (payload.type === "CACHE_URLS" && payload.payload && payload.payload.urls) {
+    CONFIG.urls.push(...payload.payload.urls)
+    for (const url of payload.payload.urls) {
+      CacheStrategies.cacheFirst(new Request(url))
+    }
+  }
 })

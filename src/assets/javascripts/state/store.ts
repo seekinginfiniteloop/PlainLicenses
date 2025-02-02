@@ -186,11 +186,17 @@ export class HeroStore {
       tap(this.createObserver("atHome$", (atHome) => ({ atHome }))),
     )
 
-    const landing$ = isPartiallyInViewport(document.getElementById("parallax-layer") as HTMLElement)
+    const landing$ = isPartiallyInViewport(
+      document.getElementById("parallax-hero-image-layer") as HTMLElement,
+    ).pipe(filter((landing) => landing !== undefined && landing !== null))
 
     const landingVisible$ = atHome$.pipe(
       filter((atHome) => atHome),
       switchMap(() => landing$),
+      filter(
+        (landingVisible) =>
+          landingVisible && landingVisible !== undefined && landingVisible !== null,
+      ),
       tap(this.createObserver("landingVisible$", (landingVisible) => ({ landingVisible }))),
     )
 
