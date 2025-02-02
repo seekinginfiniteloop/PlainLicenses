@@ -13601,39 +13601,39 @@ var rawHeroVideos = [
     poster: {
       avif: {
         widths: {
-          426: "assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_426.b057edfa.avif",
+          426: "assets/videos/hero/break_free/posters/break_free_426.15b2f8c2.avif",
           640: "assets/videos/hero/break_free/posters/break_free_640.1f09127c.avif",
-          854: "assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_854.56629992.avif",
-          1280: "assets/videos/hero/break_free/posters/break_free_1280.a70cced8.avif",
-          1920: "assets/videos/hero/break_free/posters/break_free_1920.f4ca50fc.avif",
+          854: "assets/videos/hero/break_free/posters/break_free_854.719c1f80.avif",
+          1280: "assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_1280.883f0f57.avif",
+          1920: "assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_1920.a2f4dafc.avif",
           2560: "assets/videos/hero/break_free/posters/break_free_2560.b3be2865.avif",
           3840: "assets/videos/hero/break_free/posters/break_free_3840.5b016e9b.avif"
         },
-        srcset: "assets/videos/hero/break_free/posters/break_free_3840.5b016e9b.avif 3840w, assets/videos/hero/break_free/posters/break_free_2560.b3be2865.avif 2560w, assets/videos/hero/break_free/posters/break_free_1920.f4ca50fc.avif 1920w, assets/videos/hero/break_free/posters/break_free_1280.a70cced8.avif 1280w, assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_854.56629992.avif 854w, assets/videos/hero/break_free/posters/break_free_640.1f09127c.avif 640w, assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_426.b057edfa.avif 426w"
+        srcset: "assets/videos/hero/break_free/posters/break_free_3840.5b016e9b.avif 3840w, assets/videos/hero/break_free/posters/break_free_2560.b3be2865.avif 2560w, assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_1920.a2f4dafc.avif 1920w, assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_1280.883f0f57.avif 1280w, assets/videos/hero/break_free/posters/break_free_854.719c1f80.avif 854w, assets/videos/hero/break_free/posters/break_free_640.1f09127c.avif 640w, assets/videos/hero/break_free/posters/break_free_426.15b2f8c2.avif 426w"
       },
       webp: {
         widths: {
-          426: "assets/videos/hero/break_free/posters/break_free_426.e5d3453e.webp",
+          426: "assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_426.435dffdc.webp",
           640: "assets/videos/hero/break_free/posters/break_free_640.23b208a2.webp",
-          854: "assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_854.48926405.webp",
+          854: "assets/videos/hero/break_free/posters/break_free_854.ca68c60c.webp",
           1280: "assets/videos/hero/break_free/posters/break_free_1280.2e7a920c.webp",
-          1920: "assets/videos/hero/break_free/posters/break_free_1920.822fae28.webp",
+          1920: "assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_1920.e4d59947.webp",
           2560: "assets/videos/hero/break_free/posters/break_free_2560.923f39c9.webp",
-          3840: "assets/videos/hero/break_free/posters/break_free_3840.a4a844c0.webp"
+          3840: "assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_3840.f21c2a42.webp"
         },
-        srcset: "assets/videos/hero/break_free/posters/break_free_3840.a4a844c0.webp 3840w, assets/videos/hero/break_free/posters/break_free_2560.923f39c9.webp 2560w, assets/videos/hero/break_free/posters/break_free_1920.822fae28.webp 1920w, assets/videos/hero/break_free/posters/break_free_1280.2e7a920c.webp 1280w, assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_854.48926405.webp 854w, assets/videos/hero/break_free/posters/break_free_640.23b208a2.webp 640w, assets/videos/hero/break_free/posters/break_free_426.e5d3453e.webp 426w"
+        srcset: "assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_3840.f21c2a42.webp 3840w, assets/videos/hero/break_free/posters/break_free_2560.923f39c9.webp 2560w, assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_1920.e4d59947.webp 1920w, assets/videos/hero/break_free/posters/break_free_1280.2e7a920c.webp 1280w, assets/videos/hero/break_free/posters/break_free_854.ca68c60c.webp 854w, assets/videos/hero/break_free/posters/break_free_640.23b208a2.webp 640w, assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_426.435dffdc.webp 426w"
       },
       png: {
         widths: {
           426: "assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_426.9e78d813.png",
-          640: "assets/videos/hero/break_free/posters/break_free_640.2cbe3fc9.png",
-          854: "assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_854.9828900a.png",
+          640: "assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_640.19194ff4.png",
+          854: "assets/videos/hero/break_free/posters/break_free_854.56f0053a.png",
           1280: "assets/videos/hero/break_free/posters/break_free_1280.6088c494.png",
-          1920: "assets/videos/hero/break_free/posters/break_free_1920.e29d593a.png",
+          1920: "assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_1920.1feeb1dd.png",
           2560: "assets/videos/hero/break_free/posters/break_free_2560.aac4a3cc.png",
-          3840: "assets/videos/hero/break_free/posters/break_free_3840.c12169da.png"
+          3840: "assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_3840.bc9c8fe8.png"
         },
-        srcset: "assets/videos/hero/break_free/posters/break_free_3840.c12169da.png 3840w, assets/videos/hero/break_free/posters/break_free_2560.aac4a3cc.png 2560w, assets/videos/hero/break_free/posters/break_free_1920.e29d593a.png 1920w, assets/videos/hero/break_free/posters/break_free_1280.6088c494.png 1280w, assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_854.9828900a.png 854w, assets/videos/hero/break_free/posters/break_free_640.2cbe3fc9.png 640w, assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_426.9e78d813.png 426w"
+        srcset: "assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_3840.bc9c8fe8.png 3840w, assets/videos/hero/break_free/posters/break_free_2560.aac4a3cc.png 2560w, assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_1920.1feeb1dd.png 1920w, assets/videos/hero/break_free/posters/break_free_1280.6088c494.png 1280w, assets/videos/hero/break_free/posters/break_free_854.56f0053a.png 854w, assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_640.19194ff4.png 640w, assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_426.9e78d813.png 426w"
       }
     },
     message: "Understanding shouldn't require a degree."
@@ -13673,39 +13673,39 @@ var rawHeroVideos = [
     poster: {
       avif: {
         widths: {
-          426: "assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_426.b057edfa.avif",
+          426: "assets/videos/hero/break_free/posters/break_free_426.15b2f8c2.avif",
           640: "assets/videos/hero/break_free/posters/break_free_640.1f09127c.avif",
-          854: "assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_854.56629992.avif",
-          1280: "assets/videos/hero/break_free/posters/break_free_1280.a70cced8.avif",
-          1920: "assets/videos/hero/break_free/posters/break_free_1920.f4ca50fc.avif",
+          854: "assets/videos/hero/break_free/posters/break_free_854.719c1f80.avif",
+          1280: "assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_1280.883f0f57.avif",
+          1920: "assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_1920.a2f4dafc.avif",
           2560: "assets/videos/hero/break_free/posters/break_free_2560.b3be2865.avif",
           3840: "assets/videos/hero/break_free/posters/break_free_3840.5b016e9b.avif"
         },
-        srcset: "assets/videos/hero/break_free/posters/break_free_3840.5b016e9b.avif 3840w, assets/videos/hero/break_free/posters/break_free_2560.b3be2865.avif 2560w, assets/videos/hero/break_free/posters/break_free_1920.f4ca50fc.avif 1920w, assets/videos/hero/break_free/posters/break_free_1280.a70cced8.avif 1280w, assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_854.56629992.avif 854w, assets/videos/hero/break_free/posters/break_free_640.1f09127c.avif 640w, assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_426.b057edfa.avif 426w"
+        srcset: "assets/videos/hero/break_free/posters/break_free_3840.5b016e9b.avif 3840w, assets/videos/hero/break_free/posters/break_free_2560.b3be2865.avif 2560w, assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_1920.a2f4dafc.avif 1920w, assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_1280.883f0f57.avif 1280w, assets/videos/hero/break_free/posters/break_free_854.719c1f80.avif 854w, assets/videos/hero/break_free/posters/break_free_640.1f09127c.avif 640w, assets/videos/hero/break_free/posters/break_free_426.15b2f8c2.avif 426w"
       },
       webp: {
         widths: {
-          426: "assets/videos/hero/break_free/posters/break_free_426.e5d3453e.webp",
+          426: "assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_426.435dffdc.webp",
           640: "assets/videos/hero/break_free/posters/break_free_640.23b208a2.webp",
-          854: "assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_854.48926405.webp",
+          854: "assets/videos/hero/break_free/posters/break_free_854.ca68c60c.webp",
           1280: "assets/videos/hero/break_free/posters/break_free_1280.2e7a920c.webp",
-          1920: "assets/videos/hero/break_free/posters/break_free_1920.822fae28.webp",
+          1920: "assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_1920.e4d59947.webp",
           2560: "assets/videos/hero/break_free/posters/break_free_2560.923f39c9.webp",
-          3840: "assets/videos/hero/break_free/posters/break_free_3840.a4a844c0.webp"
+          3840: "assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_3840.f21c2a42.webp"
         },
-        srcset: "assets/videos/hero/break_free/posters/break_free_3840.a4a844c0.webp 3840w, assets/videos/hero/break_free/posters/break_free_2560.923f39c9.webp 2560w, assets/videos/hero/break_free/posters/break_free_1920.822fae28.webp 1920w, assets/videos/hero/break_free/posters/break_free_1280.2e7a920c.webp 1280w, assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_854.48926405.webp 854w, assets/videos/hero/break_free/posters/break_free_640.23b208a2.webp 640w, assets/videos/hero/break_free/posters/break_free_426.e5d3453e.webp 426w"
+        srcset: "assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_3840.f21c2a42.webp 3840w, assets/videos/hero/break_free/posters/break_free_2560.923f39c9.webp 2560w, assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_1920.e4d59947.webp 1920w, assets/videos/hero/break_free/posters/break_free_1280.2e7a920c.webp 1280w, assets/videos/hero/break_free/posters/break_free_854.ca68c60c.webp 854w, assets/videos/hero/break_free/posters/break_free_640.23b208a2.webp 640w, assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_426.435dffdc.webp 426w"
       },
       png: {
         widths: {
           426: "assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_426.9e78d813.png",
-          640: "assets/videos/hero/break_free/posters/break_free_640.2cbe3fc9.png",
-          854: "assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_854.9828900a.png",
+          640: "assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_640.19194ff4.png",
+          854: "assets/videos/hero/break_free/posters/break_free_854.56f0053a.png",
           1280: "assets/videos/hero/break_free/posters/break_free_1280.6088c494.png",
-          1920: "assets/videos/hero/break_free/posters/break_free_1920.e29d593a.png",
+          1920: "assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_1920.1feeb1dd.png",
           2560: "assets/videos/hero/break_free/posters/break_free_2560.aac4a3cc.png",
-          3840: "assets/videos/hero/break_free/posters/break_free_3840.c12169da.png"
+          3840: "assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_3840.bc9c8fe8.png"
         },
-        srcset: "assets/videos/hero/break_free/posters/break_free_3840.c12169da.png 3840w, assets/videos/hero/break_free/posters/break_free_2560.aac4a3cc.png 2560w, assets/videos/hero/break_free/posters/break_free_1920.e29d593a.png 1920w, assets/videos/hero/break_free/posters/break_free_1280.6088c494.png 1280w, assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_854.9828900a.png 854w, assets/videos/hero/break_free/posters/break_free_640.2cbe3fc9.png 640w, assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_426.9e78d813.png 426w"
+        srcset: "assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_3840.bc9c8fe8.png 3840w, assets/videos/hero/break_free/posters/break_free_2560.aac4a3cc.png 2560w, assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_1920.1feeb1dd.png 1920w, assets/videos/hero/break_free/posters/break_free_1280.6088c494.png 1280w, assets/videos/hero/break_free/posters/break_free_854.56f0053a.png 854w, assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_640.19194ff4.png 640w, assets/videos/hero/tokyo_shuffle/posters/tokyo_shuffle_426.9e78d813.png 426w"
       }
     },
     message: "Stop the Nonsense"
@@ -13876,8 +13876,7 @@ var VideoElement = class {
   getSizes() {
     const { heroVideo } = this;
     const { poster } = heroVideo;
-    const { images } = poster;
-    const { png } = images;
+    const { png } = poster;
     const { widths } = png;
     let sizes = "";
     for (const width in widths) {
@@ -13891,11 +13890,10 @@ var VideoElement = class {
   // construct the picture element
   constructPictureElement() {
     const { picture, poster } = this;
-    const { images } = poster;
     let srcs = [];
-    for (const type in images) {
+    for (const type in Object.keys(poster)) {
       if (type === "webp" || type === "avif") {
-        const { srcset } = images[type];
+        const { srcset } = poster[type.toString()];
         const source = document.createElement("source");
         source.srcset = srcset;
         source.type = `image/${type}`;
@@ -13916,8 +13914,8 @@ var VideoElement = class {
     });
     picture.append(...srcs);
     const img = document.createElement("img");
-    img.src = images.png.widths[1280];
-    img.srcset = images.png.srcset;
+    img.src = poster.png.widths[1280];
+    img.srcset = poster.png.srcset;
     img.alt = "";
     img.sizes = this.getSizes();
     picture.classList.add("hero__poster");
@@ -16583,4 +16581,4 @@ gsap/ScrollToPlugin.js:
    * @author: Jack Doyle, jack@greensock.com
   *)
 */
-//# sourceMappingURL=index.MURGNYX7.js.map
+//# sourceMappingURL=index.Q3KGILMV.js.map

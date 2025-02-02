@@ -154,6 +154,7 @@ async function clearDirs() {
   const dirs = [
     "docs/assets/stylesheets",
     "docs/assets/javascripts",
+    "docs/assets/javascripts/workers",
     "docs/assets/images",
     "docs/assets/fonts",
     "docs/assets/videos",

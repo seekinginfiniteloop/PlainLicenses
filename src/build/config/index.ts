@@ -62,6 +62,7 @@ export const noDelete = [
   "stylesheets",
   "workers",
   "poster",
+  "meta",
 ]
 
 export const videoConfig = {

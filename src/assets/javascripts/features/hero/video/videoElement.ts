@@ -7,10 +7,9 @@
  */
 
 import { logger } from "~/utils"
-import { CodecVariants, ImageIndex, HeroVideo, VideoWidth, VideoCodec } from "./types"
+import { CodecVariants, ImageIndex, HeroVideo, VideoWidth } from "./types"
 import { MAX_WIDTHS } from "~/config"
 import { get_media_type, srcToAttributes } from "./utils"
-import { videoCodecs } from "src/build/config"
 
 /**
  * @class VideoElement
@@ -146,8 +145,7 @@ export class VideoElement {
   private getSizes() {
     const { heroVideo } = this
     const { poster } = heroVideo
-    const { images } = poster
-    const { png } = images
+    const { png } = poster
     const { widths } = png
     let sizes = ""
     for (const width in widths) {
@@ -163,12 +161,11 @@ export class VideoElement {
   // construct the picture element
   private constructPictureElement() {
     const { picture, poster } = this
-    const { images } = poster
     let srcs = []
-    for (const type in images) {
+    for (const type in Object.keys(poster)) {
       // type guard
       if (type === "webp" || type === "avif") {
-        const { srcset } = images[type]
+        const { srcset } = poster[type.toString() as keyof ImageIndex]
         const source = document.createElement("source")
         source.srcset = srcset
         source.type = `image/${type}`
@@ -189,8 +186,8 @@ export class VideoElement {
     })
     picture.append(...srcs)
     const img = document.createElement("img")
-    img.src = images.png.widths[1280]
-    img.srcset = images.png.srcset
+    img.src = poster.png.widths[1280]
+    img.srcset = poster.png.srcset
     img.alt = ""
     img.sizes = this.getSizes()
     picture.classList.add("hero__poster")
