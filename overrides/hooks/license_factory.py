@@ -16,7 +16,7 @@ import logging
 import re
 
 from copy import copy
-from datetime import datetime
+from datetime import UTC, datetime
 from functools import cached_property
 from pathlib import Path
 from re import Match, Pattern
@@ -117,7 +117,7 @@ def assemble_license_page(config: MkDocsConfig, page: Page, file: File) -> Page:
     meta = clean_content(meta)
 
     boilerplate: dict[str, str] = config["extra"]["boilerplate"]
-    boilerplate["year"] = boilerplate.get("year", datetime.now(datetime.utc).strftime("%Y")).strip()
+    boilerplate["year"] = boilerplate.get("year", datetime.now(UTC).strftime("%Y")).strip()
     boilerplate = clean_content(boilerplate) or {}
     page.meta = meta | boilerplate  # type: ignore
     p_license = LicenseContent(page)
@@ -290,7 +290,7 @@ class LicenseContent:
         self.meta = page.meta
         self.license_type = self.get_license_type()
         self.title = f"The {self.meta['plain_name']}"
-        self.year = str(datetime.now(tz=datetime.utc).strftime("%Y"))
+        self.year = str(datetime.now(UTC).strftime("%Y"))
         self.reader_license_text: str = self.replace_year(self.meta["reader_license_text"])
         self.markdown_license_text = self.process_mkdocs_to_markdown()
         self.plaintext_license_text = self.process_markdown_to_plaintext()

@@ -1,8 +1,6 @@
-/* eslint-disable no-unused-vars */
 import { gsap } from "gsap"
 
 declare module "gsap" {
-
   export interface GSAP extends gsap {
     animateMessage(targets: gsap.TweenTarget, config: AnimateMessageConfig): gsap.core.Timeline
     fadeIn(targets: gsap.TweenTarget, config: FadeEffectConfig): gsap.core.Timeline

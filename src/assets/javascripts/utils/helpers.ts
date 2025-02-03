@@ -7,7 +7,6 @@
  * @copyright No rights reserved.
  */
 
-
 /**
  * Create a script tag with the given src, async and defer attributes
  * and appends it to the head
@@ -44,4 +43,18 @@ export function setCssVariable(name: string, value: string) {
 export function isAnchorLinkTarget(url: string | URL) {
   url = typeof url === "string" ? new URL(url, window.location.origin) : url
   return url.origin === window.location.origin && url.hash !== ""
+}
+
+/**
+ * Parses a URL and returns the pathname and hash
+ * @param path - the URL to parse
+ * @returns the pathname and hash
+ */
+export function parsePath(path: string) {
+  const parts = path.split("/")
+  const base = parts.pop()
+  const dir = parts.join("/")
+  const name = base?.split(".").slice(0, -1).join(".") || ""
+  const ext = base?.split(".").pop() || ""
+  return { dir, base, name, ext }
 }

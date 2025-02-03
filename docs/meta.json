@@ -1,19 +1,21 @@
 {
   "metaOutput": {
-    "docs/assets/javascripts/index.5F445YJ6.js.map": {
-      "bytes": 1780888,
+    "docs/assets/javascripts/index.Q3KGILMV.js.map": {
+      "bytes": 1749997,
       "inputs": [],
       "exports": []
     },
-    "docs/assets/javascripts/index.5F445YJ6.js": {
-      "bytes": 640655,
+    "docs/assets/javascripts/index.Q3KGILMV.js": {
+      "bytes": 619895,
       "inputs": [
         "node_modules/focus-visible/dist/focus-visible.js",
         "node_modules/escape-html/index.js",
         "node_modules/clipboard/dist/clipboard.js",
         "node_modules/tablesort/src/tablesort.js",
+        "src/assets/javascripts/utils/log.ts",
+        "src/assets/javascripts/utils/helpers.ts",
         "external/mkdocs-material/src/templates/assets/javascripts/bundle.ts",
-        "node_modules/tslib/tslib.es6.mjs",
+        "node_modules/rxjs/node_modules/tslib/tslib.es6.mjs",
         "node_modules/rxjs/dist/esm5/internal/util/isFunction.js",
         "node_modules/rxjs/dist/esm5/internal/util/createErrorClass.js",
         "node_modules/rxjs/dist/esm5/internal/util/UnsubscriptionError.js",
@@ -77,7 +79,6 @@
         "node_modules/rxjs/dist/esm5/internal/observable/of.js",
         "node_modules/rxjs/dist/esm5/internal/observable/throwError.js",
         "node_modules/rxjs/dist/esm5/internal/util/EmptyError.js",
-        "node_modules/rxjs/dist/esm5/internal/firstValueFrom.js",
         "node_modules/rxjs/dist/esm5/internal/util/isDate.js",
         "node_modules/rxjs/dist/esm5/internal/operators/map.js",
         "node_modules/rxjs/dist/esm5/internal/util/mapOneOrManyArgs.js",
@@ -93,7 +94,6 @@
         "node_modules/rxjs/dist/esm5/internal/observable/fromEvent.js",
         "node_modules/rxjs/dist/esm5/internal/observable/fromEventPattern.js",
         "node_modules/rxjs/dist/esm5/internal/observable/timer.js",
-        "node_modules/rxjs/dist/esm5/internal/observable/interval.js",
         "node_modules/rxjs/dist/esm5/internal/observable/merge.js",
         "node_modules/rxjs/dist/esm5/internal/observable/never.js",
         "node_modules/rxjs/dist/esm5/internal/util/argsOrArgArray.js",
@@ -104,8 +104,6 @@
         "node_modules/rxjs/dist/esm5/internal/operators/bufferCount.js",
         "node_modules/rxjs/dist/esm5/internal/operators/catchError.js",
         "node_modules/rxjs/dist/esm5/internal/operators/scanInternals.js",
-        "node_modules/rxjs/dist/esm5/internal/operators/reduce.js",
-        "node_modules/rxjs/dist/esm5/internal/operators/toArray.js",
         "node_modules/rxjs/dist/esm5/internal/operators/combineLatest.js",
         "node_modules/rxjs/dist/esm5/internal/operators/combineLatestWith.js",
         "node_modules/rxjs/dist/esm5/internal/operators/debounce.js",
@@ -120,7 +118,6 @@
         "node_modules/rxjs/dist/esm5/internal/operators/distinctUntilKeyChanged.js",
         "node_modules/rxjs/dist/esm5/internal/operators/throwIfEmpty.js",
         "node_modules/rxjs/dist/esm5/internal/operators/endWith.js",
-        "node_modules/rxjs/dist/esm5/internal/operators/exhaustMap.js",
         "node_modules/rxjs/dist/esm5/internal/operators/finalize.js",
         "node_modules/rxjs/dist/esm5/internal/operators/first.js",
         "node_modules/rxjs/dist/esm5/internal/operators/takeLast.js",
@@ -161,7 +158,6 @@
         "external/mkdocs-material/src/templates/assets/javascripts/browser/element/visibility/index.ts",
         "external/mkdocs-material/src/templates/assets/javascripts/browser/toggle/index.ts",
         "external/mkdocs-material/src/templates/assets/javascripts/browser/keyboard/index.ts",
-        "src/assets/javascripts/_/index.ts",
         "external/mkdocs-material/src/templates/assets/javascripts/browser/location/_/index.ts",
         "external/mkdocs-material/src/templates/assets/javascripts/browser/location/index.ts",
         "external/mkdocs-material/src/templates/assets/javascripts/browser/location/hash/index.ts",
@@ -245,38 +241,67 @@
         "external/mkdocs-material/src/templates/assets/javascripts/patches/scrollfix/index.ts",
         "external/mkdocs-material/src/templates/assets/javascripts/patches/scrolllock/index.ts",
         "external/mkdocs-material/src/templates/assets/javascripts/polyfills/index.ts",
+        "src/assets/javascripts/utils/eventHandlers.ts",
+        "src/assets/javascripts/utils/conditionChecks.ts",
+        "src/assets/javascripts/utils/index.ts",
+        "src/assets/javascripts/fetchWorker.ts",
+        "src/assets/javascripts/config/config.ts",
+        "src/assets/javascripts/config/types.ts",
+        "src/assets/javascripts/config/index.ts",
+        "src/assets/javascripts/features/feedback/feedback.ts",
+        "src/assets/javascripts/features/feedback/index.ts",
+        "src/assets/javascripts/features/licenses/tabManager.ts",
+        "src/assets/javascripts/features/licenses/types.ts",
+        "src/assets/javascripts/features/licenses/index.ts",
         "node_modules/gsap/gsap-core.js",
         "node_modules/gsap/CSSPlugin.js",
         "node_modules/gsap/index.js",
+        "src/assets/javascripts/state/predicates.ts",
+        "src/assets/javascripts/state/store.ts",
+        "src/assets/javascripts/state/index.ts",
+        "src/assets/javascripts/features/hero/animations/utils.ts",
+        "src/assets/javascripts/features/hero/animations/effects.ts",
         "node_modules/gsap/Observer.js",
+        "node_modules/rxjs/dist/esm5/operators/index.js",
+        "src/assets/javascripts/features/hero/animations/observer.ts",
+        "src/assets/javascripts/features/hero/animations/index.ts",
+        "src/assets/javascripts/features/hero/video/data.ts",
+        "src/assets/javascripts/features/hero/video/utils.ts",
+        "src/assets/javascripts/features/hero/video/videoElement.ts",
+        "src/assets/javascripts/features/hero/video/videoManager.ts",
+        "src/assets/javascripts/features/hero/video/index.ts",
+        "src/assets/javascripts/features/hero/index.ts",
+        "src/assets/javascripts/features/index.ts",
         "node_modules/gsap/ScrollTrigger.js",
         "node_modules/gsap/ScrollToPlugin.js",
-        "src/assets/javascripts/log/index.ts",
-        "src/assets/javascripts/feedback/index.ts",
-        "src/assets/javascripts/licenses/index.ts",
-        "src/assets/javascripts/utils/index.ts",
-        "node_modules/rxjs/dist/esm5/operators/index.js",
-        "src/assets/javascripts/cache/index.ts",
-        "src/assets/javascripts/hero/imageshuffle/data/index.ts",
-        "src/assets/javascripts/utils/vectorcalc/index.ts",
-        "src/assets/javascripts/hero/impactText/index.ts",
-        "src/assets/javascripts/hero/imageshuffle/index.ts",
-        "src/assets/javascripts/hero/animation/index.ts",
         "src/assets/javascripts/index.ts"
       ],
       "exports": [],
       "entryPoint": "src/assets/javascripts/index.ts"
     },
-    "docs/assets/javascripts/index.7P62UP3N.css.map": {
+    "docs/assets/javascripts/index.J4AG7E6F.css.map": {
       "bytes": 14803,
       "inputs": [],
       "exports": []
     },
-    "docs/assets/javascripts/index.7P62UP3N.css": {
-      "bytes": 6933,
+    "docs/assets/javascripts/index.J4AG7E6F.css": {
+      "bytes": 6946,
       "inputs": [
         "external/mkdocs-material/src/templates/assets/javascripts/components/content/mermaid/index.css"
       ]
+    },
+    "docs/assets/javascripts/workers/cache_worker.QVT6E73E.js.map": {
+      "bytes": 19406,
+      "inputs": [],
+      "exports": []
+    },
+    "docs/assets/javascripts/workers/cache_worker.QVT6E73E.js": {
+      "bytes": 9269,
+      "inputs": [
+        "src/assets/javascripts/workers/cache_worker.ts"
+      ],
+      "exports": [],
+      "entryPoint": "src/assets/javascripts/workers/cache_worker.ts"
     },
     "docs/assets/fonts/inter-v.5HMTI5F7.woff2": {
       "bytes": 16588,
@@ -334,13 +359,13 @@
       ],
       "exports": []
     },
-    "docs/assets/stylesheets/bundle.P72S7LTR.css.map": {
-      "bytes": 340086,
+    "docs/assets/stylesheets/bundle.Q2SW77BY.css.map": {
+      "bytes": 323555,
       "inputs": [],
       "exports": []
     },
-    "docs/assets/stylesheets/bundle.P72S7LTR.css": {
-      "bytes": 218488,
+    "docs/assets/stylesheets/bundle.Q2SW77BY.css": {
+      "bytes": 208444,
       "inputs": [
         "external/mkdocs-material/material/templates/assets/stylesheets/palette.06af60db.min.css",
         "external/mkdocs-material/material/templates/assets/stylesheets/main.0253249f.min.css",
@@ -348,8 +373,7 @@
         "src/assets/stylesheets/colors.css",
         "src/assets/stylesheets/extra.css",
         "src/assets/stylesheets/license.css",
-        "src/assets/stylesheets/home.css",
-        "src/assets/stylesheets/heroimages.css",
+        "src/assets/stylesheets/hero.css",
         "src/assets/stylesheets/tags.css",
         "src/assets/stylesheets/bundle.css"
       ],

@@ -15,25 +15,32 @@ import { isValidEvent, preventDefault } from "~/utils"
  * @description Handles feedback form submission
  */
 export const feedback = (): Observable<Event | null> => {
-const feedbackForm = document.forms?.namedItem("feedback")
+  const feedbackForm = document.forms?.namedItem("feedback")
 
   if (feedbackForm && feedbackForm instanceof HTMLFormElement) {
-    return fromEvent(feedbackForm, "submit").pipe(filter(isValidEvent),
-      map(ev => { return ev as SubmitEvent }),
+    return fromEvent(feedbackForm, "submit").pipe(
+      filter(isValidEvent),
+      map((ev) => {
+        return ev as SubmitEvent
+      }),
       tap(() => preventDefault),
       throttleTime<SubmitEvent>(3000),
       tap((ev: SubmitEvent) => {
         const page = document.location.pathname
         const data = ev.submitter?.getAttribute("data-md-value")
         logger.info(page, data)
-        if (feedbackForm.firstElementChild && feedbackForm.firstElementChild instanceof HTMLButtonElement) {
+        if (
+          feedbackForm.firstElementChild &&
+          feedbackForm.firstElementChild instanceof HTMLButtonElement
+        ) {
           feedbackForm.firstElementChild.disabled = true
         }
         const note = feedbackForm.querySelector(`.md-feedback__note [data-md-value='${data}']`)
         if (note && note instanceof HTMLElement) {
           note.hidden = false
         }
-      }))
+      }),
+    )
   } else {
     return of(null)
   }

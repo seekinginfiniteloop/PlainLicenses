@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 /**
  * @module BuildTypes
  * @description Type definitions for build process and asset management
@@ -21,6 +20,13 @@
  * @see {@link https://esbuild.github.io/} esbuild Documentation
  */
 
+import path from "path"
+
+// regex separator ("|") or minimatch separator (",")
+export type Separator = "|" | ","
+
+type EmptyString = ""
+
 export type VideoWidth = 426 | 640 | 854 | 1280 | 1920 | 2560 | 3840
 
 export type HeroPaths = Record<VideoWidth, string>
@@ -35,15 +41,11 @@ export interface ImageFormatData {
   parent?: string
 }
 
-export type ImageType = 'avif' | 'webp' | 'png'
+export type ImageType = "avif" | "webp" | "png"
+
+export type MediaFileExtension = ImageType | "mp4" | "webm"
 
 export type ImageIndex = Record<ImageType, ImageFormatData>
-
-export interface HeroImage {
-  imageName: string
-  parent: string
-  images: ImageIndex
-}
 
 /** ============================================
  *               esbuild Outputs/Meta
@@ -55,8 +57,7 @@ export interface PlaceholderMap {
 }
 
 export interface esbuildOutputs {
-  [k: string]:
-  {
+  [k: string]: {
     bytes: number
     inputs: string[] | []
     exports: string[] | []
@@ -64,8 +65,7 @@ export interface esbuildOutputs {
   }
 }
 export interface FileHashes {
-  palette: string
-  main: string
+  [k: string]: string
 }
 export interface MetaFileOutputs {
   bytes: number
@@ -105,11 +105,9 @@ export interface tsconfigPathsPluginInterface {
  *               VIDEO CONFIG
  *=============================================**/
 
-export type VideoCodec = 'av1' | 'vp9' | 'h264'
+export type VideoCodec = "av1" | "vp9" | "h264"
 
-export type CodecVariants = {
-  [key in VideoCodec]: HeroPaths
-}
+export type CodecVariants = Record<VideoCodec, HeroPaths>
 
 export interface VideoResolution {
   width: VideoWidth
@@ -118,9 +116,9 @@ export interface VideoResolution {
 
 export interface HeroVideo {
   baseName: string
-  parent: string // Path to the parent directory of the video
+  parentPath: string // Path to the parent directory of the video
   variants: CodecVariants
-  poster: HeroImage
+  poster: ImageIndex
   message?: string
 }
 
@@ -136,13 +134,15 @@ export interface HeroFiles {
 }
 
 export interface HeroFile {
-  type: "image" | "video"
-  codec: VideoCodec | ""
   baseName: string
-  extension: ImageType | "mp4" | "webm"
+  codec?: VideoCodec
+  extension: MediaFileExtension
   filename: string
-  hash: string | ""
+  srcPath: string
+  destPath: string
+  hash: string | EmptyString
   parentPath: string
-  width: VideoWidth
-
+  parsed: path.ParsedPath
+  type: "image" | "video"
+  width: VideoWidth | EmptyString
 }

@@ -11,7 +11,7 @@ import logging
 import os
 import sys
 
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from pprint import pformat
 from typing import ClassVar
@@ -31,7 +31,7 @@ STREAMHANDLER_ENABLED = os.getenv("STREAMHANDLER_ENABLED", "true").lower() == "t
 if FILEHANDLER_ENABLED:
     base_path = Path(os.getenv("LOG_PATH", ".workbench/logs"))
 
-    filename = f"pl_build_log_{datetime.now(datetime.utc).isoformat(timespec='seconds')}.log"
+    filename = f"pl_build_log_{datetime.now(UTC).isoformat(timespec='seconds')}.log"
 
     LOG_SAVE_PATH = Path(f"{base_path}/{filename}")
     LOG_SAVE_PATH.parent.mkdir(parents=True, exist_ok=True)

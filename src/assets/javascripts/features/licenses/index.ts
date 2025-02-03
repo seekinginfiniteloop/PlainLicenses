@@ -8,12 +8,12 @@
  * @copyright No rights reserved.
  */
 
-import { Observable, Subscription, map, tap } from 'rxjs'
-import { TabManager } from './tabManager'
-import { logger } from '~/utils'
+import { Observable, Subscription, map, tap } from "rxjs"
+import { TabManager } from "./tabManager"
+import { logger } from "~/utils"
 
-export * from './types'
-export * from './tabManager'
+export * from "./types"
+export * from "./tabManager"
 
 let customWindow = window as any as CustomWindow
 const { document$ } = customWindow
@@ -33,11 +33,10 @@ export function initLicenseFeature(): Observable<Subscription | undefined> {
 
       // Initialize new tab manager
       tabManager = new TabManager()
-      logger.info('License feature initialized')
-    }
-    ),
+      logger.info("License feature initialized")
+    }),
     map(() => {
       return tabManager?.subscription
-    })
+    }),
   )
 }

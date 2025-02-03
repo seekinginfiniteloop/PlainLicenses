@@ -58,9 +58,10 @@
     "editor.codeActionsOnSave": {
       "source.fixAll": "always",
       "source.fixAll.eslint": "always",
-      "source.fixAll.ts": "always"
     },
     "editor.defaultFormatter": "rvest.vs-code-prettier-eslint",
+    "editor.formatOnSaveMode": "modificationsIfAvailable",
+
     "editor.formatOnPaste": true,
     "editor.formatOnSave": true,
     "editor.formatOnType": true,
@@ -82,7 +83,23 @@
   "editor.fontFamily": "'Fira Code Retina', 'FiraCode-Retina', 'Fira Code', 'Source Code Pro', 'Droid Sans Mono', 'monospace', 'Droid Sans Fallback'",
   "editor.fontLigatures": "'cv19', 'cv24', 'cv27', 'cv30', 'ss02', 'ss07', 'ss08', 'ss09', 'zero'",
   "editor.fontWeight": "450",
+  "editor.formatOnPaste": true,
   "editor.formatOnSave": true,
+  "eslint.codeActionsOnSave.mode": "all",
+  "eslint.codeActionsOnSave.rules": [
+    "!no-unused-vars"
+  ],
+  "eslint.useFlatConfig": true,
+  "eslint.probe": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact",
+    "html",
+    "vue",
+    "markdown",
+    "vue-html"
+  ],
   "git.allowNoVerifyCommit": true,
   "git.autoStash": true,
   "git.autofetch": true,
@@ -120,8 +137,14 @@
     "vue-html": true,
     "yaml": true
   },
+  "npm.packageManager": "bun",
+  "python.languageServer": "Pylance",
+  "quokka.automaticRestart": true,
+  "quokka.showValueOnMultilineSelection": true,
   "terminal.integrated.fontFamily": "MesloLGS NF",
   "typescript.format.semicolons": "remove",
   "typescript.tsserver.web.typeAcquisition.enabled": true,
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "typescript.updateImportsOnFileMove.enabled": "always",
   "vsintellicode.typescript.completionsEnabled": true
 }

@@ -72,6 +72,7 @@ def on_env(env: Environment, config: MkDocsConfig, files: Files) -> Environment:
     env.globals["no_script_image"] = str(build_updates["noScriptImage"])  # type: ignore
     env.globals["css_bundle"] = build_updates["CSSBUNDLE"]  # type: ignore
     env.globals["js_bundle"] = build_updates["SCRIPTBUNDLE"]  # type: ignore
+    env.globals["logo_named"] = build_updates["LOGONAMED"]  # type: ignore
     logger = env_logger.getChild("on_env")
     env_logger.info(
         "Added Jinja extensions: do, loopcontrols and filters: markdown to jinja environment."

@@ -57,6 +57,7 @@
   "include": [
     "src/**/*.ts",
     "./external/mkdocs-material/typings",
+    "./external/mkdocs-material/material/src/templates/assets/javascripts/bundle.ts",
     "./external/mkdocs-material/material/src/templates/assets/javascripts/**/*.ts",
     "./external/mkdocs-material/material/src/overrides/assets/javascripts/**/*.ts"
   ],

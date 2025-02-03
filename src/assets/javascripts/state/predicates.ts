@@ -9,7 +9,7 @@
  * @copyright No rights reserved
  */
 
-import { HeroState } from './types'
+import { HeroState } from "./types"
 
 /**
  * @param {HeroState} state - Hero state
@@ -30,8 +30,7 @@ export const noVideo = (state: HeroState): boolean => state.prefersReducedMotion
  * @param {HeroState} state - Hero state
  * @returns {VideoState} Carousel state predicate
  * @description Predicates for the carousel component
-*/
+ */
 export const videoPredicate = {
-  canPlay: (state: HeroState): boolean =>
-    isFullyVisible(state) && !noVideo(state),
+  canPlay: (state: HeroState): boolean => isFullyVisible(state) && !noVideo(state),
 }
