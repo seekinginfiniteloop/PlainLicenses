@@ -9,6 +9,7 @@
 
 import gsap from "gsap"
 import { HeroStore } from "~/state"
+import { isValidElement } from "~/utils"
 import { ReducedMotionCondition } from "./types"
 
 const store = HeroStore.getInstance()
@@ -81,17 +82,17 @@ export function hasLabel(tl: gsap.core.Timeline, label: string): boolean {
   }
 }
 
+
 /**
  * Retrieves the content-containing elements of an element.
  * @param element - The element to retrieve content-containing elements from.
  * @returns The content-containing elements of the element.
  */
 export function getContentElements(element: Element): Element[] {
-  return Array.from(element.querySelectorAll("*")).filter(
-    (el) => el !== element && (el.innerHTML.trim() !== "" || el instanceof SVGElement),
-  )
+  return gsap.utils
+    .toArray(element.querySelectorAll("*"))
+    .filter((el) => isValidElement(el, element)) as Element[]
 }
-
 /**
  * Attempts to retrieve an object's values as elements.
  * @param obj - The object to retrieve values from.

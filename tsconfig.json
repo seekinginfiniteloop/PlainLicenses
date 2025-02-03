@@ -34,6 +34,9 @@
         "./src/assets/javascripts/*",
         "./external/mkdocs-material/src/templates/assets/javascripts/*"
       ],
+      "~worker/*": [
+        "./src/*"
+      ],
       "@/*": [
         "./external/mkdocs-material/src/templates/assets/javascripts/*"
       ],
@@ -59,7 +62,9 @@
     "./external/mkdocs-material/typings",
     "./external/mkdocs-material/material/src/templates/assets/javascripts/bundle.ts",
     "./external/mkdocs-material/material/src/templates/assets/javascripts/**/*.ts",
-    "./external/mkdocs-material/material/src/overrides/assets/javascripts/**/*.ts"
+    "./external/mkdocs-material/material/src/overrides/assets/javascripts/**/*.ts",
+    "src/cache_meta.json",
+    "src/cache_worker.ts"
   ],
   "exclude": [
     "src/build/*.ts",

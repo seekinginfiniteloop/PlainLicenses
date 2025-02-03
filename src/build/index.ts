@@ -25,12 +25,20 @@
  * @copyright No rights reserved.
  */
 
+import { createHash } from "crypto"
 import * as esbuild from "esbuild"
 import * as fs from "fs/promises"
 import * as path from "path"
 import { Observable, from } from "rxjs"
-import * as utils from "./utils"
-import { basePosterObj, baseProject, metaPath, noDelete, videoMessages, webConfig } from "./config/"
+import {
+  PROJECTS,
+  basePosterObj,
+  baseProject,
+  cacheMetaPath,
+  noDelete,
+  videoMessages,
+  webConfig,
+} from "./config/"
 import {
   FileHashes,
   HeroFiles,
@@ -40,7 +48,8 @@ import {
   buildJson,
   esbuildOutputs,
 } from "./types"
-import { createHash } from "crypto"
+import * as utils from "./utils"
+import { resolveGlob } from "./utils"
 
 // TODO: Refactor to use esbuild's transform API and reduce the number of file reads and writes
 
@@ -54,7 +63,12 @@ const noScriptImage: ImageIndex = {
 
 const heroFiles: Promise<HeroFiles> = utils.getHeroFiles()
 
+let currentProject: Project = baseProject
+const projects = PROJECTS
+const remainingProjects = () => projects.length - (projects.indexOf(currentProject) + 1)
 let newFileLocs: FileHashes = {}
+let outputMeta = {}
+let precache_urls = []
 
 /**
  * Processes hero video files and associated images.
@@ -66,6 +80,9 @@ async function handleFiles(): Promise<HeroVideo[]> {
   const { images, videos } = await heroFiles
   const parentPaths = utils.getParents(videos)
   const baseNames = parentPaths.map((parent) => utils.getBaseName(path.parse(parent)))
+  for (const file of [...images, ...videos]) {
+    newFileLocs[file.srcPath] = [file.destPath]
+  }
   let processedVideos = []
   for (const baseName of baseNames) {
     const filteredVideos = videos.filter((video) => baseName === video.baseName)
@@ -109,9 +126,9 @@ async function handleImageHashes(): Promise<FileHashes> {
     } else if (!(await utils.fileExists(dest))) {
       await utils.copyFile(file, dest)
     }
-    processed.push([file, dest.replace("docs/", "")])
+    processed.push([file, dest])
   }
-  return Object.fromEntries(processed)
+  return Object.fromEntries(processed.map(([src, dest]) => [src, [dest]]))
 }
 
 /**
@@ -131,9 +148,12 @@ async function build(project: Project): Promise<Observable<unknown>> {
         if (result && result.metafile) {
           const output = await metaOutput(result)
           if (output) {
-            await cacheMeta(output)
-            await writeMeta(output)
-            await metaOutputMap(output)
+            outputMeta = { ...outputMeta, ...output }
+            if (remainingProjects() === 0) {
+              await cacheMeta(outputMeta)
+              await writeMeta(outputMeta)
+              await metaOutputMap(outputMeta)
+            }
           }
         }
       })
@@ -154,13 +174,21 @@ async function clearDirs() {
   const dirs = [
     "docs/assets/stylesheets",
     "docs/assets/javascripts",
-    "docs/assets/javascripts/workers",
     "docs/assets/images",
     "docs/assets/fonts",
     "docs/assets/videos",
+    "docs/chunks",
     ...destParents,
   ]
   const filesToDelete = new Set()
+  try {
+    const workerGlob = await resolveGlob("docs/cache_*")
+    if (workerGlob) {
+      workerGlob.forEach((file) => filesToDelete.add(file))
+    }
+  } catch (err) {
+    console.log("No workers found to delete")
+  }
   for (const dir of dirs) {
     const dirFiles = await fs.readdir(dir)
     dirFiles
@@ -211,7 +239,7 @@ const metaOutput = async (result: esbuild.BuildResult): Promise<esbuildOutputs> 
  * @returns {Promise<number>} The cache version, either a timestamp or the cached version.
  */
 const checkCacheVersion = async (output: esbuildOutputs): Promise<number> => {
-  const lastCacheMeta = await fs.readFile(metaPath, "utf8").catch(() => {
+  const lastCacheMeta = await fs.readFile(cacheMetaPath, "utf8").catch(() => {
     console.error("Error reading cache metafile")
     return JSON.stringify({ urls: [], version: Date.now() })
   })
@@ -241,7 +269,7 @@ const checkCacheVersion = async (output: esbuildOutputs): Promise<number> => {
  * @returns {Promise<number>} the cache version
  */
 const getCacheVersion = async (output: esbuildOutputs): Promise<number> => {
-  if (!(await utils.fileExists(metaPath))) {
+  if (await utils.fileExists(cacheMetaPath)) {
     return await checkCacheVersion(output)
   } else {
     return Date.now()
@@ -249,24 +277,70 @@ const getCacheVersion = async (output: esbuildOutputs): Promise<number> => {
 }
 
 /**
+ * Maps esbuild output file paths to their corresponding input file paths.
+ * Filters out irrelevant inputs (node_modules, external files, TypeScript files) and creates a mapping.
+ * @param {esbuildOutputs} output - The esbuild output object.
+ * @returns {Promise<{[key: string]: string}>} A promise that resolves to a mapping of input file paths to output file paths.
+ */
+async function mapOutput(output: esbuildOutputs) {
+  const filterItems = (input: string) => {
+    return !(
+      input.includes("node_modules") ||
+      input.includes("external") ||
+      input.includes(".ts") ||
+      input.includes("tsconfig")
+    )
+  }
+  let mappedOutputs = {}
+  for (const [key, value] of Object.entries(output)) {
+    for (const input of value.inputs) {
+      if (input && Array.isArray(input) && input.length > 0) {
+        for (const file of input) {
+          if (filterItems(file)) {
+            mappedOutputs[file] = key
+          }
+        }
+      } else if (input && Array.isArray(input) && input.length === 0) {
+        mappedOutputs[key] = key
+      } else {
+        mappedOutputs[input] = key
+      }
+    }
+  }
+  return mappedOutputs
+}
+
+/**
  * Provides metafile output for the cache service worker
  * @param output - the esbuild outputs
  */
 const cacheMeta = async (output: esbuildOutputs) => {
-  let precache_urls = Object.keys(output)
-    .filter((key) => key.endsWith(".js") || key.endsWith(".css") || key.endsWith(".woff2"))
-    .map((key) => key.replace("docs/", ""))
-  precache_urls.push(...Object.values(newFileLocs))
+  precache_urls = [
+    ...precache_urls,
+    ...Object.keys(output)
+      .filter((key) => key.endsWith(".js") || key.endsWith(".css") || key.endsWith(".woff2"))
+      .map((key) => key.replace("docs/", "")),
+  ]
+  const uniqueUrls = [...new Set(precache_urls)]
   const cacheName = "plain-license-v1"
-  const worker = precache_urls.find((url) => url.includes("cache_worker"))
+  const worker = uniqueUrls.find((url) => url.includes("cache_worker"))
   const version = await getCacheVersion(output)
-  const logo = precache_urls.find((url) => url.includes("logo_named"))
+  const logo = uniqueUrls
+    .find((url) => {
+      if (Array.isArray(newFileLocs[url])) {
+        return url.find(url.includes("logo_named"))
+      } else {
+        return url.includes("logo_named")
+      }
+    })
+    ?.replace("docs/", "")
+  const existing = await resolveGlob("docs/cache_meta*")[0]
   const cacheJson = JSON.stringify(
-    { cacheName, urls: precache_urls, version, worker, logo },
+    { cacheName, urls: uniqueUrls.flat(), version, worker, logo },
     null,
     2,
   )
-  await fs.writeFile(metaPath, cacheJson)
+  await fs.writeFile(existing, cacheJson)
 }
 
 /**
@@ -282,14 +356,14 @@ const metaOutputMap = async (output: esbuildOutputs): Promise<buildJson> => {
   )
   const logoKey =
     keys.find((key) => key.includes("logo_named")) ||
-    Object.keys(newFileLocs).find((key) => key.includes("logo_named"))
+    Object.values(newFileLocs).find((value) => value.includes("logo_named"))
   const noScriptImageContent = utils.generatePictureElement(noScriptImage)
 
   const mapping = {
     noScriptImage: noScriptImageContent,
     SCRIPTBUNDLE: jsSrcKey?.replace("docs/", "") || "",
     CSSBUNDLE: cssSrcKey?.replace("docs/", "") || "",
-    LOGONAMED: logoKey?.replace("docs/", "") || "",
+    LOGONAMED: (logoKey as string)?.replace("docs/", "") || "",
   }
   const outputMetaPath = path.join("overrides", "buildmeta.json")
   await fs.writeFile(outputMetaPath, JSON.stringify(mapping, null, 2))
@@ -302,7 +376,16 @@ const metaOutputMap = async (output: esbuildOutputs): Promise<buildJson> => {
  * @description Writes the meta output to a file
  */
 const writeMeta = async (metaOutput: {}) => {
-  const metaJson = JSON.stringify({ metaOutput }, null, 2)
+  const mappedOutputs = {
+    ...metaOutput,
+    ...Object.fromEntries(
+      Object.entries(newFileLocs).map(([_, val]) => [
+        _,
+        Array.isArray(val) ? val.flat().map((val) => val.replace("docs/", "")) : val,
+      ]),
+    ),
+  }
+  const metaJson = JSON.stringify(mappedOutputs, null, 2)
   await fs.writeFile(path.join("docs", "meta.json"), metaJson)
 }
 
@@ -332,11 +415,15 @@ async function buildAll(): Promise<void> {
   console.log("hero videos exported")
   await utils.verifyBundleCreated()
   newFileLocs = { ...imageHashes }
-  try {
-    console.log("Building base project...")
-    await handleSubscription(baseProject)
-  } catch (error) {
-    console.error("Error building base project:", error)
+  precache_urls.push(...Object.values(newFileLocs))
+  for (const project of projects) {
+    try {
+      currentProject = project
+      console.log(`Building ${project.platform} of ${projects.length}...`)
+      await handleSubscription(project)
+    } catch (error) {
+      console.error(`Error building ${project.platform}:`, error)
+    }
   }
 }
 

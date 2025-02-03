@@ -19,8 +19,8 @@
 
 import { cssModulesPlugin } from "@asn.aeb/esbuild-css-modules-plugin"
 // @ts-ignore
-import { tsconfigPathsPlugin } from "esbuild-plugin-tsconfig-paths"
 import * as esbuild from "esbuild"
+import { tsconfigPathsPlugin } from "esbuild-plugin-tsconfig-paths"
 // import { copy } from 'esbuild-plugin-copy'
 
 import type {
@@ -53,7 +53,7 @@ export const cssLocs = {
 }
 
 export const fontLoc = "src/assets/fonts/*"
-export const metaPath = "docs/assets/javascripts/workers/meta.json"
+export const cacheMetaPath = "cache_meta.json"
 export const noDelete = [
   "fonts",
   "images",
@@ -179,17 +179,17 @@ export const webConfig: esbuild.BuildOptions = {
   sourcemap: true,
   metafile: true,
   banner: { js: jsBanner, css: cssBanner },
-  format: "esm",
   platform: "browser",
   target: "es2020",
   outbase: "src",
-  chunkNames: "[dir]/assets/javascripts/chunks/[name].[hash]",
+  chunkNames: "[dir]/chunks/[name].[hash]",
   assetNames: "[dir]/[name].[hash]",
 
   loader: {
     ".avif": "file",
     ".css": "css",
     ".js": "js",
+    ".json": "copy",
     ".mp4": "file",
     ".png": "file",
     ".sass": "css",
@@ -208,7 +208,7 @@ export const webConfig: esbuild.BuildOptions = {
     tsconfigPathsPlugin({
       cwd: process.cwd(),
       tsconfig: "tsconfig.json",
-      filter: /src\/assets\/javascripts\/.*/,
+      filter: /src\/assets\/javascripts\/.*|src\/cache_worker.*/,
     }),
     cssModulesPlugin({
       emitCssBundle: {
@@ -221,14 +221,16 @@ export const webConfig: esbuild.BuildOptions = {
 export const baseProject: Project = {
   entryPoints: [
     "src/assets/javascripts/index.ts",
-    "src/assets/javascripts/workers/cache_worker.ts",
     "src/assets/stylesheets/bundle.css",
+    "src/cache_worker.ts",
   ],
   tsconfig: "tsconfig.json",
   entryNames: "[dir]/[name].[hash]",
   platform: "browser",
   outdir: "docs",
 }
+
+export const PROJECTS = [baseProject] as const
 
 /**
  * @param {string} str - the string to convert

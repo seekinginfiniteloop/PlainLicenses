@@ -6,40 +6,12 @@
  * @license Plain-Unlicense
  * @author Adam Poulemanos adam<at>plainlicense<dot>org
  */
-
+import gsap from "gsap"
 import { EmphasisConfig } from "~/features"
-import type { CacheConfig, FadeInConfig, ObserverConfig } from "./types"
+import type { FadeInConfig, ObserverConfig } from "./types"
 
-/**
- * @type {CacheConfig} CACHE_CONFIG
- * @description Configuration for the cache
- */
-export const CACHE_CONFIG: CacheConfig = {
-  cacheName: "static-assets-cache-v1",
-  rootUrl: "assets/",
-  assetTypes: {
-    image: {
-      cacheable: true,
-      contentType: "image",
-    },
-    font: {
-      cacheable: true,
-      contentType: "font",
-    },
-    style: {
-      cacheable: true,
-      contentType: "text/css",
-    },
-    script: {
-      cacheable: true,
-      contentType: "application/javascript",
-    },
-    video: {
-      cacheable: true,
-      contentType: "video",
-    },
-  },
-} as const
+// tags to exclude from animation
+export const EXCLUDED_TAGS = ["STYLE", "SCRIPT", "NOSCRIPT"] as const
 
 const FADE_IN_CONFIG: FadeInConfig = {
   prefersReducedMotion: {
@@ -79,12 +51,13 @@ const FADE_IN_CONFIG: FadeInConfig = {
  */
 export const OBSERVER_CONFIG: ObserverConfig = {
   fades: {
-    fadeInSections: Array.from(document.getElementsByTagName("section")),
+    fadeInSections: gsap.utils.toArray("section"),
     fadeInDuration: 0.5,
     fadeInConfig: FADE_IN_CONFIG,
     fadeInIgnore: ".cta__container--header, .cta__container--subtitle",
   },
   slides: {
+    sections: gsap.utils.toArray("section"),
     slideDuration: 1.25,
     clickPause: 5,
     scrollPause: 10,

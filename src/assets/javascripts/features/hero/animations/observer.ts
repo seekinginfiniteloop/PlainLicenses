@@ -20,6 +20,7 @@ import type { HeroState } from "~/state/types"
 // Make sure we have the effects registered
 import "./effects"
 import { logger } from "~/utils/log"
+import { getCircularReplacer, isHome, isValidElement, navigationEvents$ } from "~/utils"
 
 gsap.registerPlugin(Observer)
 
@@ -62,6 +63,8 @@ export class HeroObservation {
   private initialized: boolean = false
 
   private firstLoad: boolean = true
+
+  private footer: Element | null = document.querySelector(".md-footer")
 
   private constructor() {
     this.defaultTimelineVars = {
@@ -109,11 +112,16 @@ export class HeroObservation {
   // and the animations for the Hero feature -- when the user is at home
   private onLoad() {
     this.transitionTl.pause()
+    gsap.set(this.footer, { autoAlpha: 0 })
+    this.subscriptions.add(
+      navigationEvents$.pipe(filter((url) => !isHome(url))).subscribe(() => {
+        gsap.set(this.footer, { autoAlpha: 1 })
+      }),
+    )
     const outerWrappers = gsap.utils.toArray(".outer")
     const innerWrappers = gsap.utils.toArray(".inner")
     requestAnimationFrame(() => {
       document.body.style.overflow = "hidden"
-      document.body.style.background = "var(--ecru)"
       gsap.set(
         this.sections.map((section) => section.element),
         { autoAlpha: 0 },
@@ -155,10 +163,16 @@ export class HeroObservation {
     const firstSection = this.sections[0]
     const { content } = firstSection
     const { subtle, strong } = this.config.emphasisTargets
-    const subtleTargets = gsap.utils.toArray(document.querySelectorAll(subtle))
-    const strongTargets = gsap.utils.toArray(document.querySelectorAll(strong))
+    const subtleTargets = gsap.utils
+      .toArray(document.querySelectorAll(subtle))
+      .filter((el) => this.isValidContentTarget(el))
+    const strongTargets = gsap.utils
+      .toArray(document.querySelectorAll(strong))
+      .filter((el) => this.isValidContentTarget(el))
     const emphasisTargets = [...subtleTargets, ...strongTargets]
-    const filteredContent = content.filter((content) => !emphasisTargets.includes(content))
+    const filteredContent = content.filter(
+      (content) => !emphasisTargets.includes(content) && this.isValidContentTarget(content),
+    )
     gsap.to(filteredContent, { autoAlpha: 1, duration: 0.75 })
     gsap.to(subtleTargets, { autoAlpha: 0.7, duration: 1 })
   }
@@ -195,8 +209,11 @@ export class HeroObservation {
           .addLabel("start"),
       }
     }) as Section[]
+    logger.info(`Sections set up: ${JSON.stringify(this.sections, getCircularReplacer(), 2)}`)
     const ignores = gsap.utils.toArray(this.config.fades.fadeInIgnore)
-    this.sections[0].content.filter((content) => !ignores.includes(content))
+    this.sections[0].content.filter(
+      (content) => !ignores.includes(content) && this.isValidContentTarget(content),
+    )
     this.sections.forEach((section, _) => {
       const { content } = section
       requestAnimationFrame(() => {
@@ -255,8 +272,10 @@ export class HeroObservation {
     const nextSection = this.sections[index]
     if (this.currentIndex >= 0) {
       // the first time this runs, currentIndex will be -1
+      logger.info(`Setting section ${this.currentIndex} to section ${index}`)
       tl.setSection({ direction, section: nextSection })
     }
+    logger.info(`Animating section ${index} in direction ${direction}`)
     tl.transitionSection({ direction, section: nextSection })
     return tl
   }
@@ -286,6 +305,30 @@ export class HeroObservation {
     if (!this.transitionTl.isActive()) {
       this.transitionTl.play()
     }
+  }
+
+  /**
+   * @description Checks if an element is a valid content target for animations.
+   * Ensures the element exists, is a valid element, has a parent, belongs to a section,
+   * and is not one of the excluded section elements (bg, wrappers, etc.).
+   * @param el - The element to check.
+   * @returns True if the element is a valid content target, false otherwise.
+   */
+  private isValidContentTarget(el: unknown): el is Element {
+    if (!el || !(el instanceof Element) || !el.parentElement) {
+      return false
+    }
+    const section = this.sections.find((section) => section.content.includes(el))
+    if (!section) {
+      return false
+    }
+    return (
+      el !== section.bg &&
+      el !== section.outerWrapper &&
+      el !== section.innerWrapper &&
+      el !== section.element &&
+      isValidElement(el, section.element)
+    )
   }
 
   /**

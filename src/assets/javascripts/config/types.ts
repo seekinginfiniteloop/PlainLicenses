@@ -8,25 +8,6 @@
  */
 
 /**
- * @description Configuration for cacheable asset types
- */
-interface AssetTypeConfig {
-  cacheable: boolean
-  contentType?: string
-}
-
-/**
- * @description Configuration for cache
- * @property {string} cacheName - name of the cache
- * @property {Record<string, AssetTypeConfig>} assetTypes - asset types for the cache
- */
-export interface CacheConfig {
-  cacheName: string
-  rootUrl: string
-  assetTypes: Record<string, AssetTypeConfig>
-}
-
-/**
  * @description Configuration for fade-in animations
  */
 export interface FadeInConfig {
@@ -60,6 +41,7 @@ export interface FadeConfig {
  * @property {number} scrollPause
  */
 export interface SlideConfig {
+  sections: HTMLElement[] // sections to slide
   slideDuration: number // duration of slide
   clickPause: number // pause duration on click
   scrollPause: number // pause duration on scroll

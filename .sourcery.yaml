@@ -4,13 +4,14 @@ rule_settings:
     - gpsg
   disable:
     - dont-self-assign-variables
-  python_version: "3.12"
+  python_version: "3.13"
   rule_types:
     - refactoring
     - suggestion
     - comment
 
 ignore:
+  - docs/**/*.js
   - node_modules
   - welcome-to-sourcery.py
   - .git

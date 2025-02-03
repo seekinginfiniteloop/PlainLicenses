@@ -6,6 +6,7 @@
  * @author Adam Poulemanos <adam<at>plainlicense<dot>org>
  * @copyright No rights reserved.
  */
+import { urls, version, cacheName } from "~worker/cache_meta.json"
 
 export type {}
 
@@ -16,8 +17,6 @@ interface CacheConfig {
   cacheName: string
   urls: string[]
   version: number
-  worker: string
-  logo: string
 }
 
 type CacheUrls = { urls: string[] }
@@ -28,11 +27,47 @@ interface Payload {
 }
 
 let CONFIG: CacheConfig = {
-  cacheName: "plain-license-v1",
-  urls: [],
-  version: Date.now(),
-  worker: "",
-  logo: "",
+  cacheName: cacheName || "plain-license-v1",
+  urls: urls || [],
+  version: version || Date.now(),
+}
+
+/**
+ * Check if we're in development mode
+ * @returns boolean
+ */
+const isDev = (): boolean => {
+  const { origin, hostname, port } = self.location
+  return (
+    hostname === "localhost" ||
+    hostname === "127.0.0.1" ||
+    port === "8000" ||
+    origin.includes("localhost")
+  )
+}
+
+// simple logger utility; only logs in development
+const logger = {
+  error: (message: string, error?: Error) => {
+    if (isDev()) {
+      if (error instanceof CacheError) {
+        console.error(`[ServiceWorker] Cache Error: ${message}`)
+        console.error(error.toString())
+      } else if (error instanceof NetworkError) {
+        console.error(`[ServiceWorker] Network Error: ${message}`)
+        console.error(`Status: ${error.status || "unknown"}`)
+        console.error(error.message)
+      } else if (error) {
+        console.error(`[ServiceWorker] ${message}`)
+        console.error(error)
+      }
+    }
+  },
+  info: (message: string) => {
+    if (isDev()) {
+      console.info(`[ServiceWorker] ${message}`)
+    }
+  },
 }
 
 /** ======================
@@ -76,17 +111,6 @@ class NetworkError extends Error {
   }
 }
 
-self.addEventListener("message", (event: ExtendableMessageEvent) => {
-  const payload = event.data as Payload
-  if (
-    payload.type === "CACHE_CONFIG" &&
-    payload.payload &&
-    Object.keys(payload.payload).length > 1
-  ) {
-    CONFIG = { ...CONFIG, ...payload.payload } as CacheConfig
-  }
-})
-
 /**
  * Get the hash from a file path
  * @param s string - file path
@@ -106,74 +130,16 @@ const get_hash = (s: string): string | null => {
   }
 }
 
-/**
- * Check if we're in development mode
- * @returns boolean
- */
-const isDev = (): boolean => {
-  const { origin, hostname, port } = self.location
+const normalizeUrl = (url: string | URL | Request): URL => {
   return (
-    hostname === "localhost" ||
-    hostname === "127.0.0.1" ||
-    port === "8000" ||
-    origin.includes("localhost")
+    url instanceof URL ? url
+    : url instanceof Request ? new URL(url.url)
+    : new URL(url)
   )
 }
 
-// simple logger utility; only logs in development
-const logger = {
-  error: (message: string, error?: Error) => {
-    if (isDev()) {
-      if (error instanceof CacheError) {
-        console.error(`[ServiceWorker] Cache Error: ${message}`)
-        console.error(error.toString())
-      } else if (error instanceof NetworkError) {
-        console.error(`[ServiceWorker] Network Error: ${message}`)
-        console.error(`Status: ${error.status || "unknown"}`)
-        console.error(error.message)
-      } else if (error) {
-        console.error(`[ServiceWorker] ${message}`)
-        console.error(error)
-      }
-    }
-    // In production, you might want to send errors to your logging service
-  },
-  info: (message: string) => {
-    if (isDev()) {
-      console.info(`[ServiceWorker] ${message}`)
-    }
-  },
-}
-
-/**
- * Retrieve cache configuration from meta.json
- * @returns Promise<CacheConfig>
- */
-async function retrieveCacheConfig(): Promise<CacheConfig> {
-  if (CONFIG.urls.length > 0) {
-    return CONFIG
-  } else {
-    try {
-      const response = await fetch("meta.json")
-      if (!response.ok) {
-        throw new NetworkError("Failed to fetch meta.json", response.status)
-      }
-
-      const meta: CacheConfig = await response.json()
-      return {
-        cacheName: meta.cacheName ?? CONFIG.cacheName,
-        version: meta.version ?? CONFIG.version,
-        urls: Object.entries(meta)
-          .filter(([key]) => !["cacheName", "version"].includes(key))
-          .map(([, value]) => value as string),
-        worker: meta["worker"] ?? "",
-        logo: meta["logo"] ?? "",
-      }
-    } catch (error) {
-      logger.error("Failed to retrieve cache config:", error as Error)
-      return CONFIG
-    }
-  }
+const normalizeRequest = (url: string | URL | Request): Request => {
+  return url instanceof Request ? url : new Request(url)
 }
 
 /**
@@ -185,6 +151,8 @@ async function retrieveCacheConfig(): Promise<CacheConfig> {
  */
 class CacheManager {
   private config: CacheConfig = CONFIG
+  private cache: Cache | null = null
+  public cacheKeys: string[] = []
 
   constructor() {
     this.init()
@@ -192,24 +160,114 @@ class CacheManager {
 
   // gets the cache configuration
   async init(): Promise<void> {
+    this.config = CONFIG
+    this.cache = await caches.open(this.config.cacheName)
+    this.cacheKeys = await caches.keys()
+    this.validateConfig()
+  }
+
+  public async getCache(): Promise<Cache> {
+    if (!this.cache) {
+      this.cache = await caches.open(this.config.cacheName)
+    }
+    return this.cache
+  }
+
+  public async updateKeys(): Promise<string[]> {
+    this.cacheKeys = await caches.keys()
+    return this.cacheKeys
+  }
+
+  public async getCacheKeys(): Promise<string[]> {
+    if (!this.cacheKeys.length) {
+      this.cacheKeys = await caches.keys()
+      logger.info(`Cache keys updated, keys: ${this.cacheKeys.join(", ")}`)
+    }
+    return this.cacheKeys
+  }
+
+  public async cacheIt(request: string | URL | Request, response?: Response): Promise<void> {
+    request = normalizeRequest(request)
+    const cache = await this.getCache()
+    if (response && response.ok) {
+      await cache.put(request, response.clone())
+      this.cacheKeys.push(request.toString())
+      logger.info("cache complete")
+      return
+    }
     try {
-      CONFIG = await retrieveCacheConfig()
-      logger.info("Cache configuration retrieved")
+      if (await cache.match(request)) {
+        return
+      } else {
+        await cache.add(request)
+        this.cacheKeys.push(request.toString())
+        logger.info("cache complete")
+      }
     } catch (error) {
-      logger.error("Failed to retrieve cache configuration:", error as Error)
-      this.config = CONFIG
+      throw new CacheError("Failed to cache url", error as Error)
+    } finally {
+      await this.checkForStaleKey(request)
     }
   }
 
+  /**
+   * Validate the cache configuration
+   */
+  private validateConfig(): void {
+    if (!this.config.cacheName || !this.config.cacheName.length || !this.config.cacheName.trim()) {
+      throw new CacheError("Cache name is required")
+    }
+    if (!this.config.urls || !this.config.urls.length) {
+      throw new CacheError("At least one url is required. Our poor cache worker has nothing to do.")
+    }
+    logger.info("Cache configuration validated")
+  }
+
+  private async toBaseName(s: string | URL | Request): Promise<string> {
+    try {
+      const url = normalizeUrl(s)
+      const file = url.pathname.split("/")?.pop()
+      const parts = file?.split(".")
+      if (!parts) {
+        logger.error("Failed to get base name: No parts found")
+        return ""
+      }
+      return parts.length >= 2 ? parts.slice(0, -2).join(".") : parts[0]
+    } catch (error) {
+      logger.error("Failed to get base name:", error as Error)
+      return ""
+    }
+  }
+
+  /**
+   * Checks for and deletes stale cache keys.
+   * @param url The URL/string/Request to check for stale keys against.
+   */
+  private async checkForStaleKey(url: string | URL | Request): Promise<void> {
+    try {
+      url = normalizeUrl(url)
+      const cache = await this.getCache()
+      const baseName = await this.toBaseName(url)
+      const staleKeys = this.cacheKeys.filter(
+        (key) => key.includes(baseName) && url.toString() !== key,
+      )
+      if (staleKeys.length) {
+        logger.info(`Stale keys found: ${staleKeys.join(", ")}`)
+        await Promise.all(staleKeys.map((key) => cache.delete(key)))
+        logger.info("Stale keys deleted")
+      }
+    } catch (error) {
+      logger.error("Failed to check for stale keys:", error as Error)
+    }
+  }
   /**
    * Cleanup old caches
    */
   async cleanup(): Promise<void> {
     try {
-      const cacheKeys = await caches.keys()
-      const deletionPromises = cacheKeys
-        .filter((key) => key !== this.config.cacheName)
-        .map((key) => caches.delete(key))
+      const deletionPromises = await this.getCacheKeys().then((keys) =>
+        keys.filter((key) => key !== this.config.cacheName).map((key) => caches.delete(key)),
+      )
 
       await Promise.all(deletionPromises)
       logger.info("Old caches cleaned up")
@@ -223,8 +281,11 @@ class CacheManager {
    */
   async precache(): Promise<void> {
     try {
-      const cache = await caches.open(this.config.cacheName)
+      const cache = await this.getCache()
       await cache.addAll(this.config.urls)
+      for (const url of this.config.urls) {
+        await this.checkForStaleKey(url)
+      }
       logger.info("Precaching complete")
     } catch (error) {
       throw new CacheError("Failed to precache urls", error as Error)
@@ -243,20 +304,24 @@ class CacheManager {
       if (!response.ok) {
         throw new NetworkError("Network response was not ok", response.status)
       }
+      this.cacheKeys.push(request.toString())
       return response
     } catch (error) {
       logger.error("Failed to fetch:", error as Error)
       throw new NetworkError(`Failed to fetch request for ${request.toString()}`, 500)
+    } finally {
+      await this.checkForStaleKey(request)
     }
   }
 
   /**
-   * Fallback fetch for failed fetches. Attempts to remove the hash from the url and fetch again
+   * Fallback fetch for failed fetches. Attempts to remove the hash from the url and fetch again. We're basically checking if the build process went wrong.
    * @param request Request | string | URL - request to fetch
    * @param init RequestInit - request options
    * @returns Promise<Response> - response
    */
   async fallbackFetch(request: Request | string | URL, init?: RequestInit): Promise<Response> {
+    request = normalizeRequest(request)
     const response = await fetch(request, init)
     if (response.ok) {
       return response
@@ -264,12 +329,9 @@ class CacheManager {
       const errorMessage = response instanceof Response ? await response.json() : "No response"
       logger.error("Failed to fetch:", new Error(errorMessage))
       logger.error("Attempting fallback fetch")
-      const url =
-        request instanceof URL ? request
-        : request instanceof Request ? new URL(request.url)
-        : new URL(request)
+      const url = normalizeUrl(request)
       const hash = get_hash(url.pathname)
-      if (!hash) {
+      if (!hash && url.origin === self.location.origin) {
         const file = url.pathname.split("/")?.pop()
         const parts = file?.split(".")
         const name = parts?.slice(0, -1).join(".")
@@ -300,7 +362,9 @@ class CacheStrategies {
    * @returns Promise<Response>
    */
   static async cacheFirst(request: Request): Promise<Response> {
-    const cached = await caches.match(request)
+    request = normalizeRequest(request)
+    const cache = await cacheManager.getCache()
+    const cached = await cache.match(request)
     if (cached) {
       return cached
     }
@@ -310,9 +374,7 @@ class CacheStrategies {
       if (!response.ok) {
         throw new NetworkError("Network response was not ok", response.status)
       }
-
-      const cache = await caches.open(CONFIG.cacheName)
-      await cache.put(request, response.clone())
+      await cacheManager.cacheIt(request, response.clone())
       return response
     } catch (error) {
       logger.error("Cache first strategy failed:", error as Error)
@@ -326,7 +388,7 @@ class CacheStrategies {
    * @returns Promise<Response>
    */
   static async staleWhileRevalidate(request: Request): Promise<Response> {
-    const cache = await caches.open(CONFIG.cacheName)
+    const cache = await cacheManager.getCache()
     const cached = await cache.match(request)
 
     const networkPromise = await cacheManager
@@ -335,7 +397,7 @@ class CacheStrategies {
         if (!response.ok) {
           throw new NetworkError("Network response was not ok", response.status)
         }
-        cache.put(request, response.clone())
+        cacheManager.cacheIt(request, response.clone())
         return response
       })
       .catch((error) => {
@@ -353,8 +415,8 @@ self.addEventListener("install", (event: ExtendableEvent) => {
     (async () => {
       try {
         await cacheManager.init()
-        await cacheManager.precache()
         await self.skipWaiting()
+        await cacheManager.precache()
         logger.info("Service worker installed")
       } catch (error) {
         logger.error("Install failed:", error as Error)
@@ -389,13 +451,11 @@ self.addEventListener("fetch", (event: FetchEvent) => {
   if (event.request.method !== "GET") {
     return
   }
-
   const url = new URL(event.request.url)
   if (!url.origin.startsWith(self.location.origin)) {
     return
   }
-
-  // We use stale-while-revalidate for assets that can are more regularly updated
+  // We use stale-while-revalidate for assets that are more regularly updated
   const isRefreshAsset = /\.(js|css|html|json)$/i.test(url.pathname)
 
   event.respondWith(
@@ -403,6 +463,7 @@ self.addEventListener("fetch", (event: FetchEvent) => {
       CacheStrategies.staleWhileRevalidate(event.request)
     : CacheStrategies.cacheFirst(event.request),
   )
+  logger.info(`Fetching: ${url.pathname}`)
 })
 
 self.addEventListener("message", (event: ExtendableMessageEvent) => {

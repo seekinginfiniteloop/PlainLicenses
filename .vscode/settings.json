@@ -1,6 +1,10 @@
 {
   "[css]": {
-    "editor.defaultFormatter": "vscode.css-language-features",
+    "editor.defaultFormatter": "stylelint.vscode-stylelint",
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "always",
+      "source.fixAll.stylelint": "always"
+    },
     "editor.formatOnPaste": true,
     "editor.formatOnSave": true,
     "editor.formatOnType": true
@@ -9,14 +13,30 @@
     "editor.defaultFormatter": "vscode.html-language-features",
     "editor.formatOnPaste": true,
     "editor.formatOnSave": true,
-    "editor.formatOnType": true
+    "editor.formatOnType": true,
+    "editor.tabSize": 2,
+    "editor.autoIndent": "advanced",
+    "editor.insertSpaces": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "always",
+      "source.fixAll.html": "always"
+    }
   },
   "[javascript]": {
     "editor.defaultFormatter": "rvest.vs-code-prettier-eslint",
     "editor.formatOnPaste": true,
     "editor.formatOnSave": true,
     "editor.formatOnType": true,
-    "editor.maxTokenizationLineLength": 10000
+    "editor.maxTokenizationLineLength": 10000,
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "always",
+      "source.fixAll.eslint": "always",
+      "source.organizeImports": "always"
+    },
+    "editor.codeActions.triggerOnFocusChange": true,
+    "editor.pasteAs.preferences": [
+      
+    ]
   },
   "[json]": {
     "editor.codeActionsOnSave": {
@@ -46,7 +66,7 @@
       "source.fixAll": "always",
       "source.fixAll.shellcheck": "always"
     },
-    "editor.defaultFormatter": "shakram02.bash-beautify",
+    "editor.defaultFormatter": "foxundermoon.shell-format",
     "editor.formatOnPaste": true,
     "editor.formatOnSave": true,
     "editor.formatOnType": true,
@@ -58,10 +78,12 @@
     "editor.codeActionsOnSave": {
       "source.fixAll": "always",
       "source.fixAll.eslint": "always",
+      "source.fixAll.ts": "always",
+      "source.organizeImports": "always",
+      "source.organizeImports.ts": "always",
+      "source.addMissingImports.ts": "always",
     },
     "editor.defaultFormatter": "rvest.vs-code-prettier-eslint",
-    "editor.formatOnSaveMode": "modificationsIfAvailable",
-
     "editor.formatOnPaste": true,
     "editor.formatOnSave": true,
     "editor.formatOnType": true,

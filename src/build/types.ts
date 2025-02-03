@@ -65,7 +65,7 @@ export interface esbuildOutputs {
   }
 }
 export interface FileHashes {
-  [k: string]: string
+  [k: string]: string[]
 }
 export interface MetaFileOutputs {
   bytes: number
@@ -79,12 +79,14 @@ export interface CacheConfig {
   cacheName: string
   urls: string[]
   version: string
+  worker: string
 }
 
 export interface buildJson {
   noScriptImage: string
   SCRIPTBUNDLE: string
   CSSBUNDLE: string
+  LOGONAMED: string
 }
 
 export interface Project {

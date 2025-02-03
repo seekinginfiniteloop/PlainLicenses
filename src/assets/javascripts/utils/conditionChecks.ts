@@ -6,6 +6,8 @@
  * @copyright No rights reserved.
  */
 
+import { EXCLUDED_TAGS } from "~/config"
+
 const LICENSE_HASHES = ["#reader", "#html", "#markdown", "#plaintext", "#changelog", "#official"]
 
 const isProd = (url: URL) => {
@@ -16,7 +18,8 @@ const isProd = (url: URL) => {
 export const isDev = (url: URL) => {
   return (
     (url.hostname === "localhost" && url.port === "8000") ||
-    (url.hostname === "127.0.0.1" && url.port === "8000")
+    (url.hostname === "127.0.0.1" && url.port === "8000") ||
+    typeof window !== "undefined"
   )
 }
 
@@ -123,4 +126,34 @@ export const elementIsVisible = (el: HTMLElement | null): boolean => {
     el.parentElement?.style.visibility !== "hidden"
 
   return isNotHidden && parentNotHidden
+}
+
+/**
+ * Checks if an element is valid for animation.
+ * @param el - The element to check.
+ * @param parent - The parent element.
+ * @returns Whether the element is valid for animation.
+ */
+export function isValidElement(el: unknown, parent: Element): boolean {
+  if (el === parent) {
+    return false
+  }
+  if (!(el instanceof Element)) {
+    return false
+  }
+  if (EXCLUDED_TAGS.includes(el.tagName as (typeof EXCLUDED_TAGS)[number])) {
+    return false
+  }
+  if (el instanceof SVGElement) {
+    return true
+  }
+  try {
+    // check if the element has computed styles
+    if (window.getComputedStyle(el)) {
+      return true
+    }
+  } catch {
+    return false
+  }
+  return el.innerHTML.trim() !== ""
 }

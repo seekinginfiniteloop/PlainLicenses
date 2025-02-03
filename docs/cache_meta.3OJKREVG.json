@@ -1,0 +1,14 @@
+{
+  "cacheName": "plain-license-v1",
+  "urls": [
+    "assets/javascripts/index.ts",
+    "assets/fonts/inter-v.woff2",
+    "assets/fonts/bangers-regular.woff2",
+    "assets/fonts/sourcecodepro-regular.woff2",
+    "assets/fonts/raleway.woff2",
+    "assets/stylesheets/bundle.css",
+    "assets/images/logo_named.svg"
+  ],
+  "worker": "src/cache_worker.ts",
+  "version": 1738527355829
+}

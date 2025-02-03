@@ -64,9 +64,18 @@ const { document$ } = customWindow
 // get the hero store registered
 HeroStore.getInstance()
 
-// add analytics to each page (a simple tracking pixel)
-const insertAnalytics = () =>
-  createScript("https://app.tinyanalytics.io/pixel/ei74pg7dZSNOtFvI", false, true)
+const insertAnalytics = () => {
+  try {
+    createScript(
+      "https://app.tinyanalytics.io/pixel/ei74pg7dZSNOtFvI",
+      false, // async must be false
+      true, // defer can be true
+      true, // ignore Do Not Track
+    )
+  } catch (e) {
+    console.warn("Analytics failed to load:", e)
+  }
+}
 
 const insertButtonScript = () => createScript("https://buttons.github.io/buttons.js", true, true)
 
